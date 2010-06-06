@@ -34,36 +34,20 @@ interface ChannelInterface {
 abstract class Channel extends DatabaseObject implements ChannelInterface {
 	const table = 'channels';
 
-	static public function addChannel($ucid) {		// TODO rework (move to channelcontroller?)
-		$channel = new Channel();
-		$channel->ucid = $ucid;
-
-		if (substr($channel->ucid, 0, 19) == OneWireSensor::$ucidPrefix) {
-			$channel->type = 'OneWireSensor';
-			$channel->description = OneWireSensor::getFamilyDescription($channel);
-		}
-		else {
-			$channel->type = 'Channel';
-		}
-
-		$channel->save();
-		return current(Channel::getByFilter(array('id' => $channel->id)));
-	}
-
 	public function delete() {
-		$this->reset();
+		$this->reset();		// delete all readings if database doesn't support foreign keys
 		parent::delete();
 	}
 
 	/*
-	 * deletes all values from database
+	 * deletes all readings from database
 	 */
 	public function reset($from = NULL, $to = NULL) {
 		$this->dbh->execute('DELETE FROM data WHERE channel_id = ' . (int) $this->id) . $this->buildTimeFilter($from, $to);
 	}
 
 	/*
-	 * add a new value to the database
+	 * add a new reading to the database
 	 */
 	public function addData($data) {
 		$sql = 'INSERT INTO data (channel_id, timestamp, value) VALUES(' . $this->dbh->escape($this) . ', ' . $this->dbh->escape($data['timestamp']) . ', ' . $this->dbh->escape($data['value']) . ')';
@@ -115,7 +99,7 @@ abstract class Channel extends DatabaseObject implements ChannelInterface {
 			$sql .= ' GROUP BY ' . $sqlGroupBy;
 		}
 			
-		$sql .= ' ORDER BY timestamp DESC';	// TODO optimize this grouping algorithm. array_reverse() nescessary?
+		$sql .= ' ORDER BY timestamp DESC';
 
 		$result = $this->dbh->query($sql);
 		$totalCount = $result->count();
@@ -147,23 +131,26 @@ abstract class Channel extends DatabaseObject implements ChannelInterface {
 			$reading = $result->next();
 		}
 
-		return array_reverse($packages);	// start with oldest ts & ends with newest ts (reverse array order due to descending order in sql statement)
+		return array_reverse($packages);	// start with oldest ts and ends with newest ts (reverse array order due to descending order in sql statement)
 	}
 
 	/*
-	 * wrapper for self::getByFilter()
+	 * simple self::getByFilter() wrapper
 	 */
 	static public function getByUcid($ucid) {
 		return current(self::getByFilter(array('ucid' => $ucid)));
 	}
 
 	/*
-	 * wrapper for self::getByFilter()
+	 * simple self::getByFilter() wrapper
 	 */
 	static public function getByType($type) {
 		return current(self::getByFilter(array('type' => $type)));
 	}
 
+	/*
+	 * create new channel instance by given database query result
+	 */
 	final static protected function factory($object) {
 		$rc = new ReflectionClass($object['type']);
 		if (!$rc->isSubclassOf('Channel')) {
@@ -173,6 +160,9 @@ abstract class Channel extends DatabaseObject implements ChannelInterface {
 		return $rc->newInstanceArgs(array($object));
 	}
 
+	/*
+	 * build simple timeframe filter
+	 */
 	static protected function buildFilterTime($from = NULL, $to = NULL) {
 		$sql = '';
 
@@ -188,7 +178,7 @@ abstract class Channel extends DatabaseObject implements ChannelInterface {
 	}
 
 	static protected function buildFilterQuery($filters, $conjunction, $columns = array('id')) {
-		$sql = 'SELECT id, type FROM ' . static::table;
+		$sql = 'SELECT ' . static::table . '.* FROM ' . static::table;
 
 		// join groups
 		if (key_exists('group', $filters)) {

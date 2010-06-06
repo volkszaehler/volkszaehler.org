@@ -25,6 +25,9 @@
 class User extends DatabaseObject {
 	const table = 'users';
 	
+	/*
+	 * simple self::getByFilter() wrapper
+	 */
 	public static function getByEMail($email) {
 		return current(self::getByFilter(array('email' => $email)));
 	}
@@ -57,7 +60,7 @@ class User extends DatabaseObject {
 	}
 	
 	static protected function buildQuery($filters, $conjunction, $columns = array('id')) {
-		$sql = 'SELECT id FROM ' . static::table;
+		$sql = 'SELECT ' . static::table . '.* FROM ' . static::table;
 		// join groups
 		if (key_exists('group', $filters)) {
 			$sql .= ' LEFT JOIN group_user AS rel ON rel.user_id = ' . static::table . '.id';

@@ -99,11 +99,26 @@ class ChannelController extends Controller {
 		
 		$channel = Channel::getByUcid($ucid);
 		
-		if (!($channel instanceof Channel)) {
+		if (!($channel instanceof Channel)) {	// TODO rework
 			$channel = Channel::addChannel($ucid);
 		}
 		
 		$channel->addData($this->request->get);
+	}
+	
+	public function add($ucid) {		// TODO rework
+		$channel = new Channel();
+		$channel->ucid = $ucid;
+
+		if (substr($channel->ucid, 0, 19) == OneWireSensor::$ucidPrefix) {
+			$channel->type = 'OneWireSensor';
+			$channel->description = OneWireSensor::getFamilyDescription($channel);
+		}
+		else {
+			$channel->type = 'Channel';
+		}
+
+		$channel->save();
 	}
 }
 

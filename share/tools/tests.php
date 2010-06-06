@@ -38,12 +38,7 @@ foreach ($groups as $group) {
 
 echo '<pre>';
 var_dump(Database::getConnection());
-var_dump(DatabaseObject::$objects);
 echo '</pre>';
-
-
-
-
 
 /*$meter = current(Channel::getByFilter(array('id' => 19)));
 

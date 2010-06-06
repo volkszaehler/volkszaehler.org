@@ -36,10 +36,13 @@ class CustomException extends Exception {
 	public function toHtml() {
 		return $this->message . ' in ' . $this->file . ':' . $this->line;
 	}
+	
+	public function toJson() {	// TODO implement
+		
+	}
 }
 
 class CustomErrorException extends ErrorException {
-	
 	static public function errorHandler($errno, $errstr, $errfile, $errline ) {
 		throw new self($errstr, 0, $errno, $errfile, $errline);
 	}

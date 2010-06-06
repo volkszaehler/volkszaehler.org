@@ -54,7 +54,7 @@ class Group extends DatabaseObject {
 	}
 	
 	static protected function buildFilterQuery($filters, $conjunction, $columns = array('id')) {
-		$sql = 'SELECT id FROM ' . static::table;
+		$sql = 'SELECT ' . static::table . '.* FROM ' . static::table;
 
 		// join groups
 		if (key_exists('group', $filters)) {
