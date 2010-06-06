@@ -24,36 +24,48 @@
  */
 function __autoload($className) {
 	$libs = __DIR__ . '/lib/';
-	
+
 	require_once $libs . 'util/exceptions.php';
-	
-	// preg_replace pattern => replace mapping
+
+	// preg_replace pattern class name => inclulde path
 	$mapping = array(
-					'/.*Exception$/'			=> 'util/exceptions',
-					'/^Registry$/'			=> 'util/registry',
-					'/^Database$/'			=> 'db/database',
-					'/^Channel$/'			=> 'channel/channel',
-					'/(.*(Meter|Sensor))/i'	=> 'channel/$2/$1',
-					'/(Http.*)/'			=> 'http/$1',
-					'/(.*sql.*)/i'			=> 'db/$1',
-					'/(.*Controller)/'		=> 'controller/$1');
+	// util classes
+		'/^.*Exception$/'							=> 'util/exceptions',
+		'/^Registry$/'								=> 'util/registry',
+
+	// model classes
+		'/^(Channel|User|Group|Database(Object)?)$/'=> 'model/$1',
+		'/^(MySql|PgSql|SqLite)$/i'					=> 'model/db/$1',
+		'/^(.+(Meter|Sensor))$/'					=> 'model/channel/$2/$1',
+		'/^(Meter|Sensor)$/'						=> 'model/channel/$1',
+
+	// view classes
+		'/^(Http.*)$/'								=> 'view/http/$1',
+		'/^(.*View)$/'								=> 'view/$1',
+
+	// controller classes
+		'/^(.*Controller)$/'						=> 'controller/$1'
+	);
+
+	$include = preg_replace(array_keys($mapping), array_values($mapping), $className);
 	
-	foreach ($mapping as $pattern => $replacement) {
-		$className = preg_replace($pattern, $replacement, $className);
-	}
-	
-	$className = strtolower($className);
-	
-	if (file_exists($libs . $className . '.php')) {
-		require_once $libs . $className . '.php';
+	if (!empty($include)) {
+		$include = $libs . strtolower($include) . '.php';
+
+		if (file_exists($include)) {
+			require_once $include;
+		}
+		else {
+			throw new CustomException('Cannot load class ' . $className . '! File does not exist: ' . $include);
+		}
 	}
 	else {
-		throw new CustomException('Cannot load class! Name not mapped: ' . $className);
+		throw new CustomException('Cannot load class ' . $className . '! Name not mapped.');
 	}
 }
 
 // enable strict error reporting
-error_reporting (E_ALL);
+error_reporting(E_ALL);
 
 // lets handle all php errors as exceptions
 set_error_handler(array('CustomErrorException', 'errorHandler'));
