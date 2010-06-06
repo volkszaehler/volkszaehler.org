@@ -196,7 +196,7 @@ abstract class Database implements DatabaseInterface {
 				
 			$rc = new ReflectionClass($config['db']['backend']);
 			if (!$rc->isSubclassOf('Database')) {
-				throw new InvalidArgumentException('\'' . $result['type'] . '\' is not a valid database backend');
+				throw new InvalidArgumentException('\'' . $rc->getName() . '\' is not a valid database backend');
 			}
 				
 			self::$connection = $rc->newInstanceArgs(array($config['db']));

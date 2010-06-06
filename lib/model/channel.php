@@ -154,7 +154,7 @@ abstract class Channel extends DatabaseObject implements ChannelInterface {
 	final static protected function factory($object) {
 		$rc = new ReflectionClass($object['type']);
 		if (!$rc->isSubclassOf('Channel')) {
-			throw new InvalidArgumentException('\'' . $object['type'] . '\' is not a valid channel type');
+			throw new InvalidArgumentException('\'' . $rc->getName() . '\' is not a valid channel type');
 		}
 
 		return $rc->newInstanceArgs(array($object));
