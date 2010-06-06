@@ -1,0 +1,8 @@
+Dieses Verzeichnis enhällt Datenbankdumps mit Daten, die für Demonstrationszwecke genutzt werden könne.
+
+HOWTO Import pulses.dummy.copy.gz:
+
+gunzip pulses.dummy.copy.gz
+psql -d smartmeter -c "COPY pulses FROM '/var/lib/postgresql/pulses.dummy.copy';"
+
+or use share/tools/import.php for mysql databases.

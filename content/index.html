@@ -1,0 +1,419 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+	<title>Volkszaehler.org</title>
+	<meta name="GENERATOR" content="Quanta Plus">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<script type="text/javascript" src="javascript/jquery-1.4.2.min.js"></script>
+	<script type="text/javascript" src="javascript/jqplot/jquery.jqplot.min.js"></script>
+	<script type="text/javascript" src="javascript/jqplot/plugins/jqplot.canvasTextRenderer.min.js"></script>
+	<script type="text/javascript" src="javascript/jqplot/plugins/jqplot.canvasAxisLabelRenderer.min.js"></script>
+	<script type="text/javascript" src="javascript/jqplot/plugins/jqplot.canvasAxisTickRenderer.min.js"></script>
+	<script type="text/javascript" src="javascript/jqplot/plugins/jqplot.dateAxisRenderer.min.js"></script>
+	<script type="text/javascript" src="javascript/jqplot/plugins/jqplot.cursor.min.js"></script>
+	
+	<script type="text/javascript" src="javascript/smartmeter.js"></script>
+	
+	<link rel="stylesheet" type="text/css" href="javascript/jqplot/jquery.jqplot.css">
+	
+	<style type="text/css">
+	a {
+		color:gray;
+	}
+	
+	body {
+		margin:0;
+		padding:0;
+	}
+	
+	#options {
+		width:165px;
+		height:450px;
+		border:1px solid #555555;
+		background-color:white;
+	}
+	
+	#Chart {
+		border:1px solid #555555;
+		background-color:white;
+		width:800px;
+		height:450px;
+		padding-left:20px;
+		padding-right:20px;
+		left:165px;
+		top:0px;
+		position:absolute;
+		overflow:hidden;
+	}
+	
+	.moveArrow {
+		position:absolute;
+		height:100%;
+		top:0;
+	}
+	
+	</style>
+</head>
+
+<body style="background-color:#9ACC67;">
+<form action="" method="POST" name="formular">
+
+<div>
+	<div id="options">
+			
+			<!--list of available channels - loaded via json-->
+			<b>Kan&auml;le:</b><br>
+			<table id="channelList" style="font-size:7pt;">
+				<tr>
+					<td></td>
+				</tr>
+			</table>
+			<br>
+			
+			<b>Information:</b><br>
+			<select name="info">
+				<option value="power">Leistung</option>
+				<option value="energy">Energie</option>
+				<option value="infos">weitere Infos</option>
+			</select>
+			<br><br>
+			
+			<b>Anzeigebereich:</b><br>
+			<select name="window">
+				<option value="1HOUR">1 Stunde</option>
+				<option value="1DAY" selected="selected" >1 Tag</option>
+				<option value="3DAY">3 Tage</option>
+				<option value="7DAY">7 Tage</option>
+				<option value="1MONTH">1 Monat</option>
+				<option value="1YEAR">1 Jahr</option>
+			</select>
+			<br><br>
+			
+			<b>Gruppierung:</b><br>
+			<select name="grouping">
+				<option value="400">dynamisch</option>
+				<option value="minute">Minute</option>
+				<option value="hour" selected="selected" >Stunde</option>
+				<option value="day">Tag</option>
+				<option value="month">Monat</option>
+				<option value="year">Jahr</option>
+			</select>
+			<br><br>
+			
+			<div style="font-size:8pt;">
+				<input type="checkbox" name="stackChannels" /> Kan&auml;le addieren<br>
+				<input type="checkbox" name="autoReload" /> auto reload (5s)<br>
+				<button type="button" onclick="JavaScript:return getData();">anzeigen</button>
+				</div>
+			<div id="loading"></div>
+	</div>
+	
+	<div id="Chart">
+		<div id="ChartPlot" style="height:100%">
+		<div class="moveArrow" style="left:0px;">
+			<table cellpadding="0" cellspacing="0" height="100%">
+				<tr>
+					<td><a id="moveBack" href="#" onclick="JavaScript:moveWindow('back');">&laquo;</a></td>
+				</tr>
+			</table>
+		</div>
+		<div id="ChartDIV" style="height:100%;width:100%;"></div>
+		<div class="moveArrow" style="right:0px;">
+			<table cellpadding="0" cellspacing="0" height="100%">
+				<tr>
+					<td>
+						<a id="moveForward" href="#" onclick="JavaScript:moveWindow('forward');">&raquo;</a><br><br />
+						<a id="moveNow" href="#" onclick="JavaScript:moveWindow('last');">&raquo;&raquo;</a>
+					</td>
+				</tr>
+			</table>
+		</div>
+		</div>
+		<div id="ChartInfo" style="display:none;">
+		
+		</div>
+	</div>
+</div>
+
+</form>
+<div id="debug"></div>
+
+<script language="JavaScript" type="text/javascript">
+
+HTTP_GET_VARS = new Array();
+strGET = document.location.search.substr(1,document.location.search.length);
+if(strGET != '') {
+	gArr=strGET.split('&');
+	for(i=0;i<gArr.length;++i) {
+		v='';vArr=gArr[i].split('=');
+		if(vArr.length>1) {
+			v=vArr[1];
+		}
+		HTTP_GET_VARS[unescape(vArr[0])] = unescape(v);
+	}
+}
+
+var myUUID = '';
+if(HTTP_GET_VARS['uuid'])
+	myUUID = HTTP_GET_VARS['uuid'];
+
+
+// easy access to formular with f
+var f = document.formular;
+
+// storing json data
+var data;
+
+// windowStart parameter for json server
+var myWindowStart = 0;
+
+// windowEnd parameter for json server
+var myWindowEnd = (new Date()).getTime();
+
+// windowGrouping for json server
+var windowGrouping = 0;
+
+// mouse position on mousedown (x-axis)
+var moveXstart = 0;
+
+
+
+// executed on document loaded complete
+$(document).ready(function() {
+	
+	// resize chart area for low resolution displays
+	// works fine with HTC hero
+	// perhaps you have to reload after display rotation
+	if($(window).width()<800) {
+		$("#Chart").animate({
+			width:$(window).width()-40,
+			height:$(window).height()-3,
+		},0);
+		$("#options").animate({
+			height:$(window).height()-3,
+		},0);
+	}
+	
+	// load channel list
+	
+	// load json data
+	$.getJSON("backend.php",{uuid: myUUID, controller: 'channel', action: 'get', data: 'channels'}, function(j){
+		
+		$('#channelList').empty();
+		
+		// add channels to table #channelList
+		for(var i=0;i<j.channels.length;i++) {
+			$('#channelList').append('<tr><td><input style="margin:0px;margin-bottom:2px;" type="checkbox"  value="' + j.channels[i]['id'] + '" name="ids" checked="checked" /></td><td>' + j.channels[i]['description'] + '</td><td>(id=' + j.channels[i].id + ')</td></tr>');
+			
+		}
+		
+		// initioal load data with all channels
+		getData();
+	});
+	
+	// start autoReload timer
+	window.setInterval("autoReload()",5000);
+});
+
+
+function autoReload() {
+	
+	// call getData if autoReload checkbox is active
+	if(f.autoReload.checked == true) {
+		myWindowEnd = (new Date()).getTime();
+		getData();
+	}
+}
+
+function moveWindow(mode) {
+	
+	if(mode == 'last')
+		myWindowEnd = (new Date()).getTime();
+	if(mode == 'back') {
+		myWindowEnd = myWindowStart;
+	}
+	if(mode == 'forward') {
+		myWindowEnd += (myWindowEnd-myWindowStart);
+	}
+	
+	getData();
+}
+
+
+function getData() {
+	
+	if(f.ids.length>0)
+		$('#loading').empty().html('<img src="images/ladebild.gif" />');
+	
+	// list of channel ids, comma separated
+	ids_parameter = "";
+	
+	if(typeof f.ids.length == 'undefined') {	// only one channel
+		ids_parameter = f.ids.value;
+	}
+	else {	// more than one channel
+		for(i=0;i<f.ids.length;i++) {
+			if(f.ids[i].checked == 1) {
+				ids_parameter += f.ids[i].value + ",";
+			}
+		}
+	}
+	
+	// calcMyWindowStart
+	myWindowStart = calcMyWindowStart();
+	
+	//$('#debug').append('<a href="backend.php?uuid='+myUUID+'&mode=getPulses&ids='+ids_parameter+'&windowStart='+myWindowStart+'&windowEnd='+myWindowEnd+'&windowGrouping='+f.grouping.value+'">json</a>');
+	// load json data with given time window
+	//$.getJSON("backend.php",{uuid: myUUID,mode: 'getPulses', ids: ids_parameter, windowEnd: myWindowEnd, windowSize: f.window.value.substring(0,1), windowInterval: f.window.value.substring(1)}, function(j){
+	$.getJSON("backend.php",{uuid: myUUID, controller: 'channel', action: 'get', data: 'pulses', ids: ids_parameter, from: myWindowStart, to: myWindowEnd, groupBy: f.grouping.value}, function(j){
+		data = j;
+		//$('#debug').empty().append(data.toSource());
+		// then show/reload the chart
+		//if(data.channels.length > 0 && data.channels[0].pulses.length > 0)
+		if(f.info.value == 'infos')
+			showInfos()
+		else
+			showChart();
+		
+		$('#loading').empty();
+	});
+	
+	return false;
+}
+
+function showInfos() {
+	
+	$('#ChartPlot').hide();
+	$('#ChartInfo').show();
+	
+	$('#ChartInfo').empty();
+	
+	for(var i=0;i<data.channels.length;i++) {
+		$('#ChartInfo').append(data.channels[i]['description']+' (Aufl&ouml;sung:'+data.channels[i]['resolution']+'imp/kWh) Momentanverbrauch: Min: Max:<br>');
+	}
+}
+
+function showChart() {
+	
+	var jqData = new Array();
+	var series_chart = new Array();
+	
+	$('#ChartInfo').hide();
+	$('#ChartPlot').show();
+	
+	jqOptions = {
+			legend:{show:true},
+			series:[],
+			cursor:{zoom:true, showTooltip:false,constrainZoomTo:'x'},
+			seriesDefaults:{lineWidth:1,showMarker:false}}
+	
+	// stack plot seiries if add channels is active
+	if(f.stackChannels.checked == true) {
+		jqOptions.stackSeries = true;
+		jqOptions.seriesDefaults.fill = true;
+		jqOptions.seriesDefaults.showShadow = false;
+	}
+	
+	// legend entries
+	for(var i=0;i<data.channels.length;i++) {
+		jqOptions.series.push({label:data.channels[i]['description']});
+	}
+	
+	// different formatStrings for different grouping times
+	switch(f.grouping.value) {
+		case 'year':
+			EformatString = '%Y';
+			break;
+		case 'month':
+			EformatString = '%m/%Y';
+			break;
+		case 'day':
+			EformatString = '%d.%m.%y';
+			break;
+		case 'hour':
+			EformatString = '%d.%m.%y %H:%M';
+			break;
+		case 'minute':
+			EformatString = '%d.%m.%y %H:%M';
+			break;
+		default:
+			EformatString = '%d.%m.%y %H:%M:%S';
+	}
+	
+	// power
+	if(f.info.value == 'power') {
+		
+		// for each channel in json response
+		for(var i=0;i<data.channels.length;i++) {
+			// power (moving average) gray line
+			//jqData.push(raw2Power(data.channels[i],true));
+			//series_chart.push({showLabel:false,color:'#808080'})
+			
+			// power
+			//if(f.grouping.value == '') {
+				jqData.push(raw2Power(data.channels[i],false));
+			//}
+			//else {
+			//	jqData.push(raw2Energy(data.channels[i]));
+			//}
+		}
+		
+		jqOptions.axes = {
+				yaxis:{autoscale:true, min:0, label:"Leistung (Watt)", tickOptions:{formatString:'%.3f'},labelRenderer: $.jqplot.CanvasAxisLabelRenderer},
+				xaxis:{autoscale:true, min:calcMyWindowStart(), max:myWindowEnd, tickOptions:{formatString:EformatString,angle:-30},pad:1, renderer:$.jqplot.DateAxisRenderer,rendererOptions:{tickRenderer:$.jqplot.CanvasAxisTickRenderer}},
+			};
+	}
+	// energy
+	else if(f.info.value == 'energy') {
+		
+		// thats not possible without grouping
+		if(f.grouping.value == '' )
+			return;
+		
+		// for each channel in json response
+		for(var i=0;i<data.channels.length;i++) {
+			jqData.push(raw2Energy(data.channels[i]));
+		}
+		
+		jqOptions.axes={
+				yaxis:{autoscale:true, min:0, tickOptions:{formatString:'%.3f'},label:"Energie (kWh)",labelRenderer: $.jqplot.CanvasAxisLabelRenderer},
+				xaxis:{
+					autoscale:true, 
+					min:calcMyWindowStart(),
+					max:myWindowEnd,
+					tickOptions:{formatString:EformatString,angle:-30},pad:1, renderer:$.jqplot.DateAxisRenderer,rendererOptions:{tickRenderer:$.jqplot.CanvasAxisTickRenderer}
+					}
+				};
+	}
+	
+	chart = $.jqplot("ChartDIV",jqData,jqOptions);
+	chart.replot();
+	
+	/*
+	// support for window move by mouse
+	// mouse cursor for plot area (dirty hack: multiple elements with this css class)
+	$('.jqplot-series-canvas').css("cursor", "pointer");
+	
+	
+	$(".jqplot-series-canvas").css("z-index", "6");
+	$(".jqplot-series-canvas").draggable({
+		axis: 'x',
+		start: function(event, ui) { // executed on start of drag
+				moveXstart = event.pageX  },
+		stop:function(event, ui) { // executed on stop of drag
+			
+			differencePX = event.pageX-moveXstart;
+			differenceTime = Math.round(differencePX/($('.jqplot-series-canvas').innerWidth()) * (data.windowEnd-data.windowStart));
+			myWindowEnd = getGroupedTimestamp(data.windowEnd-differenceTime);
+			
+			// load new data from json server with new windowEnd and redraw chart
+			getData();
+		}
+	});*/
+}
+
+
+</script>
+
+</body>
+</html>
