@@ -22,7 +22,7 @@
 /**
  * @brief base exception for database queries
  */
-class DatabaseException extends CustomException {}
+class DatabaseException extends Exception {}
 
 /**
  * @brief abstract resultset definition

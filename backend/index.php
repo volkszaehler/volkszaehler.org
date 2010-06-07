@@ -25,10 +25,7 @@
 
 include 'init.php';					// initialize environment (error handling, configuration, class autoloading)
 
-try {
-	$fc = new FrontController();	// spawn frontcontroller
-	$fc->run();						// execute controller and sends output
-} catch (Exception $e) {			// catch all exceptions
-	echo $e;
-}
+$fc = new FrontController();	// spawn frontcontroller
+$fc->run();						// execute controller and sends output
+
 ?>

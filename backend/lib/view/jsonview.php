@@ -30,7 +30,11 @@ class JsonView extends View {
 		$this->source = 'volkszaehler.org';
 		$this->version = VZ_VERSION;
 		$this->storage = $config['db']['backend'];
-		//$this->response->headers['Content-type'] = 'application/json'; // TODO uncomment in production use (just for debugging)
+		$this->controller = $request->get['controller'];
+		$this->action = $request->get['action'];
+		
+		
+		$this->response->headers['Content-type'] = 'application/json';
 	}
 	
 	public function __set($key, $value) {
@@ -48,6 +52,18 @@ class JsonView extends View {
 	public function render() {
 		$this->time = round(microtime(true) - $this->created, 4);
 		echo json_encode($this->data);
+	}
+	
+	public function exceptionHandler(Exception $exception) {
+		$this->exception = array('message' => $exception->getMessage(),
+									'code' => $exception->getCode(),
+									'file' => $exception->getFile(),
+									'line' => $exception->getLine(),
+									'trace' => $exception->getTrace()
+								);
+									
+		echo 'bla';
+		$this->render();
 	}
 }
 

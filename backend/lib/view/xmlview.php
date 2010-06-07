@@ -19,7 +19,10 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-class CustomException extends Exception {
+class XmlView extends View {
+	
+	// just moved from exception class
+	// TODO implement exception handling
 	public function toXml(DOMDocument $doc) {
 		$xmlRecord = $doc->createElement('exception');
 		$xmlRecord->setAttribute('code', $this->code);
@@ -31,20 +34,6 @@ class CustomException extends Exception {
 		$xmlRecord->appendChild(backtrace2xml($this->getTrace(), $doc));
 
 		return $xmlRecord;
-	}
-
-	public function toHtml() {
-		return $this->message . ' in ' . $this->file . ':' . $this->line;
-	}
-	
-	public function toJson() {	// TODO implement
-		
-	}
-}
-
-class CustomErrorException extends ErrorException {
-	static public function errorHandler($errno, $errstr, $errfile, $errline ) {
-		throw new self($errstr, 0, $errno, $errfile, $errline);
 	}
 }
 

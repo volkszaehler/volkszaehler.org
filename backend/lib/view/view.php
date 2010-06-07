@@ -19,16 +19,30 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-abstract class View {
+interface ViewInterface {
+	public function __construct(HttpRequest $request, HttpResponse $response);
+	public function render();
+	public function exceptionHandler(Exception $exception);
+	public function errorHandler($errno, $errstr, $errfile, $errline);
+}
+
+abstract class View implements ViewInterface {
 	public $request;
 	protected $response;
-	protected $created;	// holds timestamp of creation, used later to show time of execution
+	protected $created;	// holds timestamp of creation, used later to return time of execution
 	
 	public function __construct(HttpRequest $request, HttpResponse $response) {
 		$this->request = $request;
 		$this->response = $response;
 		$this->created = microtime(true);
+		
+		// error & exception handling by view
+		set_exception_handler(array($this, 'exceptionHandler'));
+		set_error_handler(array($this, 'errorHandler'), E_ALL);
 	}
 	
-	abstract public function render();
+	final public function errorHandler($errno, $errstr, $errfile, $errline) {
+		$this->exceptionHandler(new ErrorException($errstr, 0, $errno, $errfile, $errline));
+		die();
+	}
 }

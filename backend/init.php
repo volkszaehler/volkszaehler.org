@@ -27,12 +27,9 @@ define('VZ_VERSION', '0.1');
 function __autoload($className) {
 	$libs = __DIR__ . '/lib/';
 
-	require_once $libs . 'util/exceptions.php';
-
 	// preg_replace pattern class name => inclulde path
 	$mapping = array(
 	// util classes
-		'/^.*Exception$/'							=> 'util/exceptions',
 		'/^Registry$/'								=> 'util/registry',
 
 	// model classes
@@ -52,11 +49,11 @@ function __autoload($className) {
 	$include = $libs . strtolower(preg_replace(array_keys($mapping), array_values($mapping), $className)) . '.php';
 
 	if (empty($include)) {
-		throw new CustomException('Cannot load class ' . $className . '! Name not mapped.');
+		throw new Exception('Cannot load class ' . $className . '! Name not mapped.');
 	}
 
 	if (!file_exists($include)) {
-		throw new CustomException('Cannot load class ' . $className . '! File does not exist: ' . $include);
+		throw new Exception('Cannot load class ' . $className . '! File does not exist: ' . $include);
 	}
 
 	require_once $include;
@@ -65,12 +62,9 @@ function __autoload($className) {
 // enable strict error reporting
 error_reporting(E_ALL);
 
-// lets handle all php errors as exceptions
-set_error_handler(array('CustomErrorException', 'errorHandler'));
-
 // load configuration into registry
 if (!file_exists(__DIR__ . '/volkszaehler.conf.php')) {
-	throw new CustomException('No configuration available! Use volkszaehler.conf.default.php as an template');
+	throw new Exception('No configuration available! Use volkszaehler.conf.default.php as an template');
 }
 
 include __DIR__ . '/volkszaehler.conf.php';
