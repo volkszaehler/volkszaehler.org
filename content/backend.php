@@ -20,17 +20,15 @@
 */
 
 /*
- * Entrypoint for all backend actions
+ * Bootstrap entrypoint, just calls Frontcontroller::run()
  */
 
-// initialize environment (error handling, configuration, loading classes) 
-include '../init.php';
+include '../init.php';	// initialize environment (error handling, configuration, class autoloading)
 
 try {
 	$fc = new FrontController();	// spawn frontcontroller
-	$fc->handleRequest();			// call controllers
-	$fc->sendResponse();			// send headers & output
-} catch (Exception $e) {			// handle all uncatched exceptions
+	$fc->run();						// execute controller and sends output
+} catch (Exception $e) {			// catch all exceptions
 	echo $e;
 }
 ?>

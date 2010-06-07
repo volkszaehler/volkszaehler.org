@@ -126,7 +126,7 @@ abstract class Channel extends DatabaseObject implements ChannelInterface {
 				$package['value'] += $reading['value'];
 				$package['count']++;
 			}
-				
+
 			$packages[] = $package;
 			$reading = $result->next();
 		}
@@ -189,5 +189,15 @@ abstract class Channel extends DatabaseObject implements ChannelInterface {
 
 		$sql .= static::buildFilterCondition($filters, $conjunction);
 		return $sql;
+	}
+
+	public function toJson() {
+		return array(
+			'id' => (int) $this->id,
+			'ucid' => $this->ucid,
+			'resolution' => (int) $this->resolution,
+			'description' => $this->description,
+			'type' => $this->type,
+			'costs' => $this->cost);
 	}
 }

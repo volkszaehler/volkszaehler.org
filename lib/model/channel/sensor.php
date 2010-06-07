@@ -21,8 +21,8 @@
 
 abstract class Sensor extends Channel {
 	
-	public function getData($from = NULL, $to = NULL, $values = NULL) {
-		$data = parent::getData($from, $to, $values);
+	public function getData($from = NULL, $to = NULL, $groupBy = NULL) {
+		$data = parent::getData($from, $to, $groupBy);
 		
 		array_walk($data, function(&$reading) {
 			$reading['value'] /= $reading['count'];	// calculate average (ungroup the sql sum() function)

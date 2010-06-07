@@ -23,7 +23,7 @@ abstract class DatabaseObject {
 	protected $dbh;				// database handle for all queries in DBObject subclasses
 
 	private $dirty;				// do we need to update the database?
-	private $values = array();
+	private $data = array();
 
 	static private $instances = array();	// singletons of objects
 	
@@ -32,20 +32,20 @@ abstract class DatabaseObject {
 	 */
 	final public function __construct($object) {
 		$this->dbh = Database::getConnection();
-		$this->values = $object;
+		$this->data = $object;
 	}
 
 	public function __get($key) {
-		if (!isset($this->values[$key]) && $this->id) {
+		if (!isset($this->data[$key]) && $this->id) {
 			$this->load();
 		}
 
-		return $this->values[$key];
+		return $this->data[$key];
 	}
 
 	public function __set($key, $value) {	// TODO untested
 		if ($key != 'id') {
-			$this->values[$key] = $value;
+			$this->data[$key] = $value;
 			$this->dirty = true;
 		}
 	}
@@ -60,7 +60,7 @@ abstract class DatabaseObject {
 	}
 	
 	final public function __isset($key) {
-		return isset($this->values[$key]);
+		return isset($this->data[$key]);
 	}
 	
 	static protected function factory($object) {
@@ -72,7 +72,7 @@ abstract class DatabaseObject {
 	 */
 	public function save() {
 		if ($this->id) {	// just update
-			foreach ($this->values as $column => $value) {
+			foreach ($this->data as $column => $value) {
 				if ($column != 'id') {
 					$columns[] = $column . ' = ' . $this->dbh->escape($value);
 				}
@@ -82,7 +82,7 @@ abstract class DatabaseObject {
 			$this->dbh->execute($sql);
 		}
 		else {				// insert new row
-			$sql = 'INSERT INTO ' . static::table . ' (' . implode(', ', array_keys($this->values)) . ') VALUES (' . implode(', ', array_map(array($this->dbh, 'escape'), $this->values)) . ')';
+			$sql = 'INSERT INTO ' . static::table . ' (' . implode(', ', array_keys($this->data)) . ') VALUES (' . implode(', ', array_map(array($this->dbh, 'escape'), $this->data)) . ')';
 			$this->dbh->execute($sql);
 			$this->id = $this->dbh->lastInsertId();
 		}
@@ -90,17 +90,17 @@ abstract class DatabaseObject {
 	}
 
 	/*
-	 * loads all columns from the database and caches them in $this->values
+	 * loads all columns from the database and caches them in $this->data
 	 */
 	private function load() {
 		$result = $this->dbh->query('SELECT * FROM ' . static::table . ' WHERE id = ' . (int) $this->id, 1)->current();
 			
 		if ($result == false) {
-			unset($this->values['id']);
+			unset($this->data['id']);
 			return false;
 		}
 		else {
-			$this->values = $result;
+			$this->data = $result;
 			$this->loaded = true;
 			return true;
 		}
@@ -112,7 +112,7 @@ abstract class DatabaseObject {
 	 */
 	public function delete() {
 		$this->dbh->execute('DELETE FROM ' . static::table . ' WHERE id = ' . (int) $this->id);	// delete from database
-		unset($this->values['id']);
+		unset($this->data['id']);
 	}
 
 	/*
