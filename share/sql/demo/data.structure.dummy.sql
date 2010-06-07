@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Erstellungszeit: 06. Juni 2010 um 15:46
+-- Erstellungszeit: 07. Juni 2010 um 21:06
 -- Server Version: 5.1.41
 -- PHP-Version: 5.3.2-1ubuntu4.2
 
@@ -22,10 +22,40 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 -- --------------------------------------------------------
 
 --
+-- Tabellenstruktur für Tabelle `channels`
+--
+
+CREATE TABLE `channels` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `ucid` varchar(36) CHARACTER SET latin1 NOT NULL COMMENT 'globally Unique Channel ID',
+  `type` varchar(255) COLLATE utf8_unicode_ci DEFAULT 'Channel' COMMENT 'maps meter to classname (caseinsensitive)',
+  `resolution` int(11) DEFAULT NULL,
+  `cost` int(11) DEFAULT '0',
+  `description` varchar(255) CHARACTER SET latin1 DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ucid` (`ucid`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='channels with detailed data' AUTO_INCREMENT=22 ;
+
+--
+-- Daten für Tabelle `channels`
+--
+
+INSERT INTO `channels` (`id`, `ucid`, `type`, `resolution`, `cost`, `description`) VALUES
+(1, '12345678-1234-1234-1234-123456789012', 'PowerMeter', 2000, 0, 'test2'),
+(2, '12345678-1234-1234-1234-123456789013', 'PowerMeter', 2000, 0, 'Demo Meter'),
+(17, '07506920-6e7a-11df-1012-6D300080077', 'OneWireSensor', NULL, 0, 'DS1820/DS18S20/DS1920 Temperature Sensor'),
+(18, '07506920-6e7a-11df-10F2-AD300080087', 'OneWireSensor', NULL, 0, 'DS1820/DS18S20/DS1920 Temperature Sensor'),
+(19, '07506920-6e7a-11df-1059-CD3000800C3', 'OneWireSensor', NULL, 0, 'DS1820/DS18S20/DS1920 Temperature Sensor'),
+(20, '07506920-6e7a-11df-10E3-2C400080017', 'OneWireSensor', NULL, 0, 'DS1820/DS18S20/DS1920 Temperature Sensor'),
+(21, '07506920-6e7a-11df-1037-6C400080023', 'OneWireSensor', NULL, 0, 'DS1820/DS18S20/DS1920 Temperature Sensor');
+
+-- --------------------------------------------------------
+
+--
 -- Tabellenstruktur für Tabelle `data`
 --
 
-CREATE TABLE IF NOT EXISTS `data` (
+CREATE TABLE `data` (
   `channel_id` int(11) NOT NULL,
   `timestamp` bigint(20) NOT NULL COMMENT 'in seconds since 1970',
   `value` float NOT NULL COMMENT 'absolute sensor value or pulse since last timestamp (dependening on "meters.type")',
@@ -6401,6 +6431,121 @@ INSERT INTO `data` (`channel_id`, `timestamp`, `value`) VALUES
 (20, 1275831606, 39.9375),
 (21, 1275831608, 20.5);
 
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `groups`
+--
+
+CREATE TABLE `groups` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `description` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=6 ;
+
+--
+-- Daten für Tabelle `groups`
+--
+
+INSERT INTO `groups` (`id`, `description`) VALUES
+(1, 'Zähler von Steffen'),
+(2, 'Temperatursensoren'),
+(3, '1-Wire Sensoren mit digitemp'),
+(4, 'Temperatursensoren Subgruppe'),
+(5, 'Temperatursensoren SubSubgruppe');
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `group_channel`
+--
+
+CREATE TABLE `group_channel` (
+  `channel_id` int(11) NOT NULL,
+  `group_id` int(11) NOT NULL,
+  KEY `channel_id` (`channel_id`),
+  KEY `group_id` (`group_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Daten für Tabelle `group_channel`
+--
+
+INSERT INTO `group_channel` (`channel_id`, `group_id`) VALUES
+(1, 1),
+(2, 1),
+(17, 3),
+(18, 3),
+(19, 5),
+(20, 5),
+(21, 5);
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `group_group`
+--
+
+CREATE TABLE `group_group` (
+  `parent_id` int(11) NOT NULL,
+  `child_id` int(11) NOT NULL,
+  KEY `parent_id` (`parent_id`),
+  KEY `child_id` (`child_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Daten für Tabelle `group_group`
+--
+
+INSERT INTO `group_group` (`parent_id`, `child_id`) VALUES
+(2, 3),
+(2, 4),
+(4, 5);
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `group_user`
+--
+
+CREATE TABLE `group_user` (
+  `group_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  KEY `user_id` (`user_id`),
+  KEY `group_id` (`group_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Daten für Tabelle `group_user`
+--
+
+INSERT INTO `group_user` (`group_id`, `user_id`) VALUES
+(1, 1),
+(2, 1),
+(2, 2);
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `users`
+--
+
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `email` varchar(255) CHARACTER SET latin1 NOT NULL COMMENT 'also used for login',
+  `password` varchar(40) CHARACTER SET latin1 NOT NULL COMMENT 'SHA1() hashed',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='users with detailed data' AUTO_INCREMENT=3 ;
+
+--
+-- Daten für Tabelle `users`
+--
+
+INSERT INTO `users` (`id`, `email`, `password`) VALUES
+(1, 'info@steffenvogel.de', '787a154eb0a10fa2053ac11e03b2a792ab5ea676'),
+(2, 't.vogel@griesm.de', 'a94a8fe5ccb19ba61c4c0873d391e987982fbbd3');
+
 --
 -- Constraints der exportierten Tabellen
 --
@@ -6410,3 +6555,24 @@ INSERT INTO `data` (`channel_id`, `timestamp`, `value`) VALUES
 --
 ALTER TABLE `data`
   ADD CONSTRAINT `data_ibfk_1` FOREIGN KEY (`channel_id`) REFERENCES `channels` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints der Tabelle `group_channel`
+--
+ALTER TABLE `group_channel`
+  ADD CONSTRAINT `group_channel_ibfk_4` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `group_channel_ibfk_3` FOREIGN KEY (`channel_id`) REFERENCES `channels` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints der Tabelle `group_group`
+--
+ALTER TABLE `group_group`
+  ADD CONSTRAINT `group_group_ibfk_4` FOREIGN KEY (`child_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `group_group_ibfk_3` FOREIGN KEY (`parent_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints der Tabelle `group_user`
+--
+ALTER TABLE `group_user`
+  ADD CONSTRAINT `group_user_ibfk_4` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `group_user_ibfk_3` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE;
