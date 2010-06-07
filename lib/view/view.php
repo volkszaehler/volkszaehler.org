@@ -19,14 +19,16 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-abstract class Controller {
-	protected $view;
+abstract class View {
+	public $request;
+	protected $response;
+	protected $created;	// holds timestamp of creation, used later to show time of execution
 	
-	public function __construct(View $view) {
-		$this->view = $view;
+	public function __construct(HttpRequest $request, HttpResponse $response) {
+		$this->request = $request;
+		$this->response = $response;
+		$this->created = microtime(true);
 	}
 	
-	abstract public function execute();
+	abstract public function render();
 }
-
-?>

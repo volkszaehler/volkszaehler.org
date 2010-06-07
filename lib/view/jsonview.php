@@ -19,8 +19,36 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-class Json {
+class JsonView extends View {
+	private $data = array();
 	
+	public function __construct(HttpRequest $request, HttpResponse $response) {
+		parent::__construct($request, $response);
+		
+		$config = Registry::get('config');
+
+		$this->source = 'volkszaehler.org';
+		$this->version = VZ_VERSION;
+		$this->storage = $config['db']['backend'];
+		//$this->response->headers['Content-type'] = 'application/json'; // TODO uncomment in production use (just for debugging)
+	}
+	
+	public function __set($key, $value) {
+		$this->data[$key] = $value;
+	}
+	
+	public function __get($key) {
+		return $this->data[$key];
+	}
+	
+	public function __isset($key) {
+		return isset($this->data[$key]);
+	}
+	
+	public function render() {
+		$this->time = round(microtime(true) - $this->created, 4);
+		echo json_encode($this->data);
+	}
 }
 
 ?>

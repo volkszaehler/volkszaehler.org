@@ -19,30 +19,32 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-class FrontController {
-	private $request;
-	private $response;
+final class FrontController {
+	private $controller;
+	private $view;
 	
 	public function __construct() {
-		$this->request = new HttpRequest();
-		$this->response = new HttpResponse();
+		$request = new HttpRequest();
+		$response = new HttpResponse();
 		
-		$controller = $this->request->get['controller'] . 'Controller';
-		
-		$rc = new ReflectionClass($controller);
-		if (!$rc->isSubclassOf('Controller')) {
-			throw new InvalidArgumentException('\'' . $controller . '\' is not a valid Controller');
+		// create view instance
+		$viewClass = new ReflectionClass($request->get['format'] . 'View');
+		if (!$viewClass->isSubclassOf('View')) {
+			throw new InvalidArgumentException('\'' . $viewClass->getName() . '\' is not a valid View');
 		}
+		$this->view = $viewClass->newInstanceArgs(array($request, $response));
 		
-		$this->controller = $rc->newInstanceArgs(array($this->request, $this->response));
+		// create controller instance
+		$controllerClass = new ReflectionClass($request->get['controller'] . 'Controller');
+		if (!$controllerClass->isSubclassOf('Controller')) {
+			throw new InvalidArgumentException('\'' . $controllerClass->getName() . '\' is not a valid Controller');
+		}
+		$this->controller = $controllerClass->newInstanceArgs(array($this->view));
 	}
 	
-	public function handleRequest() {
-		$this->controller->process();
-	}
-	
-	public function sendResponse() {
-		$this->response->send();
+	public function run() {
+		$this->controller->execute();	// run controller
+		$this->view->render();			// send response
 	}
 }
 

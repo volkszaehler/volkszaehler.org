@@ -20,22 +20,13 @@
  */
 
 class ChannelController extends Controller {
-	private $jsonHeader = array();
 
-	public function __construct(HttpRequest $request, HttpResponse $response) {
-		parent::__construct($request, $response);
-
-		$config = Registry::get('config');
-
-		$this->jsonHeader = array('source' => 'volkszaehler.org',
-									'version' => '0.1',
-									'storage' => $config['db']['backend']);
-
-		//$this->response->headers['Content-type'] = 'application/json'; // TODO uncomment in production use (just for debug)
+	public function __construct(View $view) {
+		parent::__construct($view);
 	}
 
-	public function process() {
-		switch ($this->request->get['action']) {
+	public function execute() {
+		switch ($this->view->request->get['action']) {
 			case 'get':
 				$this->get();
 				break;
@@ -50,52 +41,48 @@ class ChannelController extends Controller {
 	}
 	
 	private function get() {
-		$json = $this->jsonHeader;
-
-		if ($this->request->get['data'] == 'channels' || $this->request->get['data'] == 'pulses') {
-			$json['type'] = 'channels';
+		if ($this->view->request->get['data'] == 'channels' || $this->view->request->get['data'] == 'pulses') {
+			$this->view->type = 'channels';
+			$this->view->channels = array();
 				
-			if ($this->request->get['data'] == 'channels') {			// get all channels assigned to user
-				$user = current(User::getByFilter(array('id' => 1)));
+			if ($this->view->request->get['data'] == 'channels') {			// get all channels assigned to user
+				$user = current(User::getByFilter(array('id' => 1)));		// TODO replace by authentication or session handling
 				$channels = $user->getChannels();
 			}
 			else {
-				$ids = explode(',', trim($this->request->get['ids']));
+				$ids = explode(',', trim($this->view->request->get['ids']));
 				$channels = Channel::getByFilter(array('id' => $ids), true, false);	// get all channels with id in $ids as an array
 				
-				$from = (isset($this->request->get['from'])) ? (int) $this->request->get['from'] : NULL;
-				$to = (isset($this->request->get['to'])) ? (int) $this->request->get['to'] : NULL;
-				$groupBy = (isset($this->request->get['groupby'])) ? $this->request->get['groupby'] : 400;
+				$from = (isset($this->view->request->get['from'])) ? (int) $this->view->request->get['from'] : NULL;
+				$to = (isset($this->view->request->get['to'])) ? (int) $this->view->request->get['to'] : NULL;
+				$groupBy = (isset($this->view->request->get['groupby'])) ? $this->view->request->get['groupby'] : 400;
 				
-				$json['from'] = $from;	// TODO use min max tiestamps from Channel::getData()
-				$json['to'] =  $to;
+				$this->view->from = $from;	// TODO use min max timestamps from Channel::getData()
+				$this->view->to = $to;
 			}
 			
+			$jsonChannels = array();
 			foreach ($channels as $channel) {
-				$jsonChannel = array('id' => (int) $channel->id,
-										'resolution' => (int) $channel->resolution,
-										'description' => $channel->description,
-										'type' => $channel->type,
-										'costs' => $channel->cost);
+				$jsonChannel = $channel->toJson();		// TODO fix hardcoded json output
 
-				if ($this->request->get['data'] == 'pulses') {
-					$json['type'] = 'pulses';
+				if ($this->view->request->get['data'] == 'pulses') {
+					$this->view->type = 'pulses';
 					$jsonChannel['pulses'] = array();
 					
 					foreach ($channel->getPulses($from, $to, $groupBy) as $pulse) {
 						$jsonChannel['pulses'][] = array($pulse['timestamp'], $pulse['value']);
-					} 
+					}
 				}
 
-				$json['channels'][] = $jsonChannel;
+				$jsonChannels[] = $jsonChannel;
 			}
+			
+			$this->view->channels = $jsonChannels;
 		}
-
-		echo json_encode($json);
 	}
 	
 	private function log() {
-		$ucid = $this->request->get['ucid'];
+		$ucid = $this->view->request->get['ucid'];
 		
 		$channel = Channel::getByUcid($ucid);
 		
@@ -103,7 +90,7 @@ class ChannelController extends Controller {
 			$channel = Channel::addChannel($ucid);
 		}
 		
-		$channel->addData($this->request->get);
+		$channel->addData($this->view->request->get);
 	}
 	
 	public function add($ucid) {		// TODO rework
