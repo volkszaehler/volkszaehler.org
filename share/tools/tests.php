@@ -19,7 +19,7 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-include '../../init.php';
+include '../../backend/init.php';
 
 $user = User::getByEMail($_GET['email']);
 $groups = $user->getGroups(true);

@@ -197,7 +197,7 @@ $(document).ready(function() {
 	// load channel list
 	
 	// load json data
-	$.getJSON("backend.php",{uuid: myUUID, controller: 'channel', action: 'get', data: 'channels'}, function(j){
+	$.getJSON("../backend/index.php",{uuid: myUUID, controller: 'channel', action: 'get', data: 'channels'}, function(j){
 		
 		$('#channelList').empty();
 		
@@ -262,10 +262,10 @@ function getData() {
 	// calcMyWindowStart
 	myWindowStart = calcMyWindowStart();
 	
-	//$('#debug').append('<a href="backend.php?uuid='+myUUID+'&mode=getPulses&ids='+ids_parameter+'&windowStart='+myWindowStart+'&windowEnd='+myWindowEnd+'&windowGrouping='+f.grouping.value+'">json</a>');
+	//$('#debug').append('<a href="../backend/index.php?uuid='+myUUID+'&mode=getPulses&ids='+ids_parameter+'&windowStart='+myWindowStart+'&windowEnd='+myWindowEnd+'&windowGrouping='+f.grouping.value+'">json</a>');
 	// load json data with given time window
-	//$.getJSON("backend.php",{uuid: myUUID,mode: 'getPulses', ids: ids_parameter, windowEnd: myWindowEnd, windowSize: f.window.value.substring(0,1), windowInterval: f.window.value.substring(1)}, function(j){
-	$.getJSON("backend.php",{uuid: myUUID, controller: 'channel', action: 'get', data: 'pulses', ids: ids_parameter, from: myWindowStart, to: myWindowEnd, groupBy: f.grouping.value}, function(j){
+	//$.getJSON("../backend/index.php",{uuid: myUUID,mode: 'getPulses', ids: ids_parameter, windowEnd: myWindowEnd, windowSize: f.window.value.substring(0,1), windowInterval: f.window.value.substring(1)}, function(j){
+	$.getJSON("../backend/index.php",{uuid: myUUID, controller: 'channel', action: 'get', data: 'pulses', ids: ids_parameter, from: myWindowStart, to: myWindowEnd, groupBy: f.grouping.value}, function(j){
 		data = j;
 		//$('#debug').empty().append(data.toSource());
 		// then show/reload the chart

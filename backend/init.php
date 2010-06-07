@@ -49,15 +49,13 @@ function __autoload($className) {
 		'/^(.*Controller)$/'						=> 'controller/$1'
 		);
 
-	$include = preg_replace(array_keys($mapping), array_values($mapping), $className);
+	$include = $libs . strtolower(preg_replace(array_keys($mapping), array_values($mapping), $className)) . '.php';
 
 	if (empty($include)) {
 		throw new CustomException('Cannot load class ' . $className . '! Name not mapped.');
 	}
-		
-	$include = $libs . strtolower($include) . '.php';
 
-	if (file_exists($include)) {
+	if (!file_exists($include)) {
 		throw new CustomException('Cannot load class ' . $className . '! File does not exist: ' . $include);
 	}
 
@@ -71,10 +69,10 @@ error_reporting(E_ALL);
 set_error_handler(array('CustomErrorException', 'errorHandler'));
 
 // load configuration into registry
-if (!file_exists('volkszaehler.conf.php')) {
+if (!file_exists(__DIR__ . '/volkszaehler.conf.php')) {
 	throw new CustomException('No configuration available! Use volkszaehler.conf.default.php as an template');
 }
 
-include 'volkszaehler.conf.php';
+include __DIR__ . '/volkszaehler.conf.php';
 
 ?>

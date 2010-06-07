@@ -23,7 +23,7 @@
  * simple script to import demo pulses
  */
 
-include '../include/init.php';
+include '../../backend/init.php';
 
 $dbh = Database::getConnection();
 
