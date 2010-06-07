@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Erstellungszeit: 07. Juni 2010 um 21:06
+-- Erstellungszeit: 08. Juni 2010 um 01:55
 -- Server Version: 5.1.41
 -- PHP-Version: 5.3.2-1ubuntu4.2
 
@@ -25,7 +25,7 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 -- Tabellenstruktur für Tabelle `channels`
 --
 
-CREATE TABLE `channels` (
+CREATE TABLE IF NOT EXISTS `channels` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `ucid` varchar(36) CHARACTER SET latin1 NOT NULL COMMENT 'globally Unique Channel ID',
   `type` varchar(255) COLLATE utf8_unicode_ci DEFAULT 'Channel' COMMENT 'maps meter to classname (caseinsensitive)',
@@ -55,7 +55,7 @@ INSERT INTO `channels` (`id`, `ucid`, `type`, `resolution`, `cost`, `description
 -- Tabellenstruktur für Tabelle `data`
 --
 
-CREATE TABLE `data` (
+CREATE TABLE IF NOT EXISTS `data` (
   `channel_id` int(11) NOT NULL,
   `timestamp` bigint(20) NOT NULL COMMENT 'in seconds since 1970',
   `value` float NOT NULL COMMENT 'absolute sensor value or pulse since last timestamp (dependening on "meters.type")',
@@ -6437,22 +6437,24 @@ INSERT INTO `data` (`channel_id`, `timestamp`, `value`) VALUES
 -- Tabellenstruktur für Tabelle `groups`
 --
 
-CREATE TABLE `groups` (
+CREATE TABLE IF NOT EXISTS `groups` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
+  `ugid` varchar(36) COLLATE utf8_unicode_ci NOT NULL,
   `description` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ugid` (`ugid`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=6 ;
 
 --
 -- Daten für Tabelle `groups`
 --
 
-INSERT INTO `groups` (`id`, `description`) VALUES
-(1, 'Zähler von Steffen'),
-(2, 'Temperatursensoren'),
-(3, '1-Wire Sensoren mit digitemp'),
-(4, 'Temperatursensoren Subgruppe'),
-(5, 'Temperatursensoren SubSubgruppe');
+INSERT INTO `groups` (`id`, `ugid`, `description`) VALUES
+(1, '6185b05b-72b8-4d14-bbcf-cacadb2e35ec', 'Zähler von Steffen'),
+(2, '530171f0-34aa-4787-bc86-0c3ee1a55398', 'Temperatursensoren'),
+(3, 'efe83f57-3d41-4cde-9c6b-77783112891b', '1-Wire Sensoren mit digitemp'),
+(4, 'c288c9fa-3f81-45f7-9583-0a66d4909436', 'Temperatursensoren Subgruppe'),
+(5, '17f3d6fa-44fa-4070-8126-6accc50e3c34', 'Temperatursensoren SubSubgruppe');
 
 -- --------------------------------------------------------
 
@@ -6460,7 +6462,7 @@ INSERT INTO `groups` (`id`, `description`) VALUES
 -- Tabellenstruktur für Tabelle `group_channel`
 --
 
-CREATE TABLE `group_channel` (
+CREATE TABLE IF NOT EXISTS `group_channel` (
   `channel_id` int(11) NOT NULL,
   `group_id` int(11) NOT NULL,
   KEY `channel_id` (`channel_id`),
@@ -6486,7 +6488,7 @@ INSERT INTO `group_channel` (`channel_id`, `group_id`) VALUES
 -- Tabellenstruktur für Tabelle `group_group`
 --
 
-CREATE TABLE `group_group` (
+CREATE TABLE IF NOT EXISTS `group_group` (
   `parent_id` int(11) NOT NULL,
   `child_id` int(11) NOT NULL,
   KEY `parent_id` (`parent_id`),
@@ -6508,7 +6510,7 @@ INSERT INTO `group_group` (`parent_id`, `child_id`) VALUES
 -- Tabellenstruktur für Tabelle `group_user`
 --
 
-CREATE TABLE `group_user` (
+CREATE TABLE IF NOT EXISTS `group_user` (
   `group_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   KEY `user_id` (`user_id`),
@@ -6530,21 +6532,23 @@ INSERT INTO `group_user` (`group_id`, `user_id`) VALUES
 -- Tabellenstruktur für Tabelle `users`
 --
 
-CREATE TABLE `users` (
+CREATE TABLE IF NOT EXISTS `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
+  `uuid` varchar(36) COLLATE utf8_unicode_ci NOT NULL,
   `email` varchar(255) CHARACTER SET latin1 NOT NULL COMMENT 'also used for login',
   `password` varchar(40) CHARACTER SET latin1 NOT NULL COMMENT 'SHA1() hashed',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `email` (`email`)
+  UNIQUE KEY `email` (`email`),
+  UNIQUE KEY `uuid` (`uuid`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='users with detailed data' AUTO_INCREMENT=3 ;
 
 --
 -- Daten für Tabelle `users`
 --
 
-INSERT INTO `users` (`id`, `email`, `password`) VALUES
-(1, 'info@steffenvogel.de', '787a154eb0a10fa2053ac11e03b2a792ab5ea676'),
-(2, 't.vogel@griesm.de', 'a94a8fe5ccb19ba61c4c0873d391e987982fbbd3');
+INSERT INTO `users` (`id`, `uuid`, `email`, `password`) VALUES
+(1, '54373541-3560-4d09-9d6e-93072e4fa69a', 'info@steffenvogel.de', '787a154eb0a10fa2053ac11e03b2a792ab5ea676'),
+(2, '7d1225c4-1ff6-4562-a4c2-14e552d1bb64', 't.vogel@griesm.de', 'a94a8fe5ccb19ba61c4c0873d391e987982fbbd3');
 
 --
 -- Constraints der exportierten Tabellen

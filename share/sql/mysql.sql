@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Erstellungszeit: 07. Juni 2010 um 21:06
+-- Erstellungszeit: 08. Juni 2010 um 01:54
 -- Server Version: 5.1.41
 -- PHP-Version: 5.3.2-1ubuntu4.2
 
@@ -25,7 +25,7 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 -- Tabellenstruktur für Tabelle `channels`
 --
 
-CREATE TABLE `channels` (
+CREATE TABLE IF NOT EXISTS `channels` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `ucid` varchar(36) CHARACTER SET latin1 NOT NULL COMMENT 'globally Unique Channel ID',
   `type` varchar(255) COLLATE utf8_unicode_ci DEFAULT 'Channel' COMMENT 'maps meter to classname (caseinsensitive)',
@@ -42,7 +42,7 @@ CREATE TABLE `channels` (
 -- Tabellenstruktur für Tabelle `data`
 --
 
-CREATE TABLE `data` (
+CREATE TABLE IF NOT EXISTS `data` (
   `channel_id` int(11) NOT NULL,
   `timestamp` bigint(20) NOT NULL COMMENT 'in seconds since 1970',
   `value` float NOT NULL COMMENT 'absolute sensor value or pulse since last timestamp (dependening on "meters.type")',
@@ -55,10 +55,12 @@ CREATE TABLE `data` (
 -- Tabellenstruktur für Tabelle `groups`
 --
 
-CREATE TABLE `groups` (
+CREATE TABLE IF NOT EXISTS `groups` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
+  `ugid` varchar(36) COLLATE utf8_unicode_ci NOT NULL,
   `description` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ugid` (`ugid`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
@@ -67,7 +69,7 @@ CREATE TABLE `groups` (
 -- Tabellenstruktur für Tabelle `group_channel`
 --
 
-CREATE TABLE `group_channel` (
+CREATE TABLE IF NOT EXISTS `group_channel` (
   `channel_id` int(11) NOT NULL,
   `group_id` int(11) NOT NULL,
   KEY `channel_id` (`channel_id`),
@@ -80,7 +82,7 @@ CREATE TABLE `group_channel` (
 -- Tabellenstruktur für Tabelle `group_group`
 --
 
-CREATE TABLE `group_group` (
+CREATE TABLE IF NOT EXISTS `group_group` (
   `parent_id` int(11) NOT NULL,
   `child_id` int(11) NOT NULL,
   KEY `parent_id` (`parent_id`),
@@ -93,7 +95,7 @@ CREATE TABLE `group_group` (
 -- Tabellenstruktur für Tabelle `group_user`
 --
 
-CREATE TABLE `group_user` (
+CREATE TABLE IF NOT EXISTS `group_user` (
   `group_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   KEY `user_id` (`user_id`),
@@ -106,12 +108,14 @@ CREATE TABLE `group_user` (
 -- Tabellenstruktur für Tabelle `users`
 --
 
-CREATE TABLE `users` (
+CREATE TABLE IF NOT EXISTS `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
+  `uuid` varchar(36) COLLATE utf8_unicode_ci NOT NULL,
   `email` varchar(255) CHARACTER SET latin1 NOT NULL COMMENT 'also used for login',
   `password` varchar(40) CHARACTER SET latin1 NOT NULL COMMENT 'SHA1() hashed',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `email` (`email`)
+  UNIQUE KEY `email` (`email`),
+  UNIQUE KEY `uuid` (`uuid`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='users with detailed data';
 
 --
