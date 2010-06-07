@@ -19,22 +19,24 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-class ControllerException extends Exception {};
-
-interface ControllerInterface {
-	public function __construct(View $view);
-}
-
-abstract class Controller implements ControllerInterface {
-	protected $view;
-	
-	public function __construct(View $view) {
-		$this->view = $view;
+class UserController extends Controller {
+	public function add() {
+		
 	}
 	
-	public function __call($method, $param) {
-		throw new ControllerException('Undefined controller action!');
+	public function delete() {
+		
+	}
+	
+	public function edit() {
+		
+	}
+	
+	public function login() {
+		
+	}
+	
+	public function logout() {
+		
 	}
 }
-
-?>

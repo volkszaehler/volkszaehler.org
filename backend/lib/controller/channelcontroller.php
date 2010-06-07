@@ -20,29 +20,8 @@
  */
 
 class ChannelController extends Controller {
-
-	public function __construct(View $view) {
-		parent::__construct($view);
-	}
-
-	public function execute() {
-		switch ($this->view->request->get['action']) {
-			case 'get':
-				$this->get();
-				break;
-				
-			case 'log':
-				$this->log();
-				break;
-				
-			default:
-				throw new InvalidArgumentException('Invalid action specified!');
-		}
-	}
-	
-	private function get() {
+	public function get() {
 		if ($this->view->request->get['data'] == 'channels' || $this->view->request->get['data'] == 'pulses') {
-			$this->view->type = 'channels';
 			$this->view->channels = array();
 				
 			if ($this->view->request->get['data'] == 'channels') {			// get all channels assigned to user
@@ -55,7 +34,7 @@ class ChannelController extends Controller {
 				
 				$from = (isset($this->view->request->get['from'])) ? (int) $this->view->request->get['from'] : NULL;
 				$to = (isset($this->view->request->get['to'])) ? (int) $this->view->request->get['to'] : NULL;
-				$groupBy = (isset($this->view->request->get['groupby'])) ? $this->view->request->get['groupby'] : 400;
+				$groupBy = (isset($this->view->request->get['groupby'])) ? $this->view->request->get['groupby'] : NULL;		// get all readings by default
 				
 				$this->view->from = $from;	// TODO use min max timestamps from Channel::getData()
 				$this->view->to = $to;
@@ -66,7 +45,6 @@ class ChannelController extends Controller {
 				$jsonChannel = $channel->toJson();		// TODO fix hardcoded json output
 
 				if ($this->view->request->get['data'] == 'pulses') {
-					$this->view->type = 'pulses';
 					$jsonChannel['pulses'] = array();
 					
 					foreach ($channel->getPulses($from, $to, $groupBy) as $pulse) {
@@ -81,7 +59,7 @@ class ChannelController extends Controller {
 		}
 	}
 	
-	private function log() {
+	public function log() {
 		$ucid = $this->view->request->get['ucid'];
 		
 		$channel = Channel::getByUcid($ucid);

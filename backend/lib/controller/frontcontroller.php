@@ -28,22 +28,23 @@ final class FrontController {
 		$response = new HttpResponse();
 		
 		// create view instance
-		$viewClass = new ReflectionClass($request->get['format'] . 'View');
-		if (!$viewClass->isSubclassOf('View')) {
-			throw new InvalidArgumentException('\'' . $viewClass->getName() . '\' is not a valid View');
+		$rc = new ReflectionClass($request->get['format'] . 'View');
+		if (!$rc->isSubclassOf('View')) {
+			throw new InvalidArgumentException('\'' . $rc->getName() . '\' is not a valid View');
 		}
-		$this->view = $viewClass->newInstanceArgs(array($request, $response));
+		$this->view = $rc->newInstanceArgs(array($request, $response));
 		
 		// create controller instance
-		$controllerClass = new ReflectionClass($request->get['controller'] . 'Controller');
-		if (!$controllerClass->isSubclassOf('Controller')) {
-			throw new InvalidArgumentException('\'' . $controllerClass->getName() . '\' is not a valid Controller');
+		$rc = new ReflectionClass($request->get['controller'] . 'Controller');
+		if (!$rc->isSubclassOf('Controller')) {
+			throw new InvalidArgumentException('\'' . $rc->getName() . '\' is not a valid Controller');
 		}
-		$this->controller = $controllerClass->newInstanceArgs(array($this->view));
+		$this->controller = $rc->newInstanceArgs(array($this->view));
 	}
 	
 	public function run() {
-		$this->controller->execute();	// run controller
+		$action = $this->view->request->get['action'];
+		$this->controller->$action();	// run controllers actions (usually CRUD: http://de.wikipedia.org/wiki/CRUD)
 		$this->view->render();			// send response
 	}
 }
