@@ -1,5 +1,5 @@
-volkszaehler.conf.php
-docs/developer/pulses.dummy.copy
+backend/volkszaehler.conf.php
+share/sql/demo/pulses.dummy.copy
 .project
 .buildpath
 .settings/
