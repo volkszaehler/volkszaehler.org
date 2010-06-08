@@ -31,6 +31,7 @@ function __autoload($className) {
 	$mapping = array(
 	// util classes
 		'/^Registry$/'								=> 'util/registry',
+		'/^Uuid$/'									=> 'util/uuid',
 
 	// model classes
 		'/^(Channel|User|Group|Database(Object)?)$/'=> 'model/$1',
