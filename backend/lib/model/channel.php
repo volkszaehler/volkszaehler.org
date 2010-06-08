@@ -35,19 +35,19 @@ abstract class Channel extends DatabaseObject implements ChannelInterface {
 	const table = 'channels';
 
 	public function delete() {
-		$this->reset();		// delete all readings if database doesn't support foreign keys
+		$this->reset();		// delete all data if database doesn't support foreign keys
 		parent::delete();
 	}
 
 	/*
-	 * deletes all readings from database
+	 * deletes all data from database
 	 */
 	public function reset($from = NULL, $to = NULL) {
 		$this->dbh->execute('DELETE FROM data WHERE channel_id = ' . (int) $this->id) . $this->buildTimeFilter($from, $to);
 	}
 
 	/*
-	 * add a new reading to the database
+	 * add a new data to the database
 	 */
 	public function addData($data) {
 		$sql = 'INSERT INTO data (channel_id, timestamp, value) VALUES(' . $this->dbh->escape($this) . ', ' . $this->dbh->escape($data['timestamp']) . ', ' . $this->dbh->escape($data['value']) . ')';
@@ -55,7 +55,7 @@ abstract class Channel extends DatabaseObject implements ChannelInterface {
 	}
 
 	/*
-	 * This function retrieve readings from the database. If desired it groups it into packages ($groupBy parameter)
+	 * This function retrieve data from the database. If desired it groups it into packages ($groupBy parameter)
 	 *
 	 * @return array() Array with timestamps => value (sorted by timestamp from newest to oldest)
 	 * @param $groupBy determines how readings are grouped. Possible values are: year, month, day, hour, minute or an integer for the desired size of the returned array

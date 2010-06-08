@@ -23,10 +23,10 @@ include '../../backend/init.php';
 
 $meter = current(Channel::getByFilter(array('id' => 1)));
 
-$readings = $meter->getData(0, time()*1000);
+$data = $meter->getData(0, time()*1000);
 
 echo '<table border="1">';
-foreach ($readings as $i => $reading) {
+foreach ($data as $i => $reading) {
 	echo '<tr><td>' . ($i + 1) . '</td><td>' . date('h:i:s', $reading['timestamp']/1000) . '</td><td>' . $reading['value'] . '</td><td>' . $reading['count'] . '</td></tr>';
 }
 echo '</table>';

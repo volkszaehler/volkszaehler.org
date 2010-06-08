@@ -43,10 +43,10 @@ class DataController extends Controller {
 		foreach ($channels as $channel) {
 			$jsonChannel = $this->view->getChannel($channel);
 
-			$jsonChannel['readings'] = array();
+			$jsonChannel['data'] = array();
 				
 			foreach ($channel->getPulses($from, $to, $groupBy) as $reading) {
-				$jsonChannel['readings'][] = array($reading['timestamp'], $reading['value'], $reading['count']);
+				$jsonChannel['data'][] = array($reading['timestamp'], $reading['value'], $reading['count']);
 			}
 
 			$data['channels'][] = $jsonChannel;
