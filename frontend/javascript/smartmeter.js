@@ -76,7 +76,7 @@ function calcMyWindowStart() {
 	
 	switch(windowInterval) {
 		case 'YEAR':
-			myWindowStart.setYear(myWindowStart.getYear()-windowSize);
+			myWindowStart.setYear(myWindowStart.getFullYear()-windowSize);
 			break;
 		case 'MONTH':
 			myWindowStart.setMonth(myWindowStart.getMonth()-windowSize);
@@ -108,9 +108,9 @@ function getGroupedTimestamp(timestamp) {
 	// hint: its correct without break;
 	switch(f.grouping.value) {
 		case 'year':
-			month = 0;
+			month = 1;
 		case 'month':
-			day = 0;
+			day = 1;
 		case 'day':
 			hours = 0;
 		case 'hour':
@@ -124,52 +124,18 @@ function getGroupedTimestamp(timestamp) {
 function raw2Energy(raw) {
 	var data_grouped_time = getEmptyGroupArray();
 	var data_grouped = new Array();
-	
+	alert('e')
+	return;
 	if(f.grouping.value == '')
 		return;
 		
-	if(typeof raw == 'undefined') {
-		return [[]];
+	if(raw.data.length == 0) {
+		return [[0,0]];
 	}
 	
 	// for each timestamp in json response
-	for(var i=0;i<raw.pulses.length;i++) {
-		time = new Date(raw.pulses[i][0]);
-		
-		var year = time.getFullYear();
-		var month = time.getMonth();// 0 is january
-		var day = time.getDate();	// getDay() returns day of week
-		var hours = time.getHours();
-		var minutes = time.getMinutes();
-		
-		// hint: its correct without 'break;'
-		switch(f.grouping.value) {
-			case 'year':
-				month = 0;
-			case 'month':
-				day = 0;
-			case 'day':
-				hours = 0;
-			case 'hour':
-				minutes = 0;
-		}
-		
-		// this is a date with e.g. YYYY-MM-DD HH:00 for hour grouping or YYYY-MM-00 00:00 for month grouping
-		time_grouped = new Date(year,month,day,hours,minutes);
-		
-		if(!data_grouped_time[time_grouped.getTime()]) {
-			//alert(time_grouped.getTime());
-			//return;
-		}
-		// add pulse count to this group time
-		/*
-		if(data_grouped_time[time_grouped.getTime()] > 0)
-			data_grouped_time[time_grouped.getTime()] += raw.pulses[i][1];
-		else
-			data_grouped_time[time_grouped.getTime()] = raw.pulses[i][1];
-		*/
-		data_grouped_time[raw.pulses[i][0]] = raw.pulses[i][1];
-		
+	for(var i=0;i<raw.data.length;i++) {
+		data_grouped_time[raw.data[i][0]] = raw.data[i][1];
 	}
 	t = 1;
 	switch(f.grouping.value) {
@@ -185,22 +151,20 @@ function raw2Energy(raw) {
 	
 	// transform to proper array and energy instead of pulse count
 	for(var timestamp in data_grouped_time) {
-		if(data_grouped_time[timestamp] == 0 && typeof data_grouped_time[(timestamp*1)+(t*1)] != 'undefined')
-			data_grouped_time[timestamp] = data_grouped_time[(timestamp*1)+(t*1)];
+		
 		if(f.info.value == 'energy')
-			data_grouped.push([timestamp/1000,data_grouped_time[timestamp]/raw.resolution]);
+			data_grouped.push(data_grouped_time[timestamp]/raw.resolution);
 		else {
-			
-			data_grouped.push([timestamp/1000, 3600 * 1000 * data_grouped_time[timestamp] / raw.resolution / t ]);
+			data_grouped.push([timestamp*1, 3600 * 1000 * data_grouped_time[timestamp] / raw.resolution / t ]);
 		}
 	}
 	
-	for(var i=data_grouped.length-1;i>=0;i--) {
-		if(data_grouped[i][1]==0 && i>0)
-			data_grouped[i][1] = data_grouped[i-1][1];
+	if(f.info.value == 'power') {
+		for(var i=data_grouped.length-1;i>=0;i--) {
+			if(data_grouped[i][1]==0 && i>0 && i<data_grouped.length-1 && data_grouped[i][0] > raw.data[0][0]*1000)
+				data_grouped[i][1] = data_grouped[i+1][1];
+		}
 	}
-	
-	//$('#debug').append(data_grouped.toSource())
 	
 	return data_grouped;
 }
@@ -213,19 +177,19 @@ function raw2Power(raw,moving_average) {
 	var power = 0;
 	var data_line = new Array();
 	
-	if(typeof raw == 'undefined' || raw.pulses.length == 0) {
+	if(typeof raw == 'undefined' || raw.data.length == 0) {
 		return [[0,0]];
 	}
 	
 	// for each timestamp in json response
-	for(var i=0;i<raw.pulses.length;i++) {
+	for(var i=0;i<raw.data.length;i++) {
 		if(last_timestamp>0) {
 			
 			// difference between this and last timestamp
-			difference = raw.pulses[i][0] - last_timestamp;
+			difference = raw.data[i][0] - last_timestamp;
 			
 			// power = 3600*1000/difference/resolution*count
-			power = Math.round(3600 * 1000/difference/raw.resolution*raw.pulses[i][1]);
+			power = Math.round(3600 * 1000/difference/raw.resolution*raw.data[i][1]);
 			
 			// average with last power value
 			if(moving_average && last_power>0 && Math.abs(last_power-power)<0.25*power)
@@ -237,10 +201,10 @@ function raw2Power(raw,moving_average) {
 			}
 			
 			// array with timestamp and power
-			data_line.push([raw.pulses[i][0]/1000,power]);
+			data_line.push([raw.data[i][0],power]);
 		}
 		
-		last_timestamp = raw.pulses[i][0];
+		last_timestamp = raw.data[i][0];
 		last_power = power;
 	}
 	

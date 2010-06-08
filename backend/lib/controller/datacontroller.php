@@ -34,7 +34,7 @@ class DataController extends Controller {
 
 		$from = (isset($this->view->request->get['from'])) ? (int) $this->view->request->get['from'] : NULL;
 		$to = (isset($this->view->request->get['to'])) ? (int) $this->view->request->get['to'] : NULL;
-		$groupBy = (isset($this->view->request->get['groupby'])) ? $this->view->request->get['groupby'] : 400;		// get all readings by default
+		$groupBy = (isset($this->view->request->get['groupBy'])) ? $this->view->request->get['groupBy'] : 400;		// get all readings by default
 
 		$data['from'] = $from;	// TODO use min max timestamps from Channel::getData()
 		$data['to'] = $to;		// TODO nescessary?

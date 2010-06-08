@@ -11,6 +11,9 @@
 	<script type="text/javascript" src="javascript/jqplot/plugins/jqplot.canvasAxisTickRenderer.min.js"></script>
 	<script type="text/javascript" src="javascript/jqplot/plugins/jqplot.dateAxisRenderer.min.js"></script>
 	<script type="text/javascript" src="javascript/jqplot/plugins/jqplot.cursor.min.js"></script>
+	<script type="text/javascript" src="javascript/jqplot/plugins/jqplot.categoryAxisRenderer.min.js"></script>
+	<script type="text/javascript" src="javascript/jqplot/plugins/jqplot.barRenderer.min.js"></script>
+	<script type="text/javascript" src="javascript/jqplot/plugins/jqplot.highlighter.min.js"></script>
 	
 	<script type="text/javascript" src="javascript/smartmeter.js"></script>
 	
@@ -136,6 +139,7 @@
 </div>
 
 </form>
+<div id="json"></div>
 <div id="debug"></div>
 
 <script language="JavaScript" type="text/javascript">
@@ -305,7 +309,7 @@ function showChart() {
 	jqOptions = {
 			legend:{show:true},
 			series:[],
-			cursor:{zoom:true, showTooltip:false,constrainZoomTo:'x'},
+			cursor:{zoom:true, showTooltip:true,constrainZoomTo:'x'},
 			seriesDefaults:{lineWidth:1,showMarker:false}}
 	
 	// stack plot seiries if add channels is active
@@ -351,14 +355,13 @@ function showChart() {
 			//series_chart.push({showLabel:false,color:'#808080'})
 			
 			// power
-			//if(f.grouping.value == '') {
+			if(f.grouping.value == '') {
 				jqData.push(raw2Power(data.channels[i],false));
-			//}
-			//else {
-			//	jqData.push(raw2Energy(data.channels[i]));
-			//}
+			}
+			else {
+				jqData.push(raw2Energy(data.channels[i]));
+			}
 		}
-		
 		jqOptions.axes = {
 				yaxis:{autoscale:true, min:0, label:"Leistung (Watt)", tickOptions:{formatString:'%.3f'},labelRenderer: $.jqplot.CanvasAxisLabelRenderer},
 				xaxis:{autoscale:true, min:calcMyWindowStart(), max:myWindowEnd, tickOptions:{formatString:EformatString,angle:-30},pad:1, renderer:$.jqplot.DateAxisRenderer,rendererOptions:{tickRenderer:$.jqplot.CanvasAxisTickRenderer}},
@@ -379,12 +382,18 @@ function showChart() {
 		jqOptions.axes={
 				yaxis:{autoscale:true, min:0, tickOptions:{formatString:'%.3f'},label:"Energie (kWh)",labelRenderer: $.jqplot.CanvasAxisLabelRenderer},
 				xaxis:{
+					renderer:$.jqplot.CategoryAxisRenderer,
 					autoscale:true, 
-					min:calcMyWindowStart(),
-					max:myWindowEnd,
-					tickOptions:{formatString:EformatString,angle:-30},pad:1, renderer:$.jqplot.DateAxisRenderer,rendererOptions:{tickRenderer:$.jqplot.CanvasAxisTickRenderer}
+					tickOptions:{formatString:'%d.%m.%y %H:%M:%S',angle:-30},
+					pad:1, 
+					rendererOptions:{tickRenderer:$.jqplot.CanvasAxisTickRenderer},
+					ticks:generateAxisTicks()
 					}
 				};
+		jqOptions.highlighter={sizeAdjust: 7.5};
+
+		jqOptions.seriesDefaults.renderer=$.jqplot.BarRenderer;
+		jqOptions.cursor={show:false,zoom:false,showTooltip:true,showMarker:true}
 	}
 	
 	chart = $.jqplot("ChartDIV",jqData,jqOptions);
@@ -413,6 +422,25 @@ function showChart() {
 	});*/
 }
 
+function generateAxisTicks() {
+	
+	var data_grouped_time = getEmptyGroupArray();
+	var ticks = new Array();
+	
+	for(var timestamp in data_grouped_time) {
+		var time = new Date(timestamp*1000);
+		if(f.grouping.value == 'month')
+			ticks.push((time.getMonth()+1)+'/'+time.getFullYear());
+		if(f.grouping.value == 'day')
+			ticks.push(time.getDate()+'.'+(time.getMonth()+1)+'.');
+		if(f.grouping.value == 'hour')
+			ticks.push(time.getDate()+'.'+(time.getMonth()+1)+'.'+' '+time.getHours()+':00');
+		if(f.grouping.value == 'minute')
+			ticks.push(time.getDate()+'.'+(time.getMonth()+1));
+	}
+	
+	return ticks;
+}
 
 </script>
 
