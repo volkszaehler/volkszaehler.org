@@ -124,8 +124,7 @@ function getGroupedTimestamp(timestamp) {
 function raw2Energy(raw) {
 	var data_grouped_time = getEmptyGroupArray();
 	var data_grouped = new Array();
-	alert('e')
-	return;
+	
 	if(f.grouping.value == '')
 		return;
 		
