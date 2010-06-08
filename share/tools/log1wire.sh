@@ -56,7 +56,7 @@ do
 	IFS=";"
 	COLUMNS=( $LINE )
 	UCID="${UCID_PREFIX}${COLUMNS[1]:0:4}-${COLUMNS[1]:5}"
-	curl ${CURL_OPTS} "${URL}?controller=channel&action=log&ucid=${UCID}&value=${COLUMNS[2]}&timestamp=${COLUMNS[0]}${URL_PARAMS}"
+	curl ${CURL_OPTS} "${URL}?controller=data&action=add&ucid=${UCID}&value=${COLUMNS[2]}&timestamp=$(( ${COLUMNS[0]} * 1000 ))${URL_PARAMS}"
 done
 
 # reset old ifs
