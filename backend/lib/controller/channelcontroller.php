@@ -25,7 +25,7 @@ class ChannelController extends Controller {
 			$this->view->channels = array();
 				
 			if ($this->view->request->get['data'] == 'channels') {			// get all channels assigned to user
-				$user = current(User::getByFilter(array('id' => 1)));		// TODO replace by authentication or session handling
+				$user = User::getByUuid($this->view->request->get['uuid']);
 				$channels = $user->getChannels();
 			}
 			else {
@@ -42,13 +42,13 @@ class ChannelController extends Controller {
 			
 			$jsonChannels = array();
 			foreach ($channels as $channel) {
-				$jsonChannel = $channel->toJson();		// TODO fix hardcoded json output
+				$jsonChannel = $this->view->getChannel($channel);
 
-				if ($this->view->request->get['data'] == 'pulses') {
-					$jsonChannel['pulses'] = array();
+				if ($this->view->request->get['data'] == 'readings') {
+					$jsonChannel['readings'] = array();
 					
 					foreach ($channel->getPulses($from, $to, $groupBy) as $pulse) {
-						$jsonChannel['pulses'][] = array($pulse['timestamp'], $pulse['value']);
+						$jsonChannel['readingsgi'][] = array($pulse['timestamp'], $pulse['value']);
 					}
 				}
 
@@ -64,9 +64,7 @@ class ChannelController extends Controller {
 		
 		$channel = Channel::getByUcid($ucid);
 		
-		if (!($channel instanceof Channel)) {	// TODO rework
-			$channel = Channel::addChannel($ucid);
-		}
+		// TODO add channel if it doesn't exist (use $this->add)
 		
 		$channel->addData($this->view->request->get);
 	}

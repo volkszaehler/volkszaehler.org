@@ -190,14 +190,4 @@ abstract class Channel extends DatabaseObject implements ChannelInterface {
 		$sql .= static::buildFilterCondition($filters, $conjunction);
 		return $sql;
 	}
-
-	public function toJson() {
-		return array(
-			'id' => (int) $this->id,
-			'ucid' => $this->ucid,
-			'resolution' => (int) $this->resolution,
-			'description' => $this->description,
-			'type' => $this->type,
-			'costs' => $this->cost);
-	}
 }

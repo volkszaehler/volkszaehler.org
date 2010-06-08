@@ -61,9 +61,16 @@ class JsonView extends View {
 									'line' => $exception->getLine(),
 									'trace' => $exception->getTrace()
 								);
-									
-		echo 'bla';
 		$this->render();
+	}
+	
+	public function getChannel(Channel $channel) {		// TODO improve view interface
+		return array('id' => (int) $channel->id,
+						'ucid' => $channel->ucid,
+						'resolution' => (int) $channel->resolution,
+						'description' => $channel->description,
+						'type' => $channel->type,
+						'costs' => $channel->cost);
 	}
 }
 

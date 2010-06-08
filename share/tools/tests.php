@@ -21,38 +21,18 @@
 
 include '../../backend/init.php';
 
-$user = User::getByEMail($_GET['email']);
-$groups = $user->getGroups(true);
+$meter = current(Channel::getByFilter(array('id' => 1)));
 
-foreach ($groups as $group) {
-	$channels = $group->getChannels();
-	echo $group->description . ' (' . count($channels) . '):<br />';
-	foreach ($channels as $channel) {
-		echo '&nbsp;&nbsp;[' . $channel->ucid . '] ' . $channel->description . ': ' . $channel::unit;
-		echo ' Min: ' . implode('|', $channel->getMin());
-		echo ' Max: ' . implode('|', $channel->getMax());
-		echo ' Avg: ' . implode('|', $channel->getAverage());
-		echo '<br />';
-	}
+$readings = $meter->getData(0, time()*1000, 'hour');
+
+echo '<table>';
+foreach ($readings as $i => $reading) {
+	echo '<tr><td>' . ($i + 1) . '</td><td>' . date('l jS \of F Y h:i:s A', $reading['timestamp']/1000) . '</td><td>' . $reading['value'] . '</td><td>' . $reading['count'] . '</td></tr>';
 }
+echo '</table>';
 
 echo '<pre>';
 var_dump(Database::getConnection());
 echo '</pre>';
-
-/*$meter = current(Channel::getByFilter(array('id' => 19)));
-
-$start = microtime(true);
-$readings = $meter->getData(0, time(), 'day');
-echo microtime(true) - $start;
-
-echo '<br /><table>';
-foreach ($readings as $i => $reading) {
-	echo '<tr><td>' . ($i + 1) . '</td><td>' . date('l jS \of F Y h:i:s A', $reading['timestamp']) . '</td><td>' . $reading['value'] . '</td><td>' . $reading['count'] . '</td></tr>';
-}
-echo '</table>';
-
-$max = $meter->getAverage();
-echo 'Maximal value: ' . date('l jS \of F Y h:i:s A', $max['timestamp']) . ' (' . $max['value'] . ')';*/
 
 ?>
