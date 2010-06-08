@@ -21,7 +21,7 @@
 
 abstract class HttpHandle {
 	public $code;
-	public $headers = array();
+	protected $headers = array();
 	
 	protected static $codes = array(
 		100 => 'Continue',

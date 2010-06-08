@@ -29,6 +29,8 @@ class HttpRequest extends HttpHandle {
 	public $files;
 	
 	public function __construct() {
+		$this->headers = apache_response_headers();
+		
 		$this->server = $_SERVER;
 		$this->get = $_GET;
 		$this->post = $_POST;
@@ -41,5 +43,8 @@ class HttpRequest extends HttpHandle {
 		unset($_COOKIE);
 		unset($_FILES);
 	}
-
+	
+	public function getHeader($header) {
+		return $this->headers[$header];
+	}
 }

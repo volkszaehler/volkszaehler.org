@@ -24,6 +24,8 @@ class HttpResponse extends HttpHandle {
 	public $code = 200;	// default code (OK)
 	
 	public function __construct() {
+		$this->headers = apache_response_headers();
+		
 		ob_start(array($this, 'obCallback'));
 	}
 	
@@ -40,6 +42,10 @@ class HttpResponse extends HttpHandle {
 			header($name . ': ' . $value);
 		}
 		ob_end_flush();
+	}
+	
+	public function setHeader($header, $value) {
+		$this->headers[$header] = $value;
 	}
 }
 
