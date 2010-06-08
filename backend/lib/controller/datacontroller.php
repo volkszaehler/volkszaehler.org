@@ -25,9 +25,7 @@ class DataController extends Controller {
 
 		$channel = Channel::getByUcid($ucid);
 
-		// TODO add channel if it doesn't exist (use $this->add)
-
-		$channel->addData($this->view->request->get);
+		$channel->addData($this->view->request->get); // array(timestamp, value, count)
 	}
 
 	public function get() {
@@ -39,7 +37,7 @@ class DataController extends Controller {
 		$groupBy = (isset($this->view->request->get['groupby'])) ? $this->view->request->get['groupby'] : 400;		// get all readings by default
 
 		$data['from'] = $from;	// TODO use min max timestamps from Channel::getData()
-		$data['to'] = $to;
+		$data['to'] = $to;		// TODO nescessary?
 			
 		$jsonChannels = array();
 		foreach ($channels as $channel) {

@@ -29,9 +29,9 @@ class User extends DatabaseObject {
 	 * simple self::getByFilter() wrapper
 	 */
 	public static function getByUuid($uuid) {
-		$user = self::getByFilter(array('uuid' => $uuid));
+		$user = current(self::getByFilter(array('uuid' => $uuid)));
 		
-		if (current($user) === false) {
+		if ($user === false) {
 			throw new InvalidArgumentException('No such user!');
 		}
 		
@@ -39,9 +39,9 @@ class User extends DatabaseObject {
 	}
 	
 	public static function getByEMail($email) {
-		$user = self::getByFilter(array('email' => $email));
+		$user = current(self::getByFilter(array('email' => $email)));
 		
-		if (current($user) === false) {
+		if ($user === false) {
 			throw new InvalidArgumentException('No such user!');
 		}
 		

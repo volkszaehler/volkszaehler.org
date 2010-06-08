@@ -38,9 +38,9 @@ class Group extends DatabaseObject {
 	}
 	
 	public static function getByUgid($ugid) {
-		$group = self::getByFilter(array('ugid' => $ugid));
+		$group = current(self::getByFilter(array('ugid' => $ugid)));
 		
-		if (current($group) === false) {
+		if ($group === false) {
 			throw new InvalidArgumentException('No such group!');
 		}
 		
