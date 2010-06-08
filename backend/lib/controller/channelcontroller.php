@@ -21,55 +21,15 @@
 
 class ChannelController extends Controller {
 	public function get() {
-		if ($this->view->request->get['data'] == 'channels' || $this->view->request->get['data'] == 'pulses') {
-			$this->view->channels = array();
-				
-			if ($this->view->request->get['data'] == 'channels') {			// get all channels assigned to user
-				$user = User::getByUuid($this->view->request->get['uuid']);
-				$channels = $user->getChannels();
-			}
-			else {
-				$ids = explode(',', trim($this->view->request->get['ids']));
-				$channels = Channel::getByFilter(array('id' => $ids), true, false);	// get all channels with id in $ids as an array
-				
-				$from = (isset($this->view->request->get['from'])) ? (int) $this->view->request->get['from'] : NULL;
-				$to = (isset($this->view->request->get['to'])) ? (int) $this->view->request->get['to'] : NULL;
-				$groupBy = (isset($this->view->request->get['groupby'])) ? $this->view->request->get['groupby'] : NULL;		// get all readings by default
-				
-				$this->view->from = $from;	// TODO use min max timestamps from Channel::getData()
-				$this->view->to = $to;
-			}
-			
-			$jsonChannels = array();
-			foreach ($channels as $channel) {
-				$jsonChannel = $this->view->getChannel($channel);
-
-				if ($this->view->request->get['data'] == 'readings') {
-					$jsonChannel['readings'] = array();
-					
-					foreach ($channel->getPulses($from, $to, $groupBy) as $pulse) {
-						$jsonChannel['readingsgi'][] = array($pulse['timestamp'], $pulse['value']);
-					}
-				}
-
-				$jsonChannels[] = $jsonChannel;
-			}
-			
-			$this->view->channels = $jsonChannels;
+		$user = User::getByUuid($this->view->request->get['uuid']);
+		$channels = $user->getChannels();
+		
+		foreach ($channels as $channel) {
+			$this->view->data['channels'][] = $this->view->getChannel($channel);
 		}
 	}
 	
-	public function log() {
-		$ucid = $this->view->request->get['ucid'];
-		
-		$channel = Channel::getByUcid($ucid);
-		
-		// TODO add channel if it doesn't exist (use $this->add)
-		
-		$channel->addData($this->view->request->get);
-	}
-	
-	public function add($ucid) {		// TODO rework
+	public function add() {
 		$channel = new Channel();
 		$channel->ucid = $ucid;
 
@@ -82,6 +42,16 @@ class ChannelController extends Controller {
 		}
 
 		$channel->save();
+		$this->view->data['channel'] = $this->view->getChannel($channel);
+	}
+	
+	public function delete() {	// TODO untested
+		$channel = Channel::getByUcid($this->view->request->get['ucid']);
+		$channel->delete();
+	}
+	
+	public function edit() {
+		
 	}
 }
 

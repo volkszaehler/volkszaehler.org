@@ -44,8 +44,9 @@ final class FrontController {
 	
 	public function run() {
 		$action = $this->view->request->get['action'];
+		
 		$this->controller->$action();	// run controllers actions (usually CRUD: http://de.wikipedia.org/wiki/CRUD)
-		$this->view->render();			// send response
+		$this->view->render();			// render view & send http response
 	}
 }
 

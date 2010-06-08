@@ -38,11 +38,14 @@ abstract class View implements ViewInterface {
 		
 		// error & exception handling by view
 		set_exception_handler(array($this, 'exceptionHandler'));
-		set_error_handler(array($this, 'errorHandler'), E_ALL);
+		set_error_handler(array($this, 'errorHandler'));
 	}
 	
 	final public function errorHandler($errno, $errstr, $errfile, $errline) {
 		$this->exceptionHandler(new ErrorException($errstr, 0, $errno, $errfile, $errline));
-		die();
+	}
+	
+	public function __destruct() {
+		$this->response->send();	// send response
 	}
 }

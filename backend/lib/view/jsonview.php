@@ -20,48 +20,37 @@
  */
 
 class JsonView extends View {
-	private $data = array();
+	public $data = array();
 	
 	public function __construct(HttpRequest $request, HttpResponse $response) {
 		parent::__construct($request, $response);
 		
 		$config = Registry::get('config');
 
-		$this->source = 'volkszaehler.org';
-		$this->version = VZ_VERSION;
-		$this->storage = $config['db']['backend'];
-		$this->controller = $request->get['controller'];
-		$this->action = $request->get['action'];
+		$this->data['source'] = 'volkszaehler.org';
+		$this->data['version'] = VZ_VERSION;
+		$this->data['storage'] = $config['db']['backend'];
+		$this->data['controller'] = $request->get['controller'];
+		$this->data['action'] = $request->get['action'];
 		
-		
-		$this->response->headers['Content-type'] = 'application/json';
-	}
-	
-	public function __set($key, $value) {
-		$this->data[$key] = $value;
-	}
-	
-	public function __get($key) {
-		return $this->data[$key];
-	}
-	
-	public function __isset($key) {
-		return isset($this->data[$key]);
+		$this->response->setHeader('Content-type', 'application/json');
 	}
 	
 	public function render() {
-		$this->time = round(microtime(true) - $this->created, 4);
+		$this->data['time'] = round(microtime(true) - $this->created, 4);
 		echo json_encode($this->data);
 	}
 	
 	public function exceptionHandler(Exception $exception) {
-		$this->exception = array('message' => $exception->getMessage(),
-									'code' => $exception->getCode(),
-									'file' => $exception->getFile(),
-									'line' => $exception->getLine(),
-									'trace' => $exception->getTrace()
-								);
+		$this->data['exception'] = array('message' => $exception->getMessage(),
+										'code' => $exception->getCode(),
+										'file' => $exception->getFile(),
+										'line' => $exception->getLine(),
+										'trace' => $exception->getTrace()
+									);
+		$this->data['status'] = 'exception';
 		$this->render();
+		die();
 	}
 	
 	public function getChannel(Channel $channel) {		// TODO improve view interface

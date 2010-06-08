@@ -19,7 +19,7 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-class UserController extends Controller {
+class GroupController extends Controller {
 	public function add() {
 		
 	}
@@ -28,23 +28,9 @@ class UserController extends Controller {
 		
 	}
 	
-	public function edit() {
-		
-	}
-	
-	public function login() {
-		
-	}
-	
-	public function logout() {
-		
-	}
-	
-	public function subscribe() {
-		
-	}
-	
-	public function unsubscribe() {
+	public function get() {
 		
 	}
 }
+
+?>

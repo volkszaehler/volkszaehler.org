@@ -20,20 +20,82 @@
  */
 
 class XmlView extends View {
+	public $doc;
+
+	public function __construct(HttpRequest $request, HttpResponse $response) {
+		parent::__construct($request, $response);
+
+		$config = Registry::get('config');
+
+		$this->doc = new DOMDocument('1.0', 'UTF-8');
+
+		$this->source = 'volkszaehler.org';		// TODO create XML
+		$this->version = VZ_VERSION;
+		$this->storage = $config['db']['backend'];
+		$this->controller = $request->get['controller'];
+		$this->action = $request->get['action'];
+
+		$this->response->headers['Content-type'] = 'application/json';
+	}
 	
-	// just moved from exception class
-	// TODO implement exception handling
-	public function toXml(DOMDocument $doc) {
-		$xmlRecord = $doc->createElement('exception');
-		$xmlRecord->setAttribute('code', $this->code);
+	public function getChannel(Channel $channel) {		// TODO improve view interface
+	return array('id' => (int) $channel->id,
+						'ucid' => $channel->ucid,
+						'resolution' => (int) $channel->resolution,
+						'description' => $channel->description,
+						'type' => $channel->type,
+						'costs' => $channel->cost);
+	}
 
-		$xmlRecord->appendChild($doc->createElement('message', $this->message));
-		$xmlRecord->appendChild($doc->createElement('line', $this->line));
-		$xmlRecord->appendChild($doc->createElement('file', $this->file));
+	public function render() {
+		$this->time = round(microtime(true) - $this->created, 4);
+		echo json_encode($this->data);
+	}
 
-		$xmlRecord->appendChild(backtrace2xml($this->getTrace(), $doc));
+	public function exceptionHandler(Exception $exception) {
+		$xmlException = $this->doc->createElement('exception');
 
-		return $xmlRecord;
+		$xmlException->setAttribute('code', $exception->getCode());
+
+		$xmlException->appendChild($this->doc->createElement('message', $exception->getMessage()));
+		$xmlException->appendChild($this->doc->createElement('line', $exception->getLine()));
+		$xmlException->appendChild($this->doc->createElement('file', $exception->getFile()));
+
+		$xmlException->appendChild($this->backtrace($exception->getTrace()));
+
+		$this->render();
+		die();
+	}
+
+	function backtrace($traces) {
+		$xmlTraces = $this->doc->createElement('backtrace');
+
+		foreach ($traces as $step => $trace) {
+			$xmlTrace = $this->doc->createElement('trace');
+			$xmlTraces->appendChild($xmlTrace);
+			$xmlTrace->setAttribute('step', $step);
+
+			foreach ($trace as $key => $value) {
+				switch ($key) {
+					case 'function':
+					case 'line':
+					case 'file':
+					case 'class':
+					case 'type':
+						$xmlTrace->appendChild($this->doc->createElement($key, $value));
+						break;
+					case 'args':
+						$xmlArgs = $doc->createElement($key);
+						$xmlTrace->appendChild($xmlArgs);
+						foreach ($value as $arg) {
+							$xmlArgs->appendChild($this->doc->createElement('arg', $value));
+						}
+						break;
+				}
+			}
+		}
+
+		return $xmlTraces;
 	}
 }
 
