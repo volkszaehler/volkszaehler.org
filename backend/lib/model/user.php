@@ -28,6 +28,10 @@ class User extends DatabaseObject {
 	/*
 	 * simple self::getByFilter() wrapper
 	 */
+	public static function getByUuid($uuid) {
+		return current(self::getByFilter(array('uuid' => $uuid)));
+	}
+	
 	public static function getByEMail($email) {
 		return current(self::getByFilter(array('email' => $email)));
 	}
