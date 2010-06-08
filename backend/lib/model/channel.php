@@ -61,7 +61,7 @@ abstract class Channel extends DatabaseObject implements ChannelInterface {
 	 * @param $groupBy determines how readings are grouped. Possible values are: year, month, day, hour, minute or an integer for the desired size of the returned array
 	 */
 	public function getData($from = NULL, $to = NULL, $groupBy = NULL) {
-		$ts = 'FROM_UNIXTIME(timestamp)';	// just for saving space
+		$ts = 'FROM_UNIXTIME(timestamp/1000)';	// just for saving space
 		switch ($groupBy) {
 			case 'year':
 				$sqlGroupBy = 'YEAR(' . $ts . ')';
@@ -100,7 +100,6 @@ abstract class Channel extends DatabaseObject implements ChannelInterface {
 		}
 			
 		$sql .= ' ORDER BY timestamp DESC';
-
 		$result = $this->dbh->query($sql);
 		$totalCount = $result->count();
 
@@ -138,14 +137,20 @@ abstract class Channel extends DatabaseObject implements ChannelInterface {
 	 * simple self::getByFilter() wrapper
 	 */
 	static public function getByUcid($ucid) {
-		return current(self::getByFilter(array('ucid' => $ucid)));
+		$channel = self::getByFilter(array('ucid' => $ucid));
+		
+		if (current($channel) === false) {
+			throw new InvalidArgumentException('No such channel!');
+		}
+		
+		return $channel;
 	}
 
 	/*
 	 * simple self::getByFilter() wrapper
 	 */
 	static public function getByType($type) {
-		return current(self::getByFilter(array('type' => $type)));
+		return self::getByFilter(array('type' => $type));
 	}
 
 	/*

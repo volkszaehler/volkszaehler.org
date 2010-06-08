@@ -145,7 +145,7 @@ class PgSql extends Database {
 	}
 	
 	public function getLastInsertId() {
-		throw new Exception('PgSql::getLastInsertId() hasnt implemented yet!');	// TODO find solution
+		throw new Exception('PgSql::getLastInsertId() hasnt implemented yet!');	// TODO find solution, use PDO?
 	}
 }
 

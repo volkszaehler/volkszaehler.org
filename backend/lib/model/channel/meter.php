@@ -30,7 +30,7 @@ abstract class Meter extends Channel {
 
 		$result = $this->dbh->query($sql)->rewind();
 
-		return $result['count'] / $this->resolution;
+		return $result['count'] / $this->resolution / 1000;	// returns Wh
 	}
 	
 	public function getMin($from = NULL, $to = NULL) {
@@ -57,8 +57,8 @@ abstract class Meter extends Channel {
 		return $min;
 	}
 	
-	public function getAverage($from, $to) {
-		return $this->getConsumption($from, $to) / ($to - $from) * 1000;
+	public function getAverage($from = NULL, $to = NULL) {	// TODO calculate timeinterval if no params were given
+		return $this->getConsumption($from, $to) / ($to - $from) / 1000;	// return W
 	}
 	
 	/*
@@ -79,9 +79,9 @@ abstract class Meter extends Channel {
 			$delta = $pulses[$i]['timestamp'] - $pulses[$i-1]['timestamp'];
 			
 			$pulses[$i]['timestamp'] -= $delta/2;
-			$pulses[$i]['value'] *= 3600000/(($this->resolution / 1000) * $delta);
+			$pulses[$i]['value'] *= 3600000/(($this->resolution / 1000) * $delta);	// TODO untested
 		}
 		
-		return $pulses;
+		return $pulses;	// returns W
 	}
 }

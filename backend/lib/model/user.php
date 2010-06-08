@@ -29,11 +29,23 @@ class User extends DatabaseObject {
 	 * simple self::getByFilter() wrapper
 	 */
 	public static function getByUuid($uuid) {
-		return current(self::getByFilter(array('uuid' => $uuid)));
+		$user = self::getByFilter(array('uuid' => $uuid));
+		
+		if (current($user) === false) {
+			throw new InvalidArgumentException('No such user!');
+		}
+		
+		return $user;
 	}
 	
 	public static function getByEMail($email) {
-		return current(self::getByFilter(array('email' => $email)));
+		$user = self::getByFilter(array('email' => $email));
+		
+		if (current($user) === false) {
+			throw new InvalidArgumentException('No such user!');
+		}
+		
+		return $user;
 	}
 	
 	public function getChannels($recursive = false) {

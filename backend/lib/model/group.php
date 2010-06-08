@@ -37,8 +37,14 @@ class Group extends DatabaseObject {
 		return $groups;
 	}
 	
-	public static function getByUgid($uuid) {
-		return current(self::getByFilter(array('ugid' => $ugid)));
+	public static function getByUgid($ugid) {
+		$group = self::getByFilter(array('ugid' => $ugid));
+		
+		if (current($group) === false) {
+			throw new InvalidArgumentException('No such group!');
+		}
+		
+		return $group;
 	}
 	
 	public function getUsers($recursive = false) {
