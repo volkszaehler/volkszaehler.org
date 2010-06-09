@@ -32,7 +32,7 @@ class DataController extends Controller {
 
 		$from = (isset($this->view->request->get['from'])) ? (int) $this->view->request->get['from'] : NULL;
 		$to = (isset($this->view->request->get['to'])) ? (int) $this->view->request->get['to'] : NULL;
-		$groupBy = (isset($this->view->request->get['groupBy'])) ? $this->view->request->get['groupBy'] : 400;		// get all readings by default
+		$groupBy = (isset($this->view->request->get['groupBy'])) ? $this->view->request->get['groupBy'] : NULL;	// get all readings by default
 
 		foreach ($channels as $channel) {
 			$this->view->addChannel($channel, $channel->getPulses($from, $to, $groupBy));

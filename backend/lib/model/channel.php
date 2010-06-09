@@ -88,6 +88,9 @@ abstract class Channel extends DatabaseObject implements ChannelInterface {
 				break;
 
 			default:
+				if (is_numeric($groupBy)) {
+					$groupBy = (int) $groupBy;
+				}
 				$sqlGroupBy = false;
 		}
 
@@ -116,7 +119,7 @@ abstract class Channel extends DatabaseObject implements ChannelInterface {
 		$reading = $result->rewind();
 		for ($i = 1; $i <= $packageCount; $i++) {
 			$package = array('timestamp' => $reading['timestamp'],	// last timestamp in package
-								'value' => $reading['value'],		// sum of values
+								'value' => (float) $reading['value'],		// sum of values
 								'count' => ($sqlGroupBy === false) ? 1 : $reading['count']);						// total count of values or pulses in the package
 
 			while ($package['count'] < $packageSize) {

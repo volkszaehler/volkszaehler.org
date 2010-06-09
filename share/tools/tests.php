@@ -23,7 +23,7 @@ include '../../backend/init.php';
 
 $meter = current(Channel::getByFilter(array('id' => 1)));
 
-$data = $meter->getData(0, time()*1000);
+$data = $meter->getPulses(1270062000000, 1270666800000, 400);
 
 echo '<table border="1">';
 foreach ($data as $i => $reading) {

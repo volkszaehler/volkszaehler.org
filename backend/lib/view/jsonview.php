@@ -60,7 +60,7 @@ class JsonView extends View {
 			$channel['unit'] = $obj->unit;
 			$channel['description'] = $obj->description;
 			$channel['resolution'] = (int) $obj->resolution;
-			$channel['costs'] = $obj->cost;
+			$channel['costs'] = (float) $obj->cost;
 			
 			// TODO check for optional data in second param
 			if (!is_null($data) && is_array($data)) {
