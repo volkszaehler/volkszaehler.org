@@ -24,6 +24,11 @@ interface ViewInterface {
 	public function render();
 	public function exceptionHandler(Exception $exception);
 	public function errorHandler($errno, $errstr, $errfile, $errline);
+	
+	public function add($obj);
+	public function addChannel(Channel $obj);
+	public function addUser(User $obj);
+	public function addGroup(Group $obj);
 }
 
 abstract class View implements ViewInterface {

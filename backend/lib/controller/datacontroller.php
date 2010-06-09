@@ -22,9 +22,7 @@
 class DataController extends Controller {
 	public function add() {
 		$ucid = $this->view->request->get['ucid'];
-
 		$channel = Channel::getByUcid($ucid);
-
 		$channel->addData($this->view->request->get); // array(timestamp, value, count)
 	}
 
@@ -36,21 +34,8 @@ class DataController extends Controller {
 		$to = (isset($this->view->request->get['to'])) ? (int) $this->view->request->get['to'] : NULL;
 		$groupBy = (isset($this->view->request->get['groupBy'])) ? $this->view->request->get['groupBy'] : 400;		// get all readings by default
 
-		$data['from'] = $from;	// TODO use min max timestamps from Channel::getData()
-		$data['to'] = $to;		// TODO nescessary?
-			
-		$jsonChannels = array();
 		foreach ($channels as $channel) {
-			$jsonChannel = $this->view->getChannel($channel);
-
-			$jsonChannel['data'] = array();
-				
-			foreach ($channel->getPulses($from, $to, $groupBy) as $reading) {
-				$jsonChannel['data'][] = array($reading['timestamp'], $reading['value'], $reading['count']);
-			}
-
-			$data['channels'][] = $jsonChannel;
+			$this->view->addChannel($channel, $channel->getPulses($from, $to, $groupBy));
 		}
-		$this->view->data += $data;
 	}
 }

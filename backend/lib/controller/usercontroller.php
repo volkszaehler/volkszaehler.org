@@ -21,30 +21,40 @@
 
 class UserController extends Controller {
 	public function add() {
-		
+		$user = new User();
+		$user->password = $this->view->request->get['password'];
+		$user->save();
+		$this->view->addUser($user);
 	}
 	
 	public function delete() {
-		
+		$user = User::getByFilter(array('uuid' => $this->view->request->get['uuid']));
+		$user->delete();
 	}
 	
 	public function edit() {
-		
+		// TODO implement UserController::edit();
 	}
 	
 	public function login() {
+		$user = User::getByFilter(array('uuid' => $this->view->request->get['uuid']));
 		
+		if ($user->checkPasswort($this->view->request->get['password'])) {
+			$_SESSION['user_id'] = $user->id;	// TODO add session handling
+		}
 	}
 	
 	public function logout() {
-		
+		if ($_SESSION['user_id']) {
+			unset($_SESSION['user_id']);
+		}
 	}
 	
 	public function subscribe() {
-		
+		// TODO implement UserController::subscribe();
 	}
 	
 	public function unsubscribe() {
-		
+		// TODO implement UserController::unsubscribe();
 	}
 }

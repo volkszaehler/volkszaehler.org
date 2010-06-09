@@ -21,15 +21,28 @@
 
 class GroupController extends Controller {
 	public function add() {
+		$group = new Group();
+		$group->description = $this->view->request->get['description'];
+		$group->save();
 		
+		// TODO add ugid 
+		
+		$this->view->addGroup($group);
 	}
 	
 	public function delete() {
+		$group = Group::getByFilter(array('ugid' => $this->view->request->get['ugid']));
 		
+		$group->delete();
 	}
 	
 	public function get() {
+		$user = User::getByFilter(array('uuid' => $this->view->request->get['uuid']));
+		$groups = Group::getByFilter(array('user' => $user));
 		
+		foreach ($groups as $group) {
+			$this->view->addGroup($group);
+		}
 	}
 }
 

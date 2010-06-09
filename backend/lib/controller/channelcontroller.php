@@ -25,7 +25,7 @@ class ChannelController extends Controller {
 		$channels = $user->getChannels();
 		
 		foreach ($channels as $channel) {
-			$this->view->data['channels'][] = $this->view->getChannel($channel);
+			$this->view->addChannel($channel);
 		}
 	}
 	
@@ -42,16 +42,12 @@ class ChannelController extends Controller {
 		}
 
 		$channel->save();
-		$this->view->data['channel'] = $this->view->getChannel($channel);
+		$this->view->addChannel($channel);
 	}
 	
 	public function delete() {	// TODO untested
 		$channel = Channel::getByUcid($this->view->request->get['ucid']);
 		$channel->delete();
-	}
-	
-	public function edit() {
-		
 	}
 }
 
