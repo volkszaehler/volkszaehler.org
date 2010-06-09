@@ -28,18 +28,18 @@ final class FrontController {
 		$response = new HttpResponse();
 		
 		// create view instance
-		$rc = new ReflectionClass($request->get['format'] . 'View');
-		if (!$rc->isSubclassOf('View')) {
-			throw new InvalidArgumentException('\'' . $rc->getName() . '\' is not a valid View');
+		$view = $request->get['format'] . 'View';
+		if (!is_subclass_of($view, 'View')) {
+			throw new InvalidArgumentException('\'' . $view . '\' is not a valid View');
 		}
-		$this->view = $rc->newInstanceArgs(array($request, $response));
+		$this->view = new $view($request, $response);
 		
 		// create controller instance
-		$rc = new ReflectionClass($request->get['controller'] . 'Controller');
-		if (!$rc->isSubclassOf('Controller')) {
-			throw new InvalidArgumentException('\'' . $rc->getName() . '\' is not a valid Controller');
+		$controller = $request->get['controller'] . 'Controller';
+		if (!is_subclass_of($controller, 'Controller')) {
+			throw new InvalidArgumentException('\'' . $controller . '\' is not a valid controller');
 		}
-		$this->controller = $rc->newInstanceArgs(array($this->view));
+		$this->controller = new $controller($this->view);
 	}
 	
 	public function run() {

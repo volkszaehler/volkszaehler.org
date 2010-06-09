@@ -158,7 +158,7 @@ interface DatabaseInterface {
 	public function escapeString($string);
 
 	public function escape($value);
-	
+
 	public function lastInsertId();
 }
 
@@ -194,12 +194,10 @@ abstract class Database implements DatabaseInterface {
 		if (is_null(self::$connection)) {
 			$config = Registry::get('config');
 				
-			$rc = new ReflectionClass($config['db']['backend']);
-			if (!$rc->isSubclassOf('Database')) {
-				throw new InvalidArgumentException('\'' . $rc->getName() . '\' is not a valid database backend');
+			if (!is_subclass_of($config['db']['backend'], 'Database')) {
+				throw new InvalidArgumentException('\'' . $config['db']['backend'] . '\' is not a valid database backend');
 			}
-				
-			self::$connection = $rc->newInstanceArgs(array($config['db']));
+			self::$connection = new $config['db']['backend']($config['db']);
 		}
 
 		return self::$connection;
@@ -215,7 +213,7 @@ abstract class Database implements DatabaseInterface {
 		else {
 			$value = '\'' . $this->escapeString($value) . '\'';
 		}
-		
+
 		return $value;
 	}
 }
