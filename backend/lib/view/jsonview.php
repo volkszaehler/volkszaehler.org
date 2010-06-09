@@ -56,9 +56,10 @@ class JsonView extends View {
 	public function addChannel(Channel $obj, $data = NULL) {
 			$channel['id'] = (int) $obj->id;
 			$channel['ucid'] = $obj->ucid;
-			$channel['resolution'] = (int) $obj->resolution;
-			$channel['description'] = $obj->description;
 			$channel['type'] = $obj->type;
+			$channel['unit'] = $obj->unit;
+			$channel['description'] = $obj->description;
+			$channel['resolution'] = (int) $obj->resolution;
 			$channel['costs'] = $obj->cost;
 			
 			// TODO check for optional data in second param

@@ -160,7 +160,16 @@ abstract class Channel extends DatabaseObject implements ChannelInterface {
 		if (!is_subclass_of($object['type'], 'Channel')) {
 			throw new InvalidArgumentException('\'' . $object['type'] . '\' is not a valid channel type');
 		}
-		return new $object['type']($object);
+		return new $object['type']((array) $object);
+	}
+	
+	public function __get($key) {
+		if ($key == 'unit') {	// TODO ugly code
+			return static::unit;
+		}
+		else {
+			return parent::__get($key);
+		}
 	}
 
 	/*
