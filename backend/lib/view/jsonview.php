@@ -63,7 +63,7 @@ class JsonView extends View {
 			
 			// TODO check for optional data in second param
 			if (!is_null($data) && is_array($data)) {
-				$channel['data'][] = array();
+				$channel['data'] = array();
 				foreach ($data as $reading) {
 					$channel['data'][] = array($reading['timestamp'], $reading['value'], $reading['count']);
 				}
