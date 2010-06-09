@@ -29,14 +29,14 @@ final class FrontController {
 		
 		// create view instance
 		$view = $request->get['format'] . 'View';
-		if (!is_subclass_of($view, 'View')) {
+		if (!class_exists($view) || !is_subclass_of($view, 'View')) {
 			throw new InvalidArgumentException('\'' . $view . '\' is not a valid View');
 		}
 		$this->view = new $view($request, $response);
 		
 		// create controller instance
 		$controller = $request->get['controller'] . 'Controller';
-		if (!is_subclass_of($controller, 'Controller')) {
+		if (!class_exists($controller) || !is_subclass_of($controller, 'Controller')) {
 			throw new InvalidArgumentException('\'' . $controller . '\' is not a valid controller');
 		}
 		$this->controller = new $controller($this->view);

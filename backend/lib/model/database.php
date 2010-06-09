@@ -194,7 +194,7 @@ abstract class Database implements DatabaseInterface {
 		if (is_null(self::$connection)) {
 			$config = Registry::get('config');
 				
-			if (!is_subclass_of($config['db']['backend'], 'Database')) {
+			if (!class_exists($config['db']['backend']) || !is_subclass_of($config['db']['backend'], 'Database')) {
 				throw new InvalidArgumentException('\'' . $config['db']['backend'] . '\' is not a valid database backend');
 			}
 			self::$connection = new $config['db']['backend']($config['db']);
