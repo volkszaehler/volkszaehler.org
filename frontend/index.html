@@ -84,10 +84,10 @@
 			<b>Anzeigebereich:</b><br>
 			<select name="window">
 				<option value="1HOUR">1 Stunde</option>
-				<option value="1DAY" selected="selected" >1 Tag</option>
+				<option value="1DAY">1 Tag</option>
 				<option value="3DAY">3 Tage</option>
 				<option value="7DAY">7 Tage</option>
-				<option value="1MONTH">1 Monat</option>
+				<option value="1MONTH" selected="selected">1 Monat</option>
 				<option value="1YEAR">1 Jahr</option>
 			</select>
 			<br><br>
@@ -96,7 +96,7 @@
 			<select name="grouping">
 				<option value="400">dynamisch</option>
 				<option value="minute">Minute</option>
-				<option value="hour" selected="selected" >Stunde</option>
+				<option value="hour" selected="selected">Stunde</option>
 				<option value="day">Tag</option>
 				<option value="month">Monat</option>
 				<option value="year">Jahr</option>
@@ -172,7 +172,7 @@ var data;
 var myWindowStart = 0;
 
 // windowEnd parameter for json server
-var myWindowEnd = (new Date()).getTime();
+var myWindowEnd = getGroupedTimestamp((new Date()).getTime());
 
 // windowGrouping for json server
 var windowGrouping = 0;
@@ -225,7 +225,7 @@ function autoReload() {
 	
 	// call getData if autoReload checkbox is active
 	if(f.autoReload.checked == true) {
-		myWindowEnd = (new Date()).getTime();
+		myWindowEnd = getGroupedTimestamp((new Date()).getTime());
 		getData();
 	}
 }
