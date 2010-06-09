@@ -19,7 +19,7 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-define('VZ_VERSION', '0.1');
+define('VZ_VERSION', '0.2');
 
 /*
  * class autoloading
