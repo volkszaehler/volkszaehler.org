@@ -25,16 +25,17 @@ function getEmptyGroupArray() {
 	var empty_array = new Object();
 	
 	var iterator = getGroupedTimestamp(myWindowStart);
+	//$('#debug').empty().append('start:'+myWindowStart+'end:'+myWindowEnd);
 	
 	if(myWindowStart < myWindowEnd && iterator < myWindowEnd) {
-		
-		
+		var i=0;
 		while(iterator < myWindowEnd) {
+			i++;
 			
 			empty_array[iterator] = 0;
 			
 			var iteratorDate = new Date(iterator);
-			
+			//$('#debug').append('#'+i+':'+iteratorDate+'<br>');
 			switch(f.grouping.value) {
 				case 'year':
 					iteratorDate.setYear(iteratorDate.getYear()+1);
@@ -54,6 +55,8 @@ function getEmptyGroupArray() {
 				default:
 					return empty_array;
 			}
+			// very bad bug: infinity loop for summer winter change
+			if(i==750) return empty_array;
 			
 			iterator = iteratorDate.getTime();
 		}
@@ -122,6 +125,7 @@ function getGroupedTimestamp(timestamp) {
 
 
 function raw2Energy(raw) {
+	
 	var data_grouped_time = getEmptyGroupArray();
 	var data_grouped = new Array();
 	
