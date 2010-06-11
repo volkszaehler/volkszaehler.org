@@ -20,83 +20,70 @@
  */
 
 class JsonView extends View {
-	public $data = array();
+	public $jsonData = array();
 
 	public function __construct(HttpRequest $request, HttpResponse $response) {
 		parent::__construct($request, $response);
 
 		$config = Registry::get('config');
 
-		$this->data['source'] = 'volkszaehler.org';
-		$this->data['version'] = VZ_VERSION;
-		$this->data['storage'] = $config['db']['backend'];
-		$this->data['controller'] = $request->get['controller'];
-		$this->data['action'] = $request->get['action'];
+		$this->jsonData['source'] = 'volkszaehler.org';
+		$this->jsonData['version'] = VZ_VERSION;
+		$this->jsonData['storage'] = $config['db']['backend'];
+		$this->jsonData['controller'] = $request->get['controller'];
+		$this->jsonData['action'] = $request->get['action'];
 
 		$this->response->setHeader('Content-type', 'application/json');
 	}
 
 	public function render() {
-		$this->data['time'] = round(microtime(true) - $this->created, 4);
-		echo json_encode($this->data);
+		$this->jsonData['time'] = $this->getTime();
+		echo json_encode($this->jsonData);
 	}
 
-	public function exceptionHandler(Exception $exception) {
-		$this->data['exception'] = array('message' => $exception->getMessage(),
+	protected function addException(Exception $exception) {
+		$this->jsonData['exception'] = array('message' => $exception->getMessage(),
 										'code' => $exception->getCode(),
 										'file' => $exception->getFile(),
 										'line' => $exception->getLine(),
 										'trace' => $exception->getTrace()
 		);
-		$this->data['status'] = 'exception';
-		$this->render();
-		die();
 	}
 
 	public function addChannel(Channel $obj, $data = NULL) {
-			$channel['id'] = (int) $obj->id;
-			$channel['ucid'] = $obj->ucid;
-			$channel['type'] = $obj->type;
-			$channel['unit'] = $obj->unit;
-			$channel['description'] = $obj->description;
-			$channel['resolution'] = (int) $obj->resolution;
-			$channel['costs'] = (float) $obj->cost;
+		$channel['id'] = (int) $obj->id;
+		$channel['ucid'] = $obj->ucid;
+		$channel['type'] = $obj->type;
+		$channel['unit'] = $obj->unit;
+		$channel['description'] = $obj->description;
+		$channel['resolution'] = (int) $obj->resolution;
+		$channel['cost'] = (float) $obj->cost;
 			
-			// TODO check for optional data in second param
-			if (!is_null($data) && is_array($data)) {
-				$channel['data'] = array();
-				foreach ($data as $reading) {
-					$channel['data'][] = array($reading['timestamp'], $reading['value'], $reading['count']);
-				}
+		if (!is_null($data) && is_array($data)) {
+			$channel['data'] = array();
+			foreach ($data as $reading) {
+				$channel['data'][] = array($reading['timestamp'], $reading['value'], $reading['count']);
 			}
+		}
 			
-			$this->data['channels'][] = $channel;
-	}
-			
-	public function addUser(User $obj) {
-			$user['id'] = (int) $obj->id;
-			$user['uuid'] = $obj->uuid;
-			
-			$this->data['users'][] = $user;
+		$this->jsonData['channels'][] = $channel;
 	}
 		
-	public function addGroup(Group $obj) {
-			$group['id'] = (int) $obj->id;
-			$group['ugid'] = $obj->ugid;
-			$group['description'] = $obj->description;
+	public function addUser(User $obj) {
+		$user['id'] = (int) $obj->id;
+		$user['uuid'] = $obj->uuid;
 			
-			// TODO include sub groups?
-			
-			$this->data['groups'][] = $group;
+		$this->jsonData['users'][] = $user;
 	}
+
+	public function addGroup(Group $obj) {
+		$group['id'] = (int) $obj->id;
+		$group['ugid'] = $obj->ugid;
+		$group['description'] = $obj->description;
 			
-	public function add($obj) {
-		if (is_array($obj)) {
-			array_merge($this->data, $obj);	// TODO check array_merge beavior with duplicate keys
-		}
-		else {
-			$this->data[] = $obj;
-		}
+		// TODO include sub groups?
+			
+		$this->jsonData['groups'][] = $group;
 	}
 }
 

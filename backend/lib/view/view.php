@@ -25,7 +25,6 @@ interface ViewInterface {
 	public function exceptionHandler(Exception $exception);
 	public function errorHandler($errno, $errstr, $errfile, $errline);
 	
-	public function add($obj);
 	public function addChannel(Channel $obj);
 	public function addUser(User $obj);
 	public function addGroup(Group $obj);
@@ -34,7 +33,7 @@ interface ViewInterface {
 abstract class View implements ViewInterface {
 	public $request;
 	protected $response;
-	protected $created;	// holds timestamp of creation, used later to return time of execution
+	private $created;	// holds timestamp of creation, used later to return time of execution
 	
 	public function __construct(HttpRequest $request, HttpResponse $response) {
 		$this->request = $request;
@@ -48,6 +47,20 @@ abstract class View implements ViewInterface {
 	
 	final public function errorHandler($errno, $errstr, $errfile, $errline) {
 		$this->exceptionHandler(new ErrorException($errstr, 0, $errno, $errfile, $errline));
+	}
+	
+	final public function exceptionHandler(Exception $exception) {
+		$this->addException($exception);
+		
+		//$this->status = STATUS_EXCEPTION;	// TODO add status reporting to API
+		$this->code = 400;					// TODO add Exception => HTTP code mapping
+		
+		$this->render();
+		die();
+	}
+	
+	protected function getTime() {
+		return round(microtime(true) - $this->created, 4);
 	}
 	
 	public function __destruct() {

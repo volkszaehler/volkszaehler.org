@@ -20,77 +20,140 @@
  */
 
 class XmlView extends View {
-	public $doc;
+	private $xmlDoc;
+	private $xml;
+	private $xmlChannels;
+	private $xmlUsers;
+	private $xmlGroups;
 
 	public function __construct(HttpRequest $request, HttpResponse $response) {
 		parent::__construct($request, $response);
 
 		$config = Registry::get('config');
 
-		$this->doc = new DOMDocument('1.0', 'UTF-8');
+		$this->xmlDoc = new DOMDocument('1.0', 'UTF-8');
 
-		$this->source = 'volkszaehler.org';		// TODO create XML
-		$this->version = VZ_VERSION;
-		$this->storage = $config['db']['backend'];
-		$this->controller = $request->get['controller'];
-		$this->action = $request->get['action'];
+		$this->xml = $this->xmlDoc->createElement('volkszaehler');
+		$this->xml->setAttribute('version', VZ_VERSION);
+		$this->xmlChannels = $this->xmlDoc->createElement('channels');
+		$this->xmlUsers = $this->xmlDoc->createElement('users');
+		$this->xmlGroups = $this->xmlDoc->createElement('groups');
 
-		$this->response->headers['Content-type'] = 'application/json';
+		$this->xml->appendChild($this->xmlDoc->createElement('source', 'volkszaehler.org'));
+		$this->xml->appendChild($this->xmlDoc->createElement('storage', $config['db']['backend']));
+		$this->xml->appendChild($this->xmlDoc->createElement('controller', $request->get['controller']));
+		$this->xml->appendChild($this->xmlDoc->createElement('action', $request->get['action']));
+		
+		$this->response->setHeader('Content-type', 'text/xml');
 	}
-	
-	public function getChannel(Channel $channel) {		// TODO improve view interface
-	return array('id' => (int) $channel->id,
-						'ucid' => $channel->ucid,
-						'resolution' => (int) $channel->resolution,
-						'description' => $channel->description,
-						'type' => $channel->type,
-						'costs' => $channel->cost);
+
+	public function addChannel(Channel $obj, $data = NULL) {
+		$xmlChannel = $this->xmlDoc->createElement('channel');
+		$xmlChannel->setAttribute('id', (int) $obj->id);
+		
+		$xmlChannel->appendChild($this->xmlDoc->createElement('ucid', $obj->ucid));
+		$xmlChannel->appendChild($this->xmlDoc->createElement('type', $obj->type));
+		$xmlChannel->appendChild($this->xmlDoc->createElement('unit', $obj->unit));
+		$xmlChannel->appendChild($this->xmlDoc->createElement('description', $obj->description));
+		$xmlChannel->appendChild($this->xmlDoc->createElement('resolution', (int) $obj->resolution));
+		$xmlChannel->appendChild($this->xmlDoc->createElement('cost', (float) $obj->cost));
+		
+		if (!is_null($data) && is_array($data)) {
+			$xmlData = $this->xmlDoc->createElement('data');
+			
+			foreach ($data as $reading) {
+				$xmlReading = $this->xmlDoc->createElement('reading');
+				
+				$xmlReading->setAttribute('timestamp', $reading['timestamp']);	// hardcoded data fields for performance optimization
+				$xmlReading->setAttribute('value', $reading['value']);
+				$xmlReading->setAttribute('count', $reading['count']);
+				
+				$xmlData->appendChild($xmlReading);
+			}
+			
+			$xmlChannel->appendChild($xmlData);
+		}
+			
+		$this->xmlChannels->appendChild($xmlChannel);
+	}
+		
+	public function addUser(User $obj) {
+		$xmlUser = $this->xmlDoc->createElement('user');
+		$xmlUser->setAttribute('id', (int) $obj->id);
+		$xmlUser->appendChild($this->xmlDoc->createElement('uuid', $obj->uuid));
+			
+		$this->xmlUsers->appendChild($xmlUser);
+	}
+
+	public function addGroup(Group $obj) {
+		$xmlGroup = $this->xmlDoc->createElement('group');
+		$xmlGroup->setAttribute('id', (int) $obj->id);
+		$xmlGroup->appendChild($this->xmlDoc->createElement('ugid', $obj->uuid));
+		$xmlGroup->appendChild($this->xmlDoc->createElement('description', $obj->description));
+			
+		// TODO include sub groups?
+			
+		$this->xmlGroups->appendChild($xmlGroup);
 	}
 
 	public function render() {
-		$this->time = round(microtime(true) - $this->created, 4);
-		echo json_encode($this->data);
+		$this->xml->appendChild($this->xmlDoc->createElement('time', $this->getTime()));
+		
+		// channels
+		if ($this->xmlChannels->hasChildNodes()) {
+			$this->xml->appendChild($this->xmlChannels);
+		}
+		
+		// users
+		if ($this->xmlUsers->hasChildNodes()) {
+			$this->xml->appendChild($this->xmlUsers);
+		}
+		
+		// groups
+		if ($this->xmlGroups->hasChildNodes()) {
+			$this->xml->appendChild($this->xmlGroups);
+		}
+		
+		$this->xmlDoc->appendChild($this->xml);
+		echo $this->xmlDoc->saveXML();
 	}
 
-	public function exceptionHandler(Exception $exception) {
-		$xmlException = $this->doc->createElement('exception');
-
+	protected function addException(Exception $exception) {
+		$xmlException = $this->xmlDoc->createElement('exception');
 		$xmlException->setAttribute('code', $exception->getCode());
+		$xmlException->appendChild($this->xmlDoc->createElement('message', $exception->getMessage()));
+		$xmlException->appendChild($this->xmlDoc->createElement('line', $exception->getLine()));
+		$xmlException->appendChild($this->xmlDoc->createElement('file', $exception->getFile()));
+		$xmlException->appendChild($this->fromTrace($exception->getTrace()));
 
-		$xmlException->appendChild($this->doc->createElement('message', $exception->getMessage()));
-		$xmlException->appendChild($this->doc->createElement('line', $exception->getLine()));
-		$xmlException->appendChild($this->doc->createElement('file', $exception->getFile()));
-
-		$xmlException->appendChild($this->backtrace($exception->getTrace()));
-
-		$this->render();
-		die();
+		$this->xml->appendChild($xmlException);
 	}
 
-	function backtrace($traces) {
-		$xmlTraces = $this->doc->createElement('backtrace');
+	private function fromTrace($traces) {
+		$xmlTraces = $this->xmlDoc->createElement('backtrace');
 
 		foreach ($traces as $step => $trace) {
-			$xmlTrace = $this->doc->createElement('trace');
+			$xmlTrace = $this->xmlDoc->createElement('trace');
 			$xmlTraces->appendChild($xmlTrace);
 			$xmlTrace->setAttribute('step', $step);
 
 			foreach ($trace as $key => $value) {
 				switch ($key) {
+					case 'args':
+						$xmlArgs = $this->xmlDoc->createElement($key);
+						$xmlTrace->appendChild($xmlArgs);
+						foreach ($value as $arg) {
+							$xmlArgs->appendChild($this->xmlDoc->createElement('arg', print_r($value, true))); // TODO check $value content
+						}
+						break;
+							
+					case 'type':
 					case 'function':
 					case 'line':
 					case 'file':
 					case 'class':
-					case 'type':
-						$xmlTrace->appendChild($this->doc->createElement($key, $value));
-						break;
-					case 'args':
-						$xmlArgs = $doc->createElement($key);
-						$xmlTrace->appendChild($xmlArgs);
-						foreach ($value as $arg) {
-							$xmlArgs->appendChild($this->doc->createElement('arg', $value));
-						}
-						break;
+					default:
+						$xmlTrace->appendChild($this->xmlDoc->createElement($key, $value));
 				}
 			}
 		}
