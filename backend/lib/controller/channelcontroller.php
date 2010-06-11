@@ -31,7 +31,8 @@ class ChannelController extends Controller {
 	
 	public function add() {
 		$channel = new Channel();
-		$channel->ucid = $ucid;
+		
+		// TODO add ucid generation or exception if no one has been passed via get
 
 		if (substr($channel->ucid, 0, 19) == OneWireSensor::$ucidPrefix) {
 			$channel->type = 'OneWireSensor';

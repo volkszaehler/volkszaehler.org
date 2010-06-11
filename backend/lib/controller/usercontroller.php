@@ -23,6 +23,9 @@ class UserController extends Controller {
 	public function add() {
 		$user = new User();
 		$user->password = $this->view->request->get['password'];
+		
+		// TODO generate uuid
+		
 		$user->save();
 		$this->view->addUser($user);
 	}

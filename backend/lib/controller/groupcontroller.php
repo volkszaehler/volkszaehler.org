@@ -25,7 +25,7 @@ class GroupController extends Controller {
 		$group->description = $this->view->request->get['description'];
 		$group->save();
 		
-		// TODO add ugid 
+		// TODO generate ugid 
 		
 		$this->view->addGroup($group);
 	}
