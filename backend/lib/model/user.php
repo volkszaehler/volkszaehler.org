@@ -63,11 +63,11 @@ class User extends DatabaseObject {
 	}
 	
 	static protected function buildQuery($filters, $conjunction, $columns = array('id')) {
-		$sql = 'SELECT ' . static::table . '.* FROM ' . static::table;
+		$sql = 'SELECT ' . self::table . '.* FROM ' . self::table;
 		// join groups
 		if (key_exists('group', $filters)) {
-			$sql .= ' LEFT JOIN group_user AS rel ON rel.user_id = ' . static::table . '.id';
-			$filters['group_id'] = $filters['group'];
+			$sql .= ' LEFT JOIN users_in_groups ON users_in_groups.user_id = ' . self::table . '.id';
+			$filters['users_in_groups.group_id'] = $filters['group'];
 			unset($filters['group']);
 		}
 		$sql .= static::buildFilter($filters, $conjunction);

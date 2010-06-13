@@ -21,9 +21,9 @@
 
 include '../../backend/init.php';
 
-$meter = current(Channel::getByFilter(array('id' => 1)));
+$channel = current(Channel::getByType('PowerMeter'));
 
-$data = $meter->getPulses(1270062000000, 1270666800000, 400);
+$data = $channel->getData(1270062000000, 1270666800000, 400);
 
 echo '<table border="1">';
 foreach ($data as $i => $reading) {

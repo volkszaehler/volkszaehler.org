@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Erstellungszeit: 13. Juni 2010 um 14:22
+-- Erstellungszeit: 14. Juni 2010 um 00:36
 -- Server Version: 5.1.41
 -- PHP-Version: 5.3.2-1ubuntu4.2
 
@@ -16,7 +16,7 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 /*!40101 SET NAMES utf8 */;
 
 --
--- Datenbank: `volkszaehler`
+-- Datenbank: `volkszaehler_nested`
 --
 
 -- --------------------------------------------------------
@@ -25,7 +25,8 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 -- Tabellenstruktur für Tabelle `channels`
 --
 
-CREATE TABLE IF NOT EXISTS `channels` (
+DROP TABLE IF EXISTS `channels`;
+CREATE TABLE `channels` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `uuid` varchar(36) CHARACTER SET latin1 NOT NULL COMMENT 'Universally Unique Identifier',
   `type` varchar(255) COLLATE utf8_unicode_ci DEFAULT 'Channel' COMMENT 'maps meter to classname (caseinsensitive)',
@@ -33,7 +34,7 @@ CREATE TABLE IF NOT EXISTS `channels` (
   `cost` int(11) DEFAULT '0',
   `description` varchar(255) CHARACTER SET latin1 DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `ucid` (`uuid`)
+  UNIQUE KEY `uuid` (`uuid`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='channels with detailed data' AUTO_INCREMENT=22 ;
 
 --
@@ -52,10 +53,38 @@ INSERT INTO `channels` (`id`, `uuid`, `type`, `resolution`, `cost`, `description
 -- --------------------------------------------------------
 
 --
+-- Tabellenstruktur für Tabelle `channels_in_groups`
+--
+
+DROP TABLE IF EXISTS `channels_in_groups`;
+CREATE TABLE `channels_in_groups` (
+  `channel_id` int(11) NOT NULL,
+  `group_id` int(11) NOT NULL,
+  KEY `channel_id` (`channel_id`),
+  KEY `group_id` (`group_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Daten für Tabelle `channels_in_groups`
+--
+
+INSERT INTO `channels_in_groups` (`channel_id`, `group_id`) VALUES
+(1, 1),
+(2, 1),
+(17, 3),
+(18, 3),
+(19, 5),
+(20, 5),
+(21, 5);
+
+-- --------------------------------------------------------
+
+--
 -- Tabellenstruktur für Tabelle `data`
 --
 
-CREATE TABLE IF NOT EXISTS `data` (
+DROP TABLE IF EXISTS `data`;
+CREATE TABLE `data` (
   `channel_id` int(11) NOT NULL,
   `timestamp` bigint(20) NOT NULL COMMENT 'in seconds since 1970',
   `value` float NOT NULL COMMENT 'absolute sensor value or pulse since last timestamp (dependening on "meters.type")',
@@ -6437,95 +6466,30 @@ INSERT INTO `data` (`channel_id`, `timestamp`, `value`) VALUES
 -- Tabellenstruktur für Tabelle `groups`
 --
 
-CREATE TABLE IF NOT EXISTS `groups` (
+DROP TABLE IF EXISTS `groups`;
+CREATE TABLE `groups` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
+  `left` int(11) NOT NULL,
+  `right` int(11) NOT NULL,
   `uuid` varchar(36) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Universally Unique Identifier',
-  `description` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `description` text COLLATE utf8_unicode_ci NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `ugid` (`uuid`)
+  UNIQUE KEY `uuid` (`uuid`),
+  KEY `right` (`right`),
+  KEY `left` (`left`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=6 ;
 
 --
 -- Daten für Tabelle `groups`
 --
 
-INSERT INTO `groups` (`id`, `uuid`, `description`) VALUES
-(1, '6185b05b-72b8-4d14-bbcf-cacadb2e35ec', 'Zähler von Steffen'),
-(2, '530171f0-34aa-4787-bc86-0c3ee1a55398', 'Temperatursensoren'),
-(3, 'efe83f57-3d41-4cde-9c6b-77783112891b', '1-Wire Sensoren mit digitemp'),
-(4, 'c288c9fa-3f81-45f7-9583-0a66d4909436', 'Temperatursensoren Subgruppe'),
-(5, '17f3d6fa-44fa-4070-8126-6accc50e3c34', 'Temperatursensoren SubSubgruppe');
-
--- --------------------------------------------------------
-
---
--- Tabellenstruktur für Tabelle `group_channel`
---
-
-CREATE TABLE IF NOT EXISTS `group_channel` (
-  `channel_id` int(11) NOT NULL,
-  `group_id` int(11) NOT NULL,
-  KEY `channel_id` (`channel_id`),
-  KEY `group_id` (`group_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
---
--- Daten für Tabelle `group_channel`
---
-
-INSERT INTO `group_channel` (`channel_id`, `group_id`) VALUES
-(1, 1),
-(2, 1),
-(17, 3),
-(18, 3),
-(19, 5),
-(20, 5),
-(21, 5);
-
--- --------------------------------------------------------
-
---
--- Tabellenstruktur für Tabelle `group_group`
---
-
-CREATE TABLE IF NOT EXISTS `group_group` (
-  `parent_id` int(11) NOT NULL,
-  `child_id` int(11) NOT NULL,
-  KEY `parent_id` (`parent_id`),
-  KEY `child_id` (`child_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
---
--- Daten für Tabelle `group_group`
---
-
-INSERT INTO `group_group` (`parent_id`, `child_id`) VALUES
-(2, 3),
-(2, 4),
-(4, 5);
-
--- --------------------------------------------------------
-
---
--- Tabellenstruktur für Tabelle `group_user`
---
-
-CREATE TABLE IF NOT EXISTS `group_user` (
-  `group_id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `role` enum('member','owner') NOT NULL,
-  KEY `user_id` (`user_id`),
-  KEY `group_id` (`group_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
--- Daten für Tabelle `group_user`
---
-
-INSERT INTO `group_user` (`group_id`, `user_id`, `role`) VALUES
-(1, 1, 'member'),
-(2, 1, 'member'),
-(2, 2, 'member');
+INSERT INTO `groups` (`id`, `left`, `right`, `uuid`, `name`, `description`) VALUES
+(1, 0, 9, '6185b05b-72b8-4d14-bbcf-cacadb2e35ec', '', 'Zähler von Steffen'),
+(2, 1, 8, '530171f0-34aa-4787-bc86-0c3ee1a55398', '', 'Temperatursensoren'),
+(3, 2, 3, 'efe83f57-3d41-4cde-9c6b-77783112891b', '', '1-Wire Sensoren mit digitemp'),
+(4, 4, 7, 'c288c9fa-3f81-45f7-9583-0a66d4909436', '', 'Temperatursensoren Subgruppe'),
+(5, 5, 6, '17f3d6fa-44fa-4070-8126-6accc50e3c34', '', 'Temperatursensoren SubSubgruppe');
 
 -- --------------------------------------------------------
 
@@ -6533,7 +6497,8 @@ INSERT INTO `group_user` (`group_id`, `user_id`, `role`) VALUES
 -- Tabellenstruktur für Tabelle `users`
 --
 
-CREATE TABLE IF NOT EXISTS `users` (
+DROP TABLE IF EXISTS `users`;
+CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `uuid` varchar(36) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Universally Unique Identifier',
   `email` varchar(255) CHARACTER SET latin1 NOT NULL COMMENT 'also used for login',
@@ -6551,9 +6516,40 @@ INSERT INTO `users` (`id`, `uuid`, `email`, `password`) VALUES
 (1, '54373541-3560-4d09-9d6e-93072e4fa69a', 'info@steffenvogel.de', '787a154eb0a10fa2053ac11e03b2a792ab5ea676'),
 (2, '7d1225c4-1ff6-4562-a4c2-14e552d1bb64', 't.vogel@griesm.de', 'a94a8fe5ccb19ba61c4c0873d391e987982fbbd3');
 
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `users_in_groups`
+--
+
+DROP TABLE IF EXISTS `users_in_groups`;
+CREATE TABLE `users_in_groups` (
+  `group_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `role` enum('member','owner') NOT NULL,
+  KEY `user_id` (`user_id`),
+  KEY `group_id` (`group_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Daten für Tabelle `users_in_groups`
+--
+
+INSERT INTO `users_in_groups` (`group_id`, `user_id`, `role`) VALUES
+(1, 1, 'owner'),
+(2, 1, 'member'),
+(2, 2, 'owner');
+
 --
 -- Constraints der exportierten Tabellen
 --
+
+--
+-- Constraints der Tabelle `channels_in_groups`
+--
+ALTER TABLE `channels_in_groups`
+  ADD CONSTRAINT `channels_in_groups_ibfk_3` FOREIGN KEY (`channel_id`) REFERENCES `channels` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `channels_in_groups_ibfk_4` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints der Tabelle `data`
@@ -6562,22 +6558,8 @@ ALTER TABLE `data`
   ADD CONSTRAINT `data_ibfk_1` FOREIGN KEY (`channel_id`) REFERENCES `channels` (`id`) ON DELETE CASCADE;
 
 --
--- Constraints der Tabelle `group_channel`
+-- Constraints der Tabelle `users_in_groups`
 --
-ALTER TABLE `group_channel`
-  ADD CONSTRAINT `group_channel_ibfk_3` FOREIGN KEY (`channel_id`) REFERENCES `channels` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `group_channel_ibfk_4` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE;
-
---
--- Constraints der Tabelle `group_group`
---
-ALTER TABLE `group_group`
-  ADD CONSTRAINT `group_group_ibfk_3` FOREIGN KEY (`parent_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `group_group_ibfk_4` FOREIGN KEY (`child_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE;
-
---
--- Constraints der Tabelle `group_user`
---
-ALTER TABLE `group_user`
-  ADD CONSTRAINT `group_user_ibfk_3` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `group_user_ibfk_4` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+ALTER TABLE `users_in_groups`
+  ADD CONSTRAINT `users_in_groups_ibfk_3` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `users_in_groups_ibfk_4` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;

@@ -21,16 +21,19 @@
 
 $config['db']['backend']			= 'mysql';
 $config['db']['host']				= 'localhost';
-$config['db']['user']				= 'smreader';
+$config['db']['user']				= 'volkszaehler';
 $config['db']['password']			= '';
-$config['db']['database']			= 'volkszaehler';
-$config['db']['prefix']				= 'vz';
+$config['db']['database']			= 'volkszaehler_nested';
 
-$config['passthru']['enabled']		= true;
+$config['passthru']['enabled']		= false;
 $config['passthru']['url']			= 'http://volkszaehler.org/httplog/httplog.php?&passthru=yes';
+
 $config['debug']					= false;
 
+// insert configuration into registry
 Registry::set('config', $config);
+
+// unset registry from page context
 unset($config);
 
 ?>

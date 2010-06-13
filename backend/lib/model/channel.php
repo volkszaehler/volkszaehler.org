@@ -150,7 +150,17 @@ abstract class Channel extends DatabaseObject implements ChannelInterface {
 		if (!class_exists($object['type']) || !is_subclass_of($object['type'], 'Channel')) {
 			throw new InvalidArgumentException('\'' . $object['type'] . '\' is not a valid channel type');
 		}
-		return new $object['type']((array) $object);
+		
+		// code duplication from DatabaseObject::factory()
+		if (!isset(self::$instances[self::table])) {
+			self::$instances[self::table] = array();
+		}
+		
+		if (!isset(self::$instances[self::table][$object['id']])) {
+			self::$instances[self::table][$object['id']] = new $object['type']($object);	// create singleton instance of database object
+		}
+		
+		return self::$instances[self::table][$object['id']];	// return singleton instance of database object
 	}
 	
 	public function __get($key) {
@@ -180,16 +190,16 @@ abstract class Channel extends DatabaseObject implements ChannelInterface {
 	}
 
 	static protected function buildFilterQuery($filters, $conjunction, $columns = array('id')) {
-		$sql = 'SELECT ' . static::table . '.* FROM ' . static::table;
+		$sql = 'SELECT ' . self::table . '.* FROM ' . self::table;
 
 		// join groups
 		if (key_exists('group', $filters)) {
-			$sql .= ' LEFT JOIN group_channel AS rel ON rel.channel_id = ' . static::table . '.id';
-			$filters['group_id'] = $filters['group'];
+			$sql .= ' LEFT JOIN channels_in_groups ON channels_in_groups.channel_id = ' . self::table . '.id';
+			$filters['channels_in_groups.group_id'] = $filters['group'];
 			unset($filters['group']);
 		}
 
-		$sql .= static::buildFilterCondition($filters, $conjunction);
+		$sql .= self::buildFilterCondition($filters, $conjunction);
 		return $sql;
 	}
 }

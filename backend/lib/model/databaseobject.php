@@ -25,8 +25,8 @@ abstract class DatabaseObject {
 	private $dirty;				// do we need to update the database?
 	private $data = array();
 
-	static private $instances = array();	// singletons of objects
-	
+	static protected $instances = array();	// singletons of objects
+
 	/*
 	 * magic functions
 	 */
@@ -44,10 +44,12 @@ abstract class DatabaseObject {
 	}
 
 	public function __set($key, $value) {	// TODO untested
-		if ($key != 'id') {
-			$this->data[$key] = $value;
-			$this->dirty = true;
+		if ($key == 'id' || $key == 'uuid') {
+			throw new DatabaseException($key . ' will be generated automatically');
 		}
+		
+		$this->data[$key] = $value;
+		$this->dirty = true;
 	}
 
 	final public function __sleep() {
@@ -58,13 +60,9 @@ abstract class DatabaseObject {
 	final public function __wakeup() {
 		$this->dbh = Database::getConnection();
 	}
-	
+
 	final public function __isset($key) {
 		return isset($this->data[$key]);
-	}
-	
-	static protected function factory($object) {
-		return new static($object);
 	}
 
 	/*
@@ -72,20 +70,34 @@ abstract class DatabaseObject {
 	 */
 	public function save() {
 		if ($this->id) {	// just update
-			foreach ($this->data as $column => $value) {
-				if ($column != 'id') {
-					$columns[] = $column . ' = ' . $this->dbh->escape($value);
-				}
-			}
-				
-			$sql = 'UPDATE ' . static::table . ' SET ' . implode(', ', $columns) . ' WHERE id = ' . (int) $this->id;
-			$this->dbh->execute($sql);
+			$this->update();
 		}
 		else {				// insert new row
-			$sql = 'INSERT INTO ' . static::table . ' (' . implode(', ', array_keys($this->data)) . ') VALUES (' . implode(', ', array_map(array($this->dbh, 'escape'), $this->data)) . ')';
-			$this->dbh->execute($sql);
-			$this->id = $this->dbh->lastInsertId();
+			$this->insert();
 		}
+		
+	}
+
+	private function insert() {
+		$this->uuid = Uuid::mint();
+		
+		$sql = 'INSERT INTO ' . static::table . ' (' . implode(', ', array_keys($this->data)) . ') VALUES (' . implode(', ', array_map(array($this->dbh, 'escape'), $this->data)) . ')';
+		$this->dbh->execute($sql);
+		$this->id = $this->dbh->lastInsertId();
+		
+		$this->dirty = false;
+	}
+
+	private function update() {
+		foreach ($this->data as $column => $value) {
+			if ($column != 'id') {
+				$columns[] = $column . ' = ' . $this->dbh->escape($value);
+			}
+		}
+
+		$sql = 'UPDATE ' . static::table . ' SET ' . implode(', ', $columns) . ' WHERE id = ' . (int) $this->id;
+		$this->dbh->execute($sql);
+		
 		$this->dirty = false;
 	}
 
@@ -114,18 +126,30 @@ abstract class DatabaseObject {
 		$this->dbh->execute('DELETE FROM ' . static::table . ' WHERE id = ' . (int) $this->id);	// delete from database
 		unset($this->data['id']);
 	}
-	
+
 	/*
 	 * simple self::getByFilter() wrapper
 	 */
 	public static function getByUuid($uuid) {
 		$obj = current(self::getByFilter(array('uuid' => $uuid)));
-		
+
 		if ($obj === false) {
 			throw new InvalidArgumentException('No such object!');
 		}
-		
+
 		return $obj;
+	}
+	
+	static protected function factory($object) {
+		if (!isset(self::$instances[static::table])) {
+			self::$instances[static::table] = array();
+		}
+		
+		if (!isset(self::$instances[static::table][$object['id']])) {
+			self::$instances[static::table][$object['id']] = new static($object);	// create singleton instance of database object
+		}
+		
+		return self::$instances[static::table][$object['id']];	// return singleton instance of database object
 	}
 
 	/*
@@ -135,16 +159,9 @@ abstract class DatabaseObject {
 		$sql = static::buildFilterQuery($filters, $conjunction);
 		$result = Database::getConnection()->query($sql);
 
-		if (!isset(self::$instances[static::table])) {
-			self::$instances[static::table] = array();
-		}
-
 		$instances = array();
 		foreach ($result as $object) {
-			if (!isset(self::$instances[static::table][$object['id']])) {
-				self::$instances[static::table][$object['id']] = static::factory($object);		// create singleton instance of database object
-			}
-			$instances[$object['id']] = self::$instances[static::table][$object['id']];			// return singleton instance of database object
+			$instances[$object['id']] = static::factory($object);
 		}
 
 		return $instances;
@@ -153,7 +170,7 @@ abstract class DatabaseObject {
 	static protected function buildFilterQuery($filters, $conjunction) {
 		return 'SELECT ' . static::table . '.* FROM ' . static::table . static::buildFilterCondition($filters, $conjunction);
 	}
-	
+
 	static protected function buildFilterCondition($filters, $conjunction) {
 		$dbh = Database::getConnection();
 

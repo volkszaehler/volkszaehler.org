@@ -24,50 +24,40 @@
  * 
  * the group class groups users, channels and groups
  */
-class Group extends DatabaseObject {
+class Group extends NestedDatabaseObject {
 	const table = 'groups';
 	
-	public function getGroups($recursive = false) {
-		$groups = Group::getByFilter(array('group' => $this));
-		if ($recursive === true) {
-			foreach ($groups as $subGroup) {
-				$groups += $subGroup->getGroups(true);
-			}
-		}
-		return $groups;
-	}
-	
-	public function getUsers($recursive = false) {
+	public function getUsers($recursive = false) {	// TODO rework for nested sets
 		$groups[$this->id] = $this;
 		if ($recursive === true) {
-			$groups += $this->getGroups(true);
+			$groups += $this->getChilds();
 		}
 		return User::getByFilter(array('group' => $groups));
 	}
 	
-	public function getChannels($recursive = false) {
+	public function getChannels($recursive = false) {	// TODO rework for nested sets
 		$groups[$this->id] = $this;
 		if ($recursive === true) {
-			$groups += $this->getGroups(true);
+			$groups += $this->getChilds();
 		}
 		return Channel::getByFilter(array('group' => $groups));
 	}
 	
-	static protected function buildFilterQuery($filters, $conjunction, $columns = array('id')) {
-		$sql = 'SELECT ' . static::table . '.* FROM ' . static::table;
-
-		// join groups
-		if (key_exists('group', $filters)) {
-			$sql .= ' LEFT JOIN group_group AS rel ON rel.child_id = ' . static::table . '.id';
-			$filters['parent_id'] = $filters['group'];
-			unset($filters['group']);
-		}
+	static protected function buildFilterQuery($filters, $conjunction, $columns = array('id')) {	// TODO rework for nested sets
+		$sql = 'SELECT ' . self::table . '.* FROM ' . self::table;
 		
 		// join users
 		if (key_exists('user', $filters)) {
-			$sql .= ' LEFT JOIN group_user AS rel ON rel.group_id = ' . static::table . '.id';
-			$filters['user_id'] = $filters['user'];
+			$sql .= ' LEFT JOIN users_in_groups ON users_in_groups.group_id = ' . self::table . '.id';
+			$filters['users_in_groups.user_id'] = $filters['user'];
 			unset($filters['user']);
+		}
+		
+		// join channels
+		if (key_exists('channel', $filters)) {
+			$sql .= ' LEFT JOIN channels_in_groups ON channels_in_groups.group_id = ' . self::table . '.id';
+			$filters['channels_in_groups.channel_id'] = $filters['channel'];
+			unset($filters['channel']);
 		}
 
 		$sql .= static::buildFilterCondition($filters, $conjunction);
