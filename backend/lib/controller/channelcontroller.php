@@ -22,7 +22,7 @@
 class ChannelController extends Controller {
 	public function get() {
 		$user = User::getByUuid($this->view->request->get['uuid']);
-		$channels = $user->getChannels();
+		$channels = $user->getChannels(false);	// TODO recursive or not?
 		
 		foreach ($channels as $channel) {
 			$this->view->addChannel($channel);
@@ -46,7 +46,7 @@ class ChannelController extends Controller {
 		$this->view->addChannel($channel);
 	}
 	
-	public function delete() {	// TODO untested
+	public function delete() {	// TODO authentification
 		$channel = Channel::getByUuid($this->view->request->get['ucid']);
 		$channel->delete();
 	}
