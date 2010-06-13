@@ -25,19 +25,6 @@
 class User extends DatabaseObject {
 	const table = 'users';
 	
-	/*
-	 * simple self::getByFilter() wrapper
-	 */
-	public static function getByUuid($uuid) {
-		$user = current(self::getByFilter(array('uuid' => $uuid)));
-		
-		if ($user === false) {
-			throw new InvalidArgumentException('No such user!');
-		}
-		
-		return $user;
-	}
-	
 	public static function getByEMail($email) {
 		$user = current(self::getByFilter(array('email' => $email)));
 		

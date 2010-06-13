@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Erstellungszeit: 08. Juni 2010 um 01:54
+-- Erstellungszeit: 13. Juni 2010 um 14:23
 -- Server Version: 5.1.41
 -- PHP-Version: 5.3.2-1ubuntu4.2
 
@@ -25,15 +25,16 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 -- Tabellenstruktur für Tabelle `channels`
 --
 
-CREATE TABLE IF NOT EXISTS `channels` (
+DROP TABLE IF EXISTS `channels`;
+CREATE TABLE `channels` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `ucid` varchar(36) CHARACTER SET latin1 NOT NULL COMMENT 'globally Unique Channel ID',
+  `uuid` varchar(36) CHARACTER SET latin1 NOT NULL COMMENT 'Universally Unique Identifier',
   `type` varchar(255) COLLATE utf8_unicode_ci DEFAULT 'Channel' COMMENT 'maps meter to classname (caseinsensitive)',
   `resolution` int(11) DEFAULT NULL,
   `cost` int(11) DEFAULT '0',
   `description` varchar(255) CHARACTER SET latin1 DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `ucid` (`ucid`)
+  UNIQUE KEY `ucid` (`uuid`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='channels with detailed data';
 
 -- --------------------------------------------------------
@@ -42,11 +43,12 @@ CREATE TABLE IF NOT EXISTS `channels` (
 -- Tabellenstruktur für Tabelle `data`
 --
 
-CREATE TABLE IF NOT EXISTS `data` (
+DROP TABLE IF EXISTS `data`;
+CREATE TABLE `data` (
   `channel_id` int(11) NOT NULL,
   `timestamp` bigint(20) NOT NULL COMMENT 'in seconds since 1970',
   `value` float NOT NULL COMMENT 'absolute sensor value or pulse since last timestamp (dependening on "meters.type")',
-  KEY `meter_id` (`channel_id`)
+  KEY `channel_id` (`channel_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='data for all meters, regardless of which type they are';
 
 -- --------------------------------------------------------
@@ -55,12 +57,13 @@ CREATE TABLE IF NOT EXISTS `data` (
 -- Tabellenstruktur für Tabelle `groups`
 --
 
-CREATE TABLE IF NOT EXISTS `groups` (
+DROP TABLE IF EXISTS `groups`;
+CREATE TABLE `groups` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `ugid` varchar(36) COLLATE utf8_unicode_ci NOT NULL,
+  `uuid` varchar(36) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Universally Unique Identifier',
   `description` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `ugid` (`ugid`)
+  UNIQUE KEY `ugid` (`uuid`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
@@ -69,7 +72,8 @@ CREATE TABLE IF NOT EXISTS `groups` (
 -- Tabellenstruktur für Tabelle `group_channel`
 --
 
-CREATE TABLE IF NOT EXISTS `group_channel` (
+DROP TABLE IF EXISTS `group_channel`;
+CREATE TABLE `group_channel` (
   `channel_id` int(11) NOT NULL,
   `group_id` int(11) NOT NULL,
   KEY `channel_id` (`channel_id`),
@@ -82,7 +86,8 @@ CREATE TABLE IF NOT EXISTS `group_channel` (
 -- Tabellenstruktur für Tabelle `group_group`
 --
 
-CREATE TABLE IF NOT EXISTS `group_group` (
+DROP TABLE IF EXISTS `group_group`;
+CREATE TABLE `group_group` (
   `parent_id` int(11) NOT NULL,
   `child_id` int(11) NOT NULL,
   KEY `parent_id` (`parent_id`),
@@ -95,9 +100,11 @@ CREATE TABLE IF NOT EXISTS `group_group` (
 -- Tabellenstruktur für Tabelle `group_user`
 --
 
-CREATE TABLE IF NOT EXISTS `group_user` (
+DROP TABLE IF EXISTS `group_user`;
+CREATE TABLE `group_user` (
   `group_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
+  `role` enum('member','owner') NOT NULL,
   KEY `user_id` (`user_id`),
   KEY `group_id` (`group_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -108,9 +115,10 @@ CREATE TABLE IF NOT EXISTS `group_user` (
 -- Tabellenstruktur für Tabelle `users`
 --
 
-CREATE TABLE IF NOT EXISTS `users` (
+DROP TABLE IF EXISTS `users`;
+CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `uuid` varchar(36) COLLATE utf8_unicode_ci NOT NULL,
+  `uuid` varchar(36) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Universally Unique Identifier',
   `email` varchar(255) CHARACTER SET latin1 NOT NULL COMMENT 'also used for login',
   `password` varchar(40) CHARACTER SET latin1 NOT NULL COMMENT 'SHA1() hashed',
   PRIMARY KEY (`id`),
@@ -132,19 +140,19 @@ ALTER TABLE `data`
 -- Constraints der Tabelle `group_channel`
 --
 ALTER TABLE `group_channel`
-  ADD CONSTRAINT `group_channel_ibfk_4` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `group_channel_ibfk_3` FOREIGN KEY (`channel_id`) REFERENCES `channels` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `group_channel_ibfk_3` FOREIGN KEY (`channel_id`) REFERENCES `channels` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `group_channel_ibfk_4` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints der Tabelle `group_group`
 --
 ALTER TABLE `group_group`
-  ADD CONSTRAINT `group_group_ibfk_4` FOREIGN KEY (`child_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `group_group_ibfk_3` FOREIGN KEY (`parent_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `group_group_ibfk_3` FOREIGN KEY (`parent_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `group_group_ibfk_4` FOREIGN KEY (`child_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints der Tabelle `group_user`
 --
 ALTER TABLE `group_user`
-  ADD CONSTRAINT `group_user_ibfk_4` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `group_user_ibfk_3` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `group_user_ibfk_3` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `group_user_ibfk_4` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;

@@ -139,19 +139,6 @@ abstract class Channel extends DatabaseObject implements ChannelInterface {
 	/*
 	 * simple self::getByFilter() wrapper
 	 */
-	static public function getByUcid($ucid) {
-		$channel = current(self::getByFilter(array('ucid' => $ucid)));
-		
-		if ($channel === false) {
-			throw new InvalidArgumentException('No such channel!');
-		}
-		
-		return $channel;
-	}
-
-	/*
-	 * simple self::getByFilter() wrapper
-	 */
 	static public function getByType($type) {
 		return self::getByFilter(array('type' => $type));
 	}

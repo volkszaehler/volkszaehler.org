@@ -114,6 +114,19 @@ abstract class DatabaseObject {
 		$this->dbh->execute('DELETE FROM ' . static::table . ' WHERE id = ' . (int) $this->id);	// delete from database
 		unset($this->data['id']);
 	}
+	
+	/*
+	 * simple self::getByFilter() wrapper
+	 */
+	public static function getByUuid($uuid) {
+		$obj = current(self::getByFilter(array('uuid' => $uuid)));
+		
+		if ($obj === false) {
+			throw new InvalidArgumentException('No such object!');
+		}
+		
+		return $obj;
+	}
 
 	/*
 	 * data filtering

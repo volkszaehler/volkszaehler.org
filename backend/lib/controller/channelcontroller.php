@@ -32,9 +32,9 @@ class ChannelController extends Controller {
 	public function add() {
 		$channel = new Channel();
 		
-		// TODO add ucid generation or exception if no one has been passed via get
+		// TODO add uuid generation or exception if no one has been passed via get
 
-		if (substr($channel->ucid, 0, 19) == OneWireSensor::$ucidPrefix) {
+		if (substr($channel->uuid, 0, 19) == OneWireSensor::$uuidPrefix) {
 			$channel->type = 'OneWireSensor';
 			$channel->description = OneWireSensor::getFamilyDescription($channel);
 		}
@@ -47,7 +47,7 @@ class ChannelController extends Controller {
 	}
 	
 	public function delete() {	// TODO untested
-		$channel = Channel::getByUcid($this->view->request->get['ucid']);
+		$channel = Channel::getByUuid($this->view->request->get['ucid']);
 		$channel->delete();
 	}
 }

@@ -51,7 +51,7 @@ class XmlView extends View {
 		$xmlChannel = $this->xmlDoc->createElement('channel');
 		$xmlChannel->setAttribute('id', (int) $obj->id);
 		
-		$xmlChannel->appendChild($this->xmlDoc->createElement('ucid', $obj->ucid));
+		$xmlChannel->appendChild($this->xmlDoc->createElement('uuid', $obj->uuid));
 		$xmlChannel->appendChild($this->xmlDoc->createElement('type', $obj->type));
 		$xmlChannel->appendChild($this->xmlDoc->createElement('unit', $obj->unit));
 		$xmlChannel->appendChild($this->xmlDoc->createElement('description', $obj->description));
@@ -88,7 +88,7 @@ class XmlView extends View {
 	public function addGroup(Group $obj) {
 		$xmlGroup = $this->xmlDoc->createElement('group');
 		$xmlGroup->setAttribute('id', (int) $obj->id);
-		$xmlGroup->appendChild($this->xmlDoc->createElement('ugid', $obj->uuid));
+		$xmlGroup->appendChild($this->xmlDoc->createElement('uuid', $obj->uuid));
 		$xmlGroup->appendChild($this->xmlDoc->createElement('description', $obj->description));
 			
 		// TODO include sub groups?

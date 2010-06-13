@@ -27,16 +27,16 @@ class OneWireSensor extends Sensor {
 	const unit = 'todo';
 	
 	/*
-	 * all 1-wire sensor should use a ucid with this prefix followed by their unique rom id
+	 * all 1-wire sensor should use a uuid with this prefix followed by their unique rom id
 	 */
-	static public $ucidPrefix = '07506920-6e7a-11df-';
+	static public $uuidPrefix = '07506920-6e7a-11df-';
 	
 	/*
 	 * the first byte of the rom id contains the family id describing the type of the sensors
-	 * the rom id should be included in the ucid of the sensor. so we can determine the family out of the ucid.
+	 * the rom id should be included in the uuid of the sensor. so we can determine the family out of the uuid.
 	 */
 	static function getFamilyDescription($channel) {
-		$family = base_convert(substr($channel->ucid, 19, 2), 16, 10);
+		$family = base_convert(substr($channel->uuid, 19, 2), 16, 10);
 		
 		switch($family) {
 			case 0x01:

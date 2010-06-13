@@ -31,7 +31,7 @@ class UserController extends Controller {
 	}
 	
 	public function delete() {
-		$user = User::getByFilter(array('uuid' => $this->view->request->get['uuid']));
+		$user = User::getByUuid($this->view->request->get['uuid']);
 		$user->delete();
 	}
 	
@@ -39,15 +39,15 @@ class UserController extends Controller {
 		// TODO implement UserController::edit();
 	}
 	
-	public function login() {
-		$user = User::getByFilter(array('uuid' => $this->view->request->get['uuid']));
+	public function login() {	// TODO add session handling
+		$user = User::getByUuid($this->view->request->get['uuid']);
 		
 		if ($user->checkPasswort($this->view->request->get['password'])) {
-			$_SESSION['user_id'] = $user->id;	// TODO add session handling
+			$_SESSION['user_id'] = $user->id;
 		}
 	}
 	
-	public function logout() {
+	public function logout() {	// TODO add session handling
 		if ($_SESSION['user_id']) {
 			unset($_SESSION['user_id']);
 		}

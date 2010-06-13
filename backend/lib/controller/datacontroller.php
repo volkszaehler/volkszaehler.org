@@ -22,7 +22,7 @@
 class DataController extends Controller {
 	public function add() {
 		$ucid = $this->view->request->get['ucid'];
-		$channel = Channel::getByUcid($ucid);
+		$channel = Channel::getByUuid($ucid);
 		$channel->addData($this->view->request->get); // array(timestamp, value, count)
 	}
 

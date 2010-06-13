@@ -25,20 +25,20 @@ class GroupController extends Controller {
 		$group->description = $this->view->request->get['description'];
 		$group->save();
 		
-		// TODO generate ugid 
+		// TODO generate uuid 
 		
 		$this->view->addGroup($group);
 	}
 	
 	public function delete() {
-		$group = Group::getByFilter(array('ugid' => $this->view->request->get['ugid']));
+		$group = Group::getByUuid($this->view->request->get['ugid']);
 		
 		$group->delete();
 	}
 	
 	public function get() {
-		$user = User::getByFilter(array('uuid' => $this->view->request->get['uuid']));
-		$groups = Group::getByFilter(array('user' => $user));
+		$user = User::getByUuid($this->view->request->get['uuid']);
+		$groups = $user->getGroups(false);	// TODO recursive or not?
 		
 		foreach ($groups as $group) {
 			$this->view->addGroup($group);

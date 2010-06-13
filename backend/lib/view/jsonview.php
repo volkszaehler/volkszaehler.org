@@ -52,7 +52,7 @@ class JsonView extends View {
 
 	public function addChannel(Channel $obj, $data = NULL) {
 		$channel['id'] = (int) $obj->id;
-		$channel['ucid'] = $obj->ucid;
+		$channel['uuid'] = $obj->uuid;
 		$channel['type'] = $obj->type;
 		$channel['unit'] = $obj->unit;
 		$channel['description'] = $obj->description;
@@ -78,7 +78,7 @@ class JsonView extends View {
 
 	public function addGroup(Group $obj) {
 		$group['id'] = (int) $obj->id;
-		$group['ugid'] = $obj->ugid;
+		$group['uuid'] = $obj->uuid;
 		$group['description'] = $obj->description;
 			
 		// TODO include sub groups?
