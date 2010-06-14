@@ -193,10 +193,11 @@ abstract class Channel extends DatabaseObject implements ChannelInterface {
 		$sql = 'SELECT ' . self::table . '.* FROM ' . self::table;
 
 		// join groups
-		if (key_exists('group', $filters)) {
+		if (preg_match('/^group\.([a-z_]+)$/', $filters)) {
 			$sql .= ' LEFT JOIN channels_in_groups ON channels_in_groups.channel_id = ' . self::table . '.id';
-			$filters['channels_in_groups.group_id'] = $filters['group'];
-			unset($filters['group']);
+			$sql .= ' LEFT JOIN groups ON groups.id = channels_in_groups.group_id';
+			
+			$filters = preg_replace('/^group\.([a-z_]+)$/', 'groups.$1', $filters);
 		}
 
 		$sql .= self::buildFilterCondition($filters, $conjunction);

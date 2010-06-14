@@ -38,11 +38,11 @@ class User extends DatabaseObject {
 	public function getChannels($recursive = false) {
 		$groups = $this->getGroups($recursive);
 		
-		return Channel::getByFilter(array('group' => $groups));
+		return Channel::getByFilter(array('group.id' => $groups));
 	}
 	
 	public function getGroups($recursive = false) {
-		$groups = Group::getByFilter(array('user' => $this));
+		$groups = Group::getByFilter(array('user.id' => $this));
 		if ($recursive === true) {
 			foreach ($groups as $subGroup) {
 				$groups += $subGroup->getGroups(true);
@@ -62,14 +62,17 @@ class User extends DatabaseObject {
 		parent::__set($key, $value);
 	}
 	
-	static protected function buildQuery($filters, $conjunction, $columns = array('id')) {
+	static protected function buildQuery($filters, $conjunction) {
 		$sql = 'SELECT ' . self::table . '.* FROM ' . self::table;
+		
 		// join groups
-		if (key_exists('group', $filters)) {
+		if (preg_match('/^group\.([a-z_]+)$/', $filters)) {
 			$sql .= ' LEFT JOIN users_in_groups ON users_in_groups.user_id = ' . self::table . '.id';
-			$filters['users_in_groups.group_id'] = $filters['group'];
-			unset($filters['group']);
+			$sql .= ' LEFT JOIN groups ON groups.id = users_in_groups.group_id';
+			
+			$filters = preg_replace('/^group\.([a-z_]+)$/', 'groups.$1', $filters);
 		}
+		
 		$sql .= static::buildFilter($filters, $conjunction);
 		return $sql;
 	}

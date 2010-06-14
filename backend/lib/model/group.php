@@ -32,7 +32,7 @@ class Group extends NestedDatabaseObject {
 		if ($recursive === true) {
 			$groups += $this->getChilds();
 		}
-		return User::getByFilter(array('group' => $groups));
+		return User::getByFilter(array('group.id' => $groups));
 	}
 	
 	public function getChannels($recursive = false) {	// TODO rework for nested sets
@@ -40,24 +40,26 @@ class Group extends NestedDatabaseObject {
 		if ($recursive === true) {
 			$groups += $this->getChilds();
 		}
-		return Channel::getByFilter(array('group' => $groups));
+		return Channel::getByFilter(array('group.id' => $groups));
 	}
 	
 	static protected function buildFilterQuery($filters, $conjunction, $columns = array('id')) {	// TODO rework for nested sets
 		$sql = 'SELECT ' . self::table . '.* FROM ' . self::table;
 		
 		// join users
-		if (key_exists('user', $filters)) {
+		if (preg_match('/^user\.([a-z_]+)$/', $filters)) {
 			$sql .= ' LEFT JOIN users_in_groups ON users_in_groups.group_id = ' . self::table . '.id';
-			$filters['users_in_groups.user_id'] = $filters['user'];
-			unset($filters['user']);
+			$sql .= ' LEFT JOIN users ON users.id = users_in_groups.user_id';
+			
+			$filters = preg_replace('/^user\.([a-z_]+)$/', 'users.$1', $filters);
 		}
 		
 		// join channels
-		if (key_exists('channel', $filters)) {
+		if (preg_match('/^channel\.([a-z_]+)$/', $filters)) {
 			$sql .= ' LEFT JOIN channels_in_groups ON channels_in_groups.group_id = ' . self::table . '.id';
-			$filters['channels_in_groups.channel_id'] = $filters['channel'];
-			unset($filters['channel']);
+			$sql .= ' LEFT JOIN channels ON channels.id = channels_in_groups.channel_id';
+			
+			$filters = preg_replace('/^channel\.([a-z_]+)$/', 'channels.$1', $filters);
 		}
 
 		$sql .= static::buildFilterCondition($filters, $conjunction);
