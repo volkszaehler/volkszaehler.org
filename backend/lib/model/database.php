@@ -207,9 +207,6 @@ abstract class Database implements DatabaseInterface {
 		if (is_numeric($value)) {
 			return $value;
 		}
-		elseif ($value instanceof DatabaseObject) {
-			return (int) $value->id;
-		}
 		else {
 			$value = '\'' . $this->escapeString($value) . '\'';
 		}

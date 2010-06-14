@@ -22,7 +22,7 @@
 /*
  * Grouping class
  * 
- * the group class groups users, channels and groups
+ * the group class groups users, channels and groups itself
  */
 class Group extends NestedDatabaseObject {
 	const table = 'groups';
@@ -54,7 +54,7 @@ class Group extends NestedDatabaseObject {
 			$filters = preg_replace('/^user\.([a-z_]+)$/', 'users.$1', $filters);
 		}
 		
-		// join channels
+		// join channels	// TODO preg_filter or preg_grep?
 		if (preg_match('/^channel\.([a-z_]+)$/', $filters)) {
 			$sql .= ' LEFT JOIN channels_in_groups ON channels_in_groups.group_id = ' . self::table . '.id';
 			$sql .= ' LEFT JOIN channels ON channels.id = channels_in_groups.channel_id';

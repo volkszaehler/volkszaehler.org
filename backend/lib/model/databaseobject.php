@@ -25,7 +25,7 @@ abstract class DatabaseObject {
 	private $dirty;				// do we need to update the database?
 	private $data = array();
 
-	static protected $instances = array();	// singletons of objects
+	static private $instances = array();	// singletons of objects
 
 	/*
 	 * magic functions
@@ -69,13 +69,12 @@ abstract class DatabaseObject {
 	 * insert oder update the database representation of the object
 	 */
 	public function save() {
-		if ($this->id) {	// just update
+		if (isset($this->id)) {	// just update
 			$this->update();
 		}
 		else {				// insert new row
 			$this->insert();
 		}
-		
 	}
 
 	private function insert() {

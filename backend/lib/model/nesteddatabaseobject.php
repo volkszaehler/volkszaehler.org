@@ -21,11 +21,20 @@
 
 /*
  * DatabaseObject which is structured by nested sets
+ * @url // TODO add url
  */
-class NestedDatabaseObject extends DatabaseObject {
+abstract class NestedDatabaseObject extends DatabaseObject {
+	public function __set($key, $value) {
+		if ($key == 'left' || $key == 'right') {
+			throw new NestedDatabaseException('nested set fields are read only! please make use of move() or delete() instead');
+		}
+		
+		parent::__set($key, $value);
+	}
+	
 	public function addChild(NestedDatabaseObject $child) {
 		if (isset($child->id)) {
-			throw new DatabaseException('group is already part of the tree');
+			throw new NestedDatabaseException('Object is already part of the tree');
 		}
 		
 		// TODO start transaction
@@ -34,21 +43,27 @@ class NestedDatabaseObject extends DatabaseObject {
 		
 		$child->left = $this->right;
 		$child->right = $this->right + 	1;
+		
+		$this->right += 2;
+		
 		$child->insert();
 	}
 	
 	public function getChilds() {
-		$sql = 'SELECT * FROM ' . static::table . ' WHERE id != ' . $this->id . ' && left BETWEEN ' . $this->left . ' AND ' . $this->right;
+		$sql = 'SELECT * FROM ' . static::table . ' WHERE left > ' . $this->left . ' && left < ' . $this->right;
 		$result = $this->dbh->query($sql);
 		
-		$groups = array();
-		foreach ($result as $group) {
-			$groups[$group['id']] = static::factory($group);
+		$objs = array();
+		foreach ($result as $obj) {
+			$objs[$obj['id']] = static::factory($obj);
 		}
 		
 		return $groups;
 	}
 	
+	/*
+	 * deletes subset under $this
+	 */
 	public function delete() {
 		$move = floor(($this->right - $this->left) / 2);
 		$move = 2 * (1 + $move);
@@ -56,29 +71,48 @@ class NestedDatabaseObject extends DatabaseObject {
 		// TODO start transaction
 		
 		// delete nodes
-		$this->dbh->execute('DELETE FROM ' . static::table . ' WHERE AND left BETWEEN ' . $this->left . ' AND ' . $this->right);	// TODO SQL92 compilant?
-		
-		// move the rest of the nodes ...
+		$result = $this->dbh->query('SELECT * FROM ' . static::table . ' WHERE left >= ' . $this->left . ' && left <= ' . $this->right);
+		foreach ($result as $obj) {
+			$obj->delete();	// TODO optimize (all in one query)
+		}
+
+		// move remaining nodes ...
 		$this->dbh->execute('UPDATE ' . static::table . ' SET left = left - ' . $move . ' WHERE left > ' . $this->right);
 		$this->dbh->execute('UPDATE ' . static::table . ' SET right = right - ' . $move . ' WHERE right > ' . $this->right);
-		
-		// TODO unset singleton instances in DatabaseObject::$instances
 	}
 	
+	/*
+	 * checks if $child is a child of $this 
+	 * @return bool
+	 */
 	public function contains(NestedDatabaseObject $child) {	// TODO untested
-		if (array_search($child, $this->getChilds(), true) === false) {
-			return false;
-		}
-		else {
-			return true;
-		}
+		$sql = 'SELECT * FROM ' . static::table . ' WHERE left > ' . $this->left . ' && left < ' . $this->right . ' && id = ' . $child->id;
+		$result = $this->dbh->query($sql);
+		
+		return ($result->count() > 0) ? true : false;
 	}
 	
-	public function moveTo(NestedDatabaseObject $obj) {	// TODO implement
+	public function moveTo(NestedDatabaseObject $destination) {	// TODO implement
 		// $this->getChilds
-		// $this->delete
-		// $group->addChilds
+		$obj = $this->getChilds();
+		foreach ($objs as $obj) {
+			$obj->right += $destination->left - $this->left;
+			$obj->left = $destination->left;
+		}
+	
+		// close whole
+		$move = floor(($this->right - $this->left) / 2);
+		$move = 2 * (1 + $move);
+		
+		$this->dbh->execute('UPDATE ' . static::table . ' SET left = left - ' . $move . ' WHERE left > ' . $this->right);
+		$this->dbh->execute('UPDATE ' . static::table . ' SET right = right - ' . $move . ' WHERE right > ' . $this->right);
+	
+		// create hole
+		$this->dbh->execute('UPDATE ' . static::table . ' SET left = left + ' . $move . ' WHERE left > ' . $this->right);
+		$this->dbh->execute('UPDATE ' . static::table . ' SET right = right + ' . $move . ' WHERE right >= ' . $this->right);
 	}
 }
+
+class NestedDatabaseException extends Exception {}
 
 ?>

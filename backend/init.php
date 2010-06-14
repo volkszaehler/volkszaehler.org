@@ -34,7 +34,7 @@ function __autoload($className) {
 		'/^Uuid$/'									=> 'util/uuid',
 
 	// model classes
-		'/^(Channel|User|Group|Database(Object)?)$/'=> 'model/$1',
+		'/^(Channel|User|Group|(Nested)?Database(Object)?)$/'=> 'model/$1',
 		'/^(MySql|PgSql|SqLite)$/i'					=> 'model/db/$1',
 		'/^(.+(Meter|Sensor))$/'					=> 'model/channel/$2/$1',
 		'/^(Meter|Sensor)$/'						=> 'model/channel/$1',
