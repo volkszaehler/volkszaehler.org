@@ -58,7 +58,7 @@ abstract class DatabaseResultSet implements Iterator {
 	 * @return array
 	 */
 	public function next() {
-		return next($this->_rows);
+		return next($this->_rows);	// TODO with fetch_assoc
 	}
 
 	/**
@@ -147,18 +147,23 @@ interface DatabaseInterface {
 	public function execute($sql);
 
 	/**
-	 * @brief query
-	 * @param string $sql
-	 * @param int $offset
-	 * @param int $limit
-	 * @return TDatabaseResultSet
+	 * @brief escape strings
+	 * @param string $string to escape
+	 * @return string escaped string
 	 */
-	public function query($sql, $limit = NULL, $offset = NULL);
-
 	public function escapeString($string);
 
+	/**
+	 * @brief escape expression
+	 * @param mixed $string to escape
+	 * @return string
+	 */
 	public function escape($value);
 
+	/**
+	 * @brief get last inserted id
+	 * @return integer of the last record
+	 */
 	public function lastInsertId();
 }
 
@@ -166,7 +171,6 @@ interface DatabaseInterface {
  * @brief abstract database layer definition
  */
 abstract class Database implements DatabaseInterface {
-
 	static private $connection = NULL;
 
 	/**
@@ -205,13 +209,72 @@ abstract class Database implements DatabaseInterface {
 
 	public function escape($value) {
 		if (is_numeric($value)) {
-			return $value;
+			return (string) $value;
 		}
 		else {
 			$value = '\'' . $this->escapeString($value) . '\'';
 		}
 
-		return $value;
+		return $value;	
+	}
+}
+
+class DatabaseQuery {
+	static public function select($table, $fields = '*', $filter = array(), $conjunction = true, $joins = array(), $limit = NULL, $offset = NULL) {
+		$sql = 'SELECT ' . $fields . ' FROM ' . $table;
+		
+		foreach ($joins as $join) {
+			$sql .= self::join($join[0], $join[1]);
+		}
+		
+		$sql .= self::filter($filter, $conjunction);
+		
+		if (!is_null($limit))
+			$sql .= ' LIMIT ' . (int) $limit;
+			
+		if (!is_null($offset))
+			$sql .= ' OFFSET ' . (int) $offset;
+
+		return $sql;
+	}
+	
+	static public function delete($table, $filters, $conjunction = true) {
+		return 'DELETE FROM ' . $table . self::filter($filters, $conjunction);
+	}
+	
+	static public function update($table, $data, $filters, $conjunction = true) {
+		$dbh = Database::getConnection();
+		
+		$newData = array();
+		foreach ($data as $column => $value) {
+			$newData[] = $column . ' = ' . $dbh->escape($value);
+		}
+		
+		$sql = 'UPDATE ' . $table . ' SET' . implode(' ,' , $newData) . self::filter($filters, $conjunction);
+		
+		return $sql;
+	}
+
+	static protected function filter($filters, $conjunction) {
+		$dbh = Database::getConnection();
+
+		$where = array();
+		foreach ($filters as $column => $value) {
+			if (is_array($value)) {
+				$where[] = $column . ' IN (' . implode(', ', array_map(array(Database::getConnection(), 'escape'), $value)) . ')';
+			}
+			else {
+				$where[] = $column . ' = ' . $dbh->escape($value);
+			}
+		}
+
+		if (count($where) > 0) {
+			return ' WHERE ' . implode(($conjunction === true) ? ' && ' : ' || ', $where);
+		}
+	}
+	
+	static protected function join($table, $condition, $type = 'left') {
+		return ' ' . strtoupper($type) . ' JOIN ' . $table . ' ON ' . $condition;
 	}
 }
 

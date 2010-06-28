@@ -24,7 +24,7 @@
  */
 class MySqlException extends DatabaseException
 {
-	function __construct($message = null, $code = 0) {
+	function __construct($message = NULL, $code = 0) {
 		$message = sprintf('%04d: %s', mysql_errno(), mysql_error());
 		parent::__construct($message, mysql_errno());
 	}
@@ -116,24 +116,7 @@ class MySql extends Database {	// TODO replace by mysqli
 			
 		$this->statements[] = $sql;
 			
-		return $result;
-	}
-
-	/**
-	 * @brief mysql query
-	 * @param string $sql query
-	 * @param int $offset
-	 * @param int $limit
-	 * @return TDatabaseResultSet
-	 */
-	public function query($sql, $limit = NULL, $offset = NULL) {
-		if (!is_null($limit))
-			$sql .= ' LIMIT ' . (int) $limit;
-			
-		if (!is_null($offset))
-			$sql .= ' OFFSET ' . (int) $offset;
-			
-		return new MySqlResultSet($this->execute($sql));
+		return new MySqlResultSet($result);
 	}
 
 	/**

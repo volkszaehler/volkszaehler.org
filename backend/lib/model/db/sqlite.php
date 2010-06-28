@@ -97,24 +97,7 @@ class SqLite extends Database {
 		
 		$this->statements[] = $sql;
 		
-		return $result;
-	}
-
-	/**
-	 * @brief sqlite query
-	 * @param string $sql query
-	 * @param int $offset
-	 * @param int $limit
-	 * @return TDatabaseResultSet
-	 */
-	public function query($sql, $limit = NULL, $offset = NULL) {
-		if (!is_null($limit))
-			$sql .= ' LIMIT ' . (int) $limit;
-			
-		if (!is_null($offset))
-			$sql .= ' OFFSET ' . (int) $offset;
-		
-		return new SqLiteResultSet($this->execute($sql));
+		return new SqLiteResultSet($result);
 	}
 
 	/**
