@@ -39,20 +39,6 @@ class UserController extends Controller {
 		// TODO implement UserController::edit();
 	}
 	
-	public function login() {	// TODO add session handling
-		$user = User::getByUuid($this->view->request->get['uuid']);
-		
-		if ($user->checkPasswort($this->view->request->get['password'])) {
-			$_SESSION['user_id'] = $user->id;
-		}
-	}
-	
-	public function logout() {	// TODO add session handling
-		if ($_SESSION['user_id']) {
-			unset($_SESSION['user_id']);
-		}
-	}
-	
 	public function subscribe() {
 		// TODO implement UserController::subscribe();
 	}

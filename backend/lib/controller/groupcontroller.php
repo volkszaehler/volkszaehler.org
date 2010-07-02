@@ -1,4 +1,4 @@
-<?php
+chann<?php
 /*
  * Copyright (c) 2010 by Justin Otherguy <justin@justinotherguy.org>
  *
@@ -22,10 +22,9 @@
 class GroupController extends Controller {
 	public function add() {
 		$group = new Group();
+		$group->name = $this->view->request->get['name'];
 		$group->description = $this->view->request->get['description'];
 		$group->save();
-		
-		// TODO generate uuid 
 		
 		$this->view->addGroup($group);
 	}

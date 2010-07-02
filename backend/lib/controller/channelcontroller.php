@@ -32,15 +32,13 @@ class ChannelController extends Controller {
 	public function add() {
 		$channel = new Channel();
 		
-		// TODO add uuid generation or exception if no one has been passed via get
-
-		if (substr($channel->uuid, 0, 19) == OneWireSensor::$uuidPrefix) {
+		/*if (substr($channel->uuid, 0, 19) == OneWireSensor::$uuidPrefix) {	// TODO how do differ the 1-wire sensors?
 			$channel->type = 'OneWireSensor';
 			$channel->description = OneWireSensor::getFamilyDescription($channel);
 		}
 		else {
 			$channel->type = 'Channel';
-		}
+		}*/
 
 		$channel->save();
 		$this->view->addChannel($channel);
