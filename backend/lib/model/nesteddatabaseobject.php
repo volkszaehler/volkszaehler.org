@@ -21,95 +21,168 @@
 
 /*
  * DatabaseObject which is structured by nested sets
- * @url // TODO add url
+ * TODO use database transactions
  */
 abstract class NestedDatabaseObject extends DatabaseObject {
-	public function __set($key, $value) {
-		if ($key == 'left' || $key == 'right') {
-			throw new NestedDatabaseException('nested set fields are read only! please make use of move() or delete() instead');
-		}
-		
-		parent::__set($key, $value);
-	}
-	
-	public function addChild(NestedDatabaseObject $child) {
-		if (isset($child->id)) {
-			throw new NestedDatabaseException('Object is already part of the tree');
-		}
-		
-		// TODO start transaction
-		$this->dbh->execute('UPDATE ' . static::table . ' SET left = left + 2 WHERE left > ' . $this->right);
-		$this->dbh->execute('UPDATE ' . static::table . ' SET right = right + 2 WHERE right >= ' . $this->right);
-		
-		$child->left = $this->right;
-		$child->right = $this->right + 	1;
-		
-		$this->right += 2;
-		
-		$child->insert();
-	}
-	
-	public function getChilds() {
-		$sql = 'SELECT * FROM ' . static::table . ' WHERE left > ' . $this->left . ' && left < ' . $this->right;
-		$result = $this->dbh->query($sql);
-		
-		$objs = array();
-		foreach ($result as $obj) {
-			$objs[$obj['id']] = static::factory($obj);
-		}
-		
-		return $groups;
-	}
-	
+	public $level;	// shouldn't be altered! use move or delete instead!
+	public $children;
+
 	/*
-	 * deletes subset under $this
+	 * inserts or updates a tree to the database
 	 */
-	public function delete() {
-		$move = floor(($this->right - $this->left) / 2);
-		$move = 2 * (1 + $move);
-		
-		// TODO start transaction
-		
-		// delete nodes
-		$result = $this->dbh->query('SELECT * FROM ' . static::table . ' WHERE left >= ' . $this->left . ' && left <= ' . $this->right);
-		foreach ($result as $obj) {
-			$obj->delete();	// TODO optimize (all in one query)
+	public function save(NestedDatabaseObject $parent = NULL) {
+		if (!is_null($parent) && !isset($parent->id)) {	// checks if $parent is part of the tree
+			throw new InvalidArgumentException('Parent node has to be part of the tree');
 		}
 
-		// move remaining nodes ...
-		$this->dbh->execute('UPDATE ' . static::table . ' SET left = left - ' . $move . ' WHERE left > ' . $this->right);
-		$this->dbh->execute('UPDATE ' . static::table . ' SET right = right - ' . $move . ' WHERE right > ' . $this->right);
+		if (isset($this->id)) {
+			$this->update($parent);
+		}
+		else {
+			$this->insert($parent);
+		}
 	}
 	
 	/*
-	 * checks if $child is a child of $this 
-	 * @return bool
+	 * updates tree in database (optionally move it)
 	 */
-	public function contains(NestedDatabaseObject $child) {	// TODO untested
-		$sql = 'SELECT * FROM ' . static::table . ' WHERE left > ' . $this->left . ' && left < ' . $this->right . ' && id = ' . $child->id;
-		$result = $this->dbh->query($sql);
+	protected function update(NestedDatabaseObject $parent = NULL) {
+		// TODO move it if parent is given
+		parent::update();
+	}
+
+	/*
+	 * inserts tree to database
+	 */
+	protected function insert(NestedDatabaseObject $parent = NULL) {
+		if (is_null($parent)) {
+			throw new InvalidArgumentException('We need a parent for a new child');
+		}
 		
-		return ($result->count() > 0) ? true : false;
+		$this->dbh->execute('UPDATE ' . static::table . ' SET lft = lft + 2 WHERE lft > ' . $parent->rgt);
+		$this->dbh->execute('UPDATE ' . static::table . ' SET rgt = rgt + 2 WHERE rgt >= ' . $parent->rgt);
+			
+		// update singleton instances
+		foreach (self::$instances[static::table] as $instance) {
+			if ($instance->lft > $parent->rgt) {
+				$instance->lft = $instance->lft + 2;
+			}
+
+			if ($instance->rgt >= $parent->rgt) {
+				$instance->rgt = $instance->rgt + 2;
+			}
+		}
+			
+		$this->lft = $parent->rgt - 2;
+		$this->rgt = $parent->rgt - 1;
+			
+		parent::insert();
+	}
+
+	/*public function move(NestedDatabaseObject $parent) {	// TODO finish
+		$move = $this->rgt - $this->lft + 1;
+	
+		// exclude the tree which we want to move by turning the sign of left and rigth columns
+		$sql = 'UPDATE ' . static::table . ' SET lft = lft * -1, rgt = rgt * -1 WHERE lft > ' . $this->lft . ' && rgt < ' . $this->rgt;
+	
+		// close hole
+		$sql = 'UPDATE ' . static::table . ' SET lft = lft - x, rgt = rgt - x WHERE lft > ' . $this->lft;
+	
+		// open new hole
+	
+		// include the tree which we want to move by turning the sign of left and rigth columns and adding an offset
+	
+		// TODO update singletons
+	}*/
+
+	/*
+	 * query database for all descending children under this node
+	 */
+	public function getChildren() {
+		$sql = 'SELECT
+					o.*,
+					CAST(((o.rgt - o.lft - 1) / 2) AS UNSIGNED) AS children, 
+					COUNT(p.id) AS level
+				FROM
+					' . static::table . ' AS n,
+					' . static::table . ' AS p,
+					' . static::table . ' AS o
+				WHERE
+					o.lft > p.lft && o.rgt < p.rgt
+					&& o.lft > n.lft && o.rgt < n.rgt
+					&& n.id = ' . $this->id . '
+				GROUP BY
+					o.lft
+				ORDER BY
+					o.lft';
+
+		$result = $this->dbh->query($sql);
+
+		$children = array();
+		foreach ($result as $row) {
+			$child = static::factory(array_diff_key($row, array_fill_keys(array('children', 'level'), NULL)));
+			$child->children = $row['children'];
+			$child->level = $row['level'];
+				
+			$children[$row['id']] = $child;
+		}
+
+		return $children;
 	}
 	
-	public function moveTo(NestedDatabaseObject $destination) {	// TODO implement
-		// $this->getChilds
-		$obj = $this->getChilds();
-		foreach ($objs as $obj) {
-			$obj->right += $destination->left - $this->left;
-			$obj->left = $destination->left;
+	static public function getRoot() {
+		return current(static::getByFilter(array('lft' => 0)));
+	}
+
+	/*
+	 * delete the node including all descending children from the database
+	 */
+	public function delete() {
+		$move = $this->rgt - $this->lft + 1;
+
+		// delete children
+		$result = $this->dbh->execute('DELETE FROM ' . static::table . ' WHERE lft >= ' . $this->lft . ' && lft <= ' . $this->rgt);
+
+		// move remaining children ...
+		$this->dbh->execute('UPDATE ' . static::table . ' SET lft = lft - ' . $move . ' WHERE lft > ' . $this->rgt);
+		$this->dbh->execute('UPDATE ' . static::table . ' SET rgt = rgt - ' . $move . ' WHERE rgt > ' . $this->rgt);
+
+		// update singleton instances
+		foreach (self::$instances[static::table] as $instance) {
+			if ($instance->lft >= $this->lft && $instance->rgt <= $this->rgt) {
+				$instance->unlink();
+			}
+			else {
+				if ($instance->lft > $this->rgt) {
+					$instance->lft = $instance->lft - $move;
+				}
+					
+				if ($instance->rgt > $this->rgt) {
+					$instance->rgt = $instance->rgt - $move;
+				}
+			}
 		}
-	
-		// close whole
-		$move = floor(($this->right - $this->left) / 2);
-		$move = 2 * (1 + $move);
-		
-		$this->dbh->execute('UPDATE ' . static::table . ' SET left = left - ' . $move . ' WHERE left > ' . $this->right);
-		$this->dbh->execute('UPDATE ' . static::table . ' SET right = right - ' . $move . ' WHERE right > ' . $this->right);
-	
-		// create hole
-		$this->dbh->execute('UPDATE ' . static::table . ' SET left = left + ' . $move . ' WHERE left > ' . $this->right);
-		$this->dbh->execute('UPDATE ' . static::table . ' SET right = right + ' . $move . ' WHERE right >= ' . $this->right);
+	}
+
+	/*
+	 * unlinks instance from database
+	 */
+	protected function unlink() {
+		parent::unlink();
+
+		unset($this->data['lft']);
+		unset($this->data['rgt']);
+
+		unset($this->level);
+		unset($this->children);
+	}
+
+	/*
+	 * checks if $child is a descendant of $this
+	 * @return bool
+	 */
+	public function contains(NestedDatabaseObject $child) {
+		return ($child->lft > $this->lft && $child->rgt < $this->rgt);
 	}
 }
 

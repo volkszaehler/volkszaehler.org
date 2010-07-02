@@ -54,7 +54,8 @@ class JsonView extends View {
 		$channel['id'] = (int) $obj->id;
 		$channel['uuid'] = $obj->uuid;
 		$channel['type'] = $obj->type;
-		$channel['unit'] = $obj->unit;
+		$channel['unit'] = $obj::unit;
+		$channel['name'] = $obj->name;
 		$channel['description'] = $obj->description;
 		$channel['resolution'] = (int) $obj->resolution;
 		$channel['cost'] = (float) $obj->cost;
@@ -76,12 +77,36 @@ class JsonView extends View {
 		$this->jsonData['users'][] = $user;
 	}
 
-	public function addGroup(Group $obj) {
+	public function addGroup(Group $obj, $recursive = false) {	// TODO fix this. how do we want to handly nested set structures?
 		$group['id'] = (int) $obj->id;
 		$group['uuid'] = $obj->uuid;
+		$group['name'] = $obj->name;
 		$group['description'] = $obj->description;
+		
+		$backtrace = array(&$group);
 			
-		// TODO include sub groups?
+		if ($recursive) {
+			$children = $obj->getChildren();
+
+			foreach ($children as $child) {
+				$subGroup['id'] = (int) $child->id;
+				$subGroup['uuid'] = $child->uuid;
+				$subGroup['name'] = $child->name;
+				$subGroup['description'] = $child->description;
+				
+				if ($child->level > $lastLevel) {
+					array_push(end($backtrace), $subGroup);
+				//	array_push($backtrace, &$subgroup);	// TODO: Deprecated: Call-time pass-by-reference has been deprecated
+				}
+				elseif ($child->level < $lastLevel) {
+					array_pop($backtrace);
+					array_push(end($backtrace), $subGroup);
+				}
+				elseif ($child->level == $lastLevel) {
+					array_push(end($backtrace), $subGroup);
+				}
+			}
+		}
 			
 		$this->jsonData['groups'][] = $group;
 	}

@@ -53,7 +53,7 @@ class XmlView extends View {
 		
 		$xmlChannel->appendChild($this->xmlDoc->createElement('uuid', $obj->uuid));
 		$xmlChannel->appendChild($this->xmlDoc->createElement('type', $obj->type));
-		$xmlChannel->appendChild($this->xmlDoc->createElement('unit', $obj->unit));
+		$xmlChannel->appendChild($this->xmlDoc->createElement('unit', $obj::unit));
 		$xmlChannel->appendChild($this->xmlDoc->createElement('description', $obj->description));
 		$xmlChannel->appendChild($this->xmlDoc->createElement('resolution', (int) $obj->resolution));
 		$xmlChannel->appendChild($this->xmlDoc->createElement('cost', (float) $obj->cost));

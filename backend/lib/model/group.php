@@ -43,27 +43,31 @@ class Group extends NestedDatabaseObject {
 		return Channel::getByFilter(array('group.id' => $groups));
 	}
 	
-	static protected function buildFilterQuery($filters, $conjunction, $columns = array('id')) {	// TODO rework for nested sets
-		$sql = 'SELECT ' . self::table . '.* FROM ' . self::table;
-		
-		// join users
-		if (preg_match('/^user\.([a-z_]+)$/', $filters)) {
-			$sql .= ' LEFT JOIN users_in_groups ON users_in_groups.group_id = ' . self::table . '.id';
-			$sql .= ' LEFT JOIN users ON users.id = users_in_groups.user_id';
+	/*
+	 * data filtering
+	 */
+	static public function getByFilter($filters = array(), $conjunction = true) {
+		$joins = array();
+		foreach ($filters as $column => $value) {
+			if (!key_exists('users', $joins) && preg_match('/^user\.([a-z_]+)$/', $column)) {
+				$joins['users_in_groups'] = array('type' => 'left', 'table' => 'users_in_groups', 'condition' => 'users_in_groups.group_id = ' . self::table . '.id');
+				$joins['users'] = array('type' => 'left', 'table' => 'users AS user', 'condition' => 'user.id = users_in_groups.user_id');
+			}
 			
-			$filters = preg_replace('/^user\.([a-z_]+)$/', 'users.$1', $filters);
+			if (!key_exists('channels', $joins) && preg_match('/^channel\.([a-z_]+)$/', $column)) {
+				$joins['channels_in_groups'] = array('type' => 'left', 'table' => 'channels_in_groups', 'condition' => 'channels_in_groups.group_id = ' . self::table . '.id');
+				$joins['channels'] = array('type' => 'left', 'table' => 'channels AS channel', 'condition' => 'channels.id = channels_in_groups.channel_id');
+			}
 		}
 		
-		// join channels	// TODO preg_filter or preg_grep?
-		if (preg_match('/^channel\.([a-z_]+)$/', $filters)) {
-			$sql .= ' LEFT JOIN channels_in_groups ON channels_in_groups.group_id = ' . self::table . '.id';
-			$sql .= ' LEFT JOIN channels ON channels.id = channels_in_groups.channel_id';
-			
-			$filters = preg_replace('/^channel\.([a-z_]+)$/', 'channels.$1', $filters);
+		$result = Database::getConnection()->select(self::table, array(self::table . '.*'), $filters, $conjunction, $joins);
+		
+		$instances = array();
+		foreach ($result as $object) {
+			$instances[$object['id']] = static::factory($object);
 		}
-
-		$sql .= static::buildFilterCondition($filters, $conjunction);
-		return $sql;
+	
+		return $instances;
 	}
 }
 
