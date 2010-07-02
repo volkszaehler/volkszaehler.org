@@ -23,66 +23,7 @@
  * User class
  */
 class User extends DatabaseObject {
-	const table = 'users';
-	
-	public static function getByEMail($email) {
-		$user = current(self::getByFilter(array('email' => $email)));
-		
-		if ($user === false) {
-			throw new InvalidArgumentException('No such user!');
-		}
-		
-		return $user;
-	}
-	
-	public function getChannels($recursive = false) {
-		$groups = $this->getGroups($recursive);
-		
-		return Channel::getByFilter(array('group.id' => $groups));
-	}
-	
-	public function getGroups($recursive = false) {
-		$groups = Group::getByFilter(array('user.id' => $this));
-		if ($recursive === true) {
-			foreach ($groups as $subGroup) {
-				$groups += $subGroup->getGroups(true);
-			}
-		}
-		return $groups;
-	}
-	
-	public function checkPassword($pw) {
-		return ($this->password == sha1($pw)) ? true : false;
-	}
-	
-	public function __set($key, $value) {	// special case for passwords 
-		if ($key == 'password') {
-			$value = sha1($value);
-		}
-		parent::__set($key, $value);
-	}
-	
-	/*
-	 * data filtering
-	 */
-	static public function getByFilter($filters = array(), $conjunction = true) {
-		$joins = array();
-		foreach ($filters as $column => $value) {
-			if (!key_exists('groups', $joins) && preg_match('/^group\.([a-z_]+)$/', $column)) {
-				$joins['users_in_groups'] = array('type' => 'left', 'table' => 'users_in_groups', 'condition' => 'users_in_groups.user_id = ' . self::table . '.id');
-				$joins['groups'] = array('type' => 'left', 'table' => 'groups AS group', 'condition' => 'group.id = users_in_groups.group_id');
-			}
-		}
-		
-		$result = Database::getConnection()->select(self::table, array(self::table . '.*'), $filters, $conjunction, $joins);
-		
-		$instances = array();
-		foreach ($result as $object) {
-			$instances[$object['id']] = static::factory($object);
-		}
-	
-		return $instances;
-	}
+
 }
 
 ?>

@@ -32,13 +32,6 @@ interface ChannelInterface {
 }
 
 abstract class Channel extends DatabaseObject implements ChannelInterface {
-	const table = 'channels';
-
-	public function delete() {
-		$this->reset();		// delete all data if database doesn't support foreign keys
-		parent::delete();
-	}
-
 	/*
 	 * deletes all data from database
 	 */
@@ -137,33 +130,6 @@ abstract class Channel extends DatabaseObject implements ChannelInterface {
 	}
 
 	/*
-	 * simple self::getByFilter() wrapper
-	 */
-	static public function getByType($type) {
-		return self::getByFilter(array('type' => $type));
-	}
-
-	/*
-	 * create new channel instance by given database query result
-	 */
-	final static protected function factory($object) {
-		if (!class_exists($object['type']) || !is_subclass_of($object['type'], 'Channel')) {
-			throw new InvalidArgumentException('\'' . $object['type'] . '\' is not a valid channel type');
-		}
-		
-		// code duplication from DatabaseObject::factory()
-		if (!isset(self::$instances[self::table])) {
-			self::$instances[self::table] = array();
-		}
-		
-		if (!isset(self::$instances[self::table][$object['id']])) {
-			self::$instances[self::table][$object['id']] = new $object['type']($object);	// create singleton instance of database object
-		}
-		
-		return self::$instances[self::table][$object['id']];	// return singleton instance of database object
-	}
-
-	/*
 	 * build simple timeframe filter
 	 */
 	static protected function buildFilterTime($from = NULL, $to = NULL) {
@@ -178,27 +144,5 @@ abstract class Channel extends DatabaseObject implements ChannelInterface {
 		}
 
 		return $sql;
-	}
-	
-	/*
-	 * data filtering
-	 */
-	static public function getByFilter($filters = array(), $conjunction = true) {
-		$joins = array();
-		foreach ($filters as $column => $value) {
-			if (!key_exists('groups', $joins) && preg_match('/^group\.([a-z_]+)$/', $column)) {
-				$joins['channels_in_groups'] = array('type' => 'left', 'table' => 'channels_in_groups', 'condition' => 'channels_in_groups.channel_id = ' . self::table . '.id');
-				$joins['groups'] = array('type' => 'left', 'table' => 'groups AS group', 'condition' => 'groups.id = channels_in_groups.group_id');
-			}
-		}
-		
-		$result = Database::getConnection()->select(self::table, array(self::table . '.*'), $filters, $conjunction, $joins);
-		
-		$instances = array();
-		foreach ($result as $object) {
-			$instances[$object['id']] = static::factory($object);
-		}
-	
-		return $instances;
 	}
 }
