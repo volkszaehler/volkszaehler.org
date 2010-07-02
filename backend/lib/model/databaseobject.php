@@ -22,21 +22,27 @@
 abstract class DatabaseObject {
 	protected $dbh;				// database handle for all queries in DBObject subclasses
 
-	private $dirty;				// do we need to update the database?
-	private $data = array();
+	protected $data = array();
+	
+	const STATE_UNKNOWN		= 0;	// we don't know the current status of the object (deprecated)
+	const STATE_UNLINKED	= 1;	// there is no database representation of the object
+	const STATE_DIRTY		= 2;		// there is a database representation of the object which has been altered
+	const STATE_CLEAN		= 4;		// there is a database representation of the object which which is in sync with the database
+	
+	private $state = DatabaseObject::STATE_UNKNOWN;
 
-	static private $instances = array();	// singletons of objects
+	static protected $instances = array();	// singletons of objects
 
 	/*
 	 * magic functions
 	 */
-	final public function __construct($object) {
+	final public function __construct($object = array()) {
 		$this->dbh = Database::getConnection();
 		$this->data = $object;
 	}
 
 	public function __get($key) {
-		if (!isset($this->data[$key]) && $this->id) {
+		if (!isset($this->$key) && ($this->state != DatabaseObject::STATE_UNLINKED)) {
 			$this->load();
 		}
 
@@ -45,11 +51,11 @@ abstract class DatabaseObject {
 
 	public function __set($key, $value) {	// TODO untested
 		if ($key == 'id' || $key == 'uuid') {
-			throw new DatabaseException($key . ' will be generated automatically');
+			throw new Exception($key . ' will be generated automatically');
 		}
 		
 		$this->data[$key] = $value;
-		$this->dirty = true;
+		$this->state = DatabaseObject::STATE_DIRTY;
 	}
 
 	final public function __sleep() {
@@ -58,6 +64,7 @@ abstract class DatabaseObject {
 	}
 
 	final public function __wakeup() {
+		$this->state = DatabaseObject::STATE_UNKNOWN;
 		$this->dbh = Database::getConnection();
 	}
 
@@ -72,49 +79,49 @@ abstract class DatabaseObject {
 		if (isset($this->id)) {	// just update
 			$this->update();
 		}
-		else {				// insert new row
+		else {					// insert new row
 			$this->insert();
 		}
 	}
 
-	private function insert() {
-		$this->uuid = Uuid::mint();
+	protected function insert() {
+		$this->data['uuid'] = Uuid::mint();
 		
-		$sql = 'INSERT INTO ' . static::table . ' (' . implode(', ', array_keys($this->data)) . ') VALUES (' . implode(', ', array_map(array($this->dbh, 'escape'), $this->data)) . ')';
-		$this->dbh->execute($sql);
-		$this->id = $this->dbh->lastInsertId();
+		$this->dbh->insert(static::table, $this->data);
+		$this->data['id'] = $this->dbh->lastInsertId();
 		
-		$this->dirty = false;
+		$this->state = DatabaseObject::STATE_CLEAN;
 	}
 
-	private function update() {
-		foreach ($this->data as $column => $value) {
-			if ($column != 'id') {
-				$columns[] = $column . ' = ' . $this->dbh->escape($value);
-			}
-		}
-
-		$sql = 'UPDATE ' . static::table . ' SET ' . implode(', ', $columns) . ' WHERE id = ' . (int) $this->id;
+	protected function update() {
+		$this->dbh->update(static::table, $this->data, array('id' => $this->id));
 		$this->dbh->execute($sql);
 		
-		$this->dirty = false;
+		$this->state = DatabaseObject::STATE_CLEAN;
 	}
 
 	/*
 	 * loads all columns from the database and caches them in $this->data
 	 */
 	private function load() {
-		$result = $this->dbh->query('SELECT * FROM ' . static::table . ' WHERE id = ' . (int) $this->id, 1)->current();
+		$result = $this->dbh->select(static::table, array('*'), array('id' => $this->id))->current();
 			
 		if ($result == false) {
-			unset($this->data['id']);
-			return false;
+			$this->unlink();
+			throw new Exception('Missing database representation');
 		}
-		else {
-			$this->data = $result;
-			$this->loaded = true;
-			return true;
-		}
+
+		$this->state = DatabaseObject::STATE_CLEAN;
+		$this->data = $result;
+	}
+	
+	/*
+	 * unlinks instance from database
+	 */
+	protected function unlink() {
+		unset($this->data['id']);
+		unset($this->data['uuid']);
+		$this->status = DatabaseObject::STATE_UNLINKED;
 	}
 
 	/*
@@ -122,8 +129,8 @@ abstract class DatabaseObject {
 	 * by calling $this->save() you can easily reinsert the object with a new id
 	 */
 	public function delete() {
-		$this->dbh->execute('DELETE FROM ' . static::table . ' WHERE id = ' . (int) $this->id);	// delete from database
-		unset($this->data['id']);
+		$this->unlink();
+		return $this->dbh->delete(static::table, array('id' => $this->id));
 	}
 
 	/*
@@ -137,6 +144,13 @@ abstract class DatabaseObject {
 		}
 
 		return $obj;
+	}
+	
+	/*
+	 * simple self::getByFilter() wrapper
+	 */
+	public static function getById($id) {
+		return static::factory(array('id' => $id));		// TODO LSB nescessary?
 	}
 	
 	static protected function factory($object) {
@@ -155,37 +169,18 @@ abstract class DatabaseObject {
 	 * data filtering
 	 */
 	static public function getByFilter($filters = array(), $conjunction = true) {
-		$sql = static::buildFilterQuery($filters, $conjunction);
-		$result = Database::getConnection()->query($sql);
-
+		$result = Database::getConnection()->select(static::table, array(static::table . '.*'), $filters, $conjunction);
+		
 		$instances = array();
 		foreach ($result as $object) {
 			$instances[$object['id']] = static::factory($object);
 		}
-
+	
 		return $instances;
 	}
-
-	static protected function buildFilterQuery($filters, $conjunction) {
-		return 'SELECT ' . static::table . '.* FROM ' . static::table . static::buildFilterCondition($filters, $conjunction);
-	}
-
-	static protected function buildFilterCondition($filters, $conjunction) {
-		$dbh = Database::getConnection();
-
-		$where = array();
-		foreach ($filters as $column => $value) {
-			if (is_array($value)) {
-				$where[] = $column . ' IN (' . implode(', ', array_map(array(Database::getConnection(), 'escape'), $value)) . ')';
-			}
-			else {
-				$where[] = $column . ' = ' . $dbh->escape($value);
-			}
-		}
-
-		if (count($where) > 0) {
-			return ' WHERE ' . implode(($conjunction === true) ? ' && ' : ' || ', $where);
-		}
+	
+	public function __toString() {
+		return (string) $this->id;
 	}
 }
 

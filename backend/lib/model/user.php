@@ -62,19 +62,26 @@ class User extends DatabaseObject {
 		parent::__set($key, $value);
 	}
 	
-	static protected function buildQuery($filters, $conjunction) {
-		$sql = 'SELECT ' . self::table . '.* FROM ' . self::table;
-		
-		// join groups
-		if (preg_match('/^group\.([a-z_]+)$/', $filters)) {
-			$sql .= ' LEFT JOIN users_in_groups ON users_in_groups.user_id = ' . self::table . '.id';
-			$sql .= ' LEFT JOIN groups ON groups.id = users_in_groups.group_id';
-			
-			$filters = preg_replace('/^group\.([a-z_]+)$/', 'groups.$1', $filters);
+	/*
+	 * data filtering
+	 */
+	static public function getByFilter($filters = array(), $conjunction = true) {
+		$joins = array();
+		foreach ($filters as $column => $value) {
+			if (!key_exists('groups', $joins) && preg_match('/^group\.([a-z_]+)$/', $column)) {
+				$joins['users_in_groups'] = array('type' => 'left', 'table' => 'users_in_groups', 'condition' => 'users_in_groups.user_id = ' . self::table . '.id');
+				$joins['groups'] = array('type' => 'left', 'table' => 'groups AS group', 'condition' => 'group.id = users_in_groups.group_id');
+			}
 		}
 		
-		$sql .= static::buildFilter($filters, $conjunction);
-		return $sql;
+		$result = Database::getConnection()->select(self::table, array(self::table . '.*'), $filters, $conjunction, $joins);
+		
+		$instances = array();
+		foreach ($result as $object) {
+			$instances[$object['id']] = static::factory($object);
+		}
+	
+		return $instances;
 	}
 }
 

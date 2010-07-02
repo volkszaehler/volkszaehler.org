@@ -162,15 +162,6 @@ abstract class Channel extends DatabaseObject implements ChannelInterface {
 		
 		return self::$instances[self::table][$object['id']];	// return singleton instance of database object
 	}
-	
-	public function __get($key) {
-		if ($key == 'unit') {	// TODO ugly code
-			return static::unit;
-		}
-		else {
-			return parent::__get($key);
-		}
-	}
 
 	/*
 	 * build simple timeframe filter
@@ -188,19 +179,26 @@ abstract class Channel extends DatabaseObject implements ChannelInterface {
 
 		return $sql;
 	}
-
-	static protected function buildFilterQuery($filters, $conjunction, $columns = array('id')) {
-		$sql = 'SELECT ' . self::table . '.* FROM ' . self::table;
-
-		// join groups
-		if (preg_match('/^group\.([a-z_]+)$/', $filters)) {
-			$sql .= ' LEFT JOIN channels_in_groups ON channels_in_groups.channel_id = ' . self::table . '.id';
-			$sql .= ' LEFT JOIN groups ON groups.id = channels_in_groups.group_id';
-			
-			$filters = preg_replace('/^group\.([a-z_]+)$/', 'groups.$1', $filters);
+	
+	/*
+	 * data filtering
+	 */
+	static public function getByFilter($filters = array(), $conjunction = true) {
+		$joins = array();
+		foreach ($filters as $column => $value) {
+			if (!key_exists('groups', $joins) && preg_match('/^group\.([a-z_]+)$/', $column)) {
+				$joins['channels_in_groups'] = array('type' => 'left', 'table' => 'channels_in_groups', 'condition' => 'channels_in_groups.channel_id = ' . self::table . '.id');
+				$joins['groups'] = array('type' => 'left', 'table' => 'groups AS group', 'condition' => 'groups.id = channels_in_groups.group_id');
+			}
 		}
-
-		$sql .= self::buildFilterCondition($filters, $conjunction);
-		return $sql;
+		
+		$result = Database::getConnection()->select(self::table, array(self::table . '.*'), $filters, $conjunction, $joins);
+		
+		$instances = array();
+		foreach ($result as $object) {
+			$instances[$object['id']] = static::factory($object);
+		}
+	
+		return $instances;
 	}
 }
