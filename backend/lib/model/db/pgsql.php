@@ -71,7 +71,7 @@ class PgSql extends Database {
 	 * @param string $user user
 	 * @param string $passwd password
 	 */
-	public function connect($host, $user, $pw) {	// TODO $db? selecting db with pg_connect() or pg_select_db()?
+	public function connect($host, $user, $pw) {
 		$this->close();
 		$__er = error_reporting(E_ERROR);
 		
@@ -128,7 +128,7 @@ class PgSql extends Database {
 	}
 	
 	public function getLastInsertId() {
-		throw new Exception('PgSql::getLastInsertId() hasnt implemented yet!');	// TODO find solution, use PDO?
+		throw new Exception('PgSql::getLastInsertId() hasn\'t implemented yet!');	// TODO find solution, use PDO?
 	}
 }
 

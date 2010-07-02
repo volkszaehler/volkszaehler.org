@@ -22,8 +22,7 @@
 /**
  * @brief base exception for mysql queries
  */
-class MySqlException extends DatabaseException
-{
+class MySqlException extends DatabaseException {
 	function __construct($message = NULL, $code = 0) {
 		$message = sprintf('%04d: %s', mysql_errno(), mysql_error());
 		parent::__construct($message, mysql_errno());
@@ -33,8 +32,7 @@ class MySqlException extends DatabaseException
 /**
  * @brief resultset of a mysql query
  */
-class MySqlResultSet extends DatabaseResultSet
-{
+class MySqlResultSet extends DatabaseResultSet {
 	/**
 	 * @param resource $resource mysql resultset
 	 */
@@ -58,7 +56,7 @@ class MySql extends Database {	// TODO replace by mysqli
 	 */
 	function __construct($config) {
 		$this->connect($config['host'], $config['user'], $config['password']);
-		$this->select($config['database']);
+		$this->selectDatabase($config['database']);
 	}
 
 	function __destruct() {
@@ -98,7 +96,7 @@ class MySql extends Database {	// TODO replace by mysqli
 	 * @brief select database
 	 * @param string $name database name
 	 */
-	public function select($db) {
+	public function selectDatabase($db) {
 		if (!mysql_select_db($db, $this->resource))
 			throw new MySqlException();
 			
@@ -116,7 +114,7 @@ class MySql extends Database {	// TODO replace by mysqli
 			
 		$this->statements[] = $sql;
 			
-		return new MySqlResultSet($result);
+		return $result;
 	}
 
 	/**
