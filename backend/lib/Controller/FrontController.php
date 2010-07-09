@@ -36,10 +36,11 @@ final class FrontController {
 		}
 		$this->view = new $view;
 		
-		// create entitymanager
-		require '/path/to/lib/Doctrine/Common/ClassLoader.php';
-		$classLoader = new \Doctrine\Common\ClassLoader('Doctrine', 'lib/doctrine/lib');
-		$classLoader->register(); // register on SPL autoload stack
+		$this->em = self::createEntityManager();
+	}
+	
+	public static function createEntityManager() {
+		$config = Registry::get('config');
 		
 		// Doctrine
 		$doctConfig = new Configuration;
@@ -47,15 +48,15 @@ final class FrontController {
 		//$cache = new \Doctrine\Common\Cache\ApcCache;
 		//$config->setMetadataCacheImpl($cache);
 		
-		$driverImpl = $doctConfig->newDefaultAnnotationDriver('/path/to/lib/MyProject/Entities');
+		$driverImpl = $doctConfig->newDefaultAnnotationDriver('lib/Model');
 		$doctConfig->setMetadataDriverImpl($driverImpl);
 		
 		//$config->setQueryCacheImpl($cache);
 		
-		$doctConfig->setProxyDir('/path/to/myproject/lib/MyProject/Proxies');
-		$doctConfig->setProxyNamespace('MyProject\Proxies');
+		$doctConfig->setProxyDir('lib/Model/Proxies');
+		$doctConfig->setProxyNamespace('Volkszaehler\Model\Proxies');
 		
-		$em = EntityManager::create($config['db'], $doctConfig);
+		return EntityManager::create($config['db'], $doctConfig);
 	}
 	
 	public function run() {
@@ -73,59 +74,6 @@ final class FrontController {
 
 	public function __destruct() {
 		$this->view->render();			// render view & send http response
-	}
-	
-	public static function initialize() {
-		define('VERSION', '0.2');
-		
-		// enable strict error reporting
-		error_reporting(E_ALL);
-		
-		// load configuration into registry
-		if (!file_exists(__DIR__ . '/volkszaehler.conf.php')) {
-			throw new Exception('No configuration available! Use volkszaehler.conf.default.php as an template');
-		}
-		
-		include __DIR__ . '/volkszaehler.conf.php';
-		
-		spl_autoload_register(array($this, 'loadClass'));
-		
-		$this->initializeDoctrine();
-	}
-	
-	/*
-	 * class autoloading
-	 */
-	private function loadClass($className) {
-		$libs = __DIR__ . '/lib/';
-	
-		// preg_replace pattern class name => inclulde path
-		$mapping = array(
-		// util classes
-			'/^Registry$/'								=> 'util/registry',
-			'/^Uuid$/'									=> 'util/uuid',
-	
-		// model classes
-			'/^(Channel|User|Group|(Nested)?Database(Object)?)$/'=> 'model/$1',
-			'/^(.+(Meter|Sensor))$/'					=> 'model/channel/$2/$1',
-			'/^(Meter|Sensor)$/'						=> 'model/channel/$1',
-	
-		// view classes
-			'/^(Http.*)$/'								=> 'view/http/$1',
-			'/^(.*View)$/'								=> 'view/$1',
-	
-		// controller classes
-			'/^(.*Controller)$/'						=> 'controller/$1'
-			);
-	
-		$include = $libs . strtolower(preg_replace(array_keys($mapping), array_values($mapping), $className)) . '.php';
-	
-		if (!file_exists($include)) {
-			return false;
-		}
-	
-		require_once $include;
-		return true;
 	}
 }
 

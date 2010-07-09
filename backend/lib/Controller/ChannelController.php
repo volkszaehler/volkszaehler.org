@@ -40,14 +40,18 @@ class ChannelController extends Controller {
 			$channel->type = 'Channel';
 		}*/
 		
+		// TODO adapt to doctrine orm 
 		$channel->persist();
 		$channel->save();
+		
 		$this->view->addChannel($channel);
 	}
 	
 	// TODO check for valid user identity
 	public function delete() {
 		$channel = Channel::getByUuid($this->view->request->get['ucid']);
+		
+		// TODO adapt to doctrine orm 
 		$channel->delete();
 	}
 	
