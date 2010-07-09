@@ -19,31 +19,19 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-class UserController extends Controller {
-	public function add() {
-		$user = new User();
-		$user->password = $this->view->request->get['password'];
-		
-		// TODO generate uuid
-		
-		$user->save();
-		$this->view->addUser($user);
+class Configuration extends Registry implements ArrayAccess {
+	public function offsetSet($offset, $value) {
+		$this->registry[$offset] = $value;
 	}
-	
-	public function delete() {
-		$user = User::getByUuid($this->view->request->get['uuid']);
-		$user->delete();
+	public function offsetExists($offset) {
+		return isset($this->registry[$offset]);
 	}
-	
-	public function edit() {
-		// TODO implement UserController::edit();
+	public function offsetUnset($offset) {
+		unset($this->registry[$offset]);
 	}
-	
-	public function subscribe() {
-		// TODO implement UserController::subscribe();
-	}
-	
-	public function unsubscribe() {
-		// TODO implement UserController::unsubscribe();
+	public function offsetGet($offset) {
+		return isset($this->registry[$offset]) ? $this->registry[$offset] : null;
 	}
 }
+
+?>

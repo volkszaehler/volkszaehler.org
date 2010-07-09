@@ -19,13 +19,19 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-/*
- * Grouping class
+/**
+ * Database Entity
  * 
- * the group class groups users, channels and groups itself
+ * @todo doctrine abstract entity?
+ * @Entity
  */
-class Group extends NestedDatabaseObject {
-
+abstract class Entity {
+	/**
+	 * @Id
+	 * @Column(type="integer")
+	 */
+	protected $id;
+	
+	/** @Column(type="string", length=36) */
+	protected $uuid;
 }
-
-?>

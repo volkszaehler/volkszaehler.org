@@ -20,10 +20,8 @@
 */
 
 /*
- * Bootstrap entrypoint, just calls Frontcontroller::run()
+ * Bootstrap entrypoint, just calls FrontController::run()
  */
-
-include 'init.php';					// initialize environment (error handling, configuration, class autoloading)
 
 $fc = new FrontController();	// spawn frontcontroller
 $fc->run();						// execute controller and sends output

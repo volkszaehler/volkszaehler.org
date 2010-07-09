@@ -1,4 +1,4 @@
-<?php
+chann<?php
 /*
  * Copyright (c) 2010 by Justin Otherguy <justin@justinotherguy.org>
  *
@@ -19,11 +19,39 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-/*
- * User class
- */
-class User extends DatabaseObject {
-
+class GroupController extends Controller {
+	public function get() {
+		// TODO get groups from entitymanager according to API specs
+		
+		foreach ($groups as $group) {
+			$this->view->addGroup($group);
+		}
+	}
+	
+	
+	public function add() {
+		$group = new Group();
+		
+		$group->name = $this->view->request->get['name'];
+		$group->description = $this->view->request->get['description'];
+		
+		// TODO adapt to doctrine orm 
+		$group->save();
+		
+		$this->view->addGroup($group);
+	}
+	
+	// TODO check for valid user identity
+	public function delete() {
+		$group = Group::getByUuid($this->view->request->get['ugid']);
+		
+		// TODO adapt to doctrine orm 
+		$group->delete();
+	}
+	
+	public function edit() {
+		// TODO implement GroupController::edit();
+	}
 }
 
 ?>

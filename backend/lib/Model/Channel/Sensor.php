@@ -20,7 +20,6 @@
  */
 
 abstract class Sensor extends Channel {
-	
 	public function getData($from = NULL, $to = NULL, $groupBy = NULL) {
 		$data = parent::getData($from, $to, $groupBy);
 		

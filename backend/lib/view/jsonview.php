@@ -22,13 +22,13 @@
 class JsonView extends View {
 	public $jsonData = array();
 
-	public function __construct(HttpRequest $request, HttpResponse $response) {
-		parent::__construct($request, $response);
+	public function __construct() {
+		parent::__construct();
 
 		$config = Registry::get('config');
 
 		$this->jsonData['source'] = 'volkszaehler.org';
-		$this->jsonData['version'] = VZ_VERSION;
+		$this->jsonData['version'] = VERSION;
 		$this->jsonData['storage'] = $config['db']['backend'];
 		$this->jsonData['controller'] = $request->get['controller'];
 		$this->jsonData['action'] = $request->get['action'];

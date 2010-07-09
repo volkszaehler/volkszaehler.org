@@ -19,21 +19,26 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-class ControllerException extends Exception {};
+use Doctrine\Common\Collections\ArrayCollection;
 
-interface ControllerInterface {
-	public function __construct(View $view);
-}
-
-abstract class Controller implements ControllerInterface {
-	protected $view;
+/**
+ * User class
+ * 
+ * @Entity
+ * @Table(name="users")
+ */
+class User extends Entity {
+	/** @Column(type="string") */
+	protected $email;
 	
-	public function __construct(View $view) {
-		$this->view = $view;
-	}
+	/** @Column(type="string") */
+	protected $passwords;
 	
-	public function __call($method, $param) {
-		throw new ControllerException('Undefined controller action!');
+	// TODO doctrine join
+	protected $groups = NULL;
+	
+	public function __construct() {
+		$this->groups  = new ArrayCollection();
 	}
 }
 

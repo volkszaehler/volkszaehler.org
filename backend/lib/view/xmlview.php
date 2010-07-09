@@ -26,15 +26,15 @@ class XmlView extends View {
 	private $xmlUsers;
 	private $xmlGroups;
 
-	public function __construct(HttpRequest $request, HttpResponse $response) {
-		parent::__construct($request, $response);
+	public function __construct() {
+		parent::__construct();
 
 		$config = Registry::get('config');
 
 		$this->xmlDoc = new DOMDocument('1.0', 'UTF-8');
 
 		$this->xml = $this->xmlDoc->createElement('volkszaehler');
-		$this->xml->setAttribute('version', VZ_VERSION);
+		$this->xml->setAttribute('version', VERSION);
 		$this->xmlChannels = $this->xmlDoc->createElement('channels');
 		$this->xmlUsers = $this->xmlDoc->createElement('users');
 		$this->xmlGroups = $this->xmlDoc->createElement('groups');

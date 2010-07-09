@@ -31,12 +31,36 @@ interface ChannelInterface {
 	public function getAverage($from = NULL, $to = NULL);
 }
 
-abstract class Channel extends DatabaseObject implements ChannelInterface {
+/**
+ * Channel class
+ * 
+ * @Entity
+ * @Table(name="channels")
+ */
+abstract class Channel extends Entity implements ChannelInterface {
+	/** @Column(type="string") */
+	protected $type;
+	
+	/** @Column(type="integer") */
+	protected $resolution;
+	
+	/** @Column(type="integer") */
+	protected $cost;
+	
+	/** @Column(type="string") */
+	protected $name;
+	
+	/** @Column(type="string") */
+	protected $description;
+	
 	/*
-	 * deletes all data from database
-	 */
-	public function reset($from = NULL, $to = NULL) {
-		$this->dbh->execute('DELETE FROM data WHERE channel_id = ' . (int) $this->id) . $this->buildTimeFilter($from, $to);
+	 * prune all data from database
+	 */ 
+	public function reset($from = 0, $to = NULL) {
+		// TODO add timefilter
+		$sql = 'DELETE FROM data WHERE channel_id = ' . (int) $this->id . ' && from to';
+		
+		// TODO delelte with doctrine dal
 	}
 
 	/*
@@ -44,11 +68,13 @@ abstract class Channel extends DatabaseObject implements ChannelInterface {
 	 */
 	public function addData($data) {
 		$sql = 'INSERT INTO data (channel_id, timestamp, value) VALUES(' . $this->dbh->escape($this) . ', ' . $this->dbh->escape($data['timestamp']) . ', ' . $this->dbh->escape($data['value']) . ')';
-		$this->dbh->execute($sql);
+		// TODO insert with doctrine dal
 	}
 
 	/*
-	 * This function retrieve data from the database. If desired it groups it into packages ($groupBy parameter)
+	 * retrieve data from the database
+	 * 
+	 * If desired it groups it into packages ($groupBy parameter)
 	 *
 	 * @return array() Array with timestamps => value (sorted by timestamp from newest to oldest)
 	 * @param $groupBy determines how readings are grouped. Possible values are: year, month, day, hour, minute or an integer for the desired size of the returned array
@@ -96,8 +122,10 @@ abstract class Channel extends DatabaseObject implements ChannelInterface {
 		}
 			
 		$sql .= ' ORDER BY timestamp DESC';
-		$result = $this->dbh->query($sql);
-		$totalCount = $result->count();
+		
+		// TODO query with doctrine dal
+		//$result = $this->dbh->query($sql);
+		//$totalCount = $result->count();
 
 		if (is_int($groupBy) && $groupBy < $totalCount) {	// return $groupBy values
 			$packageSize = floor($totalCount / $groupBy);
@@ -127,22 +155,5 @@ abstract class Channel extends DatabaseObject implements ChannelInterface {
 		}
 
 		return array_reverse($packages);	// start with oldest ts and ends with newest ts (reverse array order due to descending order in sql statement)
-	}
-
-	/*
-	 * build simple timeframe filter
-	 */
-	static protected function buildFilterTime($from = NULL, $to = NULL) {
-		$sql = '';
-
-		if (is_int($to) && $to <= time() * 1000) {
-			$sql .= ' && timestamp < ' . $to;
-		}
-
-		if (is_int($from) && $from > 0) {
-			$sql .= ' && timestamp > ' . $from;
-		}
-
-		return $sql;
 	}
 }

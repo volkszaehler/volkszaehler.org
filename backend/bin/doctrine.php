@@ -1,0 +1,1 @@
+/home/steffen/workspace/doctrine2/bin/doctrine.php

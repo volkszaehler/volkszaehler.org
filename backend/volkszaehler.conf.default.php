@@ -19,11 +19,11 @@
 * http://www.gnu.org/copyleft/gpl.html
 */
 
-$config['db']['backend']			= 'mysql';
+$config['db']['driver']				= 'pdo_mysql';
 $config['db']['host']				= 'localhost';
 $config['db']['user']				= 'volkszaehler';
 $config['db']['password']			= '';
-$config['db']['database']			= 'volkszaehler_nested';
+$config['db']['dbname']				= 'volkszaehler';
 
 $config['passthru']['enabled']		= false;
 $config['passthru']['url']			= 'http://volkszaehler.org/httplog/httplog.php?&passthru=yes';

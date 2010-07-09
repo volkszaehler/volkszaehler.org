@@ -1,4 +1,4 @@
-chann<?php
+<?php
 /*
  * Copyright (c) 2010 by Justin Otherguy <justin@justinotherguy.org>
  *
@@ -19,30 +19,39 @@ chann<?php
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-class GroupController extends Controller {
-	public function add() {
-		$group = new Group();
-		$group->name = $this->view->request->get['name'];
-		$group->description = $this->view->request->get['description'];
-		$group->save();
-		
-		$this->view->addGroup($group);
-	}
-	
-	public function delete() {
-		$group = Group::getByUuid($this->view->request->get['ugid']);
-		
-		$group->delete();
-	}
-	
+class UserController extends Controller {
+	// TODO do we need this?
 	public function get() {
-		$user = User::getByUuid($this->view->request->get['uuid']);
-		$groups = $user->getGroups(false);	// TODO recursive or not?
 		
-		foreach ($groups as $group) {
-			$this->view->addGroup($group);
-		}
+	}
+	
+	public function add() {
+		$user = new User();
+		$user->password = $this->view->request->get['password'];
+
+		// TODO adapt to doctrine orm 
+		$user->save();
+		
+		$this->view->addUser($user);
+	}
+	
+	// TODO check for valid user identity
+	public function delete() {
+		$user = User::getByUuid($this->view->request->get['uuid']);
+		
+		// TODO adapt to doctrine orm 
+		$user->delete();
+	}
+	
+	public function edit() {
+		// TODO implement UserController::edit();
+	}
+	
+	public function subscribe() {
+		// TODO implement UserController::subscribe();
+	}
+	
+	public function unsubscribe() {
+		// TODO implement UserController::unsubscribe();
 	}
 }
-
-?>

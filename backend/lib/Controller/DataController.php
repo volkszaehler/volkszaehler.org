@@ -19,35 +19,24 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-class ChannelController extends Controller {
+class DataController extends Controller {
 	public function get() {
-		$user = User::getByUuid($this->view->request->get['uuid']);
-		$channels = $user->getChannels(false);	// TODO recursive or not?
-		
+		$ids = explode(',', trim($this->view->request->get['ids']));
+		$channels = Channel::getByFilter(array('id' => $ids), true, false);	// get all channels with id in $ids as an array
+
+		$from = (isset($this->view->request->get['from'])) ? (int) $this->view->request->get['from'] : NULL;
+		$to = (isset($this->view->request->get['to'])) ? (int) $this->view->request->get['to'] : NULL;
+		$groupBy = (isset($this->view->request->get['groupBy'])) ? $this->view->request->get['groupBy'] : NULL;	// get all readings by default
+
 		foreach ($channels as $channel) {
-			$this->view->addChannel($channel);
+			// TODO change to Channel::getValues()
+			$this->view->addChannel($channel, $channel->getPulses($from, $to, $groupBy));
 		}
 	}
 	
 	public function add() {
-		$channel = new Channel();
-		
-		/*if (substr($channel->uuid, 0, 19) == OneWireSensor::$uuidPrefix) {	// TODO how do differ the 1-wire sensors?
-			$channel->type = 'OneWireSensor';
-			$channel->description = OneWireSensor::getFamilyDescription($channel);
-		}
-		else {
-			$channel->type = 'Channel';
-		}*/
-
-		$channel->save();
-		$this->view->addChannel($channel);
-	}
-	
-	public function delete() {	// TODO authentification
-		$channel = Channel::getByUuid($this->view->request->get['ucid']);
-		$channel->delete();
+		$ucid = $this->view->request->get['ucid'];
+		$channel = Channel::getByUuid($ucid);
+		$channel->addData($this->view->request->get); // array(timestamp, value, count)
 	}
 }
-
-?>

@@ -20,7 +20,6 @@
  */
 
 interface ViewInterface {
-	public function __construct(HttpRequest $request, HttpResponse $response);
 	public function render();
 	public function exceptionHandler(Exception $exception);
 	public function errorHandler($errno, $errstr, $errfile, $errline);
@@ -35,9 +34,10 @@ abstract class View implements ViewInterface {
 	protected $response;
 	private $created;	// holds timestamp of creation, used later to return time of execution
 	
-	public function __construct(HttpRequest $request, HttpResponse $response) {
-		$this->request = $request;
-		$this->response = $response;
+	public function __construct() {
+		$this->request = new HttpRequest();
+		$this->response = new HttpResponse();
+		
 		$this->created = microtime(true);
 		
 		// error & exception handling by view
