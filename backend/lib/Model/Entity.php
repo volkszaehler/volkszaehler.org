@@ -19,19 +19,33 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
+namespace Volkszaehler\Model;
+
+use Volkszaehler\Util;
+
 /**
  * Database Entity
  * 
- * @todo doctrine abstract entity?
- * @Entity
+ * @MappedSuperclass
  */
 abstract class Entity {
 	/**
 	 * @Id
 	 * @Column(type="integer")
+	 * @GeneratedValue(strategy="AUTO")
 	 */
 	protected $id;
 	
 	/** @Column(type="string", length=36) */
 	protected $uuid;
+	
+	public function __construct() {
+		$this->uuid = Util\Uuid::mint();
+	}
+	
+	/*
+	 * getter & setter
+	 */
+	public function getId() { return $this->id; }		// read only
+	public function getUuid() { return $this->uuid; }	// read only
 }

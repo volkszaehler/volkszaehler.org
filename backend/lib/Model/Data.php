@@ -19,31 +19,45 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-namespace Volkszaehler\Model\Channel;
+namespace Volkszaehler\Model;
+
+use Doctrine\Common\Collections\ArrayCollection;
 
 /**
- * Meter class
- *
  * @Entity
+ * @Table(name="data")
  */
-class Meter extends Channel {
-	/** @Column(type="integer") */
-	private $resolution;
+class Data {
+	/**
+	 * ending timestamp of period in ms since 1970
+	 * 
+	 * @Id
+	 * @Column(type="bigint")
+	 */
+	private $timestamp;
 
 	/** @Column(type="decimal") */
-	private $cost;
+	private $value;
+
+	/**
+	 * @Id
+	 * @ManyToOne(targetEntity="Volkszaehler\Model\Channel\Channel", inversedBy="data")
+	 * @JoinColumn(name="channel_id", referencedColumnName="id")
+	 */
+	private $channel;
+	
+	public function __construct(Channel\Channel $channel, $value, $timestamp) {
+		$this->channel = $channel;
+		$this->value = $value;
+		$this->timestamp = $timestamp;
+	}
 	
 	/*
-	 * indicator => unit mapping
+	 * setter & getter
 	 */
-	protected static $indicators = array(
-		'power' => 'kW/h',
-		'gas' => 'qm/h',
-		'water' => 'qm/h'
-	);
-	
-	public function getResolution() { return $this->resolution; }
-	public function setResolution($resolution) { $this->resolution = $resolution; }
-	public function getCost() { return $this->cost; }
-	public function setCost($cost) { $this->cost = $cost; }
+	public function getValue() { return $this->value; }
+	public function getTimestamp() { return $this->timestamp; }
+	public function getChannel() { return $this->channel; }
 }
+
+?>

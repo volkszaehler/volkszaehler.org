@@ -19,39 +19,10 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-class UserController extends Controller {
-	// TODO do we need this?
-	public function get() {
-		
-	}
-	
-	public function add() {
-		$user = new User();
-		$user->password = $this->view->request->get['password'];
+namespace Volkszaehler\Logger;
 
-		// TODO adapt to doctrine orm 
-		$user->save();
-		
-		$this->view->addUser($user);
-	}
+class Flukso implements Logger {
 	
-	// TODO check for valid user identity
-	public function delete() {
-		$user = User::getByUuid($this->view->request->get['uuid']);
-		
-		// TODO adapt to doctrine orm 
-		$user->delete();
-	}
-	
-	public function edit() {
-		// TODO implement UserController::edit();
-	}
-	
-	public function subscribe() {
-		// TODO implement UserController::subscribe();
-	}
-	
-	public function unsubscribe() {
-		// TODO implement UserController::unsubscribe();
-	}
 }
+
+?>

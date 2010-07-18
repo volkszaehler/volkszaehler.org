@@ -19,32 +19,24 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-class HttpRequest extends HttpHandle {
-	public $code;
+namespace Volkszaehler\View\Json;
+
+class Group extends \Volkszaehler\View\Json {
 	
-	public $server;
-	public $get;
-	public $post;
-	public $cookies;
-	public $files;
-	
-	public function __construct() {
-		$this->headers = apache_response_headers();
+	public function add(\Volkszaehler\Model\Group $obj, $recursive = false) {
+		$group['id'] = (int) $obj->getId();
+		$group['uuid'] = (string) $obj->getUuid();
+		$group['name'] = $obj->getName();
+		$group['description'] = $obj->getDescription();
 		
-		$this->server = $_SERVER;
-		$this->get = $_GET;
-		$this->post = $_POST;
-		$this->cookies = $_COOKIE;
-		$this->files = $_FILES;
-		
-		unset($_SERVER);
-		unset($_GET);
-		unset($_POST);
-		unset($_COOKIE);
-		unset($_FILES);
-	}
-	
-	public function getHeader($header) {
-		return $this->headers[$header];
+		if ($recursive) {	// TODO add really nested sub groups
+			$children = $obj->getChildren();
+
+			foreach ($children as $child) {
+				$this->addGroup($child, $recursive);
+			}
+		}
+			
+		$this->json['groups'][] = $group;
 	}
 }

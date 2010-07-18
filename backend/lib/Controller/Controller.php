@@ -19,20 +19,44 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-class ControllerException extends Exception {};
+namespace Volkszaehler\Controller;
 
 abstract class Controller {
 	protected $view;
+	protected $em;
 	
-	public function __construct(View $view) {
+	/*
+	 * constructor
+	 */
+	public function __construct(\Volkszaehler\View\View $view, \Doctrine\ORM\EntityManager $em) {
 		$this->view = $view;
+		$this->em = $em;
 	}
 	
 	/*
-	 * catches unknown actions
+	 * creates new view instance depending on the requested format
 	 */
-	public function __call($method, $param) {
-		throw new ControllerException('Undefined controller action!');
+	public static function factory(\Volkszaehler\View\View $view, \Doctrine\ORM\EntityManager $em) {
+		$controller = ucfirst(strtolower($view->request->getParameter('controller')));
+		
+		$controllerClassName = 'Volkszaehler\Controller\\' . $controller;
+		if (!(\Volkszaehler\Util\ClassLoader::classExists($controllerClassName)) || !is_subclass_of($controllerClassName, '\Volkszaehler\Controller\Controller')) {
+			throw new \InvalidArgumentException('\'' . $controllerClassName . '\' is not a valid controller');
+		}
+		return new $controllerClassName($view, $em);
+	}
+	
+	/**
+	 * run controller actions
+	 * 
+	 * @param string $action runs the action if class method is available
+	 */
+	public function run($action) {
+		if (!method_exists($this, $action)) {
+			throw new \InvalidArgumentException('\'' . $action . '\' is not a valid controller action');
+		}
+		
+		$this->$action();
 	}
 }
 

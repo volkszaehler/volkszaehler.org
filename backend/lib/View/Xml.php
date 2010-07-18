@@ -19,7 +19,11 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-class XmlView extends View {
+namespace Volkszaehler\View;
+
+
+// TODO outdated
+class Xml extends View {
 	private $xmlDoc;
 	private $xml;
 	private $xmlChannels;
@@ -41,13 +45,13 @@ class XmlView extends View {
 
 		$this->xml->appendChild($this->xmlDoc->createElement('source', 'volkszaehler.org'));
 		$this->xml->appendChild($this->xmlDoc->createElement('storage', $config['db']['backend']));
-		$this->xml->appendChild($this->xmlDoc->createElement('controller', $request->get['controller']));
-		$this->xml->appendChild($this->xmlDoc->createElement('action', $request->get['action']));
+		$this->xml->appendChild($this->xmlDoc->createElement('controller', $request->getParameter('controller')));
+		$this->xml->appendChild($this->xmlDoc->createElement('action', $request->getParameter('action')));
 		
 		$this->response->setHeader('Content-type', 'text/xml');
 	}
 
-	public function addChannel(Channel $obj, $data = NULL) {
+	public function addChannel(\Volkszaehler\Model\Channel $obj, $data = NULL) {
 		$xmlChannel = $this->xmlDoc->createElement('channel');
 		$xmlChannel->setAttribute('id', (int) $obj->id);
 		
@@ -77,7 +81,7 @@ class XmlView extends View {
 		$this->xmlChannels->appendChild($xmlChannel);
 	}
 		
-	public function addUser(User $obj) {
+	public function addUser(\Volkszaehler\Model\User $obj) {
 		$xmlUser = $this->xmlDoc->createElement('user');
 		$xmlUser->setAttribute('id', (int) $obj->id);
 		$xmlUser->appendChild($this->xmlDoc->createElement('uuid', $obj->uuid));
@@ -85,7 +89,7 @@ class XmlView extends View {
 		$this->xmlUsers->appendChild($xmlUser);
 	}
 
-	public function addGroup(Group $obj) {
+	public function addGroup(\Volkszaehler\Model\Group $obj) {
 		$xmlGroup = $this->xmlDoc->createElement('group');
 		$xmlGroup->setAttribute('id', (int) $obj->id);
 		$xmlGroup->appendChild($this->xmlDoc->createElement('uuid', $obj->uuid));
@@ -118,7 +122,7 @@ class XmlView extends View {
 		echo $this->xmlDoc->saveXML();
 	}
 
-	protected function addException(Exception $exception) {
+	protected function addException(\Exception $exception) {
 		$xmlException = $this->xmlDoc->createElement('exception');
 		$xmlException->setAttribute('code', $exception->getCode());
 		$xmlException->appendChild($this->xmlDoc->createElement('message', $exception->getMessage()));

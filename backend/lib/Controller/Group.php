@@ -1,4 +1,4 @@
-<?php
+chann<?php
 /*
  * Copyright (c) 2010 by Justin Otherguy <justin@justinotherguy.org>
  *
@@ -19,31 +19,41 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-namespace Volkszaehler\Model\Channel;
+namespace Volkszaehler\Controller;
 
-/**
- * Meter class
- *
- * @Entity
- */
-class Meter extends Channel {
-	/** @Column(type="integer") */
-	private $resolution;
-
-	/** @Column(type="decimal") */
-	private $cost;
+class Group extends Controller {
+	public function get() {
+		// TODO get groups from entitymanager according to API specs
+		
+		foreach ($groups as $group) {
+			$this->view->addGroup($group);
+		}
+	}
 	
-	/*
-	 * indicator => unit mapping
-	 */
-	protected static $indicators = array(
-		'power' => 'kW/h',
-		'gas' => 'qm/h',
-		'water' => 'qm/h'
-	);
 	
-	public function getResolution() { return $this->resolution; }
-	public function setResolution($resolution) { $this->resolution = $resolution; }
-	public function getCost() { return $this->cost; }
-	public function setCost($cost) { $this->cost = $cost; }
+	public function add() {
+		$group = new Group();
+		
+		$group->name = $this->view->request->getParameter('name');
+		$group->description = $this->view->request->getParameter('description');
+		
+		$this->em->persist($group);
+		$this->em->flush();
+		
+		$this->view->add($group);
+	}
+	
+	// TODO check for valid user identity
+	public function delete() {
+		$group = Group::getByUuid($this->view->request->getParameter('ugid'));
+		
+		$this->em->remove($group);
+		$this->em->flush();
+	}
+	
+	public function edit() {
+		// TODO implement GroupController::edit();
+	}
 }
+
+?>

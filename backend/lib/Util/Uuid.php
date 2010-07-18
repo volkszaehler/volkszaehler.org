@@ -31,6 +31,10 @@
  * Last revised 2010-02-15
  */
 
+namespace Volkszaehler\Util;
+
+class Exception extends \Exception {}
+
 class Uuid {
 	const MD5  = 3;
 	const SHA1 = 5;
@@ -69,7 +73,7 @@ class Uuid {
 				return new self(self::mintTime($node));
 			case 2:
 				// Version 2 is not supported
-				throw new UUIDException("Version 2 is unsupported.");
+				throw new Exception("Version 2 is unsupported.");
 			case 3:
 				return new self(self::mintName(self::MD5, $node, $ns));
 			case 4:
@@ -77,7 +81,7 @@ class Uuid {
 			case 5:
 				return new self(self::mintName(self::SHA1, $node, $ns));
 			default:
-				throw new UUIDException("Selected version is invalid or unsupported.");
+				throw new Exception("Selected version is invalid or unsupported.");
 		}
 	}
 
@@ -145,9 +149,12 @@ class Uuid {
 	}
 
 	protected function __construct($uuid) {
-		if (strlen($uuid) != 16)
-		throw new UUIDException("Input must be a 128-bit integer.");
+		if (strlen($uuid) != 16) {
+			throw new Exception("Input must be a 128-bit integer.");
+		}
+		
 		$this->bytes  = $uuid;
+		
 		// Optimize the most common use
 		$this->string =
 		bin2hex(substr($uuid,0,4))."-".
@@ -208,11 +215,11 @@ class Uuid {
 		/* Generates a Version 3 or Version 5 UUID.
 		 These are derived from a hash of a name and its namespace, in binary form. */
 		if (!$node)
-		throw new UUIDException("A name-string is required for Version 3 or 5 UUIDs.");
+		throw new Exception("A name-string is required for Version 3 or 5 UUIDs.");
 		// if the namespace UUID isn't binary, make it so
 		$ns = self::makeBin($ns, 16);
 		if (!$ns)
-		throw new UUIDException("A binary namespace is required for Version 3 or 5 UUIDs.");
+		throw new Exception("A binary namespace is required for Version 3 or 5 UUIDs.");
 		switch($ver) {
 			case self::MD5:
 				$version = self::version3;
@@ -258,7 +265,7 @@ class Uuid {
 				self::$randomSource = new COM('CAPICOM.Utilities.1');  // See http://msdn.microsoft.com/en-us/library/aa388182(VS.85).aspx
 				self::$randomFunc = 'randomCOM';
 			}
-			catch(Exception $e) {}
+			catch(\Exception $e) {}
 		}
 		return self::$randomFunc;
 	}
@@ -290,7 +297,4 @@ class Uuid {
 		 Randomness is returned as a string of bytes. */
 		return base64_decode(self::$randomSource->GetRandom($bytes,0)); // straight binary mysteriously doesn't work, hence the base64
 	}
-}
-
-class UUIDException extends Exception {
 }

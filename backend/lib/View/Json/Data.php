@@ -19,18 +19,11 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-class Configuration extends Registry implements ArrayAccess {
-	public function offsetSet($offset, $value) {
-		$this->registry[$offset] = $value;
-	}
-	public function offsetExists($offset) {
-		return isset($this->registry[$offset]);
-	}
-	public function offsetUnset($offset) {
-		unset($this->registry[$offset]);
-	}
-	public function offsetGet($offset) {
-		return isset($this->registry[$offset]) ? $this->registry[$offset] : null;
+namespace Volkszaehler\View\Json;
+
+class Data extends \Volkszaehler\View\Json {
+	public function add($data) {
+		$this->json['data'][] = $data;
 	}
 }
 

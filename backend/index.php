@@ -19,29 +19,39 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
+namespace Volkszaehler;
+
+use Volkszaehler\Util;
+use Volkszaehler\Controller;
+
+// TODO replace by state class
+const VERSION = 1.1;
+const BACKEND_DIR = '/home/steffen/workspace/volkszaehler.org/backend';	// TODO realpath(__DIR__)
+const DEV_ENV = true;
+
 // class autoloading
-require 'lib/vendor/doctrine/Common/ClassLoader.php';
+require BACKEND_DIR . '/lib/Util/ClassLoader.php';
 
-$doctrineLoader = new \Doctrine\Common\ClassLoader('Doctrine', 'lib/vendor/doctrine');
-$doctrineLoader->register(); // register on SPL autoload stack
+$classLoaders = array();
+$classLoaders[] = new Util\ClassLoader('Doctrine', BACKEND_DIR . '/lib/vendor/Doctrine');
+$classLoaders[] = new Util\ClassLoader('Symfony', BACKEND_DIR . '/lib/vendor/Symfony');
+$classLoaders[] = new Util\ClassLoader('Volkszaehler', BACKEND_DIR . '/lib');
 
-$vzLoader = new \Doctrine\Common\ClassLoader('Volkszaehler', 'lib');
-$vzLoader->register(); // register on SPL autoload stack
-
-// API version
-define('VERSION', '0.2');
+foreach ($classLoaders as $loader) {
+	$loader->register(); // register on SPL autoload stack
+}
 
 // enable strict error reporting
 error_reporting(E_ALL);
 
 // load configuration into registry
-if (!file_exists(__DIR__ . '/volkszaehler.conf.php')) {
+if (!file_exists(BACKEND_DIR . '/volkszaehler.conf.php')) {
 	throw new Exception('No configuration available! Use volkszaehler.conf.default.php as an template');
 }
 
-include __DIR__ . '/volkszaehler.conf.php';
+include BACKEND_DIR . '/volkszaehler.conf.php';
 
-$fc = new FrontController();	// spawn frontcontroller
-$fc->run();						// execute controller and sends output
+$fc = new Dispatcher;	// spawn frontcontroller / dispatcher
+$fc->run();				// execute controller and sends output
 
 ?>

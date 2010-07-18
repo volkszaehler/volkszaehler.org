@@ -19,6 +19,8 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
+namespace Volkszaehler\Model;
+
 use Doctrine\Common\Collections\ArrayCollection;
 
 /**
@@ -29,21 +31,46 @@ use Doctrine\Common\Collections\ArrayCollection;
  */
 class Group extends Entity {
 	/** @Column(type="string") */
-	protected $name;
+	private $name;
 	
 	/** @Column(type="string") */
-	protected $description;
+	private $description;
 	
-	// TODO doctrine join
-	protected $channels = NULL;
+	/**
+	 * @ManyToMany(targetEntity="Volkszaehler\Model\Channel\Channel")
+	 * @JoinTable(name="groups_channel",
+	 * 		joinColumns={@JoinColumn(name="group_id", referencedColumnName="id")},
+	 * 		inverseJoinColumns={@JoinColumn(name="channel_id", referencedColumnName="id")}
+	 * )
+	 */
+	private $channels = NULL;
 	
-	// TODO doctrine nested selfjoin
-	protected $children = NULL;
+	/**
+	 * @ManyToMany(targetEntity="Group")
+	 * @JoinTable(name="groups_groups",
+	 * 		joinColumns={@JoinColumn(name="parent_id", referencedColumnName="id")},
+	 * 		inverseJoinColumns={@JoinColumn(name="child_id", referencedColumnName="id")}
+	 * )
+	 */
+	private $children = NULL;
 
+	/*
+	 * construct
+	 */
 	public function __construct() {
+		parent::__construct();
+		
 		$this->channels = new ArrayCollection();
 		$this->children = new ArrayCollection();
 	}
+	
+	/*
+	 * getter & setter
+	 */
+	public function getName() { return $this->name; }
+	public function setName($name) { $this->name = $name; }
+	public function getDescription() { return $this->description; }
+	public function setDescription($description) { $this->description = $description; }
 }
 
 ?>

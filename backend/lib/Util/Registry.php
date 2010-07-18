@@ -19,6 +19,8 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
+namespace Volkszaehler\Util;
+
 /**
  * Registry class to pass global variables between classes.
  */
@@ -43,7 +45,7 @@ abstract class Registry {
 			self::$registry[$key] = $value;
 			return true;
 		} else {
-			throw new Exception('Unable to set variable `' . $key . '`. It was already set.');
+			throw new \Exception('Unable to set variable `' . $key . '`. It was already set.');
 		}
 	}
 

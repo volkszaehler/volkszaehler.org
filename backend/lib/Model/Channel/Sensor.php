@@ -19,26 +19,21 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-abstract class Sensor extends Channel {
-	public function getData($from = NULL, $to = NULL, $groupBy = NULL) {
-		$data = parent::getData($from, $to, $groupBy);
-		
-		array_walk($data, function(&$reading) {
-			$reading['value'] /= $reading['count'];	// calculate average (ungroup the sql sum() function)
-		});
-		
-		return $data;
-	}
+namespace Volkszaehler\Model\Channel;
 
-	public function getMin($from = NULL, $to = NULL) {	// TODO untested
-		return $this->dbh->query('SELECT value, timestamp FROM data WHERE channel_id = ' . (int) $this->id . self::buildFilterTime($from, $to) . ' ORDER BY value ASC', 1)->current();
-	}
+/**
+ * Channel class
+ *
+ * @Entity
+ */
+class Sensor extends Channel {
 	
-	public function getMax($from = NULL, $to = NULL) {	// TODO untested
-		return $this->dbh->query('SELECT value, timestamp FROM data WHERE channel_id = ' . (int) $this->id . self::buildFilterTime($from, $to) . ' ORDER BY value DESC', 1)->current();
-	}
-	
-	public function getAverage($from = NULL, $to = NULL) {	// TODO untested
-		return $this->dbh->query('SELECT AVG(value) AS value FROM data WHERE channel_id = ' . (int) $this->id . self::buildFilterTime($from, $to))->current();
-	}
+	/*
+	 * indicator => unit mapping
+	 */
+	protected static $indicators = array(
+		'temperature' => '° C',
+		'pressure' => 'hPa',
+		'humidity' => '%'
+	);
 }

@@ -19,9 +19,14 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-abstract class HttpHandle {
-	public $code;
+namespace Volkszaehler\View\Http;
+
+/*
+ * simple class to control the output buffering
+ */
+class Response {
 	protected $headers = array();
+	protected $code = 200;	// default code (OK)
 	
 	protected static $codes = array(
 		100 => 'Continue',
@@ -65,6 +70,40 @@ abstract class HttpHandle {
 		504 => 'Gateway Timeout',
 		505 => 'HTTP Version Not Supported'
 	);
+	
+	/*
+	 * constructor
+	 */
+	public function __construct() {
+		$this->headers = apache_response_headers();
+		
+		ob_start(array($this, 'obCallback'));
+	}
+	
+	public function obCallback($output) {
+		return $output;	// simple passthrough
+	}
+	
+	public function send() {
+		// change returncode
+		header('HTTP/1.1 ' . $this->code . ' ' . self::getCodeDescription($this->code));	// TODO untested
+		
+		// send headers
+		foreach ($this->headers as $name => $value) {
+			header($name . ': ' . $value);
+		}
+		ob_end_flush();
+	}
+	
+	/*
+	 * setter & getter
+	 */
+	public function setHeader($header, $value) { $this->headers[$header] = $value; }
+	public function getHeader($header) { return $this->headers[$header]; }
+	public function getCode() { return $this->code; }
+	public function setCode($code) { $this->code = $code; }
+	static public function getCodeDescription($code) {
+		return (isset(self::$codes[$code])) ? self::$codes[$code] : false;
+	}
 }
 
-?>

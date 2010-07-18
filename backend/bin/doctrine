@@ -1,1 +1,4 @@
-/home/steffen/workspace/doctrine2/bin/doctrine
+#!/usr/bin/env php
+<?php
+
+include('doctrine.php');

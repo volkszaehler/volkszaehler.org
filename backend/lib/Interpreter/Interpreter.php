@@ -19,67 +19,28 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-interface ChannelInterface {
-	// data management
-	public function addData($data);
-	public function getData($from = NULL, $to = NULL, $groupBy = NULL);
-	public function reset();
+namespace Volkszaehler\Interpreter;
 
-	// some statistical functions
+interface InterpreterInterface {
+	public function getValues($from = NULL, $to = NULL, $groupBy = NULL);
 	public function getMin($from = NULL, $to = NULL);
 	public function getMax($from = NULL, $to = NULL);
 	public function getAverage($from = NULL, $to = NULL);
 }
 
-/**
- * Channel class
- * 
- * @Entity
- * @Table(name="channels")
- */
-abstract class Channel extends Entity implements ChannelInterface {
-	/** @Column(type="string") */
-	protected $type;
-	
-	/** @Column(type="integer") */
-	protected $resolution;
-	
-	/** @Column(type="integer") */
-	protected $cost;
-	
-	/** @Column(type="string") */
-	protected $name;
-	
-	/** @Column(type="string") */
-	protected $description;
+abstract class Interpreter implements InterpreterInterface {
+	protected $channel;
+	protected $em;
 	
 	/*
-	 * prune all data from database
-	 */ 
-	public function reset($from = 0, $to = NULL) {
-		// TODO add timefilter
-		$sql = 'DELETE FROM data WHERE channel_id = ' . (int) $this->id . ' && from to';
-		
-		// TODO delelte with doctrine dal
-	}
-
-	/*
-	 * add a new data to the database
+	 * constructor
 	 */
-	public function addData($data) {
-		$sql = 'INSERT INTO data (channel_id, timestamp, value) VALUES(' . $this->dbh->escape($this) . ', ' . $this->dbh->escape($data['timestamp']) . ', ' . $this->dbh->escape($data['value']) . ')';
-		// TODO insert with doctrine dal
+	public function __construct(\Volkszaehler\Model\Channel\Channel $channel, \Doctrine\ORM\EntityManager $em) {
+		$this->channel = $channel;
+		$this->em = $em;
 	}
-
-	/*
-	 * retrieve data from the database
-	 * 
-	 * If desired it groups it into packages ($groupBy parameter)
-	 *
-	 * @return array() Array with timestamps => value (sorted by timestamp from newest to oldest)
-	 * @param $groupBy determines how readings are grouped. Possible values are: year, month, day, hour, minute or an integer for the desired size of the returned array
-	 */
-	public function getData($from = NULL, $to = NULL, $groupBy = NULL) {
+	
+	protected function getData($from = NULL, $to = NULL, $groupBy = NULL) {
 		$ts = 'FROM_UNIXTIME(timestamp/1000)';	// just for saving space
 		switch ($groupBy) {
 			case 'year':
@@ -107,7 +68,7 @@ abstract class Channel extends Entity implements ChannelInterface {
 				break;
 
 			default:
-				if (is_numeric($groupBy)) {
+				if (is_numeric($groupBy)) {		// lets agrregate it with php
 					$groupBy = (int) $groupBy;
 				}
 				$sqlGroupBy = false;
@@ -115,18 +76,26 @@ abstract class Channel extends Entity implements ChannelInterface {
 
 		$sql = 'SELECT';
 		$sql .= ($sqlGroupBy === false) ? ' timestamp, value' : ' MAX(timestamp) AS timestamp, SUM(value) AS value, COUNT(timestamp) AS count';
-		$sql .= ' FROM data WHERE channel_id = ' . (int) $this->id . $this->buildFilterTime($from, $to);
+		$sql .= ' FROM data WHERE channel_id = ' . (int) $this->channel->getId();	// TODO add time filter
 
 		if ($sqlGroupBy !== false) {
 			$sql .= ' GROUP BY ' . $sqlGroupBy;
 		}
 			
 		$sql .= ' ORDER BY timestamp DESC';
-		
-		// TODO query with doctrine dal
-		//$result = $this->dbh->query($sql);
-		//$totalCount = $result->count();
 
+		$rsm = new \Doctrine\ORM\Query\ResultsetMapping;
+		$rsm->addScalarResult('timestamp', 'timestamp');
+		$rsm->addScalarResult('value', 'value');
+		
+		if ($sqlGroupBy) {
+			$rsm->addScalarResult('count', 'count');
+		}
+		
+		$query = $this->em->createNativeQuery($sql, $rsm);
+		$result = $query->getResult();
+		$totalCount = count($result);
+		
 		if (is_int($groupBy) && $groupBy < $totalCount) {	// return $groupBy values
 			$packageSize = floor($totalCount / $groupBy);
 			$packageCount = $groupBy;
@@ -137,23 +106,25 @@ abstract class Channel extends Entity implements ChannelInterface {
 		}
 
 		$packages = array();
-		$reading = $result->rewind();
+		$reading = reset($result);
 		for ($i = 1; $i <= $packageCount; $i++) {
 			$package = array('timestamp' => $reading['timestamp'],	// last timestamp in package
 								'value' => (float) $reading['value'],		// sum of values
 								'count' => ($sqlGroupBy === false) ? 1 : $reading['count']);						// total count of values or pulses in the package
 
 			while ($package['count'] < $packageSize) {
-				$reading = $result->next();
+				$reading = next($result);
 
 				$package['value'] += $reading['value'];
 				$package['count']++;
 			}
 
 			$packages[] = $package;
-			$reading = $result->next();
+			$reading = next($result);
 		}
 
 		return array_reverse($packages);	// start with oldest ts and ends with newest ts (reverse array order due to descending order in sql statement)
 	}
 }
+
+?>

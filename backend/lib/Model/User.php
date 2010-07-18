@@ -19,6 +19,8 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
+namespace Volkszaehler\Model;
+
 use Doctrine\Common\Collections\ArrayCollection;
 
 /**
@@ -29,16 +31,41 @@ use Doctrine\Common\Collections\ArrayCollection;
  */
 class User extends Entity {
 	/** @Column(type="string") */
-	protected $email;
+	private $email;
 	
 	/** @Column(type="string") */
-	protected $passwords;
+	private $password;
 	
-	// TODO doctrine join
-	protected $groups = NULL;
+	/**
+	 * @ManyToMany(targetEntity="Group")
+	 * @JoinTable(name="groups_users",
+	 * 		joinColumns={@JoinColumn(name="user_id", referencedColumnName="id")},
+	 * 		inverseJoinColumns={@JoinColumn(name="group_id", referencedColumnName="id")}
+	 * )
+	 */
+	private $groups = NULL;
 	
+	/*
+	 * constructor
+	 */
 	public function __construct() {
+		parent::__construct();
+		
 		$this->groups  = new ArrayCollection();
+	}
+	
+	/*
+	 * getter & setter
+	 */
+	public function getEmail() { return $this->email; }
+	public function setEmail($email) { $this->email = $email; }
+	public function setPassword($password) { $this->password = sha1($password); }
+
+	/*
+	 * check hashed password against cleartext
+	 */
+	public function checkPassword($password) {
+		return (sha1($password) === $this->password);
 	}
 }
 

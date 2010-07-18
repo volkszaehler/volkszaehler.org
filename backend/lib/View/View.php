@@ -19,25 +19,19 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-interface ViewInterface {
-	public function render();
-	public function exceptionHandler(Exception $exception);
-	public function errorHandler($errno, $errstr, $errfile, $errline);
-	
-	public function addChannel(Channel $obj);
-	public function addUser(User $obj);
-	public function addGroup(Group $obj);
-}
+namespace Volkszaehler\View;
 
-abstract class View implements ViewInterface {
+abstract class View {
 	public $request;
 	protected $response;
+	
 	private $created;	// holds timestamp of creation, used later to return time of execution
 	
-	public function __construct() {
-		$this->request = new HttpRequest();
-		$this->response = new HttpResponse();
+	public function __construct(Http\Request $request, Http\Response $response) {
+		$this->request = $request;
+		$this->response = $response;
 		
+		// TODO move to Debug or State class
 		$this->created = microtime(true);
 		
 		// error & exception handling by view
@@ -45,25 +39,50 @@ abstract class View implements ViewInterface {
 		set_error_handler(array($this, 'errorHandler'));
 	}
 	
-	final public function errorHandler($errno, $errstr, $errfile, $errline) {
-		$this->exceptionHandler(new ErrorException($errstr, 0, $errno, $errfile, $errline));
+	/*
+	 * creates new view instance depending on the requested format
+	 */
+	public static function factory(Http\Request $request, Http\Response $response) {
+		$format = ucfirst(strtolower($request->getParameter('format')));
+		$controller = ucfirst(strtolower($request->getParameter('controller')));
+		
+		$viewClassName = 'Volkszaehler\View\\' . $format . '\\' . $controller;
+		if (!(\Volkszaehler\Util\ClassLoader::classExists($viewClassName)) || !is_subclass_of($viewClassName, '\Volkszaehler\View\View')) {
+			throw new \InvalidArgumentException('\'' . $viewClassName . '\' is not a valid View');
+		}
+		
+		return new $viewClassName($request, $response);
 	}
 	
-	final public function exceptionHandler(Exception $exception) {
+	/*
+	 * error & exception handling
+	 */
+	final public function errorHandler($errno, $errstr, $errfile, $errline) {
+		$this->exceptionHandler(new \ErrorException($errstr, 0, $errno, $errfile, $errline));
+	}
+	
+	final public function exceptionHandler(\Exception $exception) {
 		$this->addException($exception);
 		
 		//$this->status = STATUS_EXCEPTION;	// TODO add status reporting to API
-		$this->code = 400;					// TODO add Exception => HTTP code mapping
+		
+		$code = ($exception->getCode() == 0 && Http\Response::getCodeDescription($exception->getCode())) ? 400 : $exception->getCode();
+		$this->response->setCode($code);
 		
 		$this->render();
 		die();
 	}
 	
+	// TODO move this into Debug or State Class
 	protected function getTime() {
 		return round(microtime(true) - $this->created, 4);
 	}
 	
-	public function __destruct() {
-		$this->response->send();	// send response
+	public function render() {
+		if (!is_null($this->request->getParameter('debug')) && $this->request->getParameter('debug') > 0) {
+			$this->addDebug();
+		}
+		
+		$this->response->send();
 	}
 }

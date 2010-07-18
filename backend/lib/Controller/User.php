@@ -19,8 +19,41 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-class PowerMeter extends Meter {
-	const unit = 'kW/h';
-}
+namespace Volkszaehler\Controller;
 
-?>
+class User extends Controller {
+	// TODO do we need this?
+	public function get() {
+		
+	}
+	
+	public function add() {
+		$user = new User();
+		$user->setPassword($this->view->request->getParameter('password'));
+
+		$this->em->persist($user);
+		$this->em->flush();
+		
+		$this->view->add($user);
+	}
+	
+	// TODO check for valid user identity
+	public function delete() {
+		$user = User::getByUuid($this->view->request->getParameter('uuid'));
+		
+		$this->em->remove($user);
+		$this->em->flush();
+	}
+	
+	public function edit() {
+		// TODO implement UserController::edit();
+	}
+	
+	public function subscribe() {
+		// TODO implement UserController::subscribe();
+	}
+	
+	public function unsubscribe() {
+		// TODO implement UserController::unsubscribe();
+	}
+}

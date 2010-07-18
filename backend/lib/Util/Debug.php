@@ -19,31 +19,17 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-namespace Volkszaehler\Model\Channel;
+namespace Volkszaehler\Util;
 
-/**
- * Meter class
- *
- * @Entity
- */
-class Meter extends Channel {
-	/** @Column(type="integer") */
-	private $resolution;
-
-	/** @Column(type="decimal") */
-	private $cost;
+class Debug {
+	private static $logger = NULL;
 	
-	/*
-	 * indicator => unit mapping
-	 */
-	protected static $indicators = array(
-		'power' => 'kW/h',
-		'gas' => 'qm/h',
-		'water' => 'qm/h'
-	);
-	
-	public function getResolution() { return $this->resolution; }
-	public function setResolution($resolution) { $this->resolution = $resolution; }
-	public function getCost() { return $this->cost; }
-	public function setCost($cost) { $this->cost = $cost; }
+	static public function getSQLLogger() {
+		if (is_null(self::$logger)) {
+			self::$logger = new \Doctrine\DBAL\Logging\DebugStack();
+		}
+		return self::$logger;
+	}
 }
+
+?>

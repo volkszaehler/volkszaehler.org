@@ -19,33 +19,43 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-class HttpResponse extends HttpHandle {
+namespace Volkszaehler\View\Http;
+
+class Request {
+	protected $headers;
+	protected $parameters;
 	
-	public $code = 200;	// default code (OK)
+	/**
+	 * HTTP request methods
+	 * 
+	 * @link http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
+	 */
+	public $method;
 	
+	/*
+	 * constructor
+	 */
 	public function __construct() {
-		$this->headers = apache_response_headers();
+		$this->headers = apache_response_headers();	// NOTICE only works for Apache Webservers
 		
-		ob_start(array($this, 'obCallback'));
-	}
-	
-	public function obCallback($output) {
-		return $output;
-	}
-	
-	public function send() {
-		// change returncode
-		header('HTTP/1.1 ' . $this->code . ' ' . HttpHandle::$codes[$this->code]);	// TODO untested
+		$this->method = $_SERVER['REQUEST_METHOD'];
 		
-		// send headers
-		foreach ($this->headers as $name => $value) {
-			header($name . ': ' . $value);
-		}
-		ob_end_flush();
+		$this->parameters= array(
+								'get' => $_GET,
+								'post' => $_POST,
+								'cookies' => $_COOKIE,
+								'files' => $_FILES
+							);
+		
+		unset($_GET, $_POST, $_COOKIE, $_FILES);
 	}
 	
-	public function setHeader($header, $value) {
-		$this->headers[$header] = $value;
+	/*
+	 * setter & getter
+	 */
+	public function getHeader($header) { return $this->headers[$header]; }
+	
+	public function getParameter($name, $method = 'get') {
+		return (isset($this->parameters[$method][$name])) ? $this->parameters[$method][$name] : NULL;
 	}
 }
-

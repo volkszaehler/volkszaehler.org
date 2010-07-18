@@ -19,40 +19,42 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-class ChannelController extends Controller {
+namespace Volkszaehler\Controller;
+
+use \Volkszaehler\Model;
+
+class Channel extends Controller {
 	public function get() {
-		// TODO get channels from entity manager
+		// TODO filter by uuid, type etc...
+		$channels = $this->em->getRepository('Volkszaehler\Model\Channel\Channel')->findAll();
 		
 		foreach ($channels as $channel) {
-			$this->view->addChannel($channel);
+			$this->view->add($channel);
 		}
 	}
 	
 	public function add() {
-		$channel = new Channel();
+		// TODO validate input
+		$channel = new Model\Channel\Meter('power');
 		
-		// TODO how do differ the 1-wire sensors?
-		/*if (substr($channel->uuid, 0, 19) == OneWireSensor::$uuidPrefix) {
-			$channel->type = 'OneWireSensor';
-			$channel->description = OneWireSensor::getFamilyDescription($channel);
-		}
-		else {
-			$channel->type = 'Channel';
-		}*/
+		$channel->setName($this->view->request->getParameter('name'));
+		$channel->setResolution($this->view->request->getParameter('resolution'));
+		$channel->setDescription($this->view->request->getParameter('description'));
+		$channel->setCost($this->view->request->getParameter('cost'));
 		
-		// TODO adapt to doctrine orm 
-		$channel->persist();
-		$channel->save();
+		$this->em->persist($channel);
+		$this->em->flush();
 		
-		$this->view->addChannel($channel);
+		$this->view->add($channel);
 	}
 	
 	// TODO check for valid user identity
 	public function delete() {
-		$channel = Channel::getByUuid($this->view->request->get['ucid']);
+		$ucid = $this->view->request->getParameter('ucid');
+		$channel = $this->em->getRepository('Volkszaehler\Model\Channel\Channel')->findOneBy(array('uuid' => $ucid));
 		
-		// TODO adapt to doctrine orm 
-		$channel->delete();
+		$this->em->remove($channel);
+		$this->em->flush();
 	}
 	
 	public function edit() {

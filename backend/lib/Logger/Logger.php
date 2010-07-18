@@ -19,31 +19,18 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-namespace Volkszaehler\Model\Channel;
+namespace Volkszaehler\Logger;
 
-/**
- * Meter class
- *
- * @Entity
+/*
+ * interface for parsing diffrent logging APIs (google, flukso etc..)
  */
-class Meter extends Channel {
-	/** @Column(type="integer") */
-	private $resolution;
-
-	/** @Column(type="decimal") */
-	private $cost;
+interface Logger {
+	public function __construct(\Volkszaehler\View\Http\Request $request);
 	
-	/*
-	 * indicator => unit mapping
+	/**
+	 * @return \Volkszaehler\Model\Data $data the parsed data
 	 */
-	protected static $indicators = array(
-		'power' => 'kW/h',
-		'gas' => 'qm/h',
-		'water' => 'qm/h'
-	);
-	
-	public function getResolution() { return $this->resolution; }
-	public function setResolution($resolution) { $this->resolution = $resolution; }
-	public function getCost() { return $this->cost; }
-	public function setCost($cost) { $this->cost = $cost; }
+	public function getData();
 }
+
+?>
