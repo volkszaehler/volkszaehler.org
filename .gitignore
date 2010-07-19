@@ -3,3 +3,4 @@ share/sql/demo/pulses.dummy.copy
 .project
 .buildpath
 .settings/
+backend/lib/vendor/*

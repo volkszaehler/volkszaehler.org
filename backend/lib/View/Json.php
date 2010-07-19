@@ -34,27 +34,78 @@ class Json extends View {
 
 		$this->json['source'] = 'volkszaehler.org';
 		$this->json['version'] = \Volkszaehler\VERSION;
-		
+
 		$this->response->setHeader('Content-type', 'application/json');
 	}
 
 	public function render() {
 		parent::render();
-		
-		echo json_encode($this->json);
+
+		echo self::format(json_encode($this->json));
 	}
-	
-	protected function addDebug() {
+
+	protected static function format($json) {
+		$tab = "\t";
+		$formatted = '';
+		$indentLevel = 0;
+		$inString = false;
+
+		$len = strlen($json);
+		for($c = 0; $c < $len; $c++) {
+			$char = $json[$c];
+			switch($char) {
+				case '{':
+				case '[':
+					$formatted .= $char;
+					if (!$inString && (ord($json[$c+1]) != ord($char)+2)) {
+						$indentLevel++;
+						$formatted .= "\n" . str_repeat($tab, $indentLevel);
+					}
+					break;
+				case '}':
+				case ']':
+					if (!$inString && (ord($json[$c-1]) != ord($char)-2)) {
+						$indentLevel--;
+						$formatted .= "\n" . str_repeat($tab, $indentLevel);
+					}
+					$formatted .= $char;
+					break;
+				case ',':
+					$formatted .= $char;
+					if (!$inString) {
+						$formatted .= "\n" . str_repeat($tab, $indentLevel);
+					}
+					break;
+				case ':':
+					$formatted .= $char;
+					if (!$inString) {
+						$formatted .= ' ';
+					}
+					break;
+				case '"':
+					if ($c > 0 && $json[$c-1] != '\\') {
+						$inString = !$inString;
+					}
+				default:
+					$formatted .= $char;
+					break;
+			}
+		}
+
+		return $formatted;
+	}
+
+	public function addDebug() {
 		$config = Util\Registry::get('config');
-		
+
 		$this->json['debug'] = array('time' => $this->getTime(),
 										'database' => array('driver' => $config['db']['driver'],
 																'queries' => Util\Debug::getSQLLogger()->queries)
-									);
-		
+		);
+
 	}
 
-	protected function addException(\Exception $exception) {
+	public function addException(\Exception $exception) {
 		$this->json['exception'] = array('type' => get_class($exception),
 										'message' => $exception->getMessage(),
 										'code' => $exception->getCode(),

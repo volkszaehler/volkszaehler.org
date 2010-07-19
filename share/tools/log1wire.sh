@@ -29,23 +29,45 @@
 # configuration
 #
 # backend url
-URL="http://localhost/workspace/volkszaehler.org/content/backend.php"
-# URL_PARAMS="&debug=1"
+URL="http://localhost/workspace/volkszaehler.org/backend/index.php"
 
+# 1wire sensor id => volkszaehler.org ucid
+declare -A MAPPING
+MAPPING["1012E6D300080077"]="93f85330-9037-11df-86d3-379c018a387b"
+
+# the digitemp binary, choose the right one for your adaptor
 DIGITEMP="digitemp_DS9097"
-DIGITEMP_OPTS="-a"
-# DIGITEMP_OPTS="-t 0"
+
+# the digitemp configuration (holds your sensor ids)
 DIGITEMP_CONF="/home/steffen/.digitemprc"
 
+# the port of your digitemp adaptor
+DIGITEMP_PORT="/dev/ttyUSB0"
+
+# additional options for digitemp
+# specify single or all sensors here for example
+DIGITEMP_OPTS="-t 0"
+#DIGITEMP_OPTS="-a"
+
+# additional options for curl
+# specify credentials, proxy etc here
 CURL_OPTS=""
+
+# enable this for a more verbose output
+#DEBUG=true
 
 # ========================= do not change anything under this line
 
-# special ucid prefix for 1wire sensors
-UCID_PREFIX="07506920-6e7a-11df-"
+# building digitemp options
+DIGITEMP_OPTS="-c ${DIGITEMP_CONF} ${DIGITEMP_OPTS} -s ${DIGITEMP_PORT} -q -o %s;%R;%N;%C"
+
+if [ $DEBUG ]; then
+	echo "enabling debugging output"
+	echo -e "running digitemp:\t${DIGITEMP} ${DIGITEMP_OPTS}"
+fi
 
 # execute digitemp
-LINES=$(${DIGITEMP} -c ${DIGITEMP_CONF} ${DIGITEMP_OPTS} -q -o "%N;%R;%C")
+LINES=$(${DIGITEMP} ${DIGITEMP_OPTS})
 
 # save old internal field seperator
 OLD_IFS=${IFS}
@@ -55,9 +77,26 @@ for LINE in $LINES
 do
 	IFS=";"
 	COLUMNS=( $LINE )
-	UCID="${UCID_PREFIX}${COLUMNS[1]:0:4}-${COLUMNS[1]:5}"
-	curl ${CURL_OPTS} "${URL}?controller=data&action=add&ucid=${UCID}&value=${COLUMNS[2]}&timestamp=$(( ${COLUMNS[0]} * 1000 ))${URL_PARAMS}"
-done
+	IFS=${OLD_IFS}
 
-# reset old ifs
-IFS=${OLD_IFS}
+	if [ -z ${MAPPING[${COLUMNS[1]}]} ]; then
+		echo "sensor ${COLUMNS[1]} is not mapped to an ucid" >&2
+		echo "please add it to the script. Example:" >&2
+		echo >&2
+		echo -e "MAPPING[\"${COLUMNS[1]}\"]=\"9aa643b0-9025-11df-9b68-8528e3b655ed\"" >&2
+	elif [ ${COLUMNS[3]:0:2} == "85" ]; then
+		echo "check your wiring; we received an invalid reading!" 1>2&
+	else
+		UCID=${MAPPING[${COLUMNS[1]}]}
+		REQUEST_URL="${URL}?format=json&controller=data&action=add&ucid=${UCID}&value=${COLUMNS[3]}&timestamp=$(( ${COLUMNS[2]} * 1000 ))${URL_PARAMS}${DEBUG:+&debug=1}"
+
+		if [ $DEBUG ]; then
+			echo -e "logging sensor:\t\t${UCID}"
+			echo -e "with value:\t\t${COLUMNS[3]}"
+			echo -e "at\t\t\t$(date -d @${COLUMNS[2]})"
+			echo "|"
+		fi
+
+		curl ${CURL_OPTS} ${DEBUG:-"-s"} ${DEBUG:-"-o /dev/null"} ${DEBUG:+"--verbose"} "${REQUEST_URL}" 2>&1 | sed 's/^/|\t/'
+	fi
+done

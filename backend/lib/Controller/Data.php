@@ -28,11 +28,20 @@ class Data extends Controller {
 		
 		$q = $this->em->createQuery('SELECT c FROM Volkszaehler\Model\Channel\Channel c WHERE c.id IN (' . implode(', ', $ids) . ')');
 		$channels = $q->execute();
-
+		
 		$from = ($this->view->request->getParameter('from')) ? (int) $this->view->request->getParameter('from') : NULL;
 		$to = ($this->view->request->getParameter('to')) ? (int) $this->view->request->getParameter('to') : NULL;
 		$groupBy = ($this->view->request->getParameter('groupBy')) ? $this->view->request->getParameter('groupBy') : NULL;	// get all readings by default
+		
+		
+		switch ($this->view->request->getParameter('type')) {
+			case 'power':
+			
+			case 'consumption':
+			case 'stats':
+		}
 
+	
 		foreach ($channels as $channel) {
 			$interpreter = $channel->getInterpreter($this->em);
 			$this->view->add($interpreter->getValues($from, $to, $groupBy));

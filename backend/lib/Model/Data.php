@@ -36,7 +36,10 @@ class Data {
 	 */
 	private $timestamp;
 
-	/** @Column(type="decimal") */
+	/**
+	 * @Column(type="decimal", precision="10", scale="5")
+	 * @todo change to float after DCC-67 has been closed
+	 */
 	private $value;
 
 	/**

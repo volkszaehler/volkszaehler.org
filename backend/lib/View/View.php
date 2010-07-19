@@ -21,7 +21,12 @@
 
 namespace Volkszaehler\View;
 
-abstract class View {
+interface ViewInterface {
+	public function addException(\Exception $e);
+	public function addDebug();
+}
+
+abstract class View implements ViewInterface {
 	public $request;
 	protected $response;
 	
@@ -43,15 +48,23 @@ abstract class View {
 	 * creates new view instance depending on the requested format
 	 */
 	public static function factory(Http\Request $request, Http\Response $response) {
-		$format = ucfirst(strtolower($request->getParameter('format')));
-		$controller = ucfirst(strtolower($request->getParameter('controller')));
+		$format = strtolower($request->getParameter('format'));
+		$controller = strtolower($request->getParameter('controller'));
 		
-		$viewClassName = 'Volkszaehler\View\\' . $format . '\\' . $controller;
-		if (!(\Volkszaehler\Util\ClassLoader::classExists($viewClassName)) || !is_subclass_of($viewClassName, '\Volkszaehler\View\View')) {
-			throw new \InvalidArgumentException('\'' . $viewClassName . '\' is not a valid View');
+		if (in_array($format, array('png', 'jpg'))) {
+			$view = new JpGraph($request, $response, $format);
+		}
+		else {
+			$viewClassName = 'Volkszaehler\View\\' . ucfirst($format) . '\\' . ucfirst($controller);
+			
+			if (!(\Volkszaehler\Util\ClassLoader::classExists($viewClassName)) || !is_subclass_of($viewClassName, '\Volkszaehler\View\View')) {
+				throw new \InvalidArgumentException('\'' . $viewClassName . '\' is not a valid View');
+			}
+		
+			$view = new $viewClassName($request, $response);
 		}
 		
-		return new $viewClassName($request, $response);
+		return $view;
 	}
 	
 	/*

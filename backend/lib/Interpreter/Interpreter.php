@@ -76,14 +76,22 @@ abstract class Interpreter implements InterpreterInterface {
 
 		$sql = 'SELECT';
 		$sql .= ($sqlGroupBy === false) ? ' timestamp, value' : ' MAX(timestamp) AS timestamp, SUM(value) AS value, COUNT(timestamp) AS count';
-		$sql .= ' FROM data WHERE channel_id = ' . (int) $this->channel->getId();	// TODO add time filter
+		$sql .= ' FROM data WHERE channel_id = ' . (int) $this->channel->getId();
+		
+		if (!is_null($from)) {
+			$sql .= ' && timestamp > ' . $from;
+		}
+		
+		if (!is_null($to)) {
+			$sql .= ' && timestamp < ' . $to;
+		}
 
 		if ($sqlGroupBy !== false) {
 			$sql .= ' GROUP BY ' . $sqlGroupBy;
 		}
 			
 		$sql .= ' ORDER BY timestamp DESC';
-
+		
 		$rsm = new \Doctrine\ORM\Query\ResultsetMapping;
 		$rsm->addScalarResult('timestamp', 'timestamp');
 		$rsm->addScalarResult('value', 'value');
@@ -108,7 +116,7 @@ abstract class Interpreter implements InterpreterInterface {
 		$packages = array();
 		$reading = reset($result);
 		for ($i = 1; $i <= $packageCount; $i++) {
-			$package = array('timestamp' => $reading['timestamp'],	// last timestamp in package
+			$package = array('timestamp' => (int) $reading['timestamp'],	// last timestamp in package
 								'value' => (float) $reading['value'],		// sum of values
 								'count' => ($sqlGroupBy === false) ? 1 : $reading['count']);						// total count of values or pulses in the package
 

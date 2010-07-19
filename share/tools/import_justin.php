@@ -23,9 +23,7 @@
  * simple script to import demo pulses
  */
 
-include '../../backend/init.php';
-
-$dbh = Database::getConnection();
+// TODO adapt to doctrine dal or use native mysql
 
 $sql = '';
 
@@ -42,10 +40,13 @@ if ($fd) {
 	
 	fclose($fd);
 	
-	$sql = 'INSERT INTO data (meter_id, timestamp, value) VALUES ' . implode(', ', $pulses);
+	$sql = 'INSERT INTO data (channel_id, timestamp, value) VALUES ' . implode(', ', $pulses);
 	$dbh->execute($sql);
 	
 	echo 'Imported rows: ' . $dbh->affectedRows();
+}
+else {
+	throw new Exception('cant open dump');
 }
 
 function parsePgSqlTimestamp($timestamp) {

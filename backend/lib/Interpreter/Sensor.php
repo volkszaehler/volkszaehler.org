@@ -23,7 +23,7 @@ namespace Volkszaehler\Interpreter;
 
 class Sensor extends Interpreter {
 	
-	public function getData($from = NULL, $to = NULL, $groupBy = NULL) {
+	public function getValues($from = NULL, $to = NULL, $groupBy = NULL) {
 		$data = parent::getData($from, $to, $groupBy);
 		
 		array_walk($data, function(&$reading) {
