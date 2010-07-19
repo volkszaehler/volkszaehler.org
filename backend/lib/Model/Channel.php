@@ -29,7 +29,7 @@ use Doctrine\Common\Collections\ArrayCollection;
  * @Entity
  * @Table(name="channels")
  */
-abstract class Channel extends Entity {
+class Channel extends Entity {
 	/** @Column(type="string") */
 	protected $name;
 
@@ -47,7 +47,7 @@ abstract class Channel extends Entity {
 	/** @Column(type="integer") */
 	private $resolution;
 
-	/** @Column(type="decimal") */
+	/** @Column(type="decimal", precision="5", scale="2") */
 	private $cost;
 	
 	/*

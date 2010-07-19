@@ -27,19 +27,18 @@ class Channel extends Controller {
 	
 	// TODO authentification/indentification
 	public function get() {
-		$dql = 'SELECT c FROM Volkszaehler\Model\Channel\Channel c JOIN WHERE';
+		$dql = 'SELECT c FROM Volkszaehler\Model\Channel c';
 
-		$conditions = array();
 		if ($this->view->request->getParameter('uuid')) {
-			$conditions['uuid'] = $this->view->request->getParameter('uuid');
+			// TODO add conditions
 		}
 		
 		if ($this->view->request->getParameter('ugid')) {
-			
+			// TODO add conditions
 		}
 		
 		if ($this->view->request->getParameter('indicator')) {
-			
+			// TODO add conditions
 		}
 		
 		$q = $this->em->createQuery($dql);

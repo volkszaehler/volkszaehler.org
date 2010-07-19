@@ -21,12 +21,15 @@
 
 namespace Volkszaehler\Controller;
 
+// TODO call as subcontroller from Controller\Channel::get()?
 class Data extends Controller {
+	
+	// TODO authentification/indentification
 	public function get() {
 		// TODO why not ucids?
 		$ids = explode(',', trim($this->view->request->getParameter('ids')));
 		
-		$q = $this->em->createQuery('SELECT c FROM Volkszaehler\Model\Channel\Channel c WHERE c.id IN (' . implode(', ', $ids) . ')');
+		$q = $this->em->createQuery('SELECT c FROM Volkszaehler\Model\Channel c WHERE c.id IN (' . implode(', ', $ids) . ')');
 		$channels = $q->execute();
 		
 		$from = ($this->view->request->getParameter('from')) ? (int) $this->view->request->getParameter('from') : NULL;
@@ -35,7 +38,7 @@ class Data extends Controller {
 	
 		foreach ($channels as $channel) {
 			$interpreter = $channel->getInterpreter($this->em);
-			$this->view->add($interpreter->getValues($from, $to, $groupBy));
+			$this->view->add($channel, $interpreter->getValues($from, $to, $groupBy));
 		}
 	}
 	

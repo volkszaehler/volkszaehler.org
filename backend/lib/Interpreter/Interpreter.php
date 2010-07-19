@@ -35,7 +35,7 @@ abstract class Interpreter implements InterpreterInterface {
 	/*
 	 * constructor
 	 */
-	public function __construct(\Volkszaehler\Model\Channel\Channel $channel, \Doctrine\ORM\EntityManager $em) {
+	public function __construct(\Volkszaehler\Model\Channel $channel, \Doctrine\ORM\EntityManager $em) {
 		$this->channel = $channel;
 		$this->em = $em;
 	}
