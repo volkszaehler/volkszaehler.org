@@ -44,7 +44,7 @@ class Data {
 
 	/**
 	 * @Id
-	 * @ManyToOne(targetEntity="Volkszaehler\Model\Channel\Channel", inversedBy="data")
+	 * @ManyToOne(targetEntity="Channel", inversedBy="data")
 	 * @JoinColumn(name="channel_id", referencedColumnName="id")
 	 */
 	private $channel;

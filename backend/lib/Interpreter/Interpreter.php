@@ -70,8 +70,11 @@ abstract class Interpreter implements InterpreterInterface {
 			default:
 				if (is_numeric($groupBy)) {		// lets agrregate it with php
 					$groupBy = (int) $groupBy;
+					$sqlGroupBy = false;
 				}
-				$sqlGroupBy = false;
+				else {
+					throw new \InvalidArgumentException('\'' . $groupBy . '\' is not an unknown grouping mode');
+				}
 		}
 
 		$sql = 'SELECT';

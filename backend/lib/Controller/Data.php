@@ -32,15 +32,6 @@ class Data extends Controller {
 		$from = ($this->view->request->getParameter('from')) ? (int) $this->view->request->getParameter('from') : NULL;
 		$to = ($this->view->request->getParameter('to')) ? (int) $this->view->request->getParameter('to') : NULL;
 		$groupBy = ($this->view->request->getParameter('groupBy')) ? $this->view->request->getParameter('groupBy') : NULL;	// get all readings by default
-		
-		
-		switch ($this->view->request->getParameter('type')) {
-			case 'power':
-			
-			case 'consumption':
-			case 'stats':
-		}
-
 	
 		foreach ($channels as $channel) {
 			$interpreter = $channel->getInterpreter($this->em);

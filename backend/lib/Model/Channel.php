@@ -19,7 +19,7 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-namespace Volkszaehler\Model\Channel;
+namespace Volkszaehler\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
 
@@ -28,14 +28,8 @@ use Doctrine\Common\Collections\ArrayCollection;
  *
  * @Entity
  * @Table(name="channels")
- * @InheritanceType("SINGLE_TABLE")
- * @DiscriminatorColumn(name="type", type="string")
- * @DiscriminatorMap({
- * 		"meter" = "Meter",
- * 		"sensor" = "Sensor"
- * })
  */
-abstract class Channel extends \Volkszaehler\Model\Entity {
+abstract class Channel extends Entity {
 	/** @Column(type="string") */
 	protected $name;
 
@@ -46,9 +40,27 @@ abstract class Channel extends \Volkszaehler\Model\Entity {
 	protected $indicator;
 
 	/**
-	 * @OneToMany(targetEntity="Volkszaehler\Model\Data", mappedBy="channel"), cascade={"remove"}
+	 * @OneToMany(targetEntity="Data", mappedBy="channel"), cascade={"remove"}
 	 */
 	private $data = NULL;
+	
+	/** @Column(type="integer") */
+	private $resolution;
+
+	/** @Column(type="decimal") */
+	private $cost;
+	
+	/*
+	 * indicator => interpreter, unit mapping
+	 */
+	protected static $indicators = array(
+		'power' =>			array('meter', 'kW/h'),
+		'gas' =>			array('meter', 'qm/h'),
+		'water' =>			array('meter', 'qm/h'),
+		'temperature' =>	array('sensor', '° C'),
+		'pressure' =>		array('sensor', 'hPa'),
+		'humidity' =>		array('sensor', '%')
+	);
 	
 	/*
 	 * constructor
@@ -56,22 +68,17 @@ abstract class Channel extends \Volkszaehler\Model\Entity {
 	public function __construct($indicator) {
 		parent::__construct();
 		
+		if (!in_array($indicator, self::$indicators)) {
+			throw new \InvalidArgumentException($indicator . ' is no known indicator');
+		}
+		
 		$this->indicator = $indicator;
 		$this->data = new ArrayCollection();
 	}
-
-	/*
-	 * getter & setter
-	 */
-	public function getName() { return $this->name; }
-	public function setName($name) { $this->name = $name; }
-	public function getDescription() { return $this->description; }
-	public function setDescription($description) { $this->description = $description; }
-	public function getUnit() { return static::$indicators[$this->indicator]; }
-	public function getIndicator() { return $this->indicator; }
 	
 	/*
 	 * add a new data to the database
+	 * @todo move to logger?
 	 */
 	public function addData(\Volkszaehler\Model\Data $data) {
 		$this->data->add($data);
@@ -81,10 +88,24 @@ abstract class Channel extends \Volkszaehler\Model\Entity {
 	 * obtain channels data interpreter to calculate statistical information
 	 */
 	public function getInterpreter(\Doctrine\ORM\EntityManager $em) {
-		$interpreterClassName = 'Volkszaehler\Interpreter\\' .  substr(strrchr(get_class($this), '\\'), 1);
+		$interpreterClassName = 'Volkszaehler\Interpreter\\' . ucfirst(self::$indicators[$this->indicator][0]);
 		if (!(\Volkszaehler\Util\ClassLoader::classExists($interpreterClassName)) || !is_subclass_of($interpreterClassName, '\Volkszaehler\Interpreter\Interpreter')) {
 			throw new \InvalidArgumentException('\'' . $interpreterClassName . '\' is not a valid Interpreter');
 		}
 		return new $interpreterClassName($this, $em);
 	}
+	
+	/*
+	 * getter & setter
+	 */
+	public function getName() { return $this->name; }
+	public function setName($name) { $this->name = $name; }
+	public function getDescription() { return $this->description; }
+	public function setDescription($description) { $this->description = $description; }
+	public function getUnit() { return self::$indicators[$this->indicator][1]; }
+	public function getIndicator() { return $this->indicator; }
+	public function getResolution() { return $this->resolution; }
+	public function setResolution($resolution) { $this->resolution = $resolution; }
+	public function getCost() { return $this->cost; }
+	public function setCost($cost) { $this->cost = $cost; }
 }

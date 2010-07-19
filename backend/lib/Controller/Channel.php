@@ -24,22 +24,40 @@ namespace Volkszaehler\Controller;
 use \Volkszaehler\Model;
 
 class Channel extends Controller {
+	
+	// TODO authentification/indentification
 	public function get() {
-		// TODO filter by uuid, type etc...
-		$channels = $this->em->getRepository('Volkszaehler\Model\Channel\Channel')->findAll();
+		$dql = 'SELECT c FROM Volkszaehler\Model\Channel\Channel c JOIN WHERE';
+
+		$conditions = array();
+		if ($this->view->request->getParameter('uuid')) {
+			$conditions['uuid'] = $this->view->request->getParameter('uuid');
+		}
+		
+		if ($this->view->request->getParameter('ugid')) {
+			
+		}
+		
+		if ($this->view->request->getParameter('indicator')) {
+			
+		}
+		
+		$q = $this->em->createQuery($dql);
+		$channels = $q->getResult();
 		
 		foreach ($channels as $channel) {
 			$this->view->add($channel);
 		}
 	}
 	
+	// TODO validate input and throw exceptions
 	public function add() {
-		// TODO validate input
-		$channel = new Model\Channel\Meter('power');
+		$channel = new Model\Channel\Meter($this->view->request->getParameter('indicator'));
 		
 		$channel->setName($this->view->request->getParameter('name'));
-		$channel->setResolution($this->view->request->getParameter('resolution'));
 		$channel->setDescription($this->view->request->getParameter('description'));
+		
+		$channel->setResolution($this->view->request->getParameter('resolution'));
 		$channel->setCost($this->view->request->getParameter('cost'));
 		
 		$this->em->persist($channel);
@@ -48,7 +66,7 @@ class Channel extends Controller {
 		$this->view->add($channel);
 	}
 	
-	// TODO check for valid user identity
+	// TODO authentification/indentification
 	public function delete() {
 		$ucid = $this->view->request->getParameter('ucid');
 		$channel = $this->em->getRepository('Volkszaehler\Model\Channel\Channel')->findOneBy(array('uuid' => $ucid));
@@ -57,8 +75,10 @@ class Channel extends Controller {
 		$this->em->flush();
 	}
 	
+	// TODO implement ChannelController::edit();
+	// TODO authentification/indentification
 	public function edit() {
-		// TODO implement ChannelController::edit();
+		
 	}
 }
 

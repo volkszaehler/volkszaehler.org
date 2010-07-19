@@ -37,7 +37,7 @@ class Group extends Entity {
 	private $description;
 	
 	/**
-	 * @ManyToMany(targetEntity="Volkszaehler\Model\Channel\Channel")
+	 * @ManyToMany(targetEntity="Channel")
 	 * @JoinTable(name="groups_channel",
 	 * 		joinColumns={@JoinColumn(name="group_id", referencedColumnName="id")},
 	 * 		inverseJoinColumns={@JoinColumn(name="channel_id", referencedColumnName="id")}

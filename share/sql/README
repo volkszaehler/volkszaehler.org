@@ -1,0 +1,18 @@
+volkzaehler.org uses doctrine [1] as database abstraction and object relation model.
+
+To setup your database follow these steps:
+
+1. Make sure you have a proper configuration file (backend/volkszaehler.conf.php)
+2. Adjust the configuration to your database setup
+3. Call backend/bin/doctrine orm:schema-tool:create
+
+Alternative way:
+
+This folder contains some SQL dumps which can be imported in your database.
+Be aware that these dumps can be outdated!
+
+These dumps are generated with doctrine schema-tool:
+
+backend/bin/doctrine orm:schema-tool:create --dump-sql > share/sql/mysql.sql
+
+[1] http://www.doctrine-project.org
