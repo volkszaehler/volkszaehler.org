@@ -19,11 +19,34 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-namespace Volkszaehler\View\Json;
+namespace Volkszaehler\View\Csv;
 
-class Data extends \Volkszaehler\View\Json {
-	public function add($data) {
-		$this->json['data'][] = $data;
+class Csv extends \Volkszaehler\View\View {
+
+	/*
+	 * constructor
+	 */
+	public function __construct(Http\Request $request, Http\Response $response) {
+		parent::__construct($request, $response);
+
+		$this->csv['source'] = 'volkszaehler.org';
+		$this->csv['version'] = \Volkszaehler\VERSION;
+
+		$this->response->setHeader('Content-type', 'text/csv');
+	}
+	
+	public function render() {
+		parent::render();
+		
+		// TODO implement
+	}
+	
+	public function addDebug() {
+		// TODO implement debug output for csv view
+	}
+	
+	public function addException(\Exception $exception) {
+		// TODO implement exception output for csv view
 	}
 }
 

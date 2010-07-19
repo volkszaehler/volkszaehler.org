@@ -57,7 +57,10 @@ class JpGraph extends View {
 		//$this->graph->img->SetAntiAliasing(); 
 	}
 	
-	public function add($data) {
+	/*
+	 * @todo add title unit etc..
+	 */
+	public function add(\Volkszaehler\Model\Channel $obj, $data = NULL) {
 		$xData = $yData = array();
 		foreach ($data as $reading) {
 			$xData[] = $reading['timestamp']/1000;

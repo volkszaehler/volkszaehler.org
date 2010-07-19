@@ -21,7 +21,7 @@
 
 namespace Volkszaehler\View\Json;
 
-class Group extends \Volkszaehler\View\Json {
+class Group extends Json {
 	
 	public function add(\Volkszaehler\Model\Group $obj, $recursive = false) {
 		$group['id'] = (int) $obj->getId();

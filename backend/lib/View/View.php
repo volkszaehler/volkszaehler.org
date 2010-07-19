@@ -46,6 +46,7 @@ abstract class View implements ViewInterface {
 	
 	/*
 	 * creates new view instance depending on the requested format
+	 * @todo improve mapping
 	 */
 	public static function factory(Http\Request $request, Http\Response $response) {
 		$format = strtolower($request->getParameter('format'));
@@ -55,6 +56,9 @@ abstract class View implements ViewInterface {
 			$view = new JpGraph($request, $response, $format);
 		}
 		else {
+			if ($controller == 'data' && $format == 'json') {
+				$controller = 'channel';
+			}
 			$viewClassName = 'Volkszaehler\View\\' . ucfirst($format) . '\\' . ucfirst($controller);
 			
 			if (!(\Volkszaehler\Util\ClassLoader::classExists($viewClassName)) || !is_subclass_of($viewClassName, '\Volkszaehler\View\View')) {

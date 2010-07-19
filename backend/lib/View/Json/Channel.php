@@ -21,17 +21,17 @@
 
 namespace Volkszaehler\View\Json;
 
-class Channel extends \Volkszaehler\View\Json {
+class Channel extends Json {
 	
-	public function add(\Volkszaehler\Model\Channel\Channel $obj, $data = NULL) {
+	public function add(\Volkszaehler\Model\Channel $obj, $data = NULL) {
 		$channel['id'] = (int) $obj->getId();
 		$channel['uuid'] = (string) $obj->getUuid();
-		$channel['type'] = strtolower(substr(strrchr(get_class($obj), '\\'), 1));
 		$channel['indicator'] = $obj->getIndicator();
 		$channel['unit'] = $obj->getUnit();
 		$channel['name'] = $obj->getName();
 		$channel['description'] = $obj->getDescription();
 		
+		// TODO adapt to new indicator style
 		if (is_subclass_of($obj, '\Volkszaehler\Model\Channel\Meter')) {
 			$channel['resolution'] = (int) $obj->getResolution();
 			$channel['cost'] = (float) $obj->getCost();
