@@ -19,17 +19,17 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-namespace Volkszaehler\View;
+namespace Volkszaehler\View\Json;
 
 use Volkszaehler\Util;
 
-class Json extends View {
+class Json extends \Volkszaehler\View\View {
 	protected $json = array();
 
 	/*
 	 * constructor
 	 */
-	public function __construct(Http\Request $request, Http\Response $response) {
+	public function __construct(\Volkszaehler\View\Http\Request $request, \Volkszaehler\View\Http\Response $response) {
 		parent::__construct($request, $response);
 
 		$this->json['source'] = 'volkszaehler.org';

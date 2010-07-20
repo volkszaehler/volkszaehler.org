@@ -22,31 +22,56 @@
 namespace Volkszaehler\View\Csv;
 
 class Csv extends \Volkszaehler\View\View {
+	protected $csv = array();
+	protected $header = array();
+	protected $footer = array();
 
 	/*
 	 * constructor
 	 */
-	public function __construct(Http\Request $request, Http\Response $response) {
+	public function __construct(\Volkszaehler\View\Http\Request $request, \Volkszaehler\View\Http\Response $response) {
 		parent::__construct($request, $response);
 
-		$this->csv['source'] = 'volkszaehler.org';
-		$this->csv['version'] = \Volkszaehler\VERSION;
+		$this->header[] = 'source: volkszaehler.org';
+		$this->header[] = 'version: ' . \Volkszaehler\VERSION;
 
 		$this->response->setHeader('Content-type', 'text/csv');
+		$this->response->setHeader('Content-Disposition', 'attachment; filename="data.csv"');
 	}
 	
 	public function render() {
 		parent::render();
 		
-		// TODO implement
+		foreach ($this->header as $line) {
+			echo $line . PHP_EOL;
+		}
+		
+		echo PHP_EOL;
+		
+		foreach ($this->csv as $array) {
+			echo implode(";", $array) . PHP_EOL;
+		}
+		
+		echo PHP_EOL;
+		
+		foreach ($this->footer as $line) {
+			echo $line . PHP_EOL;
+		}
 	}
 	
 	public function addDebug() {
-		// TODO implement debug output for csv view
+		$config = \Volkszaehler\Util\Registry::get('config');
+
+		$this->footer[] = 'time: ' . $this->getTime();
+		$this->footer[] = 'database: ' . $config['db']['driver'];
+		
+		foreach (\Volkszaehler\Util\Debug::getSQLLogger()->queries as $query) {
+			$this->footer[] = 'query: ' . $query['sql'];
+		}
 	}
 	
 	public function addException(\Exception $exception) {
-		// TODO implement exception output for csv view
+		echo $exception;
 	}
 }
 

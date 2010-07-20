@@ -25,12 +25,17 @@ require_once \Volkszaehler\BACKEND_DIR . '/lib/vendor/JpGraph/jpgraph.php';
 require_once \Volkszaehler\BACKEND_DIR . '/lib/vendor/JpGraph/jpgraph_scatter.php';
 require_once \Volkszaehler\BACKEND_DIR . '/lib/vendor/JpGraph/jpgraph_date.php';
 
-
+/*
+ * JpGraph plotting
+ * 
+ * @todo add caching
+ * @todo unifiy axes of same unit
+ */
 class JpGraph extends View {
 	protected $width = 800;
 	protected $height = 600;
 	
-	protected $plotCount = 0;
+	protected $channels = array();
 	
 	protected static $colors = array('chartreuse', 'chocolate1', 'cyan', 'blue', 'lightcyan4', 'gold');
 
@@ -44,23 +49,24 @@ class JpGraph extends View {
 		// Specify what scale we want to use,
 		$this->graph->SetScale('datlin');
 		
+		$this->graph->legend->setPos(0.15,0.025, 'left', 'top');
+		
 		$this->graph->SetMarginColor('white');
-		$this->graph->SetMargin(90,10,18,90);
+		$this->graph->SetMargin(90,65,10,90);
+		$this->graph->SetYDeltaDist(65);
+		$this->graph->yaxis->SetTitlemargin(36);
 		
 		$this->graph->SetTickDensity(TICKD_DENSE, TICKD_SPARSE);
 		$this->graph->xaxis->SetFont(FF_ARIAL);
-		$this->graph->yaxis->SetFont(FF_ARIAL);
 		
-		$this->graph->xaxis->SetLabelAngle(45);
+		$this->graph->xaxis->SetLabelAngle(60);
 		$this->graph->xaxis->SetLabelFormatCallback(function($label) { return date('j.n.y G:i', $label); });
 		
 		//$this->graph->img->SetAntiAliasing(); 
 	}
 	
-	/*
-	 * @todo add title unit etc..
-	 */
 	public function add(\Volkszaehler\Model\Channel $obj, $data = NULL) {
+		$count = count($this->channels);
 		$xData = $yData = array();
 		foreach ($data as $reading) {
 			$xData[] = $reading['timestamp']/1000;
@@ -70,18 +76,32 @@ class JpGraph extends View {
 		// Create the linear plot
 		$plot = new \ScatterPlot($yData, $xData);
 		
-		$plot->mark->SetColor(self::$colors[$this->plotCount]);
-		$plot->mark->SetFillColor(self::$colors[$this->plotCount]);
+		$plot->setLegend($obj->getName() . ': ' . $obj->getDescription() . ' [' . $obj->getUuid() . ']');
+		
+		$plot->mark->SetColor(self::$colors[$count]);
+		$plot->mark->SetFillColor(self::$colors[$count]);
 		
 		$plot->mark->SetType(MARK_DIAMOND);
 		$plot->mark->SetWidth(1);
-		$plot->SetLinkPoints(true, self::$colors[$this->plotCount]);
+		$plot->SetLinkPoints(true, self::$colors[$count]);
 		
-		$this->plotCount++;
+		if ($count == 0) {
+			$yaxis = $this->graph->yaxis;
+			$this->graph->Add($plot);
+		}
+		else {
+			$this->graph->SetYScale($count-1,'lin');
+			$yaxis = $this->graph->ynaxis[$count-1];
+			$this->graph->SetMargin(60,($count) * 65,10,90);
+			$this->graph->AddY($count-1, $plot);
+		}
 		
-
-		// Add the plot to the graph
-		$this->graph->Add($plot);
+		$yaxis->title->Set($obj->getUnit());
+		$yaxis->title->SetFont(FF_ARIAL);
+		$yaxis->SetColor(self::$colors[$count]);
+		$yaxis->SetTitleMargin('50');
+		
+		$this->channels[] = $obj;
 	}
 	
 	public function addException(\Exception $e) { echo $e; }
