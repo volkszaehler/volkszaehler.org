@@ -56,7 +56,7 @@ abstract class View implements ViewInterface {
 			$view = new JpGraph($request, $response, $format);
 		}
 		else {
-			if ($controller == 'data' && $format == 'json') {
+			if ($controller == 'data' && ($format == 'json' || $format == 'xml')) {
 				$controller = 'channel';
 			}
 			$viewClassName = 'Volkszaehler\View\\' . ucfirst($format) . '\\' . ucfirst($controller);

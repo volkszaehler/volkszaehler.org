@@ -86,7 +86,7 @@ class Response {
 	
 	public function send() {
 		// change returncode
-		header('HTTP/1.1 ' . $this->code . ' ' . self::getCodeDescription($this->code));	// TODO untested
+		header('HTTP/1.1 ' . $this->code . ' ' . self::getCodeDescription($this->code));
 		
 		// send headers
 		foreach ($this->headers as $name => $value) {

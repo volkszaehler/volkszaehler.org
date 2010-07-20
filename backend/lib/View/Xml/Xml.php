@@ -19,110 +19,35 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-namespace Volkszaehler\View;
-
+namespace Volkszaehler\View\Xml;
 
 // TODO outdated
-class Xml extends View {
-	private $xmlDoc;
-	private $xml;
-	private $xmlChannels;
-	private $xmlUsers;
-	private $xmlGroups;
+class Xml extends \Volkszaehler\View\View {
+	protected $xmlDoc;
+	protected $xml;
 
-	public function __construct() {
-		parent::__construct();
+	public function __construct(\Volkszaehler\View\Http\Request $request, \Volkszaehler\View\Http\Response $response) {
+		parent::__construct($request, $response);
 
-		$config = Registry::get('config');
+		$this->xmlDoc = new \DOMDocument('1.0', 'UTF-8');
 
-		$this->xmlDoc = new DOMDocument('1.0', 'UTF-8');
+		$this->xmlRoot = $this->xmlDoc->createElement('volkszaehler');
+		$this->xmlRoot->setAttribute('version', \Volkszaehler\VERSION);
 
-		$this->xml = $this->xmlDoc->createElement('volkszaehler');
-		$this->xml->setAttribute('version', VERSION);
-		$this->xmlChannels = $this->xmlDoc->createElement('channels');
-		$this->xmlUsers = $this->xmlDoc->createElement('users');
-		$this->xmlGroups = $this->xmlDoc->createElement('groups');
+		$this->xmlRoot->appendChild($this->xmlDoc->createElement('source', 'volkszaehler.org'));
 
-		$this->xml->appendChild($this->xmlDoc->createElement('source', 'volkszaehler.org'));
-		$this->xml->appendChild($this->xmlDoc->createElement('storage', $config['db']['backend']));
-		$this->xml->appendChild($this->xmlDoc->createElement('controller', $request->getParameter('controller')));
-		$this->xml->appendChild($this->xmlDoc->createElement('action', $request->getParameter('action')));
-		
-		$this->response->setHeader('Content-type', 'text/xml');
-	}
-
-	public function addChannel(\Volkszaehler\Model\Channel $obj, $data = NULL) {
-		$xmlChannel = $this->xmlDoc->createElement('channel');
-		$xmlChannel->setAttribute('id', (int) $obj->id);
-		
-		$xmlChannel->appendChild($this->xmlDoc->createElement('uuid', $obj->uuid));
-		$xmlChannel->appendChild($this->xmlDoc->createElement('type', $obj->type));
-		$xmlChannel->appendChild($this->xmlDoc->createElement('unit', $obj::unit));
-		$xmlChannel->appendChild($this->xmlDoc->createElement('description', $obj->description));
-		$xmlChannel->appendChild($this->xmlDoc->createElement('resolution', (int) $obj->resolution));
-		$xmlChannel->appendChild($this->xmlDoc->createElement('cost', (float) $obj->cost));
-		
-		if (!is_null($data) && is_array($data)) {
-			$xmlData = $this->xmlDoc->createElement('data');
-			
-			foreach ($data as $reading) {
-				$xmlReading = $this->xmlDoc->createElement('reading');
-				
-				$xmlReading->setAttribute('timestamp', $reading['timestamp']);	// hardcoded data fields for performance optimization
-				$xmlReading->setAttribute('value', $reading['value']);
-				$xmlReading->setAttribute('count', $reading['count']);
-				
-				$xmlData->appendChild($xmlReading);
-			}
-			
-			$xmlChannel->appendChild($xmlData);
-		}
-			
-		$this->xmlChannels->appendChild($xmlChannel);
-	}
-		
-	public function addUser(\Volkszaehler\Model\User $obj) {
-		$xmlUser = $this->xmlDoc->createElement('user');
-		$xmlUser->setAttribute('id', (int) $obj->id);
-		$xmlUser->appendChild($this->xmlDoc->createElement('uuid', $obj->uuid));
-			
-		$this->xmlUsers->appendChild($xmlUser);
-	}
-
-	public function addGroup(\Volkszaehler\Model\Group $obj) {
-		$xmlGroup = $this->xmlDoc->createElement('group');
-		$xmlGroup->setAttribute('id', (int) $obj->id);
-		$xmlGroup->appendChild($this->xmlDoc->createElement('uuid', $obj->uuid));
-		$xmlGroup->appendChild($this->xmlDoc->createElement('description', $obj->description));
-			
-		// TODO include sub groups?
-			
-		$this->xmlGroups->appendChild($xmlGroup);
+		$this->response->setHeader('Content-type', 'application/xml; charset=UTF-8');
 	}
 
 	public function render() {
-		$this->xml->appendChild($this->xmlDoc->createElement('time', $this->getTime()));
+		parent::render();
 		
-		// channels
-		if ($this->xmlChannels->hasChildNodes()) {
-			$this->xml->appendChild($this->xmlChannels);
-		}
-		
-		// users
-		if ($this->xmlUsers->hasChildNodes()) {
-			$this->xml->appendChild($this->xmlUsers);
-		}
-		
-		// groups
-		if ($this->xmlGroups->hasChildNodes()) {
-			$this->xml->appendChild($this->xmlGroups);
-		}
-		
-		$this->xmlDoc->appendChild($this->xml);
+		$this->xmlDoc->appendChild($this->xmlRoot);
+		$this->xmlRoot->appendChild($this->xml);
 		echo $this->xmlDoc->saveXML();
 	}
 
-	protected function addException(\Exception $exception) {
+	public function addException(\Exception $exception) {
 		$xmlException = $this->xmlDoc->createElement('exception');
 		$xmlException->setAttribute('code', $exception->getCode());
 		$xmlException->appendChild($this->xmlDoc->createElement('message', $exception->getMessage()));
@@ -130,7 +55,20 @@ class Xml extends View {
 		$xmlException->appendChild($this->xmlDoc->createElement('file', $exception->getFile()));
 		$xmlException->appendChild($this->fromTrace($exception->getTrace()));
 
-		$this->xml->appendChild($xmlException);
+		$this->xmlRoot->appendChild($xmlException);
+	}
+	
+	public function addDebug() {
+		$config = \Volkszaehler\Util\Registry::get('config');
+
+		$xmlDebug = $this->xmlDoc->createElement('debug');
+		
+		$xmlDebug->appendChild($this->xmlDoc->createElement('time', $this->getTime()));
+		$xmlDebug->appendChild($this->xmlDoc->createElement('database', $config['db']['driver']));
+		
+		// TODO add queries
+		
+		$this->xmlRoot->appendChild($xmlDebug);
 	}
 
 	private function fromTrace($traces) {
