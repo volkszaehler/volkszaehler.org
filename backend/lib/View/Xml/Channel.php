@@ -58,4 +58,10 @@ class Channel extends Xml {
 			
 		$this->xml->appendChild($xmlChannel);
 	}
+	
+	public function render() {
+		$this->xmlRoot->appendChild($this->xml);
+		
+		parent::render();
+	}
 }

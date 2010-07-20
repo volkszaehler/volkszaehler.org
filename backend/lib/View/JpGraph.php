@@ -115,7 +115,7 @@ class JpGraph extends View {
 		// Display the graph
 		$this->graph->Stroke();
 
-		$this->response->send();
+		parent::render();
 	}
 
 }

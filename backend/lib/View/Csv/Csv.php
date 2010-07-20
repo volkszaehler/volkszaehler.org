@@ -21,7 +21,7 @@
 
 namespace Volkszaehler\View\Csv;
 
-class Csv extends \Volkszaehler\View\View {
+abstract class Csv extends \Volkszaehler\View\View {
 	protected $csv = array();
 	protected $header = array();
 	protected $footer = array();
@@ -40,8 +40,6 @@ class Csv extends \Volkszaehler\View\View {
 	}
 	
 	public function render() {
-		parent::render();
-		
 		foreach ($this->header as $line) {
 			echo $line . PHP_EOL;
 		}
@@ -57,6 +55,8 @@ class Csv extends \Volkszaehler\View\View {
 		foreach ($this->footer as $line) {
 			echo $line . PHP_EOL;
 		}
+		
+		parent::render();
 	}
 	
 	public function addDebug() {

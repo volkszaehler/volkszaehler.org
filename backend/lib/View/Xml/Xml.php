@@ -22,9 +22,8 @@
 namespace Volkszaehler\View\Xml;
 
 // TODO outdated
-class Xml extends \Volkszaehler\View\View {
+abstract class Xml extends \Volkszaehler\View\View {
 	protected $xmlDoc;
-	protected $xml;
 
 	public function __construct(\Volkszaehler\View\Http\Request $request, \Volkszaehler\View\Http\Response $response) {
 		parent::__construct($request, $response);
@@ -40,11 +39,10 @@ class Xml extends \Volkszaehler\View\View {
 	}
 
 	public function render() {
-		parent::render();
-		
 		$this->xmlDoc->appendChild($this->xmlRoot);
-		$this->xmlRoot->appendChild($this->xml);
 		echo $this->xmlDoc->saveXML();
+		
+		parent::render();
 	}
 
 	public function addException(\Exception $exception) {

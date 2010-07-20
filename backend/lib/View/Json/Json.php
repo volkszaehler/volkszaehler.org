@@ -23,7 +23,7 @@ namespace Volkszaehler\View\Json;
 
 use Volkszaehler\Util;
 
-class Json extends \Volkszaehler\View\View {
+abstract class Json extends \Volkszaehler\View\View {
 	protected $json = array();
 
 	/*
@@ -39,9 +39,9 @@ class Json extends \Volkszaehler\View\View {
 	}
 
 	public function render() {
-		parent::render();
-
 		echo self::format(json_encode($this->json));
+		
+		parent::render();
 	}
 
 	protected static function format($json) {

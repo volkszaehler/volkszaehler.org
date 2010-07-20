@@ -22,6 +22,7 @@
 namespace Volkszaehler\View\Xml;
 
 class Group extends Xml {
+	protected $xml;
 	
 	public function __construct(\Volkszaehler\View\Http\Request $request, \Volkszaehler\View\Http\Response $response) {
 		parent::__construct($request, $response);
@@ -38,5 +39,11 @@ class Group extends Xml {
 		// TODO include sub groups?
 			
 		$this->xml->appendChild($xmlGroup);
+	}
+	
+	public function render() {
+		$this->xmlRoot->appendChild($this->xml);
+		
+		parent::render();
 	}
 }
