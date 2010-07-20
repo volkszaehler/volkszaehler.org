@@ -39,13 +39,22 @@ abstract class Json extends \Volkszaehler\View\View {
 	}
 
 	public function render() {
-		echo self::format(json_encode($this->json));
-		
 		parent::render();
+		// TODO solve rendering order problem
+		
+		$json = json_encode($this->json);
+		
+		if ($this->request->getParameter('debug')) {
+			echo self::format($json);
+		}
+		else {
+			echo $json;
+		}
+		
+		
 	}
 
 	protected static function format($json) {
-		$tab = "\t";
 		$formatted = '';
 		$indentLevel = 0;
 		$inString = false;
@@ -59,21 +68,21 @@ abstract class Json extends \Volkszaehler\View\View {
 					$formatted .= $char;
 					if (!$inString && (ord($json[$c+1]) != ord($char)+2)) {
 						$indentLevel++;
-						$formatted .= "\n" . str_repeat($tab, $indentLevel);
+						$formatted .= "\n" . str_repeat("\t", $indentLevel);
 					}
 					break;
 				case '}':
 				case ']':
 					if (!$inString && (ord($json[$c-1]) != ord($char)-2)) {
 						$indentLevel--;
-						$formatted .= "\n" . str_repeat($tab, $indentLevel);
+						$formatted .= "\n" . str_repeat("\t", $indentLevel);
 					}
 					$formatted .= $char;
 					break;
 				case ',':
 					$formatted .= $char;
 					if (!$inString) {
-						$formatted .= "\n" . str_repeat($tab, $indentLevel);
+						$formatted .= "\n" . str_repeat("\t", $indentLevel);
 					}
 					break;
 				case ':':
@@ -96,10 +105,8 @@ abstract class Json extends \Volkszaehler\View\View {
 	}
 
 	public function addDebug() {
-		$config = Util\Registry::get('config');
-
 		$this->json['debug'] = array('time' => $this->getTime(),
-										'database' => array('driver' => $config['db']['driver'],
+										'database' => array('driver' => Util\Configuration::read('db.driver'),
 																'queries' => Util\Debug::getSQLLogger()->queries)
 		);
 

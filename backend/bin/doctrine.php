@@ -15,11 +15,13 @@ foreach ($classLoaders as $loader) {
 	$loader->register(); // register on SPL autoload stack
 }
 
-// load configuration into registry
+// load configuration
 if (!file_exists(BACKEND_DIR . '/volkszaehler.conf.php')) {
 	throw new Exception('No configuration available! Use volkszaehler.conf.default.php as an template');
 }
-include BACKEND_DIR . '/volkszaehler.conf.php';
+else {
+	Util\Configuration::load(BACKEND_DIR . '/volkszaehler.conf.php');
+}
 
 $em = Volkszaehler\Dispatcher::createEntityManager();
 

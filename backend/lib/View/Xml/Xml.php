@@ -22,6 +22,8 @@
 namespace Volkszaehler\View\Xml;
 
 // TODO outdated
+use Volkszaehler\Util;
+
 abstract class Xml extends \Volkszaehler\View\View {
 	protected $xmlDoc;
 
@@ -57,12 +59,10 @@ abstract class Xml extends \Volkszaehler\View\View {
 	}
 	
 	public function addDebug() {
-		$config = \Volkszaehler\Util\Registry::get('config');
-
 		$xmlDebug = $this->xmlDoc->createElement('debug');
 		
 		$xmlDebug->appendChild($this->xmlDoc->createElement('time', $this->getTime()));
-		$xmlDebug->appendChild($this->xmlDoc->createElement('database', $config['db']['driver']));
+		$xmlDebug->appendChild($this->xmlDoc->createElement('database', Util\Configuration::read('db.driver')));
 		
 		// TODO add queries
 		

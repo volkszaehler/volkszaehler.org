@@ -32,34 +32,44 @@ require_once \Volkszaehler\BACKEND_DIR . '/lib/vendor/JpGraph/jpgraph_date.php';
  * @todo unifiy axes of same unit
  */
 class JpGraph extends View {
-	protected $width = 800;
-	protected $height = 600;
+	/*
+	 * indicator => ynaxis[n] mapping
+	 */
+	protected $axes = array();
 	
 	protected $channels = array();
 	
+	protected $width = 800;
+	protected $height = 400;
+
 	protected static $colors = array('chartreuse', 'chocolate1', 'cyan', 'blue', 'lightcyan4', 'gold');
 
 	protected $graph;
 
+	/*
+	 * constructor
+	 */
 	public function __construct(Http\Request $request, Http\Response $response, $format) {
 		parent::__construct($request, $response);
 		
 		$this->graph = new \Graph($this->width,$this->height);
+		
+		$this->graph->img->SetImgFormat($format);
 
 		// Specify what scale we want to use,
 		$this->graph->SetScale('datlin');
 		
-		$this->graph->legend->setPos(0.15,0.025, 'left', 'top');
+		$this->graph->legend->SetPos(0.1,0.02, 'left', 'top');
+		$this->graph->legend->SetShadow(false);
 		
 		$this->graph->SetMarginColor('white');
-		$this->graph->SetMargin(90,65,10,90);
 		$this->graph->SetYDeltaDist(65);
 		$this->graph->yaxis->SetTitlemargin(36);
 		
 		$this->graph->SetTickDensity(TICKD_DENSE, TICKD_SPARSE);
 		$this->graph->xaxis->SetFont(FF_ARIAL);
 		
-		$this->graph->xaxis->SetLabelAngle(60);
+		$this->graph->xaxis->SetLabelAngle(45);
 		$this->graph->xaxis->SetLabelFormatCallback(function($label) { return date('j.n.y G:i', $label); });
 		
 		//$this->graph->img->SetAntiAliasing(); 
@@ -73,51 +83,63 @@ class JpGraph extends View {
 			$yData[] = $reading['value'];
 		}
 		
-		// Create the linear plot
+		// Create the scatter plot
 		$plot = new \ScatterPlot($yData, $xData);
 		
-		$plot->setLegend($obj->getName() . ': ' . $obj->getDescription() . ' [' . $obj->getUuid() . ']');
+		$plot->setLegend($obj->getName() . ': ' . $obj->getDescription() . ' [' . $obj->getUnit() . ']');
+		$plot->SetLinkPoints(true, self::$colors[$count]);
 		
 		$plot->mark->SetColor(self::$colors[$count]);
 		$plot->mark->SetFillColor(self::$colors[$count]);
-		
 		$plot->mark->SetType(MARK_DIAMOND);
 		$plot->mark->SetWidth(1);
-		$plot->SetLinkPoints(true, self::$colors[$count]);
 		
-		if ($count == 0) {
-			$yaxis = $this->graph->yaxis;
-			$this->graph->Add($plot);
+		$axis = $this->getAxisIndex($obj);
+		if ($axis >= 0) {
+			$this->graph->AddY($axis, $plot);
 		}
 		else {
-			$this->graph->SetYScale($count-1,'lin');
-			$yaxis = $this->graph->ynaxis[$count-1];
-			$this->graph->SetMargin(60,($count) * 65,10,90);
-			$this->graph->AddY($count-1, $plot);
+			$this->graph->Add($plot);
 		}
-		
-		$yaxis->title->Set($obj->getUnit());
-		$yaxis->title->SetFont(FF_ARIAL);
-		$yaxis->SetColor(self::$colors[$count]);
-		$yaxis->SetTitleMargin('50');
 		
 		$this->channels[] = $obj;
 	}
 	
-	public function addException(\Exception $e) { echo $e; }
-	public function addDebug() {}
-
-	public static function factory(Http\Request $request, Http\Response $response) {
-
+	protected function getAxisIndex(\Volkszaehler\Model\Channel $obj) {
+		if (!in_array($obj->getIndicator(), array_keys($this->axes))) {
+			$count =count($this->axes); 
+			if ($count == 0) {
+				$this->axes[$obj->getIndicator()] = -1;
+				
+				$yaxis = $this->graph->yaxis;
+			}
+			else {
+				$this->axes[$obj->getIndicator()] = $count - 1;
+				
+				$this->graph->SetYScale($this->axes[$obj->getIndicator()],'lin');
+				
+				$yaxis = $this->graph->ynaxis[$this->axes[$obj->getIndicator()]];
+			}
+				
+			$yaxis->title->Set($obj->getUnit());
+				
+			$yaxis->SetFont(FF_ARIAL);
+			$yaxis->title->SetFont(FF_ARIAL);
+			
+			$yaxis->SetTitleMargin('50');
+		}
+		
+		return $this->axes[$obj->getIndicator()];
 	}
-
+	
 	public function render() {
+		$this->graph->SetMargin(75, (count($this->axes) - 1) * 65 + 10, 20, 90);
+		
 		// Display the graph
 		$this->graph->Stroke();
 
 		parent::render();
 	}
-
 }
 
 ?>

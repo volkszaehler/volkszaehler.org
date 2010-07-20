@@ -21,6 +21,8 @@
 
 namespace Volkszaehler\View\Csv;
 
+use Volkszaehler\Util;
+
 abstract class Csv extends \Volkszaehler\View\View {
 	protected $csv = array();
 	protected $header = array();
@@ -35,8 +37,8 @@ abstract class Csv extends \Volkszaehler\View\View {
 		$this->header[] = 'source: volkszaehler.org';
 		$this->header[] = 'version: ' . \Volkszaehler\VERSION;
 
-		$this->response->setHeader('Content-type', 'text/csv');
-		$this->response->setHeader('Content-Disposition', 'attachment; filename="data.csv"');
+		$this->response->setHeader('Content-type', 'text/plain');
+		//$this->response->setHeader('Content-Disposition', 'attachment; filename="data.csv"');
 	}
 	
 	public function render() {
@@ -60,13 +62,13 @@ abstract class Csv extends \Volkszaehler\View\View {
 	}
 	
 	public function addDebug() {
-		$config = \Volkszaehler\Util\Registry::get('config');
 
 		$this->footer[] = 'time: ' . $this->getTime();
-		$this->footer[] = 'database: ' . $config['db']['driver'];
+		$this->footer[] = 'database: ' . Util\Configuration::read('db.driver');
 		
 		foreach (\Volkszaehler\Util\Debug::getSQLLogger()->queries as $query) {
 			$this->footer[] = 'query: ' . $query['sql'];
+			$this->footer[] = '  parameters: ' . implode(', ', $query['parameters']);
 		}
 	}
 	

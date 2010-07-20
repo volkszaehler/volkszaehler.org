@@ -21,12 +21,7 @@
 
 namespace Volkszaehler\View;
 
-interface ViewInterface {
-	public function addException(\Exception $e);
-	public function addDebug();
-}
-
-abstract class View implements ViewInterface {
+abstract class View {
 	public $request;
 	protected $response;
 	
@@ -42,33 +37,6 @@ abstract class View implements ViewInterface {
 		// error & exception handling by view
 		set_exception_handler(array($this, 'exceptionHandler'));
 		set_error_handler(array($this, 'errorHandler'));
-	}
-	
-	/*
-	 * creates new view instance depending on the requested format
-	 * @todo improve mapping
-	 */
-	public static function factory(Http\Request $request, Http\Response $response) {
-		$format = strtolower($request->getParameter('format'));
-		$controller = strtolower($request->getParameter('controller'));
-		
-		if (in_array($format, array('png', 'jpg'))) {
-			$view = new JpGraph($request, $response, $format);
-		}
-		else {
-			if ($controller == 'data' && ($format == 'json' || $format == 'xml')) {
-				$controller = 'channel';
-			}
-			$viewClassName = 'Volkszaehler\View\\' . ucfirst($format) . '\\' . ucfirst($controller);
-			
-			if (!(\Volkszaehler\Util\ClassLoader::classExists($viewClassName)) || !is_subclass_of($viewClassName, '\Volkszaehler\View\View')) {
-				throw new \InvalidArgumentException('\'' . $viewClassName . '\' is not a valid View');
-			}
-		
-			$view = new $viewClassName($request, $response);
-		}
-		
-		return $view;
 	}
 	
 	/*
@@ -101,5 +69,13 @@ abstract class View implements ViewInterface {
 		}
 		
 		$this->response->send();
+	}
+	
+	public function addException(\Exception $e) {
+		echo $e;
+	}
+	
+	public function addDebug() {
+		
 	}
 }

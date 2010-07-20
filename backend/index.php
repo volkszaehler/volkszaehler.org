@@ -44,12 +44,7 @@ foreach ($classLoaders as $loader) {
 // enable strict error reporting
 error_reporting(E_ALL);
 
-// load configuration into registry
-if (!file_exists(BACKEND_DIR . '/volkszaehler.conf.php')) {
-	throw new Exception('No configuration available! Use volkszaehler.conf.default.php as an template');
-}
-
-include BACKEND_DIR . '/volkszaehler.conf.php';
+Util\Configuration::load(BACKEND_DIR . '/volkszaehler.conf');
 
 $fc = new Dispatcher;	// spawn frontcontroller / dispatcher
 $fc->run();				// execute controller and sends output

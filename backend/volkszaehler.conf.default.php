@@ -25,15 +25,6 @@ $config['db']['user']				= 'volkszaehler';
 $config['db']['password']			= '';
 $config['db']['dbname']				= 'volkszaehler';
 
-$config['passthru']['enabled']		= false;
-$config['passthru']['url']			= 'http://volkszaehler.org/httplog/httplog.php?&passthru=yes';
-
 $config['debug']					= false;
-
-// insert configuration into registry
-Registry::set('config', $config);
-
-// unset registry from page context
-unset($config);
 
 ?>

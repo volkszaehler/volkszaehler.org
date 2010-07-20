@@ -66,6 +66,10 @@ abstract class Interpreter implements InterpreterInterface {
 			case 'minute':
 				$sqlGroupBy = 'YEAR(' . $ts . '), DAYOFYEAR(' . $ts . '), HOUR(' . $ts . '), MINUTE(' . $ts . ')';
 				break;
+				
+			case 'second':
+				$sqlGroupBy = 'YEAR(' . $ts . '), DAYOFYEAR(' . $ts . '), HOUR(' . $ts . '), MINUTE(' . $ts . '), SECOND(' . $ts . ')';
+				break;
 
 			default:
 				if (is_numeric($groupBy)) {		// lets agrregate it with php

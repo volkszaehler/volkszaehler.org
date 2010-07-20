@@ -19,32 +19,15 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-namespace Volkszaehler\Controller;
+use Volkszaehler\Util;
+include '../../backend/lib/Util/Configuration.php';
+echo '<pre>';
 
-abstract class Controller {
-	protected $view;
-	protected $em;
-	
-	/*
-	 * constructor
-	 */
-	public function __construct(\Volkszaehler\View\View $view, \Doctrine\ORM\EntityManager $em) {
-		$this->view = $view;
-		$this->em = $em;
-	}
-	
-	/**
-	 * run controller actions
-	 * 
-	 * @param string $action runs the action if class method is available
-	 */
-	public function run($action) {
-		if (!method_exists($this, $action)) {
-			throw new \InvalidArgumentException('\'' . $action . '\' is not a valid controller action');
-		}
-		
-		$this->$action();
-	}
-}
+Util\Configuration::load('config_test');
 
+var_dump(Util\Configuration::read());
+
+Util\Configuration::store('config_test');
+
+echo '</pre>';
 ?>

@@ -18,33 +18,30 @@
  * For more information on the GPL, please go to:
  * http://www.gnu.org/copyleft/gpl.html
  */
+?>
 
-namespace Volkszaehler\Controller;
+<?= '<?xml version="1.0"' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<title>volkszaehler.org installer</title>
+	</head>
+	<body>
 
-abstract class Controller {
-	protected $view;
-	protected $em;
-	
-	/*
-	 * constructor
-	 */
-	public function __construct(\Volkszaehler\View\View $view, \Doctrine\ORM\EntityManager $em) {
-		$this->view = $view;
-		$this->em = $em;
-	}
-	
-	/**
-	 * run controller actions
-	 * 
-	 * @param string $action runs the action if class method is available
-	 */
-	public function run($action) {
-		if (!method_exists($this, $action)) {
-			throw new \InvalidArgumentException('\'' . $action . '\' is not a valid controller action');
-		}
+<?php
+
+switch (@$_GET['step']) {
+	case '1':
+		echo 'bla';
+		break;
 		
-		$this->$action();
-	}
+	default:
+		echo '<p>welcome to the installation of your volkszaehler backend!</p>
+			<p>lets proceed with the <a href="?step=1">next step</a></p>';
 }
 
 ?>
+
+</body>
+</html>
