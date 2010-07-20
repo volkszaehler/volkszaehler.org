@@ -31,10 +31,10 @@ use Doctrine\Common\Collections\ArrayCollection;
  */
 class Group extends Entity {
 	/** @Column(type="string") */
-	private $name;
+	protected $name;
 	
 	/** @Column(type="string") */
-	private $description;
+	protected $description;
 	
 	/**
 	 * @ManyToMany(targetEntity="Channel")
@@ -43,7 +43,7 @@ class Group extends Entity {
 	 * 		inverseJoinColumns={@JoinColumn(name="channel_id", referencedColumnName="id")}
 	 * )
 	 */
-	private $channels = NULL;
+	protected $channels = NULL;
 	
 	/**
 	 * @ManyToMany(targetEntity="Group")
@@ -52,7 +52,7 @@ class Group extends Entity {
 	 * 		inverseJoinColumns={@JoinColumn(name="child_id", referencedColumnName="id")}
 	 * )
 	 */
-	private $children = NULL;
+	protected $children = NULL;
 
 	/*
 	 * construct

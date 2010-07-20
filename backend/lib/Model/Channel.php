@@ -42,13 +42,13 @@ class Channel extends Entity {
 	/**
 	 * @OneToMany(targetEntity="Data", mappedBy="channel"), cascade={"remove"}
 	 */
-	private $data = NULL;
+	protected $data = NULL;
 	
 	/** @Column(type="integer") */
-	private $resolution;
+	protected $resolution;
 
 	/** @Column(type="decimal", precision="5", scale="2") */
-	private $cost;
+	protected $cost;
 	
 	/*
 	 * indicator => interpreter, unit mapping
@@ -78,7 +78,7 @@ class Channel extends Entity {
 	
 	/*
 	 * add a new data to the database
-	 * @todo move to logger?
+	 * @todo move to Logger\Logger?
 	 */
 	public function addData(\Volkszaehler\Model\Data $data) {
 		$this->data->add($data);

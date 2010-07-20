@@ -53,7 +53,7 @@ abstract class Json extends \Volkszaehler\View\View {
 	protected static function format($json) {
 		$formatted = '';
 		$indentLevel = 0;
-		$inString = false;
+		$inString = FALSE;
 
 		$len = strlen($json);
 		for($c = 0; $c < $len; $c++) {

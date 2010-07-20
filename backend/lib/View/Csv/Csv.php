@@ -27,6 +27,9 @@ abstract class Csv extends \Volkszaehler\View\View {
 	protected $csv = array();
 	protected $header = array();
 	protected $footer = array();
+	
+	protected $delimiter = ';';
+	protected $enclosure = '"';
 
 	/*
 	 * constructor
@@ -37,8 +40,8 @@ abstract class Csv extends \Volkszaehler\View\View {
 		$this->header[] = 'source: volkszaehler.org';
 		$this->header[] = 'version: ' . \Volkszaehler\VERSION;
 
-		$this->response->setHeader('Content-type', 'text/plain');
-		//$this->response->setHeader('Content-Disposition', 'attachment; filename="data.csv"');
+		$this->response->setHeader('Content-type', 'text/csv');
+		$this->response->setHeader('Content-Disposition', 'attachment; filename="data.csv"');
 	}
 	
 	public function render() {
@@ -49,7 +52,9 @@ abstract class Csv extends \Volkszaehler\View\View {
 		echo PHP_EOL;
 		
 		foreach ($this->csv as $array) {
-			echo implode(";", $array) . PHP_EOL;
+			$array = array_map(array($this, 'escape'), $array);
+				
+			echo implode($this->delimiter, $array) . PHP_EOL;
 		}
 		
 		echo PHP_EOL;
@@ -61,11 +66,27 @@ abstract class Csv extends \Volkszaehler\View\View {
 		parent::render();
 	}
 	
-	public function addDebug() {
-		$this->footer[] = 'time: ' . $this->getTime();
+	protected function escape($value) {
+		if (is_string($value)) {
+			return $this->enclosure . $value . $this->enclosure;
+		}
+		elseif (is_numeric($value)) {
+			return $value;
+		}
+		else {
+			return (string) $value;
+		}
+	}
+	
+	public function addDebug(Util\Debug $debug) {
+		$this->footer[] = 'time: ' . $debug->getExecutionTime();
 		$this->footer[] = 'database: ' . Util\Configuration::read('db.driver');
 		
-		foreach (\Volkszaehler\Util\Debug::getSQLLogger()->queries as $query) {
+		foreach ($debug->getMessages() as $message) {
+			$this->footer[] = 'message: ' . $message['message'];	// TODO add more information
+		}
+		
+		foreach ($debug->getQueries() as $query) {
 			$this->footer[] = 'query: ' . $query['sql'];
 			$this->footer[] = '  parameters: ' . implode(', ', $query['parameters']);
 		}

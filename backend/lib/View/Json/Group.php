@@ -23,13 +23,12 @@ namespace Volkszaehler\View\Json;
 
 class Group extends Json {
 	
-	public function add(\Volkszaehler\Model\Group $obj, $recursive = false) {
-		$group['id'] = (int) $obj->getId();
+	public function add(\Volkszaehler\Model\Group $obj, $recursive = FALSE) {
 		$group['uuid'] = (string) $obj->getUuid();
 		$group['name'] = $obj->getName();
 		$group['description'] = $obj->getDescription();
 		
-		if ($recursive) {	// TODO add really nested sub groups
+		if ($recursive) {	// TODO add nested groups in json view
 			$children = $obj->getChildren();
 
 			foreach ($children as $child) {

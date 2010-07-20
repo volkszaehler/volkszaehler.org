@@ -23,8 +23,7 @@ namespace Volkszaehler\View\Json;
 
 class Channel extends Json {
 	
-	public function add(\Volkszaehler\Model\Channel $obj, $data = NULL) {
-		$channel['id'] = (int) $obj->getId();
+	public function add(\Volkszaehler\Model\Channel $obj, array $data = NULL) {
 		$channel['uuid'] = (string) $obj->getUuid();
 		$channel['indicator'] = $obj->getIndicator();
 		$channel['unit'] = $obj->getUnit();
@@ -37,7 +36,7 @@ class Channel extends Json {
 			$channel['cost'] = (float) $obj->getCost();
 		}
 			
-		if (!is_null($data) && is_array($data)) {
+		if (isset($data)) {
 			$channel['data'] = array();
 			foreach ($data as $reading) {
 				$channel['data'][] = array($reading['timestamp'], $reading['value'], $reading['count']);

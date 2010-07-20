@@ -74,7 +74,7 @@ abstract class Interpreter implements InterpreterInterface {
 			default:
 				if (is_numeric($groupBy)) {		// lets agrregate it with php
 					$groupBy = (int) $groupBy;
-					$sqlGroupBy = false;
+					$sqlGroupBy = FALSE;
 				}
 				else {
 					throw new \InvalidArgumentException('\'' . $groupBy . '\' is not an unknown grouping mode');
@@ -82,18 +82,18 @@ abstract class Interpreter implements InterpreterInterface {
 		}
 
 		$sql = 'SELECT';
-		$sql .= ($sqlGroupBy === false) ? ' timestamp, value' : ' MAX(timestamp) AS timestamp, SUM(value) AS value, COUNT(timestamp) AS count';
+		$sql .= ($sqlGroupBy === FALSE) ? ' timestamp, value' : ' MAX(timestamp) AS timestamp, SUM(value) AS value, COUNT(timestamp) AS count';
 		$sql .= ' FROM data WHERE channel_id = ' . (int) $this->channel->getId();
 		
-		if (!is_null($from)) {
+		if (isset($from)) {
 			$sql .= ' && timestamp > ' . $from;
 		}
 		
-		if (!is_null($to)) {
+		if (isset($to)) {
 			$sql .= ' && timestamp < ' . $to;
 		}
 
-		if ($sqlGroupBy !== false) {
+		if ($sqlGroupBy !== FALSE) {
 			$sql .= ' GROUP BY ' . $sqlGroupBy;
 		}
 			
@@ -125,7 +125,7 @@ abstract class Interpreter implements InterpreterInterface {
 		for ($i = 1; $i <= $packageCount; $i++) {
 			$package = array('timestamp' => (int) $reading['timestamp'],	// last timestamp in package
 								'value' => (float) $reading['value'],		// sum of values
-								'count' => ($sqlGroupBy === false) ? 1 : $reading['count']);						// total count of values or pulses in the package
+								'count' => ($sqlGroupBy === FALSE) ? 1 : $reading['count']);						// total count of values or pulses in the package
 
 			while ($package['count'] < $packageSize) {
 				$reading = next($result);

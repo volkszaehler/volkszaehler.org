@@ -29,7 +29,6 @@ require_once \Volkszaehler\BACKEND_DIR . '/lib/vendor/JpGraph/jpgraph_date.php';
  * JpGraph plotting
  * 
  * @todo add caching
- * @todo unifiy axes of same unit
  */
 class JpGraph extends View {
 	/*
@@ -60,7 +59,7 @@ class JpGraph extends View {
 		$this->graph->SetScale('datlin');
 		
 		$this->graph->legend->SetPos(0.1,0.02, 'left', 'top');
-		$this->graph->legend->SetShadow(false);
+		$this->graph->legend->SetShadow(FALSE);
 		
 		$this->graph->SetMarginColor('white');
 		$this->graph->SetYDeltaDist(65);
@@ -75,7 +74,7 @@ class JpGraph extends View {
 		//$this->graph->img->SetAntiAliasing(); 
 	}
 	
-	public function add(\Volkszaehler\Model\Channel $obj, $data = NULL) {
+	public function add(\Volkszaehler\Model\Channel $obj, array $data) {
 		$count = count($this->channels);
 		$xData = $yData = array();
 		foreach ($data as $reading) {
@@ -87,7 +86,7 @@ class JpGraph extends View {
 		$plot = new \ScatterPlot($yData, $xData);
 		
 		$plot->setLegend($obj->getName() . ': ' . $obj->getDescription() . ' [' . $obj->getUnit() . ']');
-		$plot->SetLinkPoints(true, self::$colors[$count]);
+		$plot->SetLinkPoints(TRUE, self::$colors[$count]);
 		
 		$plot->mark->SetColor(self::$colors[$count]);
 		$plot->mark->SetFillColor(self::$colors[$count]);

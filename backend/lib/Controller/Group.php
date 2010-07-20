@@ -43,7 +43,7 @@ class Group extends Controller {
 		$this->view->add($group);
 	}
 	
-	// TODO check for valid user identity
+	// TODO authentification/indentification
 	public function delete() {
 		$group = Group::getByUuid($this->view->request->getParameter('ugid'));
 		
@@ -52,7 +52,7 @@ class Group extends Controller {
 	}
 	
 	public function edit() {
-		// TODO implement GroupController::edit();
+		// TODO implement Controller\Group::edit();
 	}
 }
 

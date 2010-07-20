@@ -25,6 +25,6 @@ $config['db']['user']				= 'volkszaehler';
 $config['db']['password']			= '';
 $config['db']['dbname']				= 'volkszaehler';
 
-$config['debug']					= false;
+$config['debug']					= FALSE;
 
 ?>

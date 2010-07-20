@@ -32,9 +32,9 @@ class Group extends Xml {
 	
 	public function add(\Volkszaehler\Model\Group $obj) {
 		$xmlGroup = $this->xmlDoc->createElement('group');
-		$xmlGroup->setAttribute('id', (int) $obj->id);
-		$xmlGroup->appendChild($this->xmlDoc->createElement('uuid', $obj->uuid));
-		$xmlGroup->appendChild($this->xmlDoc->createElement('description', $obj->description));
+		$xmlGroup->setAttribute('uuid', $obj->getUuid());
+		$xmlGroup->appendChild($this->xmlDoc->createElement('name', $obj->getName()));
+		$xmlGroup->appendChild($this->xmlDoc->createElement('description', $obj->getDescription()));
 			
 		// TODO include sub groups?
 			

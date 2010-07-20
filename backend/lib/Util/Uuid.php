@@ -92,7 +92,7 @@ class Uuid {
 
 	public static function compare($a, $b) {
 		/* Compares the binary representations of two UUIDs.
-		 The comparison will return true if they are bit-exact,
+		 The comparison will return TRUE if they are bit-exact,
 		 or if neither is valid. */
 		if (self::makeBin($a, 16)==self::makeBin($b, 16))
 		return TRUE;
@@ -239,7 +239,7 @@ class Uuid {
 
 	protected static function makeBin($str, $len) {
 		/* Insure that an input string is either binary or hexadecimal.
-		 Returns binary representation, or false on failure. */
+		 Returns binary representation, or FALSE on failure. */
 		if ($str instanceof self)
 		return $str->bytes;
 		if (strlen($str)==$len)

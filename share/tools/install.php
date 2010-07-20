@@ -31,6 +31,8 @@
 
 <?php
 
+// TODO complete installer
+
 switch (@$_GET['step']) {
 	case '1':
 		echo 'bla';

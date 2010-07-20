@@ -21,12 +21,14 @@
 
 namespace Volkszaehler\Controller;
 
-// TODO call as subcontroller from Controller\Channel::get()?
+// TODO call via redirect from Controller\Channel
+use Volkszaehler\Util;
+
 class Data extends Controller {
 	
 	// TODO authentification/indentification
 	public function get() {
-		// TODO why not ucids?
+		// TODO use uuids for groups or channels
 		$ids = explode(',', trim($this->view->request->getParameter('ids')));
 		
 		$q = $this->em->createQuery('SELECT c FROM Volkszaehler\Model\Channel c WHERE c.id IN (' . implode(', ', $ids) . ')');
@@ -49,7 +51,7 @@ class Data extends Controller {
 		$value = (float) $this->view->request->getParameter('value');
 		$ts = (int) $this->view->request->getParameter('timestamp');
 		if ($ts == 0) {
-			$ts = microtime(true) * 1000;
+			$ts = microtime(TRUE) * 1000;
 		}
 		
 		$data = new \Volkszaehler\Model\Data($channel, $value, $ts);
@@ -61,9 +63,10 @@ class Data extends Controller {
 	}
 	
 	/*
-	 * prune all data from database
+	 * prune data from database
 	 */
-	public function delete() {	// TODO add user authentification
+	// TODO authentification/indentification
+	public function delete() {
 		$dql = 'DELETE FROM \Volkszaehler\Model\Data WHERE channel_id = ' . $this->id;
 		
 		if ($this->view->request->getParameter('from')) {

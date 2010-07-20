@@ -32,7 +32,7 @@ class Configuration {
 		$values =& self::$values;
 		$tree = explode('.', $var);
 		foreach ($tree as $part) {
-			$values =& $values[$part];	// TODO array_merge_recursive()
+			$values =& $values[$part];	// TODO use array_merge_recursive()
 		}
 		
 		$values = $value;
@@ -81,7 +81,7 @@ class Configuration {
 		
 		$delcaration = '';
 		foreach (self::$values as $key => $value) {
-			$export = var_export($value, true);
+			$export = var_export($value, TRUE);
 			$export = preg_replace('/=>\s+array/', '=> array', $export);
 			$export = str_replace("  ", "\t", $export);
 			

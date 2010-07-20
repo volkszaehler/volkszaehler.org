@@ -28,7 +28,7 @@ use Volkszaehler\Util;
 /*
  * frontcontroller / dispatcher
  */
-final class Dispatcher {
+class Dispatcher {
 	// MVC
 	protected $em;			// Model (Doctrine EntityManager)
 	protected $view;		// View
@@ -115,7 +115,7 @@ final class Dispatcher {
 		
 		$config->setProxyDir(BACKEND_DIR . '/lib/Model/Proxies');
 		$config->setProxyNamespace('Volkszaehler\Model\Proxies');
-		$config->setAutoGenerateProxyClasses(DEV_ENV == true);
+		$config->setAutoGenerateProxyClasses(DEV_ENV == TRUE);
 		
 		return \Doctrine\ORM\EntityManager::create(Util\Configuration::read('db'), $config);
 	}

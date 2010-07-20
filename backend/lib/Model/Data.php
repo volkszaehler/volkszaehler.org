@@ -34,20 +34,20 @@ class Data {
 	 * @Id
 	 * @Column(type="bigint")
 	 */
-	private $timestamp;
+	protected $timestamp;
 
 	/**
 	 * @Column(type="decimal", precision="10", scale="5")
 	 * @todo change to float after DCC-67 has been closed
 	 */
-	private $value;
+	protected $value;
 
 	/**
 	 * @Id
 	 * @ManyToOne(targetEntity="Channel", inversedBy="data")
 	 * @JoinColumn(name="channel_id", referencedColumnName="id")
 	 */
-	private $channel;
+	protected $channel;
 	
 	public function __construct(Channel\Channel $channel, $value, $timestamp) {
 		$this->channel = $channel;

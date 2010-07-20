@@ -21,7 +21,6 @@
 
 namespace Volkszaehler\View\Xml;
 
-// TODO outdated
 use Volkszaehler\Util;
 
 abstract class Xml extends \Volkszaehler\View\View {
@@ -58,13 +57,14 @@ abstract class Xml extends \Volkszaehler\View\View {
 		$this->xmlRoot->appendChild($xmlException);
 	}
 	
-	public function addDebug() {
+	public function addDebug(Util\Debug $debug) {
 		$xmlDebug = $this->xmlDoc->createElement('debug');
 		
-		$xmlDebug->appendChild($this->xmlDoc->createElement('time', $this->getTime()));
+		$xmlDebug->appendChild($this->xmlDoc->createElement('time', $debug->getExecutionTime()));
 		$xmlDebug->appendChild($this->xmlDoc->createElement('database', Util\Configuration::read('db.driver')));
 		
-		// TODO add queries
+		// TODO add queries to xml debug
+		// TODO add messages to xml output
 		
 		$this->xmlRoot->appendChild($xmlDebug);
 	}
@@ -83,7 +83,7 @@ abstract class Xml extends \Volkszaehler\View\View {
 						$xmlArgs = $this->xmlDoc->createElement($key);
 						$xmlTrace->appendChild($xmlArgs);
 						foreach ($value as $arg) {
-							$xmlArgs->appendChild($this->xmlDoc->createElement('arg', print_r($value, true))); // TODO check $value content
+							$xmlArgs->appendChild($this->xmlDoc->createElement('arg', (is_scalar($value)) ? $value : print_r($value, TRUE)));
 						}
 						break;
 							

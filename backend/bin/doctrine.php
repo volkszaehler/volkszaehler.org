@@ -2,6 +2,7 @@
 
 // TODO replace by state class
 const BACKEND_DIR = '/home/steffen/workspace/volkszaehler.org/backend';
+const DEV_ENV = TRUE;
 
 // class autoloading
 require BACKEND_DIR . '/lib/Util/ClassLoader.php';
@@ -28,7 +29,7 @@ $em = Volkszaehler\Dispatcher::createEntityManager();
 $helperSet = new \Symfony\Components\Console\Helper\HelperSet(array('em' => new \Doctrine\ORM\Tools\Console\Helper\EntityManagerHelper($em)));
 
 $cli = new \Symfony\Components\Console\Application('Doctrine Command Line Interface', Doctrine\ORM\Version::VERSION);
-$cli->setCatchExceptions(true);
+$cli->setCatchExceptions(TRUE);
 $cli->setHelperSet($helperSet);
 $cli->addCommands(array(
 	// DBAL Commands

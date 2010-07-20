@@ -29,7 +29,7 @@ class Channel extends Xml {
 		$this->xml = $this->xmlDoc->createElement('channels');
 	}
 	
-	public function add(\Volkszaehler\Model\Channel $obj, $data = NULL) {
+	public function add(\Volkszaehler\Model\Channel $obj, array $data = NULL) {
 		$xmlChannel = $this->xmlDoc->createElement('channel');
 		$xmlChannel->setAttribute('uuid', $obj->getUuid());
 		
@@ -40,7 +40,7 @@ class Channel extends Xml {
 		$xmlChannel->appendChild($this->xmlDoc->createElement('resolution', (int) $obj->getResolution()));
 		$xmlChannel->appendChild($this->xmlDoc->createElement('cost', (float) $obj->getCost()));
 		
-		if (!is_null($data) && is_array($data)) {
+		if (isset($data)) {
 			$xmlData = $this->xmlDoc->createElement('data');
 			
 			foreach ($data as $reading) {

@@ -103,7 +103,7 @@ class Response {
 	public function getCode() { return $this->code; }
 	public function setCode($code) { $this->code = $code; }
 	static public function getCodeDescription($code) {
-		return (isset(self::$codes[$code])) ? self::$codes[$code] : false;
+		return (isset(self::$codes[$code])) ? self::$codes[$code] : FALSE;
 	}
 }
 

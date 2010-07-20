@@ -37,19 +37,19 @@ class Debug implements Logging\SQLLogger {
 	 */
 	public function __construct($level) {
 		// taking timestamp to stop execution time
-		$this->created = microtime(true);
+		$this->created = microtime(TRUE);
 		
 		$this->level = $level;
 		
-		if (!is_null(self::$instance)) {
+		if (isset(self::$instance)) {
 			throw new \Exception('debugging has already been started. please use the static functions!');
 		}
 		self::$instance = $this;
 		
 		// assert options
-		assert_options(ASSERT_ACTIVE, true);
-		assert_options(ASSERT_BAIL, false);
-		assert_options(ASSERT_WARNING, false);
+		assert_options(ASSERT_ACTIVE, TRUE);
+		assert_options(ASSERT_BAIL, FALSE);
+		assert_options(ASSERT_WARNING, FALSE);
 		assert_options(ASSERT_CALLBACK, array($this, 'assertHandler'));
 		
 		
@@ -58,12 +58,18 @@ class Debug implements Logging\SQLLogger {
 	/*
 	 * interface for doctrine's dbal sql logger
 	 */ 
-	function logSQL($sql, array $params = null) {
-		$this->queries[] = array('sql' => $sql, 'parameter' => $params);
+	function logSQL($sql, array $parameter = NULL) {
+		$query['sql'] = $sql;
+		
+		if (isset($parameter) && !empty($parameter)) {
+			$query['parameters'] = $parameter;
+		}
+		
+		$this->queries[] = $query;
 	}
 	
 	static public function log($message) {
-		if (!is_null(self::$instance)) {
+		if (isset(self::$instance)) {
 			$trace = debug_backtrace();
 			
 			self::$instance->messages[] = array(
@@ -99,9 +105,9 @@ class Debug implements Logging\SQLLogger {
 		);
 	}
 	
-	public static function isActivated() { return !is_null(self::$instance); }
+	public static function isActivated() { return isset(self::$instance); }
 	
-	public function getExecutionTime() { return round((microtime(true) - $this->created), 5); }
+	public function getExecutionTime() { return round((microtime(TRUE) - $this->created), 5); }
 	public function getQueries() { return $this->queries; }
 	public function getMessages() { return $this->messages; }
 }

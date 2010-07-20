@@ -27,7 +27,7 @@ use Volkszaehler\Controller;
 // TODO replace by state class
 const VERSION = 1.1;
 const BACKEND_DIR = '/home/steffen/workspace/volkszaehler.org/backend';	// TODO realpath(__DIR__)
-const DEV_ENV = true;
+const DEV_ENV = TRUE;
 
 // class autoloading
 require BACKEND_DIR . '/lib/Util/ClassLoader.php';

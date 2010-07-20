@@ -60,7 +60,8 @@ class Meter extends Interpreter {
 		return $min;
 	}
 	
-	public function getAverage($from = NULL, $to = NULL) {	// TODO calculate timeinterval if no params were given
+	// TODO calculate timeinterval if no params were given
+	public function getAverage($from = NULL, $to = NULL) {	
 		return $this->getConsumption($from, $to) / ($to - $from) / 1000;	// return W
 	}
 	

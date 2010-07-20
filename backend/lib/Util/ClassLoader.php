@@ -24,10 +24,10 @@
 namespace Volkszaehler\Util;
 
 class ClassLoader {
-	private $fileExtension = '.php';
-	private $namespace;
-	private $includePath;
-	private $namespaceSeparator = '\\';
+	protected $fileExtension = '.php';
+	protected $namespace;
+	protected $includePath;
+	protected $namespaceSeparator = '\\';
 
 	/**
 	 * Creates a new <tt>ClassLoader</tt> that loads classes of the
@@ -40,7 +40,7 @@ class ClassLoader {
 	 * @param string $ns The namespace of the classes to load.
 	 * @param string $includePath The base include path to use.
 	 */
-	public function __construct($ns = null, $includePath = null) {
+	public function __construct($ns = NULL, $includePath = NULL) {
 		$this->namespace = $ns;
 		$this->includePath = $includePath;
 	}
@@ -102,16 +102,16 @@ class ClassLoader {
 	 * @return boolean TRUE if the class has been successfully loaded, FALSE otherwise.
 	 */
 	public function loadClass($className) {
-		if ($this->namespace !== null && strpos($className, $this->namespace . $this->namespaceSeparator) !== 0) {
-			return false;
+		if ($this->namespace !== NULL && strpos($className, $this->namespace . $this->namespaceSeparator) !== 0) {
+			return FALSE;
 		}
 		
 		$subNamespace = substr($className, strlen($this->namespace));
 		$parts = explode($this->namespaceSeparator, $subNamespace);
 		$path = implode(DIRECTORY_SEPARATOR, $parts);
 
-		require_once ($this->includePath !== null ? $this->includePath : '') . $path . $this->fileExtension;
-		return true;
+		require_once ($this->includePath !== NULL ? $this->includePath : '') . $path . $this->fileExtension;
+		return TRUE;
 	}
 
 	/**
@@ -122,15 +122,15 @@ class ClassLoader {
 	 * @return boolean TRUE if this ClassLoader can load the class, FALSE otherwise.
 	 */
 	public function canLoadClass($className) {
-		if ($this->namespace !== null && strpos($className, $this->namespace . $this->namespaceSeparator) !== 0) {
-			return false;	// TODO handle with exceptions
+		if ($this->namespace !== NULL && strpos($className, $this->namespace . $this->namespaceSeparator) !== 0) {
+			return FALSE;	// TODO handle with exceptions
 		}
 
 		$subNamespace = substr($className, strlen($this->namespace));
 		$parts = explode($this->namespaceSeparator, $subNamespace);
 		$path = implode(DIRECTORY_SEPARATOR, $parts);
 		
-		return file_exists(($this->includePath !== null ? $this->includePath . DIRECTORY_SEPARATOR : '') . $path . $this->fileExtension);
+		return file_exists(($this->includePath !== NULL ? $this->includePath . DIRECTORY_SEPARATOR : '') . $path . $this->fileExtension);
 	}
 
 	/**
@@ -155,8 +155,8 @@ class ClassLoader {
 	 * @return boolean TRUE if the class exists as per the definition given above, FALSE otherwise.
 	 */
 	public static function classExists($className) {
-		if (class_exists($className, false)) {
-			return true;
+		if (class_exists($className, FALSE)) {
+			return TRUE;
 		}
 
 		foreach (spl_autoload_functions() as $loader) {
@@ -164,24 +164,24 @@ class ClassLoader {
 				if (is_object($loader[0])) {
 					if ($loader[0] instanceof ClassLoader) { // array($obj, 'methodName')
 						if ($loader[0]->canLoadClass($className)) {
-							return true;
+							return TRUE;
 						}
 					} else if ($loader[0]->{$loader[1]}($className)) {
-						return true;
+						return TRUE;
 					}
 				} else if ($loader[0]::$loader[1]($className)) { // array('ClassName', 'methodName')
-					return true;
+					return TRUE;
 				}
 			} else if ($loader instanceof \Closure) { // function($className) {..}
 				if ($loader($className)) {
-					return true;
+					return TRUE;
 				}
 			} else if (is_string($loader) && $loader($className)) { // "MyClass::loadClass"
-				return true;
+				return TRUE;
 			}
 		}
 
-		return false;
+		return FALSE;
 	}
 
 	/**
@@ -199,6 +199,6 @@ class ClassLoader {
 			}
 		}
 
-		return null;
+		return NULL;
 	}
 }

@@ -74,7 +74,7 @@ class Channel extends Controller {
 		$this->em->flush();
 	}
 	
-	// TODO implement ChannelController::edit();
+	// TODO implement Controller\Channel::edit();
 	// TODO authentification/indentification
 	public function edit() {
 		
