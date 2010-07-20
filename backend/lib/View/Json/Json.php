@@ -39,19 +39,15 @@ abstract class Json extends \Volkszaehler\View\View {
 	}
 
 	public function render() {
-		parent::render();
-		// TODO solve rendering order problem
-		
 		$json = json_encode($this->json);
 		
-		if ($this->request->getParameter('debug')) {
-			echo self::format($json);
+		if (Util\Debug::isActivated()) {
+			$json = self::format($json);
 		}
-		else {
-			echo $json;
-		}
+
+		echo $json;
 		
-		
+		parent::render();
 	}
 
 	protected static function format($json) {
@@ -104,21 +100,25 @@ abstract class Json extends \Volkszaehler\View\View {
 		return $formatted;
 	}
 
-	public function addDebug() {
-		$this->json['debug'] = array('time' => $this->getTime(),
-										'database' => array('driver' => Util\Configuration::read('db.driver'),
-																'queries' => Util\Debug::getSQLLogger()->queries)
+	public function addDebug(Util\Debug $debug) {
+		$this->json['debug'] = array(
+			'time' => $debug->getExecutionTime(),
+			'messages' => $debug->getMessages(),							
+			'database' => array(
+				'driver' => Util\Configuration::read('db.driver'),
+				'queries' => $debug->getQueries()
+			)
 		);
-
 	}
 
 	public function addException(\Exception $exception) {
-		$this->json['exception'] = array('type' => get_class($exception),
-										'message' => $exception->getMessage(),
-										'code' => $exception->getCode(),
-										'file' => $exception->getFile(),
-										'line' => $exception->getLine(),
-										'trace' => $exception->getTrace()
+		$this->json['exception'] = array(
+			'type' => get_class($exception),
+			'message' => $exception->getMessage(),
+			'code' => $exception->getCode(),
+			'file' => $exception->getFile(),
+			'line' => $exception->getLine(),
+			'trace' => $exception->getTrace()
 		);
 	}
 }

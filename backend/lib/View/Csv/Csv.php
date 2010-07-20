@@ -62,7 +62,6 @@ abstract class Csv extends \Volkszaehler\View\View {
 	}
 	
 	public function addDebug() {
-
 		$this->footer[] = 'time: ' . $this->getTime();
 		$this->footer[] = 'database: ' . Util\Configuration::read('db.driver');
 		

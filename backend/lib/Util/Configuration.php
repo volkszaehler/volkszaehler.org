@@ -22,7 +22,7 @@
 namespace Volkszaehler\Util;
 
 class Configuration {
-	static public $values = array();	// TODO protected
+	static protected $values = array();
 
 	static public function write($var, $value) {
 		if (!is_scalar($value) && !is_array($value)) {
@@ -32,7 +32,7 @@ class Configuration {
 		$values =& self::$values;
 		$tree = explode('.', $var);
 		foreach ($tree as $part) {
-			$values =& $values[$part];
+			$values =& $values[$part];	// TODO array_merge_recursive()
 		}
 		
 		$values = $value;

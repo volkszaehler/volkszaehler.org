@@ -21,18 +21,15 @@
 
 namespace Volkszaehler\View;
 
+use Volkszaehler\Util;
+
 abstract class View {
 	public $request;
 	protected $response;
 	
-	private $created;	// holds timestamp of creation, used later to return time of execution
-	
 	public function __construct(Http\Request $request, Http\Response $response) {
 		$this->request = $request;
 		$this->response = $response;
-		
-		// TODO move to Debug or State class
-		$this->created = microtime(true);
 		
 		// error & exception handling by view
 		set_exception_handler(array($this, 'exceptionHandler'));
@@ -58,16 +55,7 @@ abstract class View {
 		die();
 	}
 	
-	// TODO move this into Debug or State Class
-	protected function getTime() {
-		return round(microtime(true) - $this->created, 4);
-	}
-	
 	public function render() {
-		if (!is_null($this->request->getParameter('debug')) && $this->request->getParameter('debug') > 0) {
-			$this->addDebug();
-		}
-		
 		$this->response->send();
 	}
 	
@@ -75,7 +63,7 @@ abstract class View {
 		echo $e;
 	}
 	
-	public function addDebug() {
+	public function addDebug(Util\Debug $debug) {
 		
 	}
 }

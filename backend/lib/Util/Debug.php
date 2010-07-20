@@ -21,15 +21,89 @@
 
 namespace Volkszaehler\Util;
 
-class Debug {
-	private static $logger = NULL;
+use Doctrine\DBAL\Logging;
+
+class Debug implements Logging\SQLLogger {
+	protected static $instance = NULL;
 	
-	static public function getSQLLogger() {
-		if (is_null(self::$logger)) {
-			self::$logger = new \Doctrine\DBAL\Logging\DebugStack();
+	protected $queries = array();
+	protected $messages = array();
+	
+	protected $started;	// holds timestamp of initialization, used later to return time of execution
+	protected $level;
+	
+	/*
+	 * constructor
+	 */
+	public function __construct($level) {
+		// taking timestamp to stop execution time
+		$this->created = microtime(true);
+		
+		$this->level = $level;
+		
+		if (!is_null(self::$instance)) {
+			throw new \Exception('debugging has already been started. please use the static functions!');
 		}
-		return self::$logger;
+		self::$instance = $this;
+		
+		// assert options
+		assert_options(ASSERT_ACTIVE, true);
+		assert_options(ASSERT_BAIL, false);
+		assert_options(ASSERT_WARNING, false);
+		assert_options(ASSERT_CALLBACK, array($this, 'assertHandler'));
+		
+		
 	}
+	
+	/*
+	 * interface for doctrine's dbal sql logger
+	 */ 
+	function logSQL($sql, array $params = null) {
+		$this->queries[] = array('sql' => $sql, 'parameter' => $params);
+	}
+	
+	static public function log($message) {
+		if (!is_null(self::$instance)) {
+			$trace = debug_backtrace();
+			
+			self::$instance->messages[] = array(
+				'message' => $message,
+				'file' => $trace[0]['file'],
+				'line' => $trace[0]['line'],
+				'time' => date('r'),
+				'args' => array_slice($trace[0]['args'], 1),
+				'trace' => $trace
+			);
+		}
+	}
+	
+	/*
+	 * simple assertion passthrough for future improvements
+	 * 
+	 * @todo check how should be en/disabled (options etc..)
+	 */
+	public static function assert($code) {
+		assert($code);
+	}
+	
+	public function assertHandler($file, $line, $code) {
+		$trace = debug_backtrace();
+		$info = $trace[2];
+		
+		$this->messages[] = array(
+			'message' => 'assertion failed: ' . $code,
+			'file' => $info['file'],
+			'line' => $info['line'],
+			'time' => date('r'),
+			'trace' => array_slice($trace, 2)
+		);
+	}
+	
+	public static function isActivated() { return !is_null(self::$instance); }
+	
+	public function getExecutionTime() { return round((microtime(true) - $this->created), 5); }
+	public function getQueries() { return $this->queries; }
+	public function getMessages() { return $this->messages; }
 }
 
 ?>

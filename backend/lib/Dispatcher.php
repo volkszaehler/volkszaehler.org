@@ -34,6 +34,8 @@ final class Dispatcher {
 	protected $view;		// View
 	protected $controller;	// Controller
 	
+	protected $debug = NULL;	// optional debugging instance
+	
 	/*
 	 * constructor
 	 */
@@ -47,6 +49,12 @@ final class Dispatcher {
 		
 		// initialize entity manager
 		$this->em = Dispatcher::createEntityManager();
+		
+		// staring debugging
+		if (($request->getParameter('debug') && $request->getParameter('debug') > 0) || Util\Configuration::read('debug')) {
+			$this->debug = new Util\Debug($request->getParameter('debug'));
+			$this->em->getConnection()->getConfiguration()->setSQLLogger($this->debug);
+		}
 		
 		// initialize view
 		if (in_array($format, array('png', 'jpeg', 'gif'))) {
@@ -80,6 +88,11 @@ final class Dispatcher {
 		$action = ($this->view->request->getParameter('action')) ? 'get' : $this->view->request->getParameter('action');	// default action
 		
 		$this->controller->run($action);	// run controllers actions (usually CRUD: http://de.wikipedia.org/wiki/CRUD)
+		
+		if (Util\Debug::isActivated()) {
+			$this->view->addDebug($this->debug);
+		}
+		
 		$this->view->render();				// render view & send http response
 	}
 	
@@ -104,11 +117,7 @@ final class Dispatcher {
 		$config->setProxyNamespace('Volkszaehler\Model\Proxies');
 		$config->setAutoGenerateProxyClasses(DEV_ENV == true);
 		
-		$config->setSQLLogger(Util\Debug::getSQLLogger());
-		
-		$em = \Doctrine\ORM\EntityManager::create(Util\Configuration::read('db'), $config);
-		
-		return $em;
+		return \Doctrine\ORM\EntityManager::create(Util\Configuration::read('db'), $config);
 	}
 }
 
