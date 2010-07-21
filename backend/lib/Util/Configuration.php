@@ -1,50 +1,65 @@
 <?php
-/*
- * Copyright (c) 2010 by Justin Otherguy <justin@justinotherguy.org>
+/**
+ * @copyright Copyright (c) 2010, The volkszaehler.org project
+ * @package util
+ * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License (either version 2 or
- * version 3) as published by the Free Software Foundation.
+ * This file is part of volkzaehler.org
  *
- * This program is distributed in the hope that it will be useful,
+ * volkzaehler.org is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * volkzaehler.org is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *
- * For more information on the GPL, please go to:
- * http://www.gnu.org/copyleft/gpl.html
+ * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
 namespace Volkszaehler\Util;
 
+/**
+ * static configuration class for loading and storing the configuration to the disk
+ *
+ * @author Steffen Vogel <info@steffenvogel.de>
+ */
 class Configuration {
 	static protected $values = array();
 
+	/**
+	 * @param string $var A string delimited by dots
+	 * @param mixed $value A scalar value or array which should be set as the value for $var
+	 */
 	static public function write($var, $value) {
 		if (!is_scalar($value) && !is_array($value)) {
 			throw new \Exception('sry we can\'t store this datatype in the configuration');
 		}
-		
+
 		$values =& self::$values;
 		$tree = explode('.', $var);
 		foreach ($tree as $part) {
 			$values =& $values[$part];	// TODO use array_merge_recursive()
 		}
-		
+
 		$values = $value;
 	}
 
+	/**
+	 *
+	 * @param string $var A string delimited by dots
+	 * @return mixed the configuration value
+	 */
 	static public function read($var = NULL) {
 		$tree = explode('.', $var);
-		
+
 		if (is_null($var)) {
 			return self::$values;
 		}
-		
+
 		$values = self::$values;
 		foreach ($tree as $part) {
 			$values = $values[$part];
@@ -53,45 +68,62 @@ class Configuration {
 		return $values;
 	}
 
+	/**
+	 *
+	 * @param string $var A string delimited by dots
+	 */
 	static public function delete($var) {
+		$tree = explode('.', $var);
 
+		$values =& self::$values;
+		foreach ($tree as $part) {
+			$values =& $values[$part];
+		}
+
+		unset($values);
 	}
 
-	/*
-	 * configuration file handling
+	/**
+	 * loading configuration from fule
+	 *
+	 * @param string $filename A string pointing to a file on the filesystem
 	 */
 	static public function load($filename) {
 		$filename .= '.php';
-		
+
 		if (!file_exists($filename)) {
 			throw new \Exception('configuration file not found: ' . $filename);
 		}
-		
+
 		include $filename;
-		
+
 		if (!isset($config)) {
 			throw new \Exception('no variable $config found in ' . $filename);
 		}
-	
+
 		self::$values = $config;
 	}
-
+	/**
+	 *
+	 * @param string $filename A string pointing to a file on the filesystem
+	 * @return boolean TRUE on success
+	 */
 	static public function store($filename) {
 		$filename .= '.php';
-		
+
 		$delcaration = '';
 		foreach (self::$values as $key => $value) {
 			$export = var_export($value, TRUE);
 			$export = preg_replace('/=>\s+array/', '=> array', $export);
 			$export = str_replace("  ", "\t", $export);
-			
-			$declaration .= '$config[\'' . $key . '\'] = ' . $export . ';' . PHP_EOL . PHP_EOL; 
+
+			$declaration .= '$config[\'' . $key . '\'] = ' . $export . ';' . PHP_EOL . PHP_EOL;
 		}
-		
+
 		$content = <<<EOT
 <?php
 
-/*
+/**
  * That's the volkszaehler.org configuration file.
  * Please take care of the following rules:
  * - you are allowed to edit it by your own

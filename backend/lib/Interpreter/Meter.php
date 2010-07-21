@@ -1,28 +1,41 @@
 <?php
-/*
- * Copyright (c) 2010 by Justin Otherguy <justin@justinotherguy.org>
+/**
+ * @copyright Copyright (c) 2010, The volkszaehler.org project
+ * @package channel
+ * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License (either version 2 or
- * version 3) as published by the Free Software Foundation.
+ * This file is part of volkzaehler.org
  *
- * This program is distributed in the hope that it will be useful,
+ * volkzaehler.org is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * volkzaehler.org is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *
- * For more information on the GPL, please go to:
- * http://www.gnu.org/copyleft/gpl.html
+ * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
 namespace Volkszaehler\Interpreter;
 
+/**
+ * meter interpreter
+ * 
+ * @author Steffen Vogel (info@steffenvogel.de)
+ *
+ */
 class Meter extends Interpreter {
 	
+	/**
+	 * calculates the consumption for interval speciefied by $from and $to
+	 * 
+	 * @param integer $from timestamp in ms since 1970
+	 * @param integer $to timestamp in ms since 1970
+	 */
 	public function getConsumption($from = NULL, $to = NULL) {	// TODO untested
 		$sql = 'SELECT SUM(value) AS count
 				FROM data
@@ -36,6 +49,11 @@ class Meter extends Interpreter {
 		return $result['count'] / $this->resolution / 1000;	// returns Wh
 	}
 	
+	/**
+	 * 
+	 * @param integer $from timestamp in ms since 1970
+	 * @param integer $to timestamp in ms since 1970
+	 */
 	public function getMin($from = NULL, $to = NULL) {
 		$data = $this->getData($from, $to);
 		
@@ -48,6 +66,11 @@ class Meter extends Interpreter {
 		return $min;
 	}
 	
+	/**
+	 * 
+	 * @param integer $from timestamp in ms since 1970
+	 * @param integer $to timestamp in ms since 1970
+	 */
 	public function getMax($from = NULL, $to = NULL) {
 		$data = $this->getData($from, $to);
 		
@@ -60,20 +83,31 @@ class Meter extends Interpreter {
 		return $min;
 	}
 	
-	// TODO calculate timeinterval if no params were given
+	/**
+	 * 
+	 * @param integer $from timestamp in ms since 1970
+	 * @param integer $to timestamp in ms since 1970
+	 * @todo calculate timeinterval if no params were given
+	 */
 	public function getAverage($from = NULL, $to = NULL) {	
 		return $this->getConsumption($from, $to) / ($to - $from) / 1000;	// return W
 	}
 	
-	/*
+	/**
 	 * just a passthru of raw data
+	 * 
+	 * @param integer $from timestamp in ms since 1970
+	 * @param integer $to timestamp in ms since 1970
 	 */
 	public function getPulses($from = NULL, $to = NULL, $groupBy = NULL) {
 		return parent::getData($from, $to, $groupBy);
 	}
 	
-	/*
+	/**
 	 * raw pulses to power conversion
+	 * 
+	 * @param integer $from timestamp in ms since 1970
+	 * @param integer $to timestamp in ms since 1970
 	 */
 	public function getValues($from = NULL, $to = NULL, $groupBy = NULL) {
 		$pulses = parent::getData($from, $to, $groupBy);

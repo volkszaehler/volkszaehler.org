@@ -1,33 +1,39 @@
 <?php
-/*
- * Copyright (c) 2010 by Justin Otherguy <justin@justinotherguy.org>
+/**
+ * HTTP request
  *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License (either version 2 or
- * version 3) as published by the Free Software Foundation.
+ * also used for data
  *
- * This program is distributed in the hope that it will be useful,
+ * @copyright Copyright (c) 2010, The volkszaehler.org project
+ * @package http
+ * @author Steffen Vogel <info@steffenvogel.de>
+ * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ *
+ * This file is part of volkzaehler.org
+ *
+ * volkzaehler.org is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * volkzaehler.org is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *
- * For more information on the GPL, please go to:
- * http://www.gnu.org/copyleft/gpl.html
+ * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace Volkszaehler\View\Http;
+namespace Volkszaehler\View\HTTP;
 
-/*
+/**
  * simple class to control the output buffering
  */
 class Response {
 	protected $headers = array();
 	protected $code = 200;	// default code (OK)
-	
+
 	protected static $codes = array(
 		100 => 'Continue',
 		101 => 'Switching Protocols',
@@ -70,32 +76,32 @@ class Response {
 		504 => 'Gateway Timeout',
 		505 => 'HTTP Version Not Supported'
 	);
-	
-	/*
+
+	/**
 	 * constructor
 	 */
 	public function __construct() {
 		$this->headers = apache_response_headers();
-		
+
 		ob_start(array($this, 'obCallback'));
 	}
-	
+
 	public function obCallback($output) {
 		return $output;	// simple passthrough
 	}
-	
+
 	public function send() {
 		// change returncode
 		header('HTTP/1.1 ' . $this->code . ' ' . self::getCodeDescription($this->code));
-		
+
 		// send headers
 		foreach ($this->headers as $name => $value) {
 			header($name . ': ' . $value);
 		}
 		ob_end_flush();
 	}
-	
-	/*
+
+	/**
 	 * setter & getter
 	 */
 	public function setHeader($header, $value) { $this->headers[$header] = $value; }

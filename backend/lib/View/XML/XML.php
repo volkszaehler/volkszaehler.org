@@ -1,32 +1,37 @@
 <?php
-/*
- * Copyright (c) 2010 by Justin Otherguy <justin@justinotherguy.org>
+/**
+ * XML view
  *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License (either version 2 or
- * version 3) as published by the Free Software Foundation.
+ * @copyright Copyright (c) 2010, The volkszaehler.org project
+ * @author Steffen Vogel <info@steffenvogel.de>
+ * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of volkzaehler.org
+ *
+ * volkzaehler.org is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * volkzaehler.org is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *
- * For more information on the GPL, please go to:
- * http://www.gnu.org/copyleft/gpl.html
+ * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace Volkszaehler\View\Xml;
+namespace Volkszaehler\View\XML;
 
+use Volkszaehler\View\HTTP;
+use Volkszaehler\View;
 use Volkszaehler\Util;
 
-abstract class Xml extends \Volkszaehler\View\View {
+abstract class XML extends View\View {
 	protected $xmlDoc;
 
-	public function __construct(\Volkszaehler\View\Http\Request $request, \Volkszaehler\View\Http\Response $response) {
+	public function __construct(HTTP\Request  $request, HTTP\Response $response) {
 		parent::__construct($request, $response);
 
 		$this->xmlDoc = new \DOMDocument('1.0', 'UTF-8');
@@ -42,7 +47,7 @@ abstract class Xml extends \Volkszaehler\View\View {
 	public function render() {
 		$this->xmlDoc->appendChild($this->xmlRoot);
 		echo $this->xmlDoc->saveXML();
-		
+
 		parent::render();
 	}
 
@@ -56,16 +61,16 @@ abstract class Xml extends \Volkszaehler\View\View {
 
 		$this->xmlRoot->appendChild($xmlException);
 	}
-	
+
 	public function addDebug(Util\Debug $debug) {
 		$xmlDebug = $this->xmlDoc->createElement('debug');
-		
+
 		$xmlDebug->appendChild($this->xmlDoc->createElement('time', $debug->getExecutionTime()));
 		$xmlDebug->appendChild($this->xmlDoc->createElement('database', Util\Configuration::read('db.driver')));
-		
+
 		// TODO add queries to xml debug
 		// TODO add messages to xml output
-		
+
 		$this->xmlRoot->appendChild($xmlDebug);
 	}
 
@@ -86,7 +91,7 @@ abstract class Xml extends \Volkszaehler\View\View {
 							$xmlArgs->appendChild($this->xmlDoc->createElement('arg', (is_scalar($value)) ? $value : print_r($value, TRUE)));
 						}
 						break;
-							
+
 					case 'type':
 					case 'function':
 					case 'line':

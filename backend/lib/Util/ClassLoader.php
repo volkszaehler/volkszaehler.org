@@ -1,28 +1,36 @@
 <?php
-/*
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/**
+ * @copyright Copyright (c) 2010, The volkszaehler.org project
+ * @package util
+ * @author Steffen Vogel <info@steffenvogel.de>
+ * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  *
- * This software consists of voluntary contributions made by many individuals
- * and is licensed under the LGPL. For more information, see
- * <http://www.doctrine-project.org>.
- */
-
-/*
- * slightly modified from doctrine
+ * This file is part of volkzaehler.org
+ *
+ * volkzaehler.org is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * volkzaehler.org is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
 namespace Volkszaehler\Util;
 
+/**
+ * class loader for volkszaehler and vendor libraries
+ *
+ * namespace is mapped to the filesystem structure
+ *
+ * @author Roman Borschel <roman@code-factory.org>
+ * @license http://www.opensource.org/licenses/lgpl-license.php Lesser GNU Public License
+ */
 class ClassLoader {
 	protected $fileExtension = '.php';
 	protected $namespace;
@@ -105,7 +113,7 @@ class ClassLoader {
 		if ($this->namespace !== NULL && strpos($className, $this->namespace . $this->namespaceSeparator) !== 0) {
 			return FALSE;
 		}
-		
+
 		$subNamespace = substr($className, strlen($this->namespace));
 		$parts = explode($this->namespaceSeparator, $subNamespace);
 		$path = implode(DIRECTORY_SEPARATOR, $parts);
@@ -129,7 +137,7 @@ class ClassLoader {
 		$subNamespace = substr($className, strlen($this->namespace));
 		$parts = explode($this->namespaceSeparator, $subNamespace);
 		$path = implode(DIRECTORY_SEPARATOR, $parts);
-		
+
 		return file_exists(($this->includePath !== NULL ? $this->includePath . DIRECTORY_SEPARATOR : '') . $path . $this->fileExtension);
 	}
 

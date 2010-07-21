@@ -1,7 +1,7 @@
 <?php
 /**
  * @copyright Copyright (c) 2010, The volkszaehler.org project
- * @package channel
+ * @package data
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  *
  * This file is part of volkzaehler.org
@@ -20,18 +20,14 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace Volkszaehler\Logger;
+namespace Volkszaehler\View\CSV;
 
 /**
- * logger for the Flukso.net api
- * 
- * @link http://www.flukso.net
- * @link http://github.com/icarus75/flukso
+ * CSV data view
  * @author Steffen Vogel <info@steffenvogel.de>
- * @todo to be implemented
  */
-class Flukso implements Logger {
-	
+class Data extends CSV {
+	public function add($obj, $data) {
+		$this->csv = array_merge($this->csv, $data);
+	}
 }
-
-?>

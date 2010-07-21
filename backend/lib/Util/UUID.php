@@ -1,6 +1,34 @@
 <?php
-/*
- * Copyright (c) 2009 J. King
+/**
+ * @copyright Copyright (c) 2010, The volkszaehler.org project
+ * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ *
+ * This file is part of volkzaehler.org
+ *
+ * volkzaehler.org is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * volkzaehler.org is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+namespace Volkszaehler\Util;
+
+class Exception extends \Exception {}
+
+/**
+ * DrUUID RFC4122 library for PHP5
+ *
+ * @author J. King
+ * @link http://jkingweb.ca/code/php/lib.uuid/
+ * @license Licensed under MIT license
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -23,19 +51,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-
-/*
- * DrUUID RFC4122 library for PHP5 by J. King (http://jkingweb.ca/)
- * Licensed under MIT license
- * See http://jkingweb.ca/code/php/lib.uuid/ for documentation
- * Last revised 2010-02-15
- */
-
-namespace Volkszaehler\Util;
-
-class Exception extends \Exception {}
-
-class Uuid {
+class UUID {
 	const MD5  = 3;
 	const SHA1 = 5;
 	const clearVer = 15;	// 00001111  Clears all bits of version byte with AND
@@ -55,7 +71,7 @@ class Uuid {
 	const nsX500 = '6ba7b814-9dad-11d1-80b4-00c04fd430c8';
 	protected static $randomFunc = 'randomTwister';
 	protected static $randomSource = NULL;
-	
+
 	//instance properties
 	protected $bytes;
 	protected $hex;
@@ -66,8 +82,14 @@ class Uuid {
 	protected $node;
 	protected $time;
 
+	/**
+	 * Create a new UUID based on provided data
+	 *
+	 * @param integer $ver
+	 * @param string $node
+	 * @param string $ns
+	 */
 	public static function mint($ver = 1, $node = NULL, $ns = NULL) {
-		/* Create a new UUID based on provided data. */
 		switch((int) $ver) {
 			case 1:
 				return new self(self::mintTime($node));
@@ -85,19 +107,25 @@ class Uuid {
 		}
 	}
 
+	/**
+	 * Import an existing UUID
+	 *
+	 * @param unkown_type $uuid
+	 */
 	public static function import($uuid) {
-		/* Import an existing UUID. */
 		return new self(self::makeBin($uuid, 16));
 	}
 
+	/**
+	 * Compares the binary representations of two UUIDs.
+	 * The comparison will return TRUE if they are bit-exact,
+	 * or if neither is valid
+	 *
+	 * @param unknown_type $a
+	 * @param unknown_type $b
+	 */
 	public static function compare($a, $b) {
-		/* Compares the binary representations of two UUIDs.
-		 The comparison will return TRUE if they are bit-exact,
-		 or if neither is valid. */
-		if (self::makeBin($a, 16)==self::makeBin($b, 16))
-		return TRUE;
-		else
-		return FALSE;
+		return (self::makeBin($a, 16) == self::makeBin($b, 16));
 	}
 
 	public function __toString() {
@@ -152,9 +180,9 @@ class Uuid {
 		if (strlen($uuid) != 16) {
 			throw new Exception("Input must be a 128-bit integer.");
 		}
-		
+
 		$this->bytes  = $uuid;
-		
+
 		// Optimize the most common use
 		$this->string =
 		bin2hex(substr($uuid,0,4))."-".

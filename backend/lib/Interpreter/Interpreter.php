@@ -1,26 +1,31 @@
 <?php
-/*
- * Copyright (c) 2010 by Justin Otherguy <justin@justinotherguy.org>
+/**
+ * @copyright Copyright (c) 2010, The volkszaehler.org project
+ * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License (either version 2 or
- * version 3) as published by the Free Software Foundation.
+ * This file is part of volkzaehler.org
  *
- * This program is distributed in the hope that it will be useful,
+ * volkzaehler.org is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * volkzaehler.org is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *
- * For more information on the GPL, please go to:
- * http://www.gnu.org/copyleft/gpl.html
+ * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
 namespace Volkszaehler\Interpreter;
 
+/**
+ * 
+ * @author Steffen Vogel <info@steffenvogel.de>
+ *
+ */
 interface InterpreterInterface {
 	public function getValues($from = NULL, $to = NULL, $groupBy = NULL);
 	public function getMin($from = NULL, $to = NULL);
@@ -28,18 +33,33 @@ interface InterpreterInterface {
 	public function getAverage($from = NULL, $to = NULL);
 }
 
+/**
+ * interpreter superclass for all interpreters
+ * 
+ * @author Steffen Vogel <info@steffenvogel.de>
+ *
+ */
 abstract class Interpreter implements InterpreterInterface {
 	protected $channel;
 	protected $em;
 	
-	/*
-	 * constructor
+	/**
+	 * 
+	 * @param $channel
+	 * @param $em
 	 */
 	public function __construct(\Volkszaehler\Model\Channel $channel, \Doctrine\ORM\EntityManager $em) {
 		$this->channel = $channel;
 		$this->em = $em;
 	}
 	
+	/**
+	 * 
+	 * @param integer $from timestamp in ms since 1970
+	 * @param integer $to timestamp in ms since 1970
+	 * @param mixed $groupBy
+	 * @todo split in two functions
+	 */
 	protected function getData($from = NULL, $to = NULL, $groupBy = NULL) {
 		$ts = 'FROM_UNIXTIME(timestamp/1000)';	// just for saving space
 		switch ($groupBy) {

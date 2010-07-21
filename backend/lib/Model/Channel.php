@@ -1,22 +1,23 @@
 <?php
-/*
- * Copyright (c) 2010 by Justin Otherguy <justin@justinotherguy.org>
+/**
+ * @copyright Copyright (c) 2010, The volkszaehler.org project
+ * @package channel
+ * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License (either version 2 or
- * version 3) as published by the Free Software Foundation.
+ * This file is part of volkzaehler.org
  *
- * This program is distributed in the hope that it will be useful,
+ * volkzaehler.org is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * volkzaehler.org is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *
- * For more information on the GPL, please go to:
- * http://www.gnu.org/copyleft/gpl.html
+ * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
 namespace Volkszaehler\Model;
@@ -24,8 +25,10 @@ namespace Volkszaehler\Model;
 use Doctrine\Common\Collections\ArrayCollection;
 
 /**
- * Channel class
+ * Channel entity
  *
+ * @author Steffen Vogel <info@steffenvogel.de>
+ * 
  * @Entity
  * @Table(name="channels")
  */
@@ -50,7 +53,7 @@ class Channel extends Entity {
 	/** @Column(type="decimal", precision="5", scale="2") */
 	protected $cost;
 	
-	/*
+	/**
 	 * indicator => interpreter, unit mapping
 	 */
 	protected static $indicators = array(
@@ -62,7 +65,7 @@ class Channel extends Entity {
 		'humidity' =>		array('sensor', '%')
 	);
 	
-	/*
+	/**
 	 * constructor
 	 */
 	public function __construct($indicator) {
@@ -76,7 +79,7 @@ class Channel extends Entity {
 		$this->data = new ArrayCollection();
 	}
 	
-	/*
+	/**
 	 * add a new data to the database
 	 * @todo move to Logger\Logger?
 	 */
@@ -84,7 +87,7 @@ class Channel extends Entity {
 		$this->data->add($data);
 	}
 	
-	/*
+	/**
 	 * obtain channels data interpreter to calculate statistical information
 	 */
 	public function getInterpreter(\Doctrine\ORM\EntityManager $em) {
@@ -95,7 +98,7 @@ class Channel extends Entity {
 		return new $interpreterClassName($this, $em);
 	}
 	
-	/*
+	/**
 	 * getter & setter
 	 */
 	public function getName() { return $this->name; }

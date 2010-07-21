@@ -1,28 +1,35 @@
 <?php
-/*
- * Copyright (c) 2010 by Justin Otherguy <justin@justinotherguy.org>
+/**
+ * @copyright Copyright (c) 2010, The volkszaehler.org project
+ * @package channel
+ * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License (either version 2 or
- * version 3) as published by the Free Software Foundation.
+ * This file is part of volkzaehler.org
  *
- * This program is distributed in the hope that it will be useful,
+ * volkzaehler.org is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * volkzaehler.org is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *
- * For more information on the GPL, please go to:
- * http://www.gnu.org/copyleft/gpl.html
+ * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
 namespace Volkszaehler\Controller;
 
 use \Volkszaehler\Model;
 
+/**
+ * channel controller
+ * 
+ * @author Steffen Vogel <info@steffenvogel.de>
+ *
+ */
 class Channel extends Controller {
 	
 	// TODO authentification/indentification
@@ -49,7 +56,11 @@ class Channel extends Controller {
 		}
 	}
 	
-	// TODO validate input and throw exceptions
+	/**
+	 * add channel
+	 * 
+	 * @todo validate input and throw exceptions
+	 */
 	public function add() {
 		$channel = new Model\Channel\Meter($this->view->request->getParameter('indicator'));
 		
@@ -65,7 +76,11 @@ class Channel extends Controller {
 		$this->view->add($channel);
 	}
 	
-	// TODO authentification/indentification
+	/**
+	 * delete channel
+	 * 
+	 * @todo authentification/indentification
+	 */
 	public function delete() {
 		$ucid = $this->view->request->getParameter('ucid');
 		$channel = $this->em->getRepository('Volkszaehler\Model\Channel\Channel')->findOneBy(array('uuid' => $ucid));
@@ -74,8 +89,12 @@ class Channel extends Controller {
 		$this->em->flush();
 	}
 	
-	// TODO implement Controller\Channel::edit();
-	// TODO authentification/indentification
+	/**
+	 * edit channel properties
+	 * 
+	 * @todo authentification/indentification
+	 * @todo to be implemented
+	 */
 	public function edit() {
 		
 	}
