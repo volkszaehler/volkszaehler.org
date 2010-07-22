@@ -1,11 +1,7 @@
 <?php
 /**
- * JSON view
- *
- * also used for data
- *
  * @copyright Copyright (c) 2010, The volkszaehler.org project
- * @author Steffen Vogel <info@steffenvogel.de>
+ * @package default
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  *
  * This file is part of volkzaehler.org
@@ -31,6 +27,14 @@ use Volkszaehler\View\HTTP;
 use Volkszaehler\View;
 use Volkszaehler\Util;
 
+/**
+ * JSON view
+ *
+ * also used for data
+ *
+ * @package default
+ * @author Steffen Vogel <info@steffenvogel.de>
+ */
 abstract class JSON extends View\View {
 	protected $json = array();
 

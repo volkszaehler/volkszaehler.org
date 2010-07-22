@@ -26,19 +26,20 @@ use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * Group entity
- * 
+ *
  * @author Steffen Vogel <info@steffenvogel.de>
- * 
+ * @package group
+ *
  * @Entity
  * @Table(name="groups")
  */
 class Group extends Entity {
 	/** @Column(type="string") */
 	protected $name;
-	
+
 	/** @Column(type="string") */
 	protected $description;
-	
+
 	/**
 	 * @ManyToMany(targetEntity="Channel")
 	 * @JoinTable(name="groups_channel",
@@ -47,7 +48,7 @@ class Group extends Entity {
 	 * )
 	 */
 	protected $channels = NULL;
-	
+
 	/**
 	 * @ManyToMany(targetEntity="Group")
 	 * @JoinTable(name="groups_groups",
@@ -62,11 +63,11 @@ class Group extends Entity {
 	 */
 	public function __construct() {
 		parent::__construct();
-		
+
 		$this->channels = new ArrayCollection();
 		$this->children = new ArrayCollection();
 	}
-	
+
 	/**
 	 * getter & setter
 	 */

@@ -1,12 +1,13 @@
 <?php
 /**
  * configuration template
- * 
+ *
  * you should use this file to obtain your custom configuration
  * new parameters should be documented
- * 
+ *
  * @copyright Copyright (c) 2010, The volkszaehler.org project
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @package default
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  *
  * This file is part of volkzaehler.org

@@ -1,7 +1,7 @@
 <?php
 /**
  * @copyright Copyright (c) 2010, The volkszaehler.org project
- * @package channel
+ * @package data
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  *
  * This file is part of volkzaehler.org
@@ -23,15 +23,16 @@
 namespace Volkszaehler\Logger;
 
 /**
- * logger for the Flukso.net api
- * 
+ * logger for the Flukso.net API
+ *
+ * @package data
  * @link http://www.flukso.net
  * @link http://github.com/icarus75/flukso
  * @author Steffen Vogel <info@steffenvogel.de>
  * @todo to be implemented
  */
 class Flukso implements Logger {
-	
+
 }
 
 ?>

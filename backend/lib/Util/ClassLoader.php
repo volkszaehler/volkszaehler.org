@@ -28,6 +28,7 @@ namespace Volkszaehler\Util;
  *
  * namespace is mapped to the filesystem structure
  *
+ * @package util
  * @author Roman Borschel <roman@code-factory.org>
  * @license http://www.opensource.org/licenses/lgpl-license.php Lesser GNU Public License
  */
@@ -210,3 +211,4 @@ class ClassLoader {
 		return NULL;
 	}
 }
+?>

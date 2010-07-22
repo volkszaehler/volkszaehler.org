@@ -1,6 +1,7 @@
 <?php
 /**
  * @copyright Copyright (c) 2010, The volkszaehler.org project
+ * @package default
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  *
  * This file is part of volkzaehler.org
@@ -25,12 +26,13 @@ use Volkszaehler\View\HTTP;
 use Volkszaehler\View;
 use Volkszaehler\Util;
 
-/*
+/**
  * CSV view
  *
  * also used for data
  *
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @package default
  */
 abstract class CSV extends View\View {
 	protected $csv = array();

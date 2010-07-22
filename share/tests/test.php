@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * That's the volkszaehler.org configuration file.
  * Please take care of the following rules:
  * - you are allowed to edit it by your own

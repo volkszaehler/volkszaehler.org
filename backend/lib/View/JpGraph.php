@@ -1,6 +1,7 @@
 <?php
 /**
  * @copyright Copyright (c) 2010, The volkszaehler.org project
+ * @package default
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  *
  * This file is part of volkzaehler.org
@@ -30,6 +31,7 @@ require_once \Volkszaehler\BACKEND_DIR . '/lib/vendor/JpGraph/jpgraph_date.php';
  *
  * this view uses the JpGraph PHP5 plotting library
  *
+ * @package default
  * @author Steffen Vogel <info@steffenvogel.de>
  * @link http://jpgraph.net/
  * @todo add caching

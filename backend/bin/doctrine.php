@@ -1,7 +1,7 @@
 <?php
 /**
  * doctrine cli configuration and bootstrapping
- * 
+ *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package doctrine
  * @copyright Copyright (c) 2010, The volkszaehler.org project
@@ -58,7 +58,7 @@ $cli->addCommands(array(
 	// DBAL Commands
 	new \Doctrine\DBAL\Tools\Console\Command\RunSqlCommand(),
 	new \Doctrine\DBAL\Tools\Console\Command\ImportCommand(),
-	
+
 	// ORM Commands
 	new \Doctrine\ORM\Tools\Console\Command\ClearCache\MetadataCommand(),
 	new \Doctrine\ORM\Tools\Console\Command\ClearCache\ResultCommand(),
@@ -76,3 +76,5 @@ $cli->addCommands(array(
 	new \Doctrine\ORM\Tools\Console\Command\ValidateSchemaCommand(),
 ));
 $cli->run();
+
+?>

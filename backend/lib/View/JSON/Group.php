@@ -26,6 +26,7 @@ namespace Volkszaehler\View\JSON;
  * JSON group view
  *
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @package group
  */
 class Group extends JSON {
 
@@ -45,3 +46,6 @@ class Group extends JSON {
 		$this->json['groups'][] = $group;
 	}
 }
+
+?>
+

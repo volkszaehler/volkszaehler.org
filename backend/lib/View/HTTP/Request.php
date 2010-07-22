@@ -28,6 +28,7 @@ namespace Volkszaehler\View\HTTP;
  * also used for data
  *
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @package http
  */
 class Request {
 	protected $headers;
@@ -67,3 +68,5 @@ class Request {
 		return (isset($this->parameters[$method][$name])) ? $this->parameters[$method][$name] : NULL;
 	}
 }
+
+?>

@@ -1,6 +1,7 @@
 <?php
 /**
  * @copyright Copyright (c) 2010, The volkszaehler.org project
+ * @package util
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  *
  * This file is part of volkzaehler.org
@@ -27,6 +28,7 @@ class Exception extends \Exception {}
  * DrUUID RFC4122 library for PHP5
  *
  * @author J. King
+ * @package util
  * @link http://jkingweb.ca/code/php/lib.uuid/
  * @license Licensed under MIT license
  *
@@ -326,3 +328,6 @@ class UUID {
 		return base64_decode(self::$randomSource->GetRandom($bytes,0)); // straight binary mysteriously doesn't work, hence the base64
 	}
 }
+
+?>
+

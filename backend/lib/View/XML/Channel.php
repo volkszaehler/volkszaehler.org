@@ -30,6 +30,7 @@ use Volkszaehler\View\HTTP;
  * also used for data
  *
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @package channel
  */
 class Channel extends XML {
 
@@ -75,3 +76,5 @@ class Channel extends XML {
 		parent::render();
 	}
 }
+
+?>

@@ -27,6 +27,7 @@ use Doctrine\DBAL\Logging;
 /**
  * static debugging class
  *
+ * @package util
  * @author Steffen Vogel <info@steffenvogel.de>
  */
 class Debug implements Logging\SQLLogger {

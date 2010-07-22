@@ -1,6 +1,7 @@
 <?php
 /**
  * @copyright Copyright (c) 2010, The volkszaehler.org project
+ * @package default
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  *
  * This file is part of volkzaehler.org
@@ -31,6 +32,7 @@ use Volkszaehler\Util;
  *
  * this class acts as a frontcontroller to route incomming requests
  *
+ * @package default
  * @author Steffen Vogel <info@steffenvogel.de>
  */
 class Dispatcher {

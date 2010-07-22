@@ -26,16 +26,17 @@ use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * Data entity
- * 
+ *
  * @author Steffen Vogel <info@steffenvogel.de>
- * 
+ * @package data
+ *
  * @Entity
  * @Table(name="data")
  */
 class Data {
 	/**
 	 * ending timestamp of period in ms since 1970
-	 * 
+	 *
 	 * @Id
 	 * @Column(type="bigint")
 	 */
@@ -53,13 +54,13 @@ class Data {
 	 * @JoinColumn(name="channel_id", referencedColumnName="id")
 	 */
 	protected $channel;
-	
+
 	public function __construct(Channel\Channel $channel, $value, $timestamp) {
 		$this->channel = $channel;
 		$this->value = $value;
 		$this->timestamp = $timestamp;
 	}
-	
+
 	/**
 	 * setter & getter
 	 */

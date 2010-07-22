@@ -1,7 +1,7 @@
 <?php
 /**
  * @copyright Copyright (c) 2010, The volkszaehler.org project
- * @package channel
+ * @package data
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  *
  * This file is part of volkzaehler.org
@@ -24,15 +24,16 @@ namespace Volkszaehler\Interpreter;
 
 /**
  * meter interpreter
- * 
+ *
+ * @package data
  * @author Steffen Vogel (info@steffenvogel.de)
  *
  */
 class Meter extends Interpreter {
-	
+
 	/**
 	 * calculates the consumption for interval speciefied by $from and $to
-	 * 
+	 *
 	 * @param integer $from timestamp in ms since 1970
 	 * @param integer $to timestamp in ms since 1970
 	 */
@@ -48,15 +49,15 @@ class Meter extends Interpreter {
 
 		return $result['count'] / $this->resolution / 1000;	// returns Wh
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param integer $from timestamp in ms since 1970
 	 * @param integer $to timestamp in ms since 1970
 	 */
 	public function getMin($from = NULL, $to = NULL) {
 		$data = $this->getData($from, $to);
-		
+
 		$min = current($data);
 		foreach ($data as $reading) {
 			if ($reading['value '] < $min['value']) {
@@ -65,15 +66,15 @@ class Meter extends Interpreter {
 		}
 		return $min;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param integer $from timestamp in ms since 1970
 	 * @param integer $to timestamp in ms since 1970
 	 */
 	public function getMax($from = NULL, $to = NULL) {
 		$data = $this->getData($from, $to);
-		
+
 		$min = current($data);
 		foreach ($data as $reading) {
 			if ($reading['value '] > $min['value']) {
@@ -82,44 +83,44 @@ class Meter extends Interpreter {
 		}
 		return $min;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param integer $from timestamp in ms since 1970
 	 * @param integer $to timestamp in ms since 1970
 	 * @todo calculate timeinterval if no params were given
 	 */
-	public function getAverage($from = NULL, $to = NULL) {	
+	public function getAverage($from = NULL, $to = NULL) {
 		return $this->getConsumption($from, $to) / ($to - $from) / 1000;	// return W
 	}
-	
+
 	/**
 	 * just a passthru of raw data
-	 * 
+	 *
 	 * @param integer $from timestamp in ms since 1970
 	 * @param integer $to timestamp in ms since 1970
 	 */
 	public function getPulses($from = NULL, $to = NULL, $groupBy = NULL) {
 		return parent::getData($from, $to, $groupBy);
 	}
-	
+
 	/**
 	 * raw pulses to power conversion
-	 * 
+	 *
 	 * @param integer $from timestamp in ms since 1970
 	 * @param integer $to timestamp in ms since 1970
 	 */
 	public function getValues($from = NULL, $to = NULL, $groupBy = NULL) {
 		$pulses = parent::getData($from, $to, $groupBy);
 		$pulseCount = count($pulses);
-		
+
 		for ($i = 1; $i < $pulseCount; $i++) {
 			$delta = $pulses[$i]['timestamp'] - $pulses[$i-1]['timestamp'];
-			
+
 			$pulses[$i]['timestamp'] -= $delta/2;
 			$pulses[$i]['value'] *= 3600000/(($this->channel->getResolution() / 1000) * $delta);	// TODO untested
 		}
-		
+
 		return $pulses;	// returns W
 	}
 }

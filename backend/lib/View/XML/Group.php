@@ -28,6 +28,7 @@ use Volkszaehler\View\HTTP;
  * XML group view
  *
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @package group
  */
 class Group extends XML {
 	protected $xml;
@@ -55,3 +56,5 @@ class Group extends XML {
 		parent::render();
 	}
 }
+
+?>

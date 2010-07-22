@@ -1,6 +1,7 @@
 <?php
 /**
  * @copyright Copyright (c) 2010, The volkszaehler.org project
+ * @package default
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  *
  * This file is part of volkzaehler.org
@@ -25,9 +26,10 @@ use Volkszaehler\Util;
 
 /**
  * entity superclass for all models with database persistance
- * 
+ *
  * @author Steffen Vogel <info@steffenvogel.de>
- * 
+ * @package default
+ *
  * @MappedSuperclass
  */
 abstract class Entity {
@@ -37,17 +39,19 @@ abstract class Entity {
 	 * @GeneratedValue(strategy="AUTO")
 	 */
 	protected $id;
-	
+
 	/** @Column(type="string", length=36) */
 	protected $uuid;
-	
+
 	public function __construct() {
 		$this->uuid = Util\Uuid::mint();
 	}
-	
+
 	/**
 	 * getter & setter
 	 */
 	public function getId() { return $this->id; }		// read only
 	public function getUuid() { return $this->uuid; }	// read only
 }
+
+?>

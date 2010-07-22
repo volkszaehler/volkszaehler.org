@@ -25,6 +25,7 @@ namespace Volkszaehler\Util;
 /**
  * static configuration class for loading and storing the configuration to the disk
  *
+ * @package util
  * @author Steffen Vogel <info@steffenvogel.de>
  */
 class Configuration {

@@ -1,6 +1,7 @@
 <?php
 /**
  * @copyright Copyright (c) 2010, The volkszaehler.org project
+ * @package data
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  *
  * This file is part of volkzaehler.org
@@ -22,7 +23,8 @@
 namespace Volkszaehler\Interpreter;
 
 /**
- * 
+ *
+ * @package data
  * @author Steffen Vogel <info@steffenvogel.de>
  *
  */
@@ -35,16 +37,16 @@ interface InterpreterInterface {
 
 /**
  * interpreter superclass for all interpreters
- * 
+ *
  * @author Steffen Vogel <info@steffenvogel.de>
  *
  */
 abstract class Interpreter implements InterpreterInterface {
 	protected $channel;
 	protected $em;
-	
+
 	/**
-	 * 
+	 *
 	 * @param $channel
 	 * @param $em
 	 */
@@ -52,9 +54,9 @@ abstract class Interpreter implements InterpreterInterface {
 		$this->channel = $channel;
 		$this->em = $em;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param integer $from timestamp in ms since 1970
 	 * @param integer $to timestamp in ms since 1970
 	 * @param mixed $groupBy
@@ -86,7 +88,7 @@ abstract class Interpreter implements InterpreterInterface {
 			case 'minute':
 				$sqlGroupBy = 'YEAR(' . $ts . '), DAYOFYEAR(' . $ts . '), HOUR(' . $ts . '), MINUTE(' . $ts . ')';
 				break;
-				
+
 			case 'second':
 				$sqlGroupBy = 'YEAR(' . $ts . '), DAYOFYEAR(' . $ts . '), HOUR(' . $ts . '), MINUTE(' . $ts . '), SECOND(' . $ts . ')';
 				break;
@@ -104,11 +106,11 @@ abstract class Interpreter implements InterpreterInterface {
 		$sql = 'SELECT';
 		$sql .= ($sqlGroupBy === FALSE) ? ' timestamp, value' : ' MAX(timestamp) AS timestamp, SUM(value) AS value, COUNT(timestamp) AS count';
 		$sql .= ' FROM data WHERE channel_id = ' . (int) $this->channel->getId();
-		
+
 		if (isset($from)) {
 			$sql .= ' && timestamp > ' . $from;
 		}
-		
+
 		if (isset($to)) {
 			$sql .= ' && timestamp < ' . $to;
 		}
@@ -116,21 +118,21 @@ abstract class Interpreter implements InterpreterInterface {
 		if ($sqlGroupBy !== FALSE) {
 			$sql .= ' GROUP BY ' . $sqlGroupBy;
 		}
-			
+
 		$sql .= ' ORDER BY timestamp DESC';
-		
+
 		$rsm = new \Doctrine\ORM\Query\ResultsetMapping;
 		$rsm->addScalarResult('timestamp', 'timestamp');
 		$rsm->addScalarResult('value', 'value');
-		
+
 		if ($sqlGroupBy) {
 			$rsm->addScalarResult('count', 'count');
 		}
-		
+
 		$query = $this->em->createNativeQuery($sql, $rsm);
 		$result = $query->getResult();
 		$totalCount = count($result);
-		
+
 		if (is_int($groupBy) && $groupBy < $totalCount) {	// return $groupBy values
 			$packageSize = floor($totalCount / $groupBy);
 			$packageCount = $groupBy;

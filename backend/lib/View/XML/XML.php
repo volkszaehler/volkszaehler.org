@@ -1,9 +1,7 @@
 <?php
 /**
- * XML view
- *
  * @copyright Copyright (c) 2010, The volkszaehler.org project
- * @author Steffen Vogel <info@steffenvogel.de>
+ * @package default
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  *
  * This file is part of volkzaehler.org
@@ -28,6 +26,12 @@ use Volkszaehler\View\HTTP;
 use Volkszaehler\View;
 use Volkszaehler\Util;
 
+/**
+ * XML view
+ *
+ * @author Steffen Vogel <info@steffenvogel.de>
+ * @package default
+ */
 abstract class XML extends View\View {
 	protected $xmlDoc;
 

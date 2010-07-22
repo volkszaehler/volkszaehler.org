@@ -1,12 +1,7 @@
 <?php
 /**
- * HTTP request
- *
- * also used for data
- *
  * @copyright Copyright (c) 2010, The volkszaehler.org project
  * @package http
- * @author Steffen Vogel <info@steffenvogel.de>
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  *
  * This file is part of volkzaehler.org
@@ -28,7 +23,12 @@
 namespace Volkszaehler\View\HTTP;
 
 /**
+ * HTTP request
+ *
  * simple class to control the output buffering
+ *
+ * @author Steffen Vogel <info@steffenvogel.de>
+ * @package http
  */
 class Response {
 	protected $headers = array();
@@ -113,3 +113,4 @@ class Response {
 	}
 }
 
+?>

@@ -24,10 +24,14 @@ namespace Volkszaehler\View\CSV;
 
 /**
  * CSV data view
+ *
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @package data
  */
 class Data extends CSV {
 	public function add($obj, $data) {
 		$this->csv = array_merge($this->csv, $data);
 	}
 }
+
+?>

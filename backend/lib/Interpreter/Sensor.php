@@ -1,7 +1,7 @@
 <?php
 /**
  * @copyright Copyright (c) 2010, The volkszaehler.org project
- * @package channel
+ * @package data
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  *
  * This file is part of volkzaehler.org
@@ -24,53 +24,54 @@ namespace Volkszaehler\Interpreter;
 
 /**
  * sensor interpreter
- * 
+ *
+ * @package data
  * @author Steffen Vogel <info@steffenvogel.de>
  */
 class Sensor extends Interpreter {
-	
+
 	/**
-	 * 
+	 *
 	 * @param integer $from timestamp in ms since 1970
 	 * @param integer $to timestamp in ms since 1970
 	 */
 	public function getValues($from = NULL, $to = NULL, $groupBy = NULL) {
 		$data = parent::getData($from, $to, $groupBy);
-		
+
 		array_walk($data, function(&$reading) {
 			$reading['value'] /= $reading['count'];	// calculate average (ungroup the sql sum() function)
 		});
-		
+
 		return $data;
 	}
 
 	/**
-	 * 
+	 *
 	 * @param integer $from timestamp in ms since 1970
 	 * @param integer $to timestamp in ms since 1970
-	 * 
+	 *
 	 * @todo untested
 	 */
 	public function getMin($from = NULL, $to = NULL) {
 		return $this->dbh->query('SELECT value, timestamp FROM data WHERE channel_id = ' . (int) $this->id . self::buildFilterTime($from, $to) . ' ORDER BY value ASC', 1)->current();
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param integer $from timestamp in ms since 1970
 	 * @param integer $to timestamp in ms since 1970
-	 * 
+	 *
 	 * @todo untested
 	 */
 	public function getMax($from = NULL, $to = NULL) {	// TODO untested
 		return $this->dbh->query('SELECT value, timestamp FROM data WHERE channel_id = ' . (int) $this->id . self::buildFilterTime($from, $to) . ' ORDER BY value DESC', 1)->current();
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param integer $from timestamp in ms since 1970
 	 * @param integer $to timestamp in ms since 1970
-	 * 
+	 *
 	 * @todo untested
 	 */
 	public function getAverage($from = NULL, $to = NULL) {	// TODO untested

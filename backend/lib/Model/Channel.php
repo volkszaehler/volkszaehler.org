@@ -28,7 +28,8 @@ use Doctrine\Common\Collections\ArrayCollection;
  * Channel entity
  *
  * @author Steffen Vogel <info@steffenvogel.de>
- * 
+ * @package channel
+ *
  * @Entity
  * @Table(name="channels")
  */
@@ -38,7 +39,7 @@ class Channel extends Entity {
 
 	/** @Column(type="string") */
 	protected $description;
-	
+
 	/** @Column(type="string") */
 	protected $indicator;
 
@@ -46,13 +47,13 @@ class Channel extends Entity {
 	 * @OneToMany(targetEntity="Data", mappedBy="channel"), cascade={"remove"}
 	 */
 	protected $data = NULL;
-	
+
 	/** @Column(type="integer") */
 	protected $resolution;
 
 	/** @Column(type="decimal", precision="5", scale="2") */
 	protected $cost;
-	
+
 	/**
 	 * indicator => interpreter, unit mapping
 	 */
@@ -64,21 +65,21 @@ class Channel extends Entity {
 		'pressure' =>		array('sensor', 'hPa'),
 		'humidity' =>		array('sensor', '%')
 	);
-	
+
 	/**
 	 * constructor
 	 */
 	public function __construct($indicator) {
 		parent::__construct();
-		
+
 		if (!in_array($indicator, self::$indicators)) {
 			throw new \InvalidArgumentException($indicator . ' is no known indicator');
 		}
-		
+
 		$this->indicator = $indicator;
 		$this->data = new ArrayCollection();
 	}
-	
+
 	/**
 	 * add a new data to the database
 	 * @todo move to Logger\Logger?
@@ -86,7 +87,7 @@ class Channel extends Entity {
 	public function addData(\Volkszaehler\Model\Data $data) {
 		$this->data->add($data);
 	}
-	
+
 	/**
 	 * obtain channels data interpreter to calculate statistical information
 	 */
@@ -97,7 +98,7 @@ class Channel extends Entity {
 		}
 		return new $interpreterClassName($this, $em);
 	}
-	
+
 	/**
 	 * getter & setter
 	 */
@@ -112,3 +113,5 @@ class Channel extends Entity {
 	public function getCost() { return $this->cost; }
 	public function setCost($cost) { $this->cost = $cost; }
 }
+
+?>

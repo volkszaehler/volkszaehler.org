@@ -28,6 +28,7 @@ namespace Volkszaehler\View\JSON;
  * also used for data
  *
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @package channel
  */
 class Channel extends JSON {
 

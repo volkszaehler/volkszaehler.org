@@ -1,7 +1,7 @@
 <?php
 /**
  * @copyright Copyright (c) 2010, The volkszaehler.org project
- * @package channel
+ * @package data
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  *
  * This file is part of volkzaehler.org
@@ -28,6 +28,7 @@ use Volkszaehler\View\HTTP;
  * interface for parsing diffrent logging APIs (google, flukso etc..)
  *
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @package data
  * @todo to be implemented
  */
 interface Logger {
