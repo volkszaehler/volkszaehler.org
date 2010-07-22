@@ -32,8 +32,4 @@ git pull
 cd /var/www/vz/
 
 # update dokumentation
-phpdoc/phpdoc --directory github --target docs \
---title "volkszaehler.org Documentation" \
---output HTML:frames:phpedit \
---ignoresymlinks \
---ignore backend/lib/vendor/,backend/lib/Model/Proxies/
+phpdoc/phpdoc --config /var/www/vz/github/share/tools/phpdoc.ini

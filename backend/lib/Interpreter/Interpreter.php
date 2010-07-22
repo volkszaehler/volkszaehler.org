@@ -39,6 +39,7 @@ interface InterpreterInterface {
  * interpreter superclass for all interpreters
  *
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @package data
  *
  */
 abstract class Interpreter implements InterpreterInterface {

@@ -1,6 +1,7 @@
 <?php
 /**
  * @copyright Copyright (c) 2010, The volkszaehler.org project
+ * @package default
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  *
  * This file is part of volkzaehler.org
@@ -23,14 +24,14 @@ namespace Volkszaehler\Controller;
 
 /**
  * controller superclass for all controllers
- * 
- * @author Steffen Vogel <info@steffenvogel.de>
  *
+ * @author Steffen Vogel <info@steffenvogel.de>
+ * @package default
  */
 abstract class Controller {
 	protected $view;
 	protected $em;
-	
+
 	/**
 	 * constructor
 	 */
@@ -38,17 +39,17 @@ abstract class Controller {
 		$this->view = $view;
 		$this->em = $em;
 	}
-	
+
 	/**
 	 * run controller actions
-	 * 
+	 *
 	 * @param string $action runs the action if class method is available
 	 */
 	public function run($action) {
 		if (!method_exists($this, $action)) {
 			throw new \InvalidArgumentException('\'' . $action . '\' is not a valid controller action');
 		}
-		
+
 		$this->$action();
 	}
 }

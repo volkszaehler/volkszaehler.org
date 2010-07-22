@@ -24,51 +24,51 @@ namespace Volkszaehler\Controller;
 
 /**
  * group controller
- * 
- * @author Steffen Vogel (info@steffenvogel.de)
  *
+ * @author Steffen Vogel (info@steffenvogel.de)
+ * @package group
  */
 class Group extends Controller {
-	
+
 	/**
-	 * 
+	 *
 	 */
 	public function get() {
 		// TODO get groups from entitymanager according to API specs
-		
+
 		foreach ($groups as $group) {
 			$this->view->addGroup($group);
 		}
 	}
-	
+
 	/**
-	 * 
+	 *
 	 */
 	public function add() {
 		$group = new Group();
-		
+
 		$group->name = $this->view->request->getParameter('name');
 		$group->description = $this->view->request->getParameter('description');
-		
+
 		$this->em->persist($group);
 		$this->em->flush();
-		
+
 		$this->view->add($group);
 	}
-	
+
 	/**
 	 * @todo authentification/indentification
 	 */
 	public function delete() {
 		$group = Group::getByUuid($this->view->request->getParameter('ugid'));
-		
+
 		$this->em->remove($group);
 		$this->em->flush();
 	}
-	
+
 	/**
 	 * edit group properties
-	 * 
+	 *
 	 * @todo implement Controller\Group::edit()
 	 */
 	public function edit() {

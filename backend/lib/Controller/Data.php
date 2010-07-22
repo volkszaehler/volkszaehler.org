@@ -29,6 +29,7 @@ use Volkszaehler\Util;
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @todo call via redirect from Controller\Channel
+ * @package data
  */
 class Data extends Controller {
 
