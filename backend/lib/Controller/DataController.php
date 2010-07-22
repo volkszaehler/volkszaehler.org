@@ -31,7 +31,7 @@ use Volkszaehler\Util;
  * @todo call via redirect from Controller\Channel
  * @package data
  */
-class Data extends Controller {
+class DataController extends Controller {
 
 	/**
 	 * @todo authentification/indentification

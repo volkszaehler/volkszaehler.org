@@ -28,7 +28,7 @@ namespace Volkszaehler\Controller;
  * @author Steffen Vogel (info@steffenvogel.de)
  * @package group
  */
-class Group extends Controller {
+class GroupController extends Controller {
 
 	/**
 	 *

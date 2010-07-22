@@ -32,7 +32,7 @@ use Volkszaehler\Util;
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
  */
-abstract class XML extends View\View {
+abstract class XMLView extends View\View {
 	protected $xmlDoc;
 
 	public function __construct(HTTP\Request  $request, HTTP\Response $response) {

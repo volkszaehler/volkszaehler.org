@@ -92,7 +92,7 @@ class Channel extends Entity {
 	 * obtain channels data interpreter to calculate statistical information
 	 */
 	public function getInterpreter(\Doctrine\ORM\EntityManager $em) {
-		$interpreterClassName = 'Volkszaehler\Interpreter\\' . ucfirst(self::$indicators[$this->indicator][0]);
+		$interpreterClassName = 'Volkszaehler\Interpreter\\' . ucfirst(self::$indicators[$this->indicator][0]) . 'Interpreter';
 		if (!(\Volkszaehler\Util\ClassLoader::classExists($interpreterClassName)) || !is_subclass_of($interpreterClassName, '\Volkszaehler\Interpreter\Interpreter')) {
 			throw new \InvalidArgumentException('\'' . $interpreterClassName . '\' is not a valid Interpreter');
 		}

@@ -28,7 +28,7 @@ namespace Volkszaehler\Interpreter;
  * @package data
  * @author Steffen Vogel <info@steffenvogel.de>
  */
-class Sensor extends Interpreter {
+class SensorInterpreter extends Interpreter {
 
 	/**
 	 *

@@ -28,7 +28,7 @@ namespace Volkszaehler\View\JSON;
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package group
  */
-class Group extends JSON {
+class JSONGroupView extends JSONView {
 
 	public function add(\Volkszaehler\Model\Group $obj, $recursive = FALSE) {
 		$group['uuid'] = (string) $obj->getUuid();

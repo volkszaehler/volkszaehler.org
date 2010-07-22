@@ -30,7 +30,7 @@ namespace Volkszaehler\View\JSON;
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package channel
  */
-class Channel extends JSON {
+class JSONChannelView extends JSONView {
 
 	public function add(\Volkszaehler\Model\Channel $obj, array $data = NULL) {
 		$channel['uuid'] = (string) $obj->getUuid();

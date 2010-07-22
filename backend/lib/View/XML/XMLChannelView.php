@@ -32,7 +32,7 @@ use Volkszaehler\View\HTTP;
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package channel
  */
-class Channel extends XML {
+class XMLChannelView extends XMLView {
 
 	public function __construct(HTTP\Request $request, HTTP\Response $response) {
 		parent::__construct($request, $response);

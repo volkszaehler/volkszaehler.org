@@ -36,7 +36,7 @@ require_once \Volkszaehler\BACKEND_DIR . '/lib/vendor/JpGraph/jpgraph_date.php';
  * @link http://jpgraph.net/
  * @todo add caching
  */
-class JpGraph extends View {
+class JpGraphView extends View {
 	/**
 	 * indicator => ynaxis[n] mapping
 	 */
@@ -133,14 +133,14 @@ class JpGraph extends View {
 				$yaxis = $this->graph->yaxis;
 			}
 			else {
-				$this->axes[$obj->getIndicator()] = $count - 1;
+				$this->axes[$channel->getIndicator()] = $count - 1;
 
-				$this->graph->SetYScale($this->axes[$obj->getIndicator()],'lin');
+				$this->graph->SetYScale($this->axes[$channel->getIndicator()],'lin');
 
-				$yaxis = $this->graph->ynaxis[$this->axes[$obj->getIndicator()]];
+				$yaxis = $this->graph->ynaxis[$this->axes[$channel->getIndicator()]];
 			}
 
-			$yaxis->title->Set($obj->getUnit());
+			$yaxis->title->Set($channel->getUnit());
 
 			$yaxis->SetFont(FF_ARIAL);
 			$yaxis->title->SetFont(FF_ARIAL);
@@ -148,7 +148,7 @@ class JpGraph extends View {
 			$yaxis->SetTitleMargin('50');
 		}
 
-		return $this->axes[$obj->getIndicator()];
+		return $this->axes[$channel->getIndicator()];
 	}
 
 	/**

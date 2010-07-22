@@ -81,15 +81,15 @@ class Dispatcher {
 			case 'png':
 			case 'jpeg':
 			case 'gif':
-				$this->view = new View\JpGraph($request, $response, $format);
+				$this->view = new View\JpGraphView($request, $response, $format);
 				break;
 
 			case 'json':
 			case 'xml':
 				$controller = 'channel';
 			case 'csv':
-				$viewClassName = 'Volkszaehler\View\\' . strtoupper($format) . '\\' . ucfirst($controller);
-				if (!(\Volkszaehler\Util\ClassLoader::classExists($viewClassName)) || !is_subclass_of($viewClassName, '\Volkszaehler\View\View')) {
+				$viewClassName = 'Volkszaehler\View\\' . strtoupper($format) . '\\' . strtoupper($format) . ucfirst($controller) . 'View';
+				if (!(Util\ClassLoader::classExists($viewClassName)) || !is_subclass_of($viewClassName, '\Volkszaehler\View\View')) {
 					throw new \InvalidArgumentException('\'' . $viewClassName . '\' is not a valid View');
 				}
 
@@ -103,8 +103,8 @@ class Dispatcher {
 		}
 
 		// initialize controller
-		$controllerClassName = 'Volkszaehler\Controller\\' . ucfirst(strtolower($request->getParameter('controller')));
-		if (!(\Volkszaehler\Util\ClassLoader::classExists($controllerClassName)) || !is_subclass_of($controllerClassName, '\Volkszaehler\Controller\Controller')) {
+		$controllerClassName = 'Volkszaehler\Controller\\' . ucfirst(strtolower($request->getParameter('controller'))) . 'Controller';
+		if (!(Util\ClassLoader::classExists($controllerClassName)) || !is_subclass_of($controllerClassName, '\Volkszaehler\Controller\Controller')) {
 			throw new \InvalidArgumentException('\'' . $controllerClassName . '\' is not a valid controller');
 		}
 		$this->controller = new $controllerClassName($this->view, $this->em);

@@ -34,7 +34,7 @@ use Volkszaehler\Util;
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
  */
-abstract class CSV extends View\View {
+abstract class CSVView extends View\View {
 	protected $csv = array();
 	protected $header = array();
 	protected $footer = array();

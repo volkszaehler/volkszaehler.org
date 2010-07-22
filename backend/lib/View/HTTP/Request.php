@@ -63,7 +63,7 @@ class Request {
 	 * setter & getter
 	 */
 	public function getHeader($header) { return $this->headers[$header]; }
-	public function getMethod() { return $this->method; };
+	public function getMethod() { return $this->method; }
 	public function getParameter($name, $method = 'get') {
 		return (isset($this->parameters[$method][$name])) ? $this->parameters[$method][$name] : NULL;
 	}

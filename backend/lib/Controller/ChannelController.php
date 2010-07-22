@@ -30,7 +30,7 @@ use \Volkszaehler\Model;
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package channel
  */
-class Channel extends Controller {
+class ChannelController extends Controller {
 
 	// TODO authentification/indentification
 	public function get() {

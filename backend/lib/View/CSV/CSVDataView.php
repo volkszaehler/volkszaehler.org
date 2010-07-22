@@ -1,7 +1,7 @@
 <?php
 /**
  * @copyright Copyright (c) 2010, The volkszaehler.org project
- * @package group
+ * @package data
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  *
  * This file is part of volkzaehler.org
@@ -20,40 +20,17 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace Volkszaehler\View\XML;
-
-use Volkszaehler\View\HTTP;
+namespace Volkszaehler\View\CSV;
 
 /**
- * XML group view
+ * CSV data view
  *
  * @author Steffen Vogel <info@steffenvogel.de>
- * @package group
+ * @package data
  */
-class Group extends XML {
-	protected $xml;
-
-	public function __construct(HTTP\Request $request, HTTP\Request $response) {
-		parent::__construct($request, $response);
-
-		$this->xml = $this->xmlDoc->createElement('groups');
-	}
-
-	public function add(\Volkszaehler\Model\Group $obj) {
-		$xmlGroup = $this->xmlDoc->createElement('group');
-		$xmlGroup->setAttribute('uuid', $obj->getUuid());
-		$xmlGroup->appendChild($this->xmlDoc->createElement('name', $obj->getName()));
-		$xmlGroup->appendChild($this->xmlDoc->createElement('description', $obj->getDescription()));
-
-		// TODO include sub groups?
-
-		$this->xml->appendChild($xmlGroup);
-	}
-
-	public function render() {
-		$this->xmlRoot->appendChild($this->xml);
-
-		parent::render();
+class CSVDataView extends CSVView {
+	public function add($obj, $data) {
+		$this->csv = array_merge($this->csv, $data);
 	}
 }
 

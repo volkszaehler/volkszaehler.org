@@ -35,7 +35,7 @@ use Volkszaehler\Util;
  * @package default
  * @author Steffen Vogel <info@steffenvogel.de>
  */
-abstract class JSON extends View\View {
+abstract class JSONView extends View\View {
 	protected $json = array();
 
 	/**

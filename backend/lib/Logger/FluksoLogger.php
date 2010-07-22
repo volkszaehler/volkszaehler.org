@@ -31,7 +31,7 @@ namespace Volkszaehler\Logger;
  * @author Steffen Vogel <info@steffenvogel.de>
  * @todo to be implemented
  */
-class Flukso implements Logger {
+class FluksoLogger implements Logger {
 
 }
 

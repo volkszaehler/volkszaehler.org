@@ -29,7 +29,7 @@ namespace Volkszaehler\Interpreter;
  * @author Steffen Vogel (info@steffenvogel.de)
  *
  */
-class Meter extends Interpreter {
+class MeterInterpreter extends Interpreter {
 
 	/**
 	 * calculates the consumption for interval speciefied by $from and $to
