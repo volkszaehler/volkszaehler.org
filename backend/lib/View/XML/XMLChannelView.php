@@ -1,7 +1,7 @@
 <?php
 /**
  * @copyright Copyright (c) 2010, The volkszaehler.org project
- * @package channel
+ * @package default
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  */
 /*
@@ -31,7 +31,7 @@ use Volkszaehler\View\HTTP;
  * also used for data
  *
  * @author Steffen Vogel <info@steffenvogel.de>
- * @package channel
+ * @package default
  */
 class XMLChannelView extends XMLView {
 

@@ -1,7 +1,7 @@
 <?php
 /**
  * @copyright Copyright (c) 2010, The volkszaehler.org project
- * @package data
+ * @package default
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  */
 /*
@@ -27,7 +27,7 @@ namespace Volkszaehler\View\CSV;
  * CSV data view
  *
  * @author Steffen Vogel <info@steffenvogel.de>
- * @package data
+ * @package default
  */
 class CSVDataView extends CSVView {
 	public function add($obj, $data) {

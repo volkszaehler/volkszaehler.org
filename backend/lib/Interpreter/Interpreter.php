@@ -1,7 +1,7 @@
 <?php
 /**
  * @copyright Copyright (c) 2010, The volkszaehler.org project
- * @package data
+ * @package default
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  */
 /*
@@ -25,7 +25,7 @@ namespace Volkszaehler\Interpreter;
 
 /**
  *
- * @package data
+ * @package default
  * @author Steffen Vogel <info@steffenvogel.de>
  *
  */
@@ -40,7 +40,7 @@ interface InterpreterInterface {
  * interpreter superclass for all interpreters
  *
  * @author Steffen Vogel <info@steffenvogel.de>
- * @package data
+ * @package default
  *
  */
 abstract class Interpreter implements InterpreterInterface {

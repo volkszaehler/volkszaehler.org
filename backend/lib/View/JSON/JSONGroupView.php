@@ -1,7 +1,7 @@
 <?php
 /**
  * @copyright Copyright (c) 2010, The volkszaehler.org project
- * @package group
+ * @package default
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  */
 /*
@@ -27,7 +27,7 @@ namespace Volkszaehler\View\JSON;
  * JSON group view
  *
  * @author Steffen Vogel <info@steffenvogel.de>
- * @package group
+ * @package default
  */
 class JSONGroupView extends JSONView {
 

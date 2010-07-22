@@ -1,7 +1,7 @@
 <?php
 /**
  * @copyright Copyright (c) 2010, The volkszaehler.org project
- * @package channel
+ * @package default
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  */
 /*
@@ -29,7 +29,7 @@ use Doctrine\Common\Collections\ArrayCollection;
  * Channel entity
  *
  * @author Steffen Vogel <info@steffenvogel.de>
- * @package channel
+ * @package default
  *
  * @Entity
  * @Table(name="channels")

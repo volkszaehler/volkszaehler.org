@@ -1,7 +1,7 @@
 <?php
 /**
  * @copyright Copyright (c) 2010, The volkszaehler.org project
- * @package data
+ * @package default
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  */
 /*
@@ -26,7 +26,7 @@ namespace Volkszaehler\Logger;
 /**
  * logger for the Flukso.net API
  *
- * @package data
+ * @package default
  * @link http://www.flukso.net
  * @link http://github.com/icarus75/flukso
  * @author Steffen Vogel <info@steffenvogel.de>

@@ -1,7 +1,7 @@
 <?php
 /**
  * @copyright Copyright (c) 2010, The volkszaehler.org project
- * @package channel
+ * @package default
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  */
 /*
@@ -29,7 +29,7 @@ namespace Volkszaehler\View\JSON;
  * also used for data
  *
  * @author Steffen Vogel <info@steffenvogel.de>
- * @package channel
+ * @package default
  */
 class JSONChannelView extends JSONView {
 

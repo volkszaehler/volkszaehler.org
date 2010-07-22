@@ -1,7 +1,7 @@
 <?php
 /**
  * @copyright Copyright (c) 2010, The volkszaehler.org project
- * @package data
+ * @package default
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  */
 /*
@@ -30,7 +30,7 @@ use Volkszaehler\Util;
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @todo call via redirect from Controller\Channel
- * @package data
+ * @package default
  */
 class DataController extends Controller {
 

@@ -6,7 +6,8 @@
  * @package doctrine
  * @copyright Copyright (c) 2010, The volkszaehler.org project
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
- *
+ */
+/*
  * This file is part of volkzaehler.org
  *
  * volkzaehler.org is free software: you can redistribute it and/or modify

@@ -1,7 +1,7 @@
 <?php
 /**
  * @copyright Copyright (c) 2010, The volkszaehler.org project
- * @package data
+ * @package default
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  */
 /*
@@ -26,7 +26,7 @@ namespace Volkszaehler\Interpreter;
 /**
  * sensor interpreter
  *
- * @package data
+ * @package default
  * @author Steffen Vogel <info@steffenvogel.de>
  */
 class SensorInterpreter extends Interpreter {
