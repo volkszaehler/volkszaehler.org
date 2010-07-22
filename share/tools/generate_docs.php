@@ -38,7 +38,7 @@ passthru('git pull');
 chdir($vzDir);
 
 # update dokumentation
-passthru('phpdoc/phpdoc --config ' . $vzDir . '/github/share/tools/phpdoc.ini');
+passthru('phpdoc/phpdoc -c ' . $vzDir . '/github/share/tools/phpdoc.ini');
 
 ?>
 
