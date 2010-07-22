@@ -38,24 +38,34 @@ use Volkszaehler\Util;
  */
 class Dispatcher {
 	/**
-	 * @var EntityManager Doctrine Model
+	 * @var \Doctrine\ORM\EntityManager Doctrine Model
 	 */
 	protected $em;
 
 	/**
-	 * @var View
+	 * @var View\View
 	 */
 	protected $view;
 
 	/**
-	 * @var Controller
+	 * @var Controller\Controller
 	 */
 	protected $controller;
 
 	/**
-	 * @var Debug optional debugging instance
+	 * @var Util\Debug optional debugging instance
 	 */
 	protected $debug = NULL;
+
+	/**
+	 * @var array HTTP method => action mapping
+	 */
+	protected static $actionMapping = array(
+		'post' => 'add',
+		'delete' => 'delete',
+		'get' => 'get',
+		'pull' => 'edit'
+	);
 
 	/**
 	 * constructor
@@ -65,7 +75,7 @@ class Dispatcher {
 		$request = new HTTP\Request();
 		$response = new HTTP\Response();
 
-		$format = ($request->getParameter('format')) ? $request->getParameter('format') : 'json';	// default action
+		$format = ($request->getParameter('format')) ? $request->getParameter('format') : 'json';	// default view
 		$controller = $request->getParameter('controller');
 
 		// initialize entity manager
@@ -115,7 +125,15 @@ class Dispatcher {
 	 * execute application
 	 */
 	public function run() {
-		$action = ($this->view->request->getParameter('action')) ? strtolower($this->view->request->getMethod()) : $this->view->request->getParameter('action');	// default action
+		if ($this->view->request->getParameter('action')) {
+			$action = $this->view->request->getParameter('action');
+		}
+		elseif (self::$actionMapping[strtolower($this->view->request->getMethod())]) {
+			$action = self::$actionMapping[strtolower($this->view->request->getMethod())];
+		}
+		else {
+			throw new \Exception('can\'t determine action');
+		}
 
 		$this->controller->run($action);	// run controllers actions (usually CRUD: http://de.wikipedia.org/wiki/CRUD)
 
