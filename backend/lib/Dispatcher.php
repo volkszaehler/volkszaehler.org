@@ -114,7 +114,7 @@ class Dispatcher {
 	 * execute application
 	 */
 	public function run() {
-		$action = ($this->view->request->getParameter('action')) ? 'get' : $this->view->request->getParameter('action');	// default action
+		$action = ($this->view->request->getParameter('action')) ? strtolower($this->view->request->getMethod()) : $this->view->request->getParameter('action');	// default action
 
 		$this->controller->run($action);	// run controllers actions (usually CRUD: http://de.wikipedia.org/wiki/CRUD)
 
