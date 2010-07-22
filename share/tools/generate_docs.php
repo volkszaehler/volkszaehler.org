@@ -10,6 +10,7 @@
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package tools
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @todo propably we could put this into install.php later..
  *
  * This file is part of volkzaehler.org
  *
@@ -26,19 +27,44 @@
  * You should have received a copy of the GNU General Public License
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
+?>
+
+<?= '<?xml version="1.0"' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<title>volkszaehler.org installer</title>
+	</head>
+	<body>
+		<pre>
+
+<?php
 
 $vzDir = '/var/www/vz';
+$output = array();
+$rc = 0;
 
 # change directory
 chdir($vzDir . '/github/');
 
 # update git
-passthru('git pull');
+$cmd = 'git pull';
+$output[] = $cmd . PHP_EOL;
+exec($cmd, $output, $rc);
 
-chdir($vzDir);
+if ($rc == 0) {
+	# update dokumentation
+	$cmd = $vzDir . '/phpdoc/phpdoc -c ' . $vzDir . '/github/share/tools/phpdoc.ini';
+	$output[] = PHP_EOL . $cmd . PHP_EOL;
+	exec($cmd, $output, $rc);
+}
 
-# update dokumentation
-passthru('phpdoc/phpdoc -c ' . $vzDir . '/github/share/tools/phpdoc.ini');
+foreach ($output as $line) {
+	echo $line . PHP_EOL;
+}
 
 ?>
-
+		</pre>
+	</body>
+</html>
