@@ -11,7 +11,8 @@
  * @package tools
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  * @todo propably we could put this into install.php later..
- *
+ */
+/*
  * This file is part of volkzaehler.org
  *
  * volkzaehler.org is free software: you can redistribute it and/or modify

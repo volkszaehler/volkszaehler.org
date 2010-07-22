@@ -6,7 +6,8 @@
  * @package tools
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  * @todo adapt to doctrine dal or use native mysql
- *
+ */
+/*
  * This file is part of volkzaehler.org
  *
  * volkzaehler.org is free software: you can redistribute it and/or modify
