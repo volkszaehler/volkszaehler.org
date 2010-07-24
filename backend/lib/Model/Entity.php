@@ -36,16 +36,16 @@ use Volkszaehler\Util;
 abstract class Entity {
 	/**
 	 * @Id
-	 * @Column(type="integer")
+	 * @Column(type="integer", nullable=false)
 	 * @GeneratedValue(strategy="AUTO")
 	 */
 	protected $id;
 
-	/** @Column(type="string", length=36) */
+	/** @Column(type="string", length=36, nullable=false) */
 	protected $uuid;
 
 	public function __construct() {
-		$this->uuid = Util\Uuid::mint();
+		$this->uuid = Util\UUID::mint();
 	}
 
 	/**

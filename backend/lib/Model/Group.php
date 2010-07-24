@@ -23,6 +23,8 @@
 
 namespace Volkszaehler\Model;
 
+use Doctrine\Common\Collections;
+
 use Doctrine\Common\Collections\ArrayCollection;
 
 /**
@@ -35,10 +37,10 @@ use Doctrine\Common\Collections\ArrayCollection;
  * @Table(name="groups")
  */
 class Group extends Entity {
-	/** @Column(type="string") */
+	/** @Column(type="string", nullable=false) */
 	protected $name;
 
-	/** @Column(type="string") */
+	/** @Column(type="string", nullable=true) */
 	protected $description;
 
 	/**
@@ -70,12 +72,35 @@ class Group extends Entity {
 	}
 
 	/**
+	 * adds group as new child
+	 *
+	 * @param Group $child
+	 * @todo check against endless recursion
+	 * @todo check if the group is already member of the group
+	 */
+	public function addGroup(Group $child) {
+		$this->children->add($child);
+	}
+
+	/**
+	 * adds channel as new child
+	 *
+	 * @param Channel $child
+	 * @todo check if the channel is already member of the group
+	 */
+	public function addChannel(Channel $child) {
+		$this->channels->add($child);
+	}
+
+	/**
 	 * getter & setter
 	 */
 	public function getName() { return $this->name; }
 	public function setName($name) { $this->name = $name; }
 	public function getDescription() { return $this->description; }
 	public function setDescription($description) { $this->description = $description; }
+	public function getSubGroups() { return $this->children; }
+	public function getChannels() { return $this->channels; }
 }
 
 ?>

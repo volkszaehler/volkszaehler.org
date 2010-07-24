@@ -35,13 +35,13 @@ use Doctrine\Common\Collections\ArrayCollection;
  * @Table(name="channels")
  */
 class Channel extends Entity {
-	/** @Column(type="string") */
+	/** @Column(type="string", nullable=false) */
 	protected $name;
 
-	/** @Column(type="string") */
+	/** @Column(type="string", nullable=true) */
 	protected $description;
 
-	/** @Column(type="string") */
+	/** @Column(type="string", nullable=false) */
 	protected $indicator;
 
 	/**
@@ -49,10 +49,10 @@ class Channel extends Entity {
 	 */
 	protected $data = NULL;
 
-	/** @Column(type="integer") */
+	/** @Column(type="integer", nullable=true) */
 	protected $resolution;
 
-	/** @Column(type="decimal", precision="5", scale="2") */
+	/** @Column(type="decimal", precision="5", scale="2", nullable=true) */
 	protected $cost;
 
 	/**
@@ -74,7 +74,7 @@ class Channel extends Entity {
 		parent::__construct();
 
 		if (!in_array($indicator, self::$indicators)) {
-			throw new \InvalidArgumentException($indicator . ' is no known indicator');
+			throw new \Exception($indicator . ' is no known indicator');
 		}
 
 		$this->indicator = $indicator;
@@ -95,7 +95,7 @@ class Channel extends Entity {
 	public function getInterpreter(\Doctrine\ORM\EntityManager $em) {
 		$interpreterClassName = 'Volkszaehler\Interpreter\\' . ucfirst(self::$indicators[$this->indicator][0]) . 'Interpreter';
 		if (!(\Volkszaehler\Util\ClassLoader::classExists($interpreterClassName)) || !is_subclass_of($interpreterClassName, '\Volkszaehler\Interpreter\Interpreter')) {
-			throw new \InvalidArgumentException('\'' . $interpreterClassName . '\' is not a valid Interpreter');
+			throw new \Exception('\'' . $interpreterClassName . '\' is not a valid Interpreter');
 		}
 		return new $interpreterClassName($this, $em);
 	}
