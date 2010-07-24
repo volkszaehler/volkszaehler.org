@@ -23,8 +23,6 @@
 
 namespace Volkszaehler\Util;
 
-class Exception extends \Exception {}
-
 /**
  * DrUUID RFC4122 library for PHP5
  *
@@ -98,7 +96,7 @@ class UUID {
 				return new self(self::mintTime($node));
 			case 2:
 				// Version 2 is not supported
-				throw new Exception("Version 2 is unsupported.");
+				throw new \Exception("Version 2 is unsupported.");
 			case 3:
 				return new self(self::mintName(self::MD5, $node, $ns));
 			case 4:
@@ -106,7 +104,7 @@ class UUID {
 			case 5:
 				return new self(self::mintName(self::SHA1, $node, $ns));
 			default:
-				throw new Exception("Selected version is invalid or unsupported.");
+				throw new \Exception("Selected version is invalid or unsupported.");
 		}
 	}
 
@@ -181,7 +179,7 @@ class UUID {
 
 	protected function __construct($uuid) {
 		if (strlen($uuid) != 16) {
-			throw new Exception("Input must be a 128-bit integer.");
+			throw new \Exception("Input must be a 128-bit integer.");
 		}
 
 		$this->bytes  = $uuid;
@@ -246,11 +244,11 @@ class UUID {
 		/* Generates a Version 3 or Version 5 UUID.
 		 These are derived from a hash of a name and its namespace, in binary form. */
 		if (!$node)
-		throw new Exception("A name-string is required for Version 3 or 5 UUIDs.");
+		throw new \Exception("A name-string is required for Version 3 or 5 UUIDs.");
 		// if the namespace UUID isn't binary, make it so
 		$ns = self::makeBin($ns, 16);
 		if (!$ns)
-		throw new Exception("A binary namespace is required for Version 3 or 5 UUIDs.");
+		throw new \Exception("A binary namespace is required for Version 3 or 5 UUIDs.");
 		switch($ver) {
 			case self::MD5:
 				$version = self::version3;

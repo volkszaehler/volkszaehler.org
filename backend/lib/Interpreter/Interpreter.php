@@ -101,7 +101,7 @@ abstract class Interpreter implements InterpreterInterface {
 					$sqlGroupBy = FALSE;
 				}
 				else {
-					throw new \InvalidArgumentException('\'' . $groupBy . '\' is not an unknown grouping mode');
+					throw new \Exception('\'' . $groupBy . '\' is not an unknown grouping mode');
 				}
 		}
 

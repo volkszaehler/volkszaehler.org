@@ -133,7 +133,7 @@ class ClassLoader {
 	 */
 	public function canLoadClass($className) {
 		if ($this->namespace !== NULL && strpos($className, $this->namespace . $this->namespaceSeparator) !== 0) {
-			return FALSE;	// TODO handle with exceptions
+			return FALSE;
 		}
 
 		$subNamespace = substr($className, strlen($this->namespace));
