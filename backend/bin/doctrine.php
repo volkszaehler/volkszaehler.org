@@ -24,6 +24,8 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
+use Volkszaehler\Util;
+
 // TODO replace by state class
 const BACKEND_DIR = '/home/steffen/workspace/volkszaehler.org/backend';
 const DEV_ENV = TRUE;
@@ -41,12 +43,7 @@ foreach ($classLoaders as $loader) {
 }
 
 // load configuration
-if (!file_exists(BACKEND_DIR . '/volkszaehler.conf.php')) {
-	throw new Exception('No configuration available! Use volkszaehler.conf.default.php as an template');
-}
-else {
-	Util\Configuration::load(BACKEND_DIR . '/volkszaehler.conf.php');
-}
+Util\Configuration::load(BACKEND_DIR . '/volkszaehler.conf');
 
 $em = Volkszaehler\Dispatcher::createEntityManager();
 
