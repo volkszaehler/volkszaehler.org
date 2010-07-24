@@ -48,7 +48,7 @@ abstract class Controller {
 	 */
 	public function run($action) {
 		if (!method_exists($this, $action)) {
-			throw new \InvalidArgumentException('\'' . $action . '\' is not a valid controller action');
+			throw new \Exception('\'' . $action . '\' is not a valid controller action');
 		}
 
 		$this->$action();

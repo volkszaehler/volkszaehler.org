@@ -23,8 +23,21 @@
 
 namespace Volkszaehler\View;
 
+use Volkszaehler\Model;
 use Volkszaehler\View\HTTP;
 use Volkszaehler\Util;
+
+/**
+ * Interface for all View classes
+ *
+ * @author Steffen Vogel <info@steffenvogel.de>
+ * @package default
+ */
+interface ViewInterface {
+	public function addChannel(Model\Channel $channel, array $data = NULL);
+	function addGroup(Model\Group $group);
+	function addDebug(Util\Debug $debug);
+}
 
 /**
  * superclass for all view classes
@@ -33,7 +46,7 @@ use Volkszaehler\Util;
  * @author Steffen Vogel <info@steffenvogel.de>
  *
  */
-abstract class View {
+abstract class View implements ViewInterface {
 	public $request;
 	protected $response;
 
@@ -56,26 +69,21 @@ abstract class View {
 	final public function exceptionHandler(\Exception $exception) {
 		$this->addException($exception);
 
-		//$this->status = STATUS_EXCEPTION;	// TODO add status reporting to API
-
 		$code = ($exception->getCode() == 0 && HTTP\Response::getCodeDescription($exception->getCode())) ? 400 : $exception->getCode();
 		$this->response->setCode($code);
 
-		$this->render();
+		$this->renderResponse();
 		die();
 	}
 
-	public function render() {
+	public function sendResponse() {
+		$this->renderResponse();
+
 		$this->response->send();
 	}
 
-	public function addException(\Exception $e) {
-		echo $e;
-	}
-
-	public function addDebug(Util\Debug $debug) {
-
-	}
+	protected abstract function renderResponse();
+	protected abstract function addException(\Exception $exception);
 }
 
 ?>

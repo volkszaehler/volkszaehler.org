@@ -21,10 +21,9 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace Volkszaehler\View\XML;
+namespace Volkszaehler\View;
 
 use Volkszaehler\View\HTTP;
-use Volkszaehler\View;
 use Volkszaehler\Util;
 
 /**
@@ -33,10 +32,10 @@ use Volkszaehler\Util;
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
  */
-abstract class XMLView extends View\View {
+class XML extends View {
 	protected $xmlDoc;
 
-	public function __construct(HTTP\Request  $request, HTTP\Response $response) {
+	public function __construct(HTTP\Request $request, HTTP\Response $response) {
 		parent::__construct($request, $response);
 
 		$this->xmlDoc = new \DOMDocument('1.0', 'UTF-8');
@@ -49,22 +48,45 @@ abstract class XMLView extends View\View {
 		$this->response->setHeader('Content-type', 'application/xml; charset=UTF-8');
 	}
 
-	public function render() {
-		$this->xmlDoc->appendChild($this->xmlRoot);
-		echo $this->xmlDoc->saveXML();
+	public function addChannel(Model\Channel $channel, array $data = NULL) {
+		$xmlChannel = $this->xmlDoc->createElement('channel');
+		$xmlChannel->setAttribute('uuid', $obj->getUuid());
 
-		parent::render();
+		$xmlChannel->appendChild($this->xmlDoc->createElement('indicator', $obj->getIndicator()));
+		$xmlChannel->appendChild($this->xmlDoc->createElement('unit', $obj->getUnit()));
+		$xmlChannel->appendChild($this->xmlDoc->createElement('name', $obj->getName()));
+		$xmlChannel->appendChild($this->xmlDoc->createElement('description', $obj->getDescription()));
+		$xmlChannel->appendChild($this->xmlDoc->createElement('resolution', (int) $obj->getResolution()));
+		$xmlChannel->appendChild($this->xmlDoc->createElement('cost', (float) $obj->getCost()));
+
+		if (isset($data)) {
+			$xmlData = $this->xmlDoc->createElement('data');
+
+			foreach ($data as $reading) {
+				$xmlReading = $this->xmlDoc->createElement('reading');
+
+				$xmlReading->setAttribute('timestamp', $reading['timestamp']);	// hardcoded data fields for performance optimization
+				$xmlReading->setAttribute('value', $reading['value']);
+				$xmlReading->setAttribute('count', $reading['count']);
+
+				$xmlData->appendChild($xmlReading);
+			}
+
+			$xmlChannel->appendChild($xmlData);
+		}
+
+		$this->xml->appendChild($xmlChannel);
 	}
 
-	public function addException(\Exception $exception) {
-		$xmlException = $this->xmlDoc->createElement('exception');
-		$xmlException->setAttribute('code', $exception->getCode());
-		$xmlException->appendChild($this->xmlDoc->createElement('message', $exception->getMessage()));
-		$xmlException->appendChild($this->xmlDoc->createElement('line', $exception->getLine()));
-		$xmlException->appendChild($this->xmlDoc->createElement('file', $exception->getFile()));
-		$xmlException->appendChild($this->fromTrace($exception->getTrace()));
+	public function addGroup(Model\Group $group) {
+		$xmlGroup = $this->xmlDoc->createElement('group');
+		$xmlGroup->setAttribute('uuid', $obj->getUuid());
+		$xmlGroup->appendChild($this->xmlDoc->createElement('name', $obj->getName()));
+		$xmlGroup->appendChild($this->xmlDoc->createElement('description', $obj->getDescription()));
 
-		$this->xmlRoot->appendChild($xmlException);
+		// TODO include sub groups?
+
+		$this->xml->appendChild($xmlGroup);
 	}
 
 	public function addDebug(Util\Debug $debug) {
@@ -77,6 +99,21 @@ abstract class XMLView extends View\View {
 		// TODO add messages to xml output
 
 		$this->xmlRoot->appendChild($xmlDebug);
+	}
+
+	protected function addException(\Exception $e) {
+		$xmlException = $this->xmlDoc->createElement('exception');
+		$xmlException->setAttribute('code', $exception->getCode());
+		$xmlException->appendChild($this->xmlDoc->createElement('message', $exception->getMessage()));
+		$xmlException->appendChild($this->xmlDoc->createElement('line', $exception->getLine()));
+		$xmlException->appendChild($this->xmlDoc->createElement('file', $exception->getFile()));
+		$xmlException->appendChild($this->fromTrace($exception->getTrace()));
+
+		$this->xmlRoot->appendChild($xmlException);
+	}
+
+	protected function renderResponse() {
+
 	}
 
 	private function fromTrace($traces) {

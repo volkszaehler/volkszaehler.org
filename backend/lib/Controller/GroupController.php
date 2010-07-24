@@ -29,29 +29,53 @@ namespace Volkszaehler\Controller;
  * @author Steffen Vogel (info@steffenvogel.de)
  * @package default
  */
+use Volkszaehler\Model;
+
 class GroupController extends Controller {
 
 	/**
-	 *
+	 * get groups by filter
 	 */
 	public function get() {
-		// TODO get groups from entitymanager according to API specs
+		$dql = 'SELECT g FROM Volkszaehler\Model\Group g';
+
+		$recursion = $this->view->request->getParameter('recursion');
+
+		if ($uuid = $this->view->request->getParameter('uuid')) {
+			// TODO add conditions
+		}
+
+		if ($ugid = $this->view->request->getParameter('ugid')) {
+			// TODO add conditions
+		}
+
+		$q = $this->em->createQuery($dql);
+		$groups = $q->getResult();
 
 		foreach ($groups as $group) {
-			$this->view->addGroup($group);
+			$this->view->addGroup($group, $recursion);
 		}
 	}
 
 	/**
-	 *
+	 * add new group as child of a parent group
 	 */
 	public function add() {
-		$group = new Group();
+		$ugid = $this->view->request->getParameter('ugid');
+		$parent = $this->em->getRepository('Volkszaehler\Model\Group')->findOneBy(array('uuid' => $ugid));
 
-		$group->name = $this->view->request->getParameter('name');
-		$group->description = $this->view->request->getParameter('description');
+		if ($parent === FALSE) {
+			throw new \Exception('every group needs a parent');
+		}
+
+		$group = new Model\Group();
+
+		$group->setName($this->view->request->getParameter('name'));
+		$group->setDescription($this->view->request->getParameter('description'));
 
 		$this->em->persist($group);
+		$parent->addGroup($group);
+
 		$this->em->flush();
 
 		$this->view->add($group);
@@ -61,7 +85,8 @@ class GroupController extends Controller {
 	 * @todo authentification/indentification
 	 */
 	public function delete() {
-		$group = Group::getByUuid($this->view->request->getParameter('ugid'));
+		$ugid = $this->view->request->getParameter('ugid');
+		$group = $this->em->getRepository('Volkszaehler\Model\Group')->findOneBy(array('uuid' => $ugid));
 
 		$this->em->remove($group);
 		$this->em->flush();
@@ -74,7 +99,7 @@ class GroupController extends Controller {
 	 */
 	public function edit() {
 
-}
+	}
 }
 
 ?>

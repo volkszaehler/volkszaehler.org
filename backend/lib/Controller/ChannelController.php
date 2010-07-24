@@ -33,19 +33,23 @@ use \Volkszaehler\Model;
  */
 class ChannelController extends Controller {
 
-	// TODO authentification/indentification
+	/**
+	 * get channels by filter
+	 *
+	 * @todo authentification/indentification
+	 */
 	public function get() {
 		$dql = 'SELECT c FROM Volkszaehler\Model\Channel c';
 
-		if ($this->view->request->getParameter('uuid')) {
+		if ($uuid = $this->view->request->getParameter('uuid')) {
 			// TODO add conditions
 		}
 
-		if ($this->view->request->getParameter('ugid')) {
+		if ($ugid = $this->view->request->getParameter('ugid')) {
 			// TODO add conditions
 		}
 
-		if ($this->view->request->getParameter('indicator')) {
+		if ($indicator = $this->view->request->getParameter('indicator')) {
 			// TODO add conditions
 		}
 
@@ -53,7 +57,7 @@ class ChannelController extends Controller {
 		$channels = $q->getResult();
 
 		foreach ($channels as $channel) {
-			$this->view->add($channel);
+			$this->view->addChannel($channel);
 		}
 	}
 
@@ -63,7 +67,7 @@ class ChannelController extends Controller {
 	 * @todo validate input and throw exceptions
 	 */
 	public function add() {
-		$channel = new Model\Channel\Meter($this->view->request->getParameter('indicator'));
+		$channel = new Model\Channel($this->view->request->getParameter('indicator'));
 
 		$channel->setName($this->view->request->getParameter('name'));
 		$channel->setDescription($this->view->request->getParameter('description'));
@@ -74,7 +78,7 @@ class ChannelController extends Controller {
 		$this->em->persist($channel);
 		$this->em->flush();
 
-		$this->view->add($channel);
+		$this->view->addChannel($channel);
 	}
 
 	/**
@@ -84,7 +88,7 @@ class ChannelController extends Controller {
 	 */
 	public function delete() {
 		$ucid = $this->view->request->getParameter('ucid');
-		$channel = $this->em->getRepository('Volkszaehler\Model\Channel\Channel')->findOneBy(array('uuid' => $ucid));
+		$channel = $this->em->getRepository('Volkszaehler\Model\Channel')->findOneBy(array('uuid' => $ucid));
 
 		$this->em->remove($channel);
 		$this->em->flush();

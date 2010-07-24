@@ -75,33 +75,38 @@ class Dispatcher {
 		$request = new HTTP\Request();
 		$response = new HTTP\Response();
 
-		$format = ($request->getParameter('format')) ? $request->getParameter('format') : 'json';	// default view
-		$controller = $request->getParameter('controller');
+		if (!($format = $request->getParameter('format'))) {
+			$format = 'json';	// default view
+		}
+
+		if (!($controller = $request->getParameter('controller'))) {
+			throw new \Exception('no controller specified');
+		}
 
 		// initialize entity manager
 		$this->em = Dispatcher::createEntityManager();
 
-		// staring debugging
-		if (($request->getParameter('debug') && $request->getParameter('debug') > 0) || Util\Configuration::read('debug')) {
+		// starting debugging
+		if (($debug = $request->getParameter('debug')) && (int) $debug > 0) {
 			$this->debug = new Util\Debug($request->getParameter('debug'));
 			$this->em->getConnection()->getConfiguration()->setSQLLogger($this->debug);
 		}
+		// TODO debug controll via configuration file
 
 		// initialize view
 		switch ($format) {
 			case 'png':
 			case 'jpeg':
 			case 'gif':
-				$this->view = new View\JpGraphView($request, $response, $format);
+				$this->view = new View\JpGraph($request, $response, $format);
 				break;
 
 			case 'json':
 			case 'xml':
-				$controller = 'channel';
 			case 'csv':
-				$viewClassName = 'Volkszaehler\View\\' . strtoupper($format) . '\\' . strtoupper($format) . ucfirst($controller) . 'View';
+				$viewClassName = 'Volkszaehler\View\\' . strtoupper($format);
 				if (!(Util\ClassLoader::classExists($viewClassName)) || !is_subclass_of($viewClassName, '\Volkszaehler\View\View')) {
-					throw new \InvalidArgumentException('\'' . $viewClassName . '\' is not a valid View');
+					throw new \Exception('\'' . $viewClassName . '\' is not a valid View');
 				}
 
 				$this->view = new $viewClassName($request, $response);
@@ -114,9 +119,9 @@ class Dispatcher {
 		}
 
 		// initialize controller
-		$controllerClassName = 'Volkszaehler\Controller\\' . ucfirst(strtolower($request->getParameter('controller'))) . 'Controller';
+		$controllerClassName = 'Volkszaehler\Controller\\' . ucfirst($request->getParameter('controller')) . 'Controller';
 		if (!(Util\ClassLoader::classExists($controllerClassName)) || !is_subclass_of($controllerClassName, '\Volkszaehler\Controller\Controller')) {
-			throw new \InvalidArgumentException('\'' . $controllerClassName . '\' is not a valid controller');
+			throw new \Exception('\'' . $controllerClassName . '\' is not a valid controller');
 		}
 		$this->controller = new $controllerClassName($this->view, $this->em);
 	}
@@ -141,7 +146,7 @@ class Dispatcher {
 			$this->view->addDebug($this->debug);
 		}
 
-		$this->view->render();				// render view & send http response
+		$this->view->sendResponse();				// render view & send http response
 	}
 
 	/**

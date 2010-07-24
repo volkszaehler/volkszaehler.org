@@ -21,10 +21,9 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace Volkszaehler\View\CSV;
+namespace Volkszaehler\View;
 
 use Volkszaehler\View\HTTP;
-use Volkszaehler\View;
 use Volkszaehler\Util;
 
 /**
@@ -35,11 +34,7 @@ use Volkszaehler\Util;
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
  */
-abstract class CSVView extends View\View {
-	protected $csv = array();
-	protected $header = array();
-	protected $footer = array();
-
+class CSV extends View {
 	protected $delimiter = ';';
 	protected $enclosure = '"';
 
@@ -49,33 +44,57 @@ abstract class CSVView extends View\View {
 	public function __construct(HTTP\Request  $request, HTTP\Response $response) {
 		parent::__construct($request, $response);
 
-		$this->header[] = 'source: volkszaehler.org';
-		$this->header[] = 'version: ' . \Volkszaehler\VERSION;
+		echo 'source: volkszaehler.org' . PHP_EOL;
+		echo 'version: ' . \Volkszaehler\VERSION . PHP_EOL;
 
 		$this->response->setHeader('Content-type', 'text/csv');
 		$this->response->setHeader('Content-Disposition', 'attachment; filename="data.csv"');
 	}
 
-	public function render() {
-		foreach ($this->header as $line) {
-			echo $line . PHP_EOL;
+	public function addChannel(Model\Channel $channel, array $data = NULL) {
+		$this->csv = array_merge($this->csv, $data);
+	}
+
+	public function addGroup(Model\Group $group) {
+
+	}
+
+	public function addDebug(Util\Debug $debug) {
+
+	}
+
+	protected function renderResponse() {
+
+	}
+
+	protected function addException(\Exception $e) {
+
+	}
+
+	public function renderResponse() {
+		// channel data
+		foreach ($this->channels as $channel) {
+			foreach ($channel[1] as $reading) {
+				$array = array_map(array($this, 'escape'), );
+
+				echo implode($this->delimiter, $array) . PHP_EOL;
+			}
 		}
 
 		echo PHP_EOL;
 
-		foreach ($this->csv as $array) {
-			$array = array_map(array($this, 'escape'), $array);
+		// debug
+		echo 'time: ' . $debug->getExecutionTime() . PHP_EOL;
+		echo 'database: ' . Util\Configuration::read('db.driver') . PHP_EOL;
 
-			echo implode($this->delimiter, $array) . PHP_EOL;
+		foreach ($debug->getMessages() as $message) {
+			echo 'message: ' . $message['message'] . PHP_EOL;	// TODO add more information
 		}
 
-		echo PHP_EOL;
-
-		foreach ($this->footer as $line) {
-			echo $line . PHP_EOL;
+		foreach ($debug->getQueries() as $query) {
+			echo 'query: ' . $query['sql'] . PHP_EOL;
+			echo '  parameters: ' . implode(', ', $query['parameters']) . PHP_EOL;
 		}
-
-		parent::render();
 	}
 
 	protected function escape($value) {
@@ -88,24 +107,6 @@ abstract class CSVView extends View\View {
 		else {
 			return (string) $value;
 		}
-	}
-
-	public function addDebug(Util\Debug $debug) {
-		$this->footer[] = 'time: ' . $debug->getExecutionTime();
-		$this->footer[] = 'database: ' . Util\Configuration::read('db.driver');
-
-		foreach ($debug->getMessages() as $message) {
-			$this->footer[] = 'message: ' . $message['message'];	// TODO add more information
-		}
-
-		foreach ($debug->getQueries() as $query) {
-			$this->footer[] = 'query: ' . $query['sql'];
-			$this->footer[] = '  parameters: ' . implode(', ', $query['parameters']);
-		}
-	}
-
-	public function addException(\Exception $exception) {
-		echo $exception;
 	}
 }
 

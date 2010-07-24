@@ -21,12 +21,11 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace Volkszaehler\View\JSON;
+namespace Volkszaehler\View;
 
 use Volkszaehler\View\HTTP;
-
-use Volkszaehler\View;
 use Volkszaehler\Util;
+use Volkszaehler\Model;
 
 /**
  * JSON view
@@ -36,8 +35,10 @@ use Volkszaehler\Util;
  * @package default
  * @author Steffen Vogel <info@steffenvogel.de>
  */
-abstract class JSONView extends View\View {
+class JSON extends View {
 	protected $json = array();
+
+	protected $padding = FALSE;
 
 	/**
 	 * constructor
@@ -51,16 +52,89 @@ abstract class JSONView extends View\View {
 		$this->response->setHeader('Content-type', 'application/json');
 	}
 
-	public function render() {
+	public function setPadding($padding) { $this->padding = $padding; }
+
+	public function addChannel(Model\Channel $channel, array &$data = NULL) {
+		$jsonChannel['uuid'] = (string) $channel->getUuid();
+		$jsonChannel['indicator'] = $channel->getIndicator();
+		$jsonChannel['unit'] = $channel->getUnit();
+		$jsonChannel['name'] = $channel->getName();
+		$jsonChannel['description'] = $channel->getDescription();
+		$jsonChannel['resolution'] = (int) $channel->getResolution();
+		$jsonChannel['cost'] = (float) $channel->getCost();
+
+		if (isset($data)) {
+			$jsonChannel['data'] = array();
+
+			foreach ($data as $reading) {
+				$jsonChannel['data'][] = array($reading['timestamp'], $reading['value'], $reading['count']);
+			}
+		}
+
+		$this->json['channels'][] = $jsonChannel;
+	}
+
+	public function addGroup(Model\Group $group, $recursive = FALSE) {
+		$this->json['groups'][] = $this->toJson($group, $recursive);
+	}
+
+	public function addDebug(Util\Debug $debug) {
+		$this->json['debug'] = array(
+			'time' => $debug->getExecutionTime(),
+			'messages' => $debug->getMessages(),
+			'database' => array(
+				'driver' => Util\Configuration::read('db.driver'),
+				'queries' => $debug->getQueries()
+			)
+		);
+	}
+
+	protected function addException(\Exception $exception) {
+		$this->json['exception'] = array(
+			'type' => get_class($exception),
+			'message' => $exception->getMessage(),
+			'code' => $exception->getCode(),
+			'file' => $exception->getFile(),
+			'line' => $exception->getLine(),
+			'trace' => $exception->getTrace()
+		);
+	}
+
+	protected function toJson(Model\Group $group, $recursive = FALSE) {
+		$jsonGroup = array();
+
+		$jsonGroup['uuid'] = (string) $group->getUuid();
+		$jsonGroup['name'] = $group->getName();
+		$jsonGroup['description'] = $group->getDescription();
+		$jsonGroup['channels'] = array();
+
+		foreach ($group->getChannels() as $channel) {
+			$jsonGroup['channels'][] = (string) $channel->getUuid();
+		}
+
+		if ($recursive) {
+			$jsonGroup['children'] = array();
+
+			foreach ($group->getSubGroups() as $subGroup) {
+				$jsonGroup['children'][] = $this->toJson($subGroup);	// recursion
+			}
+		}
+
+		return $jsonGroup;
+	}
+
+	public function renderResponse() {
 		$json = json_encode($this->json);
 
 		if (Util\Debug::isActivated()) {
 			$json = self::format($json);
 		}
 
-		echo $json;
+		if ($this->padding) {
+			$json = $this->padding . '(' . $json . ')';
+		}
 
-		parent::render();
+		echo $json;
 	}
 
 	protected static function format($json) {
@@ -111,28 +185,6 @@ abstract class JSONView extends View\View {
 		}
 
 		return $formatted;
-	}
-
-	public function addDebug(Util\Debug $debug) {
-		$this->json['debug'] = array(
-			'time' => $debug->getExecutionTime(),
-			'messages' => $debug->getMessages(),
-			'database' => array(
-				'driver' => Util\Configuration::read('db.driver'),
-				'queries' => $debug->getQueries()
-			)
-		);
-	}
-
-	public function addException(\Exception $exception) {
-		$this->json['exception'] = array(
-			'type' => get_class($exception),
-			'message' => $exception->getMessage(),
-			'code' => $exception->getCode(),
-			'file' => $exception->getFile(),
-			'line' => $exception->getLine(),
-			'trace' => $exception->getTrace()
-		);
 	}
 }
 

@@ -23,6 +23,9 @@
 
 namespace Volkszaehler\View;
 
+use Volkszaehler\Model;
+use Volkszaehler\Util;
+
 require_once \Volkszaehler\BACKEND_DIR . '/lib/vendor/JpGraph/jpgraph.php';
 require_once \Volkszaehler\BACKEND_DIR . '/lib/vendor/JpGraph/jpgraph_scatter.php';
 require_once \Volkszaehler\BACKEND_DIR . '/lib/vendor/JpGraph/jpgraph_date.php';
@@ -37,7 +40,7 @@ require_once \Volkszaehler\BACKEND_DIR . '/lib/vendor/JpGraph/jpgraph_date.php';
  * @link http://jpgraph.net/
  * @todo add caching
  */
-class JpGraphView extends View {
+class JpGraph extends View {
 	/**
 	 * indicator => ynaxis[n] mapping
 	 */
@@ -90,7 +93,7 @@ class JpGraphView extends View {
 	 * @param $obj
 	 * @param $data
 	 */
-	public function add(\Volkszaehler\Model\Channel $obj, array $data) {
+	public function addChannel(Model\Channel $channel, array $data = NULL){
 		$count = count($this->channels);
 		$xData = $yData = array();
 		foreach ($data as $reading) {
@@ -101,7 +104,7 @@ class JpGraphView extends View {
 		// Create the scatter plot
 		$plot = new \ScatterPlot($yData, $xData);
 
-		$plot->setLegend($obj->getName() . ': ' . $obj->getDescription() . ' [' . $obj->getUnit() . ']');
+		$plot->setLegend($channel->getName() . ': ' . $channel->getDescription() . ' [' . $channel->getUnit() . ']');
 		$plot->SetLinkPoints(TRUE, self::$colors[$count]);
 
 		$plot->mark->SetColor(self::$colors[$count]);
@@ -109,7 +112,7 @@ class JpGraphView extends View {
 		$plot->mark->SetType(MARK_DIAMOND);
 		$plot->mark->SetWidth(1);
 
-		$axis = $this->getAxisIndex($obj);
+		$axis = $this->getAxisIndex($channel);
 		if ($axis >= 0) {
 			$this->graph->AddY($axis, $plot);
 		}
@@ -117,7 +120,31 @@ class JpGraphView extends View {
 			$this->graph->Add($plot);
 		}
 
-		$this->channels[] = $obj;
+		$this->channels[] = $channel;
+	}
+
+	/**
+	 * adds all channel of group as new plots to the graph
+	 *
+	 * @param Model\Group $group
+	 */
+	public function addGroup(Model\Group $group) {
+		foreach ($group->getChannels() as $child) {
+			$this->addChannel($child);
+		}
+	}
+
+	public function addDebug(Util\Debug $debug) {
+		throw new \Exception(get_class($this) . ' cant show debugging information');
+	}
+
+	/**
+	 * shows exception
+	 * @todo avoid graph plotting and set content-type to text/plain
+	 * @param \Exception $exception
+	 */
+	protected function addException(\Exception $exception) {
+		echo $exception;
 	}
 
 	/**
@@ -157,13 +184,11 @@ class JpGraphView extends View {
 	 *
 	 * headers has been set automatically
 	 */
-	public function render() {
+	protected function renderResponse() {
 		$this->graph->SetMargin(75, (count($this->axes) - 1) * 65 + 10, 20, 90);
 
 		// Display the graph
 		$this->graph->Stroke();
-
-		parent::render();
 	}
 }
 

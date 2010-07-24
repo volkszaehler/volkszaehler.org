@@ -50,7 +50,7 @@ class DataController extends Controller {
 
 		foreach ($channels as $channel) {
 			$interpreter = $channel->getInterpreter($this->em);
-			$this->view->add($channel, $interpreter->getValues($from, $to, $groupBy));
+			$this->view->addChannel($channel, $interpreter->getValues($from, $to, $groupBy));
 		}
 	}
 
