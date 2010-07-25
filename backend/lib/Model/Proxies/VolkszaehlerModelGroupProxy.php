@@ -28,6 +28,18 @@ class VolkszaehlerModelGroupProxy extends \Volkszaehler\Model\Group implements \
     }
 
     
+    public function addGroup(\Volkszaehler\Model\Group $child)
+    {
+        $this->_load();
+        return parent::addGroup($child);
+    }
+
+    public function addChannel(\Volkszaehler\Model\Channel $child)
+    {
+        $this->_load();
+        return parent::addChannel($child);
+    }
+
     public function getName()
     {
         $this->_load();
@@ -52,6 +64,24 @@ class VolkszaehlerModelGroupProxy extends \Volkszaehler\Model\Group implements \
         return parent::setDescription($description);
     }
 
+    public function getChildren()
+    {
+        $this->_load();
+        return parent::getChildren();
+    }
+
+    public function getParents()
+    {
+        $this->_load();
+        return parent::getParents();
+    }
+
+    public function getChannels()
+    {
+        $this->_load();
+        return parent::getChannels();
+    }
+
     public function getId()
     {
         $this->_load();
@@ -70,6 +100,6 @@ class VolkszaehlerModelGroupProxy extends \Volkszaehler\Model\Group implements \
         if (!$this->__isInitialized__) {
             throw new \RuntimeException("Not fully loaded proxy can not be serialized.");
         }
-        return array('name', 'description', 'channels', 'children', 'id', 'uuid');
+        return array('name', 'description', 'channels', 'children', 'parents', 'id', 'uuid');
     }
 }

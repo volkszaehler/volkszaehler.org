@@ -118,6 +118,6 @@ class VolkszaehlerModelChannelProxy extends \Volkszaehler\Model\Channel implemen
         if (!$this->__isInitialized__) {
             throw new \RuntimeException("Not fully loaded proxy can not be serialized.");
         }
-        return array('name', 'description', 'indicator', 'data', 'resolution', 'cost', 'id', 'uuid');
+        return array('name', 'description', 'indicator', 'data', 'resolution', 'cost', 'groups', 'id', 'uuid');
     }
 }
