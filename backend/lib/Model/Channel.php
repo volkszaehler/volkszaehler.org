@@ -45,7 +45,7 @@ class Channel extends Entity {
 	protected $indicator;
 
 	/**
-	 * @OneToMany(targetEntity="Data", mappedBy="channel"), cascade={"remove"}
+	 * @OneToMany(targetEntity="Data", mappedBy="channel", cascade={"remove"})
 	 */
 	protected $data = NULL;
 
@@ -54,6 +54,9 @@ class Channel extends Entity {
 
 	/** @Column(type="decimal", precision="5", scale="2", nullable=true) */
 	protected $cost;
+
+	/** @ManyToMany(targetEntity="Group", mappedBy="channels") */
+	protected $groups;
 
 	/**
 	 * indicator => interpreter, unit mapping
@@ -79,6 +82,7 @@ class Channel extends Entity {
 
 		$this->indicator = $indicator;
 		$this->data = new ArrayCollection();
+		$this->groups = new ArrayCollection();
 	}
 
 	/**

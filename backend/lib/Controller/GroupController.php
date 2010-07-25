@@ -35,11 +35,16 @@ class GroupController extends Controller {
 
 	/**
 	 * get groups by filter
+	 *
+	 * @todo filter to root groups when using recursion
 	 */
 	public function get() {
-		$dql = 'SELECT g FROM Volkszaehler\Model\Group g';
+		$dql = 'SELECT g, c, d FROM Volkszaehler\Model\Group g LEFT JOIN g.children c LEFT JOIN g.channels d';
 
-		$recursion = $this->view->request->getParameter('recursion');
+		// TODO fix this (depending on DDC-719)
+		if ($recursion = $this->view->request->getParameter('recursion')) {
+			//$dql .= ' WHERE g.parents IS EMPTY';
+		}
 
 		if ($uuid = $this->view->request->getParameter('uuid')) {
 			// TODO add conditions
@@ -64,7 +69,7 @@ class GroupController extends Controller {
 		$ugid = $this->view->request->getParameter('ugid');
 		$parent = $this->em->getRepository('Volkszaehler\Model\Group')->findOneBy(array('uuid' => $ugid));
 
-		if ($parent === FALSE) {
+		if ($parent == FALSE) {
 			throw new \Exception('every group needs a parent');
 		}
 

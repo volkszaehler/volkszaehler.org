@@ -35,10 +35,12 @@ use Volkszaehler\Util;
 class DataController extends Controller {
 
 	/**
+	 * query for data
+	 *
 	 * @todo authentification/indentification
+	 * @todo use uuids for groups or channels
 	 */
 	public function get() {
-		// TODO use uuids for groups or channels
 		$ids = explode(',', trim($this->view->request->getParameter('ids')));
 
 		$q = $this->em->createQuery('SELECT c FROM Volkszaehler\Model\Channel c WHERE c.id IN (' . implode(', ', $ids) . ')');
@@ -55,7 +57,9 @@ class DataController extends Controller {
 	}
 
 	/**
+	 * log new readings
 	 *
+	 * @todo authentification/indentification
 	 */
 	public function add() {
 		$ucid = $this->view->request->getParameter('ucid');

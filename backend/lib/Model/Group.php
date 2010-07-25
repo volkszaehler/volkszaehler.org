@@ -44,7 +44,7 @@ class Group extends Entity {
 	protected $description;
 
 	/**
-	 * @ManyToMany(targetEntity="Channel")
+	 * @ManyToMany(targetEntity="Channel", inversedBy="groups")
 	 * @JoinTable(name="groups_channel",
 	 * 		joinColumns={@JoinColumn(name="group_id", referencedColumnName="id")},
 	 * 		inverseJoinColumns={@JoinColumn(name="channel_id", referencedColumnName="id")}
@@ -53,13 +53,18 @@ class Group extends Entity {
 	protected $channels = NULL;
 
 	/**
-	 * @ManyToMany(targetEntity="Group")
+	 * @ManyToMany(targetEntity="Group", inversedBy="parents")
 	 * @JoinTable(name="groups_groups",
 	 * 		joinColumns={@JoinColumn(name="parent_id", referencedColumnName="id")},
 	 * 		inverseJoinColumns={@JoinColumn(name="child_id", referencedColumnName="id")}
 	 * )
 	 */
 	protected $children = NULL;
+
+	/**
+	 * @ManyToMany(targetEntity="Group", mappedBy="children")
+	 */
+	protected $parents = NULL;
 
 	/**
 	 * construct
@@ -69,6 +74,7 @@ class Group extends Entity {
 
 		$this->channels = new ArrayCollection();
 		$this->children = new ArrayCollection();
+		$this->parents = new ArrayCollection();
 	}
 
 	/**
@@ -99,7 +105,8 @@ class Group extends Entity {
 	public function setName($name) { $this->name = $name; }
 	public function getDescription() { return $this->description; }
 	public function setDescription($description) { $this->description = $description; }
-	public function getSubGroups() { return $this->children; }
+	public function getChildren() { return $this->children; }
+	public function getParents() { return $this->parents; }
 	public function getChannels() { return $this->channels; }
 }
 
