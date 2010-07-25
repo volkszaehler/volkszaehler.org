@@ -47,7 +47,10 @@ Util\Configuration::load(BACKEND_DIR . '/volkszaehler.conf');
 
 $em = Volkszaehler\Dispatcher::createEntityManager();
 
-$helperSet = new \Symfony\Components\Console\Helper\HelperSet(array('em' => new \Doctrine\ORM\Tools\Console\Helper\EntityManagerHelper($em)));
+$helperSet = new \Symfony\Components\Console\Helper\HelperSet(array(
+	'db' => new \Doctrine\DBAL\Tools\Console\Helper\ConnectionHelper($em->getConnection()),
+	'em' => new \Doctrine\ORM\Tools\Console\Helper\EntityManagerHelper($em)
+));
 
 $cli = new \Symfony\Components\Console\Application('Doctrine Command Line Interface', Doctrine\ORM\Version::VERSION);
 $cli->setCatchExceptions(TRUE);
