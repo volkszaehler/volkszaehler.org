@@ -29,10 +29,9 @@ use Volkszaehler\Util;
 /**
  * CSV view
  *
- * also used for data
- *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
+ * @todo rework
  */
 class CSV extends View {
 	protected $delimiter = ';';
@@ -60,10 +59,6 @@ class CSV extends View {
 	}
 
 	public function addDebug(Util\Debug $debug) {
-
-	}
-
-	protected function renderResponse() {
 
 	}
 

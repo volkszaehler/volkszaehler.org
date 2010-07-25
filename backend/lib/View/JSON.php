@@ -54,7 +54,7 @@ class JSON extends View {
 
 	public function setPadding($padding) { $this->padding = $padding; }
 
-	public function addChannel(Model\Channel $channel, array &$data = NULL) {
+	public function addChannel(Model\Channel $channel, array $data = NULL) {
 		$jsonChannel['uuid'] = (string) $channel->getUuid();
 		$jsonChannel['indicator'] = $channel->getIndicator();
 		$jsonChannel['unit'] = $channel->getUnit();
@@ -115,8 +115,8 @@ class JSON extends View {
 		if ($recursive) {
 			$jsonGroup['children'] = array();
 
-			foreach ($group->getSubGroups() as $subGroup) {
-				$jsonGroup['children'][] = $this->toJson($subGroup);	// recursion
+			foreach ($group->getChildren() as $subGroup) {
+				$jsonGroup['children'][] = $this->toJson($subGroup, $recursive);	// recursion
 			}
 		}
 

@@ -78,7 +78,6 @@ abstract class View implements ViewInterface {
 
 	public function sendResponse() {
 		$this->renderResponse();
-
 		$this->response->send();
 	}
 

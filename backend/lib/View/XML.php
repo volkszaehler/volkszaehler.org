@@ -25,6 +25,7 @@ namespace Volkszaehler\View;
 
 use Volkszaehler\View\HTTP;
 use Volkszaehler\Util;
+use Volkszaehler\Model;
 
 /**
  * XML view
@@ -33,7 +34,10 @@ use Volkszaehler\Util;
  * @package default
  */
 class XML extends View {
-	protected $xmlDoc;
+	protected $xmlDoc = NULL;
+	protected $xmlRoot = NULL;
+	protected $xmlChannels = NULL;
+	protected $xmlGroups = NULL;
 
 	public function __construct(HTTP\Request $request, HTTP\Response $response) {
 		parent::__construct($request, $response);
@@ -41,23 +45,24 @@ class XML extends View {
 		$this->xmlDoc = new \DOMDocument('1.0', 'UTF-8');
 
 		$this->xmlRoot = $this->xmlDoc->createElement('volkszaehler');
-		$this->xmlRoot->setAttribute('version', \Volkszaehler\VERSION);
+		$this->xmlDoc->appendChild($this->xmlRoot);
 
-		$this->xmlRoot->appendChild($this->xmlDoc->createElement('source', 'volkszaehler.org'));
+		$this->xmlRoot->setAttribute('version', \Volkszaehler\VERSION);
+		$this->xmlRoot->setAttribute('source', 'volkszaehler.org');
 
 		$this->response->setHeader('Content-type', 'application/xml; charset=UTF-8');
 	}
 
 	public function addChannel(Model\Channel $channel, array $data = NULL) {
 		$xmlChannel = $this->xmlDoc->createElement('channel');
-		$xmlChannel->setAttribute('uuid', $obj->getUuid());
+		$xmlChannel->setAttribute('uuid', $channel->getUuid());
 
-		$xmlChannel->appendChild($this->xmlDoc->createElement('indicator', $obj->getIndicator()));
-		$xmlChannel->appendChild($this->xmlDoc->createElement('unit', $obj->getUnit()));
-		$xmlChannel->appendChild($this->xmlDoc->createElement('name', $obj->getName()));
-		$xmlChannel->appendChild($this->xmlDoc->createElement('description', $obj->getDescription()));
-		$xmlChannel->appendChild($this->xmlDoc->createElement('resolution', (int) $obj->getResolution()));
-		$xmlChannel->appendChild($this->xmlDoc->createElement('cost', (float) $obj->getCost()));
+		$xmlChannel->appendChild($this->xmlDoc->createElement('indicator', $channel->getIndicator()));
+		$xmlChannel->appendChild($this->xmlDoc->createElement('unit', $channel->getUnit()));
+		$xmlChannel->appendChild($this->xmlDoc->createElement('name', $channel->getName()));
+		$xmlChannel->appendChild($this->xmlDoc->createElement('description', $channel->getDescription()));
+		$xmlChannel->appendChild($this->xmlDoc->createElement('resolution', (int) $channel->getResolution()));
+		$xmlChannel->appendChild($this->xmlDoc->createElement('cost', (float) $channel->getCost()));
 
 		if (isset($data)) {
 			$xmlData = $this->xmlDoc->createElement('data');
@@ -75,18 +80,40 @@ class XML extends View {
 			$xmlChannel->appendChild($xmlData);
 		}
 
-		$this->xml->appendChild($xmlChannel);
+		if (!isset($this->xmlChannels)) {
+			$this->xmlChannels = $this->xmlDoc->createElement('channels');
+			$this->xmlRoot->appendChild($this->xmlChannels);
+		}
+
+		$this->xmlChannels->appendChild($xmlChannel);
 	}
 
-	public function addGroup(Model\Group $group) {
+	public function addGroup(Model\Group $group, $recursive = FALSE) {
+		if (!isset($this->xmlGroups)) {
+			$this->xmlGroups = $this->xmlDoc->createElement('groups');
+			$this->xmlRoot->appendChild($this->xmlGroups);
+		}
+
+		$this->xmlGroups->appendChild($this->toXml($group, $recursive));
+	}
+
+	public function toXml(Model\Group $group, $recursive = FALSE) {
 		$xmlGroup = $this->xmlDoc->createElement('group');
-		$xmlGroup->setAttribute('uuid', $obj->getUuid());
-		$xmlGroup->appendChild($this->xmlDoc->createElement('name', $obj->getName()));
-		$xmlGroup->appendChild($this->xmlDoc->createElement('description', $obj->getDescription()));
+		$xmlGroup->setAttribute('uuid', $group->getUuid());
+		$xmlGroup->appendChild($this->xmlDoc->createElement('name', $group->getName()));
+		$xmlGroup->appendChild($this->xmlDoc->createElement('description', $group->getDescription()));
 
-		// TODO include sub groups?
+		if ($recursive) {
+			$xmlChildren = $this->xmlDoc->createElement('children');
 
-		$this->xml->appendChild($xmlGroup);
+			foreach ($group->getChildren() as $child) {
+				$xmlChildren->appendChild($this->toXml($child, $recursive));
+			}
+
+			$xmlGroup->appendChild($xmlChildren);
+		}
+
+		return $xmlGroup;
 	}
 
 	public function addDebug(Util\Debug $debug) {
@@ -101,7 +128,7 @@ class XML extends View {
 		$this->xmlRoot->appendChild($xmlDebug);
 	}
 
-	protected function addException(\Exception $e) {
+	protected function addException(\Exception $exception) {
 		$xmlException = $this->xmlDoc->createElement('exception');
 		$xmlException->setAttribute('code', $exception->getCode());
 		$xmlException->appendChild($this->xmlDoc->createElement('message', $exception->getMessage()));
@@ -113,7 +140,7 @@ class XML extends View {
 	}
 
 	protected function renderResponse() {
-
+		echo $this->xmlDoc->saveXML();
 	}
 
 	private function fromTrace($traces) {
@@ -130,7 +157,7 @@ class XML extends View {
 						$xmlArgs = $this->xmlDoc->createElement($key);
 						$xmlTrace->appendChild($xmlArgs);
 						foreach ($value as $arg) {
-							$xmlArgs->appendChild($this->xmlDoc->createElement('arg', (is_scalar($value)) ? $value : print_r($value, TRUE)));
+							$xmlArgs->appendChild($this->xmlDoc->createElement('arg', (is_scalar($value)) ? $value : 'object'));
 						}
 						break;
 
