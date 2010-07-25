@@ -87,9 +87,11 @@ class Dispatcher {
 		$this->em = Dispatcher::createEntityManager();
 
 		// starting debugging
-		if (($debug = $request->getParameter('debug')) && (int) $debug > 0) {
-			$this->debug = new Util\Debug($request->getParameter('debug'));
-			$this->em->getConnection()->getConfiguration()->setSQLLogger($this->debug);
+		if (($debug = $request->getParameter('debug')) !== FALSE || $debug = Util\Configuration::read('debug')) {
+			if ($debug > 0) {
+				$this->debug = new Util\Debug($debug);
+				$this->em->getConnection()->getConfiguration()->setSQLLogger($this->debug);
+			}
 		}
 		// TODO debug controll via configuration file
 
@@ -110,7 +112,10 @@ class Dispatcher {
 				}
 
 				$this->view = new $viewClassName($request, $response);
+				break;
 
+			case 'txt':
+				$this->view = new View\PlainText($request, $response);
 				break;
 
 			default:
