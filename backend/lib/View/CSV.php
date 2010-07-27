@@ -37,6 +37,8 @@ class CSV extends View {
 	protected $delimiter = ';';
 	protected $enclosure = '"';
 
+	protected $csv = array();
+
 	/**
 	 * constructor
 	 */
@@ -68,12 +70,9 @@ class CSV extends View {
 
 	public function renderResponse() {
 		// channel data
-		foreach ($this->channels as $channel) {
-			foreach ($channel[1] as $reading) {
-				$array = array_map(array($this, 'escape'), );
-
-				echo implode($this->delimiter, $array) . PHP_EOL;
-			}
+		foreach ($this->csv as $row) {
+			$array = array_map(array($this, 'escape'), $row);
+			echo implode($this->delimiter, $row) . PHP_EOL;
 		}
 
 		echo PHP_EOL;

@@ -50,12 +50,15 @@ class JSON extends View {
 		$this->json['version'] = \Volkszaehler\VERSION;
 
 		$this->response->setHeader('Content-type', 'application/json');
+
+		$this->padding = $this->request->getParameter('padding');
 	}
 
 	public function setPadding($padding) { $this->padding = $padding; }
 
 	public function addChannel(Model\Channel $channel, array $data = NULL) {
 		$jsonChannel['uuid'] = (string) $channel->getUuid();
+		$jsonChannel['type'] = $channel->getType();
 		$jsonChannel['indicator'] = $channel->getIndicator();
 		$jsonChannel['unit'] = $channel->getUnit();
 		$jsonChannel['name'] = $channel->getName();
@@ -64,11 +67,7 @@ class JSON extends View {
 		$jsonChannel['cost'] = (float) $channel->getCost();
 
 		if (isset($data)) {
-			$jsonChannel['data'] = array();
-
-			foreach ($data as $reading) {
-				$jsonChannel['data'][] = array($reading['timestamp'], $reading['value'], $reading['count']);
-			}
+			$jsonChannel['data'] = $data;
 		}
 
 		$this->json['channels'][] = $jsonChannel;
@@ -131,7 +130,7 @@ class JSON extends View {
 		}
 
 		if ($this->padding) {
-			$json = $this->padding . '(' . $json . ')';
+			$json = 'if (self.' . $this->padding . ') { ' . $this->padding  . '(' . $json . '); }';
 		}
 
 		echo $json;

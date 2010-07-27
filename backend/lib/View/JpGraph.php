@@ -96,9 +96,10 @@ class JpGraph extends View {
 	public function addChannel(Model\Channel $channel, array $data = NULL){
 		$count = count($this->channels);
 		$xData = $yData = array();
+
 		foreach ($data as $reading) {
-			$xData[] = $reading['timestamp']/1000;
-			$yData[] = $reading['value'];
+			$xData[] = $reading[0] / 1000;
+			$yData[] = $reading[1];
 		}
 
 		// Create the scatter plot
