@@ -27,11 +27,11 @@ use Volkszaehler\Util;
 include '../../backend/lib/Util/Configuration.php';
 echo '<pre>';
 
-Util\Configuration::load('config_test');
+Util\Configuration::load('test.conf');
 
 var_dump(Util\Configuration::read());
 
-Util\Configuration::store('config_test');
+Util\Configuration::store('test.conf');
 
 echo '</pre>';
 ?>
