@@ -29,11 +29,16 @@ namespace Volkszaehler\Interpreter;
  * @author Steffen Vogel <info@steffenvogel.de>
  *
  */
+use Volkszaehler;
+
+use Doctrine\ORM\Query;
+
 interface InterpreterInterface {
-	public function getValues($from = NULL, $to = NULL, $groupBy = NULL);
-	public function getMin($from = NULL, $to = NULL);
-	public function getMax($from = NULL, $to = NULL);
-	public function getAverage($from = NULL, $to = NULL);
+	function getConsumption();
+	function getValues();
+	function getMin();
+	function getMax();
+	function getAverage();
 }
 
 /**
@@ -47,14 +52,20 @@ abstract class Interpreter implements InterpreterInterface {
 	protected $channel;
 	protected $em;
 
+	protected $from;
+	protected $to;
+
 	/**
 	 *
 	 * @param $channel
 	 * @param $em
 	 */
-	public function __construct(\Volkszaehler\Model\Channel $channel, \Doctrine\ORM\EntityManager $em) {
+	public function __construct(\Volkszaehler\Model\Channel $channel, \Doctrine\ORM\EntityManager $em, $from = NULL, $to = NULL) {
 		$this->channel = $channel;
 		$this->em = $em;
+
+		$this->from = $from;
+		$this->to = $to;
 	}
 
 	/**
@@ -64,50 +75,90 @@ abstract class Interpreter implements InterpreterInterface {
 	 * @param mixed $groupBy
 	 * @todo split in two functions
 	 */
-	protected function getData($from = NULL, $to = NULL, $groupBy = NULL) {
+	protected function getData($groupBy = NULL) {
+		// get dbal connection from EntityManager
+		$conn = $this->em->getConnection();
+
+		// prepare sql
+		$params = array(':id' => $this->channel->getId());
+
+		$sqlFrom = ' FROM data';
+		$sqlWhere = ' WHERE channel_id = :id' . self::buildTimeFilterSQL($this->from, $this->to);
+		$sqlOrderBy = ' ORDER BY timestamp ASC';
+
+		if ($sqlGroupBy = self::buildGroupBySQL($groupBy)) {
+			$sqlRowCount = 'SELECT COUNT(DISTINCT ' . $sqlGroupBy . ')' . $sqlFrom . $sqlWhere;
+			$sqlGroupBy = ' GROUP BY ' . $sqlGroupBy;
+			$sqlFields = ' MAX(timestamp) AS timestamp, SUM(value) AS value, COUNT(timestamp) AS count';
+		}
+		else {
+			$sqlRowCount = 'SELECT COUNT(*)' . $sqlFrom . $sqlWhere;
+			$sqlFields = ' timestamp, value';
+		}
+
+		$rowCount = $conn->fetchColumn($sqlRowCount, $params, 0);
+
+		$stmt = $conn->prepare('SELECT ' . $sqlFields . $sqlFrom . $sqlWhere . $sqlGroupBy . $sqlOrderBy);
+		$stmt->execute($params);
+
+		if ($sqlGroupBy || is_null($groupBy)) {		// aggregation by sql or skip it
+			return new Volkszaehler\DataIterator($stmt, $rowCount);
+		}
+		elseif (is_numeric($groupBy) ) {			// aggregation by php
+			$tuples = (int) $groupBy;
+			return new Volkszaehler\DataAggregationIterator($stmt, $rowCount, $tuples);
+		}
+		else {
+			throw new \Exception('invalid groupBy parameter');
+		}
+	}
+
+	/**
+	 * builds sql query part for grouping data by date functions
+	 *
+	 * @param string $groupBy
+	 * @return string $sql the sql part
+	 * @todo make compatible with: MSSql (Transact-SQL), Sybase, Firebird/Interbase, IBM, Informix, MySQL, Oracle, DB2, PostgreSQL, SQLite
+	 */
+	protected static function buildGroupBySQL($groupBy) {
 		$ts = 'FROM_UNIXTIME(timestamp/1000)';	// just for saving space
+
 		switch ($groupBy) {
 			case 'year':
-				$sqlGroupBy = 'YEAR(' . $ts . ')';
+				return 'YEAR(' . $ts . ')';
 				break;
 
 			case 'month':
-				$sqlGroupBy = 'YEAR(' . $ts . '), MONTH(' . $ts . ')';
+				return 'YEAR(' . $ts . '), MONTH(' . $ts . ')';
 				break;
 
 			case 'week':
-				$sqlGroupBy = 'YEAR(' . $ts . '), WEEKOFYEAR(' . $ts . ')';
+				return 'YEAR(' . $ts . '), WEEKOFYEAR(' . $ts . ')';
 				break;
 
 			case 'day':
-				$sqlGroupBy = 'YEAR(' . $ts . '), DAYOFYEAR(' . $ts . ')';
+				return 'YEAR(' . $ts . '), DAYOFYEAR(' . $ts . ')';
 				break;
 
 			case 'hour':
-				$sqlGroupBy = 'YEAR(' . $ts . '), DAYOFYEAR(' . $ts . '), HOUR(' . $ts . ')';
+				return 'YEAR(' . $ts . '), DAYOFYEAR(' . $ts . '), HOUR(' . $ts . ')';
 				break;
 
 			case 'minute':
-				$sqlGroupBy = 'YEAR(' . $ts . '), DAYOFYEAR(' . $ts . '), HOUR(' . $ts . '), MINUTE(' . $ts . ')';
+				return 'YEAR(' . $ts . '), DAYOFYEAR(' . $ts . '), HOUR(' . $ts . '), MINUTE(' . $ts . ')';
 				break;
 
 			case 'second':
-				$sqlGroupBy = 'YEAR(' . $ts . '), DAYOFYEAR(' . $ts . '), HOUR(' . $ts . '), MINUTE(' . $ts . '), SECOND(' . $ts . ')';
+				return 'YEAR(' . $ts . '), DAYOFYEAR(' . $ts . '), HOUR(' . $ts . '), MINUTE(' . $ts . '), SECOND(' . $ts . ')';
 				break;
 
 			default:
-				if (is_numeric($groupBy)) {		// lets agrregate it with php
-					$groupBy = (int) $groupBy;
-					$sqlGroupBy = FALSE;
-				}
-				else {
-					throw new \Exception('\'' . $groupBy . '\' is not an unknown grouping mode');
-				}
+				return FALSE;
 		}
+	}
 
-		$sql = 'SELECT';
-		$sql .= ($sqlGroupBy === FALSE) ? ' timestamp, value' : ' MAX(timestamp) AS timestamp, SUM(value) AS value, COUNT(timestamp) AS count';
-		$sql .= ' FROM data WHERE channel_id = ' . (int) $this->channel->getId();
+	protected static function buildTimeFilterSQL($from = NULL, $to = NULL) {
+		$sql = '';
 
 		if (isset($from)) {
 			$sql .= ' && timestamp > ' . $from;
@@ -117,52 +168,7 @@ abstract class Interpreter implements InterpreterInterface {
 			$sql .= ' && timestamp < ' . $to;
 		}
 
-		if ($sqlGroupBy !== FALSE) {
-			$sql .= ' GROUP BY ' . $sqlGroupBy;
-		}
-
-		$sql .= ' ORDER BY timestamp DESC';
-
-		$rsm = new \Doctrine\ORM\Query\ResultsetMapping;
-		$rsm->addScalarResult('timestamp', 'timestamp');
-		$rsm->addScalarResult('value', 'value');
-
-		if ($sqlGroupBy) {
-			$rsm->addScalarResult('count', 'count');
-		}
-
-		$query = $this->em->createNativeQuery($sql, $rsm);
-		$result = $query->getResult();
-		$totalCount = count($result);
-
-		if (is_int($groupBy) && $groupBy < $totalCount) {	// return $groupBy values
-			$packageSize = floor($totalCount / $groupBy);
-			$packageCount = $groupBy;
-		}
-		else {												// return all values or grouped by year, month, week...
-			$packageSize = 1;
-			$packageCount = $totalCount;
-		}
-
-		$packages = array();
-		$reading = reset($result);
-		for ($i = 1; $i <= $packageCount; $i++) {
-			$package = array('timestamp' => (int) $reading['timestamp'],	// last timestamp in package
-								'value' => (float) $reading['value'],		// sum of values
-								'count' => ($sqlGroupBy === FALSE) ? 1 : $reading['count']);						// total count of values or pulses in the package
-
-			while ($package['count'] < $packageSize) {
-				$reading = next($result);
-
-				$package['value'] += $reading['value'];
-				$package['count']++;
-			}
-
-			$packages[] = $package;
-			$reading = next($result);
-		}
-
-		return array_reverse($packages);	// start with oldest ts and ends with newest ts (reverse array order due to descending order in sql statement)
+		return $sql;
 	}
 }
 

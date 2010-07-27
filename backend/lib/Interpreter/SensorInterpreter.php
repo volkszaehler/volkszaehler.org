@@ -32,51 +32,52 @@ namespace Volkszaehler\Interpreter;
 class SensorInterpreter extends Interpreter {
 
 	/**
-	 *
-	 * @param integer $from timestamp in ms since 1970
-	 * @param integer $to timestamp in ms since 1970
+	 * @todo untested
 	 */
-	public function getValues($from = NULL, $to = NULL, $groupBy = NULL) {
-		$data = parent::getData($from, $to, $groupBy);
+	public function getValues($groupBy = NULL) {
+		$data = parent::getData($groupBy);
 
-		array_walk($data, function(&$reading) {
-			$reading['value'] /= $reading['count'];	// calculate average (ungroup the sql sum() function)
-		});
+		$values = array();
+		foreach ($data as $reading) {
+			$values[] = array(
+				$reading[0],
+				$reading[1] / $reading[2],	// calculate average (ungroup the sql sum() function)
+				$reading[2]
+			);
+		}
 
-		return $data;
+		return $values;
 	}
 
 	/**
-	 *
-	 * @param integer $from timestamp in ms since 1970
-	 * @param integer $to timestamp in ms since 1970
-	 *
+	 * @todo adapt to doctrine orm
 	 * @todo untested
 	 */
-	public function getMin($from = NULL, $to = NULL) {
-		return $this->dbh->query('SELECT value, timestamp FROM data WHERE channel_id = ' . (int) $this->id . self::buildFilterTime($from, $to) . ' ORDER BY value ASC', 1)->current();
+	public function getMin() {
+		return $this->dbh->query('SELECT value, timestamp FROM data WHERE channel_id = ' . (int) $this->id . self::buildFilterTime($this->from, $this->to) . ' ORDER BY value ASC', 1)->current();
 	}
 
 	/**
-	 *
-	 * @param integer $from timestamp in ms since 1970
-	 * @param integer $to timestamp in ms since 1970
-	 *
+	 * @todo adapt to doctrine orm
 	 * @todo untested
 	 */
-	public function getMax($from = NULL, $to = NULL) {	// TODO untested
-		return $this->dbh->query('SELECT value, timestamp FROM data WHERE channel_id = ' . (int) $this->id . self::buildFilterTime($from, $to) . ' ORDER BY value DESC', 1)->current();
+	public function getMax() {
+		return $this->dbh->query('SELECT value, timestamp FROM data WHERE channel_id = ' . (int) $this->id . self::buildFilterTime($this->from, $this->to) . ' ORDER BY value DESC', 1)->current();
 	}
 
 	/**
-	 *
-	 * @param integer $from timestamp in ms since 1970
-	 * @param integer $to timestamp in ms since 1970
-	 *
+	 * @todo adapt to doctrine orm
 	 * @todo untested
 	 */
-	public function getAverage($from = NULL, $to = NULL) {	// TODO untested
-		return $this->dbh->query('SELECT AVG(value) AS value FROM data WHERE channel_id = ' . (int) $this->id . self::buildFilterTime($from, $to))->current();
+	public function getAverage() {
+		return $this->dbh->query('SELECT AVG(value) AS value FROM data WHERE channel_id = ' . (int) $this->id . self::buildFilterTime($this->from, $this->to))->current();
+	}
+
+	/**
+	 * @todo to be implemented
+	 */
+	public function getConsumption() {
+
 	}
 }
 

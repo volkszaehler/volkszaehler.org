@@ -30,20 +30,21 @@ namespace Volkszaehler\Interpreter;
  * @author Steffen Vogel (info@steffenvogel.de)
  *
  */
+use Volkszaehler;
+
 class MeterInterpreter extends Interpreter {
 
 	/**
 	 * calculates the consumption for interval speciefied by $from and $to
 	 *
-	 * @param integer $from timestamp in ms since 1970
-	 * @param integer $to timestamp in ms since 1970
+	 * @todo untested
 	 */
-	public function getConsumption($from = NULL, $to = NULL) {	// TODO untested
+	public function getConsumption() {
 		$sql = 'SELECT SUM(value) AS count
 				FROM data
 				WHERE
 					channel_id = ' . (int) $this->id . ' &&
-					' . $this->getTimeFilter($from, $to) . '
+					' . self::buildTimeFilterSQL($this->from, $this->to) . '
 				GROUP BY channel_id';
 
 		$result = $this->dbh->query($sql)->rewind();
@@ -53,11 +54,9 @@ class MeterInterpreter extends Interpreter {
 
 	/**
 	 *
-	 * @param integer $from timestamp in ms since 1970
-	 * @param integer $to timestamp in ms since 1970
 	 */
-	public function getMin($from = NULL, $to = NULL) {
-		$data = $this->getData($from, $to);
+	public function getMin() {
+		$data = $this->getData();
 
 		$min = current($data);
 		foreach ($data as $reading) {
@@ -69,60 +68,62 @@ class MeterInterpreter extends Interpreter {
 	}
 
 	/**
-	 *
-	 * @param integer $from timestamp in ms since 1970
-	 * @param integer $to timestamp in ms since 1970
+	 * @return Ambigous <mixed, unknown>
 	 */
-	public function getMax($from = NULL, $to = NULL) {
-		$data = $this->getData($from, $to);
+	public function getMax() {
+		$data = $this->getData();
 
-		$min = current($data);
+		$max = current($data);
 		foreach ($data as $reading) {
-			if ($reading['value '] > $min['value']) {
-				$min = $reading;
+			if ($reading['value '] > $max['value']) {
+				$max = $reading;
 			}
 		}
-		return $min;
+		return $max;
 	}
 
 	/**
-	 *
-	 * @param integer $from timestamp in ms since 1970
-	 * @param integer $to timestamp in ms since 1970
 	 * @todo calculate timeinterval if no params were given
 	 */
-	public function getAverage($from = NULL, $to = NULL) {
-		return $this->getConsumption($from, $to) / ($to - $from) / 1000;	// return W
+	public function getAverage() {
+		return $this->getConsumption() / ($this->to - $this->from) / 1000;	// return W
 	}
 
 	/**
-	 * just a passthru of raw data
-	 *
-	 * @param integer $from timestamp in ms since 1970
-	 * @param integer $to timestamp in ms since 1970
+	 * just a passthrough of raw data
 	 */
-	public function getPulses($from = NULL, $to = NULL, $groupBy = NULL) {
-		return parent::getData($from, $to, $groupBy);
+	public function getPulses($groupBy = NULL) {
+		return parent::getData($groupBy);
 	}
 
 	/**
 	 * raw pulses to power conversion
 	 *
-	 * @param integer $from timestamp in ms since 1970
-	 * @param integer $to timestamp in ms since 1970
+	 * @todo untested
+	 * @return array with timestamp and values in [W]
 	 */
-	public function getValues($from = NULL, $to = NULL, $groupBy = NULL) {
-		$pulses = parent::getData($from, $to, $groupBy);
-		$pulseCount = count($pulses);
+	public function getValues($groupBy = NULL) {
+		$pulses = parent::getData($groupBy);
+		$count = $pulses->count();
 
-		for ($i = 1; $i < $pulseCount; $i++) {
-			$delta = $pulses[$i]['timestamp'] - $pulses[$i-1]['timestamp'];
+		$values = array();
+		foreach ($pulses as $pulse) {
+			if (isset($last)) {
+				$delta = $pulse[0] - $last[0];
+				$last = $pulse;
 
-			$pulses[$i]['timestamp'] -= $delta/2;
-			$pulses[$i]['value'] *= 3600000/(($this->channel->getResolution() / 1000) * $delta);	// TODO untested
+				$values[] = array(
+					(int) ($pulse[0] - $delta / 2),															// timestamp
+					round($pulse[1] * (3600000 / (($this->channel->getResolution() / 1000) * $delta)), 5),	// value
+					$pulse[2]
+				);
+			}
+			else {
+				$last = $pulse;
+			}
 		}
 
-		return $pulses;	// returns W
+		return $values;
 	}
 }
 
