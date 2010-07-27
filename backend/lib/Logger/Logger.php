@@ -24,6 +24,8 @@
 namespace Volkszaehler\Logger;
 
 use Volkszaehler\View\HTTP;
+use Doctrine\ORM;
+use Volkszaehler\Model;
 
 /**
  * interface for parsing diffrent logging APIs (google, flukso etc..)
@@ -32,13 +34,38 @@ use Volkszaehler\View\HTTP;
  * @package default
  * @todo to be implemented
  */
-interface Logger {
-	public function __construct(HTTP\Request  $request);
+interface LoggerInterface {
+	public function __construct(HTTP\Request  $request, ORM\EntityManager $em);
 
 	/**
-	 * @return \Volkszaehler\Model\Data $data the parsed data
+	 * @return array of Model\Data
 	 */
 	public function getData();
+
+	public function getVersion();
+}
+
+abstract class Logger implements LoggerInterface {
+	protected $request;
+	protected $em;
+
+	public function __construct(HTTP\Request  $request, ORM\EntityManager $em) {
+		$this->request = $request;
+		$this->em = $em;
+	}
+
+	public function log() {
+		$data = $this->getData();
+
+		if (!is_array($data)) {
+			$data = array($data);
+		}
+
+		foreach ($data as $reading) {
+			$this->em->persist($reading);
+		}
+		$this->em->flush();
+	}
 }
 
 ?>

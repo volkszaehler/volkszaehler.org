@@ -23,6 +23,10 @@
 
 namespace Volkszaehler\Model;
 
+use Volkszaehler\Interpreter;
+
+use Doctrine\ORM;
+
 use Doctrine\Common\Collections;
 
 use Doctrine\Common\Collections\ArrayCollection;
@@ -83,9 +87,14 @@ class Group extends Entity {
 	 * @param Group $child
 	 * @todo check against endless recursion
 	 * @todo check if the group is already member of the group
+	 * @todo add bidirectional association
 	 */
 	public function addGroup(Group $child) {
 		$this->children->add($child);
+	}
+
+	public function removeGroup(Group $child) {
+		$this->children->removeElement($child);
 	}
 
 	/**
@@ -93,9 +102,14 @@ class Group extends Entity {
 	 *
 	 * @param Channel $child
 	 * @todo check if the channel is already member of the group
+	 * @todo add bidrection association
 	 */
 	public function addChannel(Channel $child) {
 		$this->channels->add($child);
+	}
+
+	public function removeChannel(Channel $child) {
+		$this->channels->removeElement($child);
 	}
 
 	/**
@@ -105,9 +119,12 @@ class Group extends Entity {
 	public function setName($name) { $this->name = $name; }
 	public function getDescription() { return $this->description; }
 	public function setDescription($description) { $this->description = $description; }
-	public function getChildren() { return $this->children; }
-	public function getParents() { return $this->parents; }
-	public function getChannels() { return $this->channels; }
+
+	public function getChildren() { return $this->children->toArray(); }
+	public function getParents() { return $this->parents->toArray(); }
+	public function getChannels() { return $this->channels->toArray(); }
+
+	public function getInterpreter(ORM\EntityManager $em) { return new Interpreter\GroupInterpreter($this, $em); }
 }
 
 ?>

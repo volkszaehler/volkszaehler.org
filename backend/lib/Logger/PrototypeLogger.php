@@ -23,23 +23,57 @@
 
 namespace Volkszaehler\Logger;
 
+use Volkszaehler\Model;
+use Doctrine\ORM;
+
 /**
- * logger for the Flukso.net API
+ * logger for the the original volkszaehler.org prototype based on ethersex's watchasync
  *
  * @package default
- * @link http://www.flukso.net
- * @link http://github.com/icarus75/flukso
+ * @link http://github.com/ethersex/ethersex/blob/master/services/watchasync
  * @author Steffen Vogel <info@steffenvogel.de>
  * @todo to be implemented
  */
-class FluksoLogger extends Logger {
+class PrototypeLogger extends Logger {
 	/**
 	 * @return array of Model\Data
 	 */
-	public function getData();
+	public function getData() {
+		$uuid = $this->request->getParameter('uuid');
+		$port = $this->request->getParameter('port');
 
-	public function getVersion();
+		$channel = $this->em->getRepository('Volkszaehler\Model\Channel')->findOneBy(array(
+			'description' => $uuid,
+			'name' => $port
+		));
 
+		if ($channel) {
+			if (!($time = $this->request->getParameter('time'))) {
+				$time = (int) (microtime(TRUE) * 1000);
+			}
+			return new Model\Data($channel, 1, $time);
+		}
+		else {
+			return FALSE;
+		}
+	}
+
+	/**
+	 * the prototyp protocol doesn't have a version
+	 */
+	public function getVersion() {
+		return FALSE;
+	}
 }
+
+/*
+ * just some documentation
+ *
+ * /httplog/httplog.php?port=<port>&uuid=<uuid>&time=<unixtimestamp>
+ *
+ * <port> = <prefix:PC><no#>
+ * <unixstimestamp> = timestamp in ms since 1970
+ *
+ */
 
 ?>

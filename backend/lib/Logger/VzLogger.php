@@ -1,8 +1,8 @@
 <?php
 /**
- * @copyright Copyright (c) 2010, The volkszaehler.org project
  * @package default
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2010, The volkszaehler.org project
+ * @license http://www.gnu.org/licenses/gpl.txt GNU Public License
  */
 /*
  * This file is part of volkzaehler.org
@@ -23,23 +23,37 @@
 
 namespace Volkszaehler\Logger;
 
+use Volkszaehler\Model;
+
+use Doctrine\ORM;
+
 /**
- * logger for the Flukso.net API
  *
- * @package default
- * @link http://www.flukso.net
- * @link http://github.com/icarus75/flukso
  * @author Steffen Vogel <info@steffenvogel.de>
- * @todo to be implemented
+ * @package default
+ *
  */
-class FluksoLogger extends Logger {
+class VzLogger extends Logger {
 	/**
 	 * @return array of Model\Data
 	 */
-	public function getData();
+	public function getData() {
+		$ucid = $this->view->request->getParameter('ucid');
+		$channel = $this->em->getRepository('Volkszaehler\Model\Channel\Channel')->findOneBy(array('uuid' => $ucid));
 
-	public function getVersion();
+		$value = (float) $this->view->request->getParameter('value');
+		$ts = (int) $this->view->request->getParameter('timestamp');
+		if ($ts == 0) {
+			$ts = microtime(TRUE) * 1000;
+		}
 
+		$data = new Model\Data($channel, $value, $ts);
+	}
+
+	public function getVersion() {
+		return $this->request->getParameter('version');
+	}
 }
+
 
 ?>

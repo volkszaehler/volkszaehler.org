@@ -42,7 +42,7 @@ class GroupController extends Controller {
 		$dql = 'SELECT g, c, d FROM Volkszaehler\Model\Group g LEFT JOIN g.children c LEFT JOIN g.channels d';
 
 		// TODO fix this (depending on DDC-719)
-		if ($recursion = $this->view->request->getParameter('recursion')) {
+		if ($recursion = $this->view->request->getParameter('recursive')) {
 			//$dql .= ' WHERE g.parents IS EMPTY';
 		}
 

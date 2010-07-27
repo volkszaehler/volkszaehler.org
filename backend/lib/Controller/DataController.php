@@ -23,6 +23,8 @@
 
 namespace Volkszaehler\Controller;
 
+use Volkszaehler\Model;
+
 use Volkszaehler\Util;
 
 /**
@@ -41,18 +43,31 @@ class DataController extends Controller {
 	 * @todo use uuids for groups or channels
 	 */
 	public function get() {
-		$ids = explode(',', trim($this->view->request->getParameter('ids')));
+		if ($ucid = $this->view->request->getParameter('ucid')) {
+			$entity = $this->em->getRepository('Volkszaehler\Model\Channel')->findOneBy(array('uuid' => $ucid));
+		}
+		elseif ($ugid = $this->view->request->getParameter('ugid')) {
+			$entity = $this->em->getRepository('Volkszaehler\Model\Group')->findOneBy(array('uuid' => $ugid));
+		}
+		else {
+			throw new \Exception('you have to specifiy an ugid or ucid paramter');
+		}
 
-		$q = $this->em->createQuery('SELECT c FROM Volkszaehler\Model\Channel c WHERE c.id IN (' . implode(', ', $ids) . ')');
-		$channels = $q->execute();
+		if ($entity === FALSE) {
+			throw new \Exception('no group/channel found');
+		}
 
-		$from = ($this->view->request->getParameter('from')) ? (int) $this->view->request->getParameter('from') : NULL;
-		$to = ($this->view->request->getParameter('to')) ? (int) $this->view->request->getParameter('to') : NULL;
-		$groupBy = ($this->view->request->getParameter('groupBy')) ? $this->view->request->getParameter('groupBy') : NULL;	// get all readings by default
+		$from = $this->view->request->getParameter('from');
+		$to = $this->view->request->getParameter('to');
+		$groupBy = ($this->view->request->getParameter('groupBy'));	// get all readings by default
 
-		foreach ($channels as $channel) {
-			$interpreter = $channel->getInterpreter($this->em);
-			$this->view->addChannel($channel, $interpreter->getValues($from, $to, $groupBy));
+		$data = $entity->getInterpreter($this->em, $from, $to)->getValues($groupBy);
+
+		if ($entity instanceof Model\Group) {
+			$this->view->addGroup($entity, $data);
+		}
+		elseif ($entity instanceof Model\Channel) {
+			$this->view->addChannel($entity, $data);
 		}
 	}
 
@@ -62,41 +77,13 @@ class DataController extends Controller {
 	 * @todo authentification/indentification
 	 */
 	public function add() {
-		$ucid = $this->view->request->getParameter('ucid');
-		$channel = $this->em->getRepository('Volkszaehler\Model\Channel\Channel')->findOneBy(array('uuid' => $ucid));
-
-		$value = (float) $this->view->request->getParameter('value');
-		$ts = (int) $this->view->request->getParameter('timestamp');
-		if ($ts == 0) {
-			$ts = microtime(TRUE) * 1000;
+		$loggerClassName = 'Volkszaehler\Logger\\' . ucfirst($this->view->request->getParameter('logger')) . 'Logger';
+		if (!(Util\ClassLoader::classExists($loggerClassName)) || !is_subclass_of($loggerClassName, '\Volkszaehler\Logger\Logger')) {
+			throw new \Exception('\'' . $loggerClassName . '\' is not a valid controller');
 		}
+		$logger = new $loggerClassName($this->view->request, $this->em);
 
-		$data = new \Volkszaehler\Model\Data($channel, $value, $ts);
-
-		$channel->addData($data);
-
-		$this->em->persist($data);
-		$this->em->flush();
-	}
-
-	/**
-	 * prune data from database
-	 *
-	 * @todo authentification/indentification
-	 */
-	public function delete() {
-		$dql = 'DELETE FROM \Volkszaehler\Model\Data WHERE channel_id = ' . $this->id;
-
-		if ($this->view->request->getParameter('from')) {
-			$dql .= ' && timestamp > ' . (int) $this->view->request->getParameter('from');
-		}
-
-		if ($this->view->request->getParameter('to')) {
-			$dql .= ' && timestamp < ' . $this->view->request->getParameter('to');
-		}
-
-		$q = $em->createQuery($dql);
-		$q->execute();
+		$logger->log();
 	}
 }
 

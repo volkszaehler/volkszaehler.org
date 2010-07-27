@@ -24,6 +24,7 @@
 namespace Volkszaehler\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Volkszaehler\Model;
 
 /**
  * Data entity
@@ -56,10 +57,16 @@ class Data {
 	 */
 	protected $channel;
 
-	public function __construct(Channel\Channel $channel, $value, $timestamp) {
+	public function __construct(Model\Channel $channel, $value, $timestamp) {
+		$channel->addData($this);	// bidirectional association
 		$this->channel = $channel;
+
 		$this->value = $value;
 		$this->timestamp = $timestamp;
+	}
+
+	public function toArray() {
+		return array('channel' => $this->channel, 'timestamp' => $this->timestamp, 'value' => $this->value);
 	}
 
 	/**

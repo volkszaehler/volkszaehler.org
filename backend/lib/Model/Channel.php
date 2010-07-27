@@ -62,10 +62,10 @@ class Channel extends Entity {
 	 * indicator => interpreter, unit mapping
 	 */
 	protected static $indicators = array(
-		'power' =>			array('meter', 'kW/h'),
-		'gas' =>			array('meter', 'qm/h'),
-		'water' =>			array('meter', 'qm/h'),
-		'temperature' =>	array('sensor', '° C'),
+		'power' =>			array('meter', 'W'),
+		'gas' =>			array('meter', 'm³'),
+		'water' =>			array('meter', 'm³'),
+		'temperature' =>	array('sensor', '°C'),
 		'pressure' =>		array('sensor', 'hPa'),
 		'humidity' =>		array('sensor', '%')
 	);
@@ -76,7 +76,7 @@ class Channel extends Entity {
 	public function __construct($indicator) {
 		parent::__construct();
 
-		if (!in_array($indicator, self::$indicators)) {
+		if (!in_array($indicator, array_keys(self::$indicators))) {
 			throw new \Exception($indicator . ' is no known indicator');
 		}
 
@@ -96,12 +96,9 @@ class Channel extends Entity {
 	/**
 	 * obtain channels data interpreter to calculate statistical information
 	 */
-	public function getInterpreter(\Doctrine\ORM\EntityManager $em) {
-		$interpreterClassName = 'Volkszaehler\Interpreter\\' . ucfirst(self::$indicators[$this->indicator][0]) . 'Interpreter';
-		if (!(\Volkszaehler\Util\ClassLoader::classExists($interpreterClassName)) || !is_subclass_of($interpreterClassName, '\Volkszaehler\Interpreter\Interpreter')) {
-			throw new \Exception('\'' . $interpreterClassName . '\' is not a valid Interpreter');
-		}
-		return new $interpreterClassName($this, $em);
+	public function getInterpreter(\Doctrine\ORM\EntityManager $em, $from, $to) {
+		$interpreterClassName = 'Volkszaehler\Interpreter\\' . ucfirst($this->getType()) . 'Interpreter';
+		return new $interpreterClassName($this, $em, $from, $to);
 	}
 
 	/**
@@ -111,12 +108,15 @@ class Channel extends Entity {
 	public function setName($name) { $this->name = $name; }
 	public function getDescription() { return $this->description; }
 	public function setDescription($description) { $this->description = $description; }
-	public function getUnit() { return self::$indicators[$this->indicator][1]; }
-	public function getIndicator() { return $this->indicator; }
+
 	public function getResolution() { return $this->resolution; }
 	public function setResolution($resolution) { $this->resolution = $resolution; }
 	public function getCost() { return $this->cost; }
 	public function setCost($cost) { $this->cost = $cost; }
+
+	public function getType() { return self::$indicators[$this->indicator][0]; }
+	public function getUnit() { return self::$indicators[$this->indicator][1]; }
+	public function getIndicator() { return $this->indicator; }
 }
 
 ?>
