@@ -29,16 +29,16 @@ use Volkszaehler\Controller;
 use Volkszaehler\Util;
 
 /**
- * backend dispatcher
+ * Backend dispatcher
  *
- * this class acts as a frontcontroller to route incomming requests
+ * This class acts as a frontcontroller to route incomming requests
  *
  * @package default
  * @author Steffen Vogel <info@steffenvogel.de>
  */
 class Dispatcher {
 	/**
-	 * @var \Doctrine\ORM\EntityManager Doctrine Model
+	 * @var \Doctrine\ORM\EntityManager Doctrine EntityManager
 	 */
 	protected $em;
 
@@ -68,18 +68,24 @@ class Dispatcher {
 	);
 
 	/**
-	 * constructor
+	 * Constructor
 	 */
 	public function __construct() {
 		// create HTTP request & response (needed to initialize view & controller)
 		$request = new HTTP\Request();
 		$response = new HTTP\Response();
 
-		if (!($format = $request->getParameter('format'))) {
+		if ($format = $request->getParameter('format')) {
+			$format = strtolower($format);
+		}
+		else {
 			$format = 'json';	// default view
 		}
 
-		if (!($controller = $request->getParameter('controller'))) {
+		if ($controller = $request->getParameter('controller')) {
+			$controller = strtolower($controller);
+		}
+		else {
 			throw new \Exception('no controller specified');
 		}
 
@@ -124,7 +130,7 @@ class Dispatcher {
 		}
 
 		// initialize controller
-		$controllerClassName = 'Volkszaehler\Controller\\' . ucfirst($request->getParameter('controller')) . 'Controller';
+		$controllerClassName = 'Volkszaehler\Controller\\' . ucfirst($controller) . 'Controller';
 		if (!(Util\ClassLoader::classExists($controllerClassName)) || !is_subclass_of($controllerClassName, '\Volkszaehler\Controller\Controller')) {
 			throw new \Exception('\'' . $controllerClassName . '\' is not a valid controller');
 		}
@@ -132,7 +138,7 @@ class Dispatcher {
 	}
 
 	/**
-	 * execute application
+	 * Execute application
 	 */
 	public function run() {
 		if ($this->view->request->getParameter('action')) {
@@ -155,7 +161,7 @@ class Dispatcher {
 	}
 
 	/**
-	 * factory for doctrines entitymanager
+	 * Factory for doctrines entitymanager
 	 *
 	 * @todo create extra singleton class?
 	 */

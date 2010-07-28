@@ -1,8 +1,8 @@
 <?php
 /**
- * configuration template
+ * Configuration template
  *
- * you should use this file to obtain your custom configuration
+ * You should use this file to obtain your custom configuration
  * new parameters should be documented
  *
  * @copyright Copyright (c) 2010, The volkszaehler.org project

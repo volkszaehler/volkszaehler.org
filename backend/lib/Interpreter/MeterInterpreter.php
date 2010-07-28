@@ -24,7 +24,7 @@
 namespace Volkszaehler\Interpreter;
 
 /**
- * meter interpreter
+ * Meter interpreter
  *
  * @package default
  * @author Steffen Vogel (info@steffenvogel.de)
@@ -35,7 +35,7 @@ use Volkszaehler;
 class MeterInterpreter extends Interpreter {
 
 	/**
-	 * calculates the consumption for interval speciefied by $from and $to
+	 * Calculates the consumption for interval speciefied by $from and $to
 	 *
 	 * @todo untested
 	 */
@@ -68,7 +68,7 @@ class MeterInterpreter extends Interpreter {
 	}
 
 	/**
-	 * @return Ambigous <mixed, unknown>
+	 * @return array
 	 */
 	public function getMax() {
 		$data = $this->getData();
@@ -84,20 +84,21 @@ class MeterInterpreter extends Interpreter {
 
 	/**
 	 * @todo calculate timeinterval if no params were given
+	 * @return float
 	 */
 	public function getAverage() {
 		return $this->getConsumption() / ($this->to - $this->from) / 1000;	// return W
 	}
 
 	/**
-	 * just a passthrough of raw data
+	 * Just a passthrough of raw data
 	 */
 	public function getPulses($groupBy = NULL) {
 		return parent::getData($groupBy);
 	}
 
 	/**
-	 * raw pulses to power conversion
+	 * Raw pulses to power conversion
 	 *
 	 * @todo untested
 	 * @return array with timestamp and values in [W]
@@ -114,8 +115,8 @@ class MeterInterpreter extends Interpreter {
 
 				$values[] = array(
 					(int) ($pulse[0] - $delta / 2),															// timestamp
-					round($pulse[1] * (3600000 / (($this->channel->getResolution() / 1000) * $delta)), 5),	// value
-					$pulse[2]
+					$pulse[1] * (3600000 / (($this->channel->getResolution() / 1000) * $delta)),	// value
+					(isset($pulse[2])) ? $pulse[2] : 1
 				);
 			}
 			else {

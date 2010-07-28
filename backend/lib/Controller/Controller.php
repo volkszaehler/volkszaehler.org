@@ -24,7 +24,7 @@
 namespace Volkszaehler\Controller;
 
 /**
- * controller superclass for all controllers
+ * Controller superclass for all controllers
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
@@ -34,7 +34,10 @@ abstract class Controller {
 	protected $em;
 
 	/**
-	 * constructor
+	 * Constructor
+	 *
+	 * @param View $view
+	 * @param EntityManager $em
 	 */
 	public function __construct(\Volkszaehler\View\View $view, \Doctrine\ORM\EntityManager $em) {
 		$this->view = $view;
@@ -42,7 +45,7 @@ abstract class Controller {
 	}
 
 	/**
-	 * run controller actions
+	 * Run controller actions
 	 *
 	 * @param string $action runs the action if class method is available
 	 */

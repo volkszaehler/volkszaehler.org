@@ -28,7 +28,7 @@ use Doctrine\ORM;
 use Volkszaehler\Model;
 
 /**
- * interface for parsing diffrent logging APIs (google, flukso etc..)
+ * Interface for parsing diffrent logging APIs (google, flukso etc..)
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
@@ -45,15 +45,29 @@ interface LoggerInterface {
 	public function getVersion();
 }
 
+/**
+ *
+ * @author Steffen Vogel <info@steffenvogel.de>
+ *
+ */
 abstract class Logger implements LoggerInterface {
 	protected $request;
 	protected $em;
 
+	/**
+	 * Constructor
+	 *
+	 * @param HTTP\Request $request
+	 * @param ORM\EntityManager $em
+	 */
 	public function __construct(HTTP\Request  $request, ORM\EntityManager $em) {
 		$this->request = $request;
 		$this->em = $em;
 	}
 
+	/**
+	 *
+	 */
 	public function log() {
 		$data = $this->getData();
 

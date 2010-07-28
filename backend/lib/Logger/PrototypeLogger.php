@@ -27,7 +27,7 @@ use Volkszaehler\Model;
 use Doctrine\ORM;
 
 /**
- * logger for the the original volkszaehler.org prototype based on ethersex's watchasync
+ * Logger for the the original volkszaehler.org prototype based on ethersex's watchasync
  *
  * @package default
  * @link http://github.com/ethersex/ethersex/blob/master/services/watchasync
@@ -67,7 +67,7 @@ class PrototypeLogger extends Logger {
 }
 
 /*
- * just some documentation
+ * Just some documentation
  *
  * /httplog/httplog.php?port=<port>&uuid=<uuid>&time=<unixtimestamp>
  *

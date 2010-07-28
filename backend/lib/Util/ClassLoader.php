@@ -25,9 +25,9 @@
 namespace Volkszaehler\Util;
 
 /**
- * class loader for volkszaehler and vendor libraries
+ * Classloader for volkszaehler and vendor libraries
  *
- * namespace is mapped to the filesystem structure
+ * Namespace is mapped to the filesystem structure
  *
  * @package util
  * @author Roman Borschel <roman@code-factory.org>

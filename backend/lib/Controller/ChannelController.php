@@ -26,7 +26,7 @@ namespace Volkszaehler\Controller;
 use \Volkszaehler\Model;
 
 /**
- * channel controller
+ * Channel controller
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
@@ -34,9 +34,10 @@ use \Volkszaehler\Model;
 class ChannelController extends Controller {
 
 	/**
-	 * get channels by filter
+	 * Get channels by filter
 	 *
 	 * @todo authentification/indentification
+	 * @todo implement filters
 	 */
 	public function get() {
 		$dql = 'SELECT c FROM Volkszaehler\Model\Channel c';
@@ -62,7 +63,7 @@ class ChannelController extends Controller {
 	}
 
 	/**
-	 * add channel
+	 * Add channel
 	 *
 	 * @todo validate input and throw exceptions
 	 */
@@ -82,7 +83,7 @@ class ChannelController extends Controller {
 	}
 
 	/**
-	 * delete channel
+	 * Delete channel by uuid
 	 *
 	 * @todo authentification/indentification
 	 */
@@ -95,7 +96,7 @@ class ChannelController extends Controller {
 	}
 
 	/**
-	 * edit channel properties
+	 * Edit channel properties
 	 *
 	 * @todo authentification/indentification
 	 * @todo to be implemented

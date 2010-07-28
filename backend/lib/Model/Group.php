@@ -24,11 +24,8 @@
 namespace Volkszaehler\Model;
 
 use Volkszaehler\Interpreter;
-
 use Doctrine\ORM;
-
 use Doctrine\Common\Collections;
-
 use Doctrine\Common\Collections\ArrayCollection;
 
 /**

@@ -28,7 +28,7 @@ use Volkszaehler\Util;
 use Volkszaehler\Model;
 
 /**
- * Plain Text view
+ * Plain text view
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default

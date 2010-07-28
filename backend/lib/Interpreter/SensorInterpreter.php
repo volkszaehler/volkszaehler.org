@@ -24,7 +24,7 @@
 namespace Volkszaehler\Interpreter;
 
 /**
- * sensor interpreter
+ * Sensor interpreter
  *
  * @package default
  * @author Steffen Vogel <info@steffenvogel.de>
@@ -33,6 +33,7 @@ class SensorInterpreter extends Interpreter {
 
 	/**
 	 * @todo untested
+	 * @param string|integer $groupBy
 	 */
 	public function getValues($groupBy = NULL) {
 		$data = parent::getData($groupBy);
@@ -52,6 +53,7 @@ class SensorInterpreter extends Interpreter {
 	/**
 	 * @todo adapt to doctrine orm
 	 * @todo untested
+	 * @return array
 	 */
 	public function getMin() {
 		return $this->dbh->query('SELECT value, timestamp FROM data WHERE channel_id = ' . (int) $this->id . self::buildFilterTime($this->from, $this->to) . ' ORDER BY value ASC', 1)->current();
@@ -60,6 +62,7 @@ class SensorInterpreter extends Interpreter {
 	/**
 	 * @todo adapt to doctrine orm
 	 * @todo untested
+	 * @return array
 	 */
 	public function getMax() {
 		return $this->dbh->query('SELECT value, timestamp FROM data WHERE channel_id = ' . (int) $this->id . self::buildFilterTime($this->from, $this->to) . ' ORDER BY value DESC', 1)->current();
@@ -68,6 +71,7 @@ class SensorInterpreter extends Interpreter {
 	/**
 	 * @todo adapt to doctrine orm
 	 * @todo untested
+	 * @return float
 	 */
 	public function getAverage() {
 		return $this->dbh->query('SELECT AVG(value) AS value FROM data WHERE channel_id = ' . (int) $this->id . self::buildFilterTime($this->from, $this->to))->current();
@@ -75,6 +79,7 @@ class SensorInterpreter extends Interpreter {
 
 	/**
 	 * @todo to be implemented
+	 * @return float
 	 */
 	public function getConsumption() {
 

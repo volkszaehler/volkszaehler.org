@@ -1,6 +1,6 @@
 <?php
 /**
- * backend bootstrapping entrypoint
+ * Backend bootstrapping entrypoint
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @copyright Copyright (c) 2010, The volkszaehler.org project

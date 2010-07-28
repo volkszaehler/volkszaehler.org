@@ -24,7 +24,7 @@
 namespace Volkszaehler\Logger;
 
 /**
- * logger for the Flukso.net API
+ * Logger for the Flukso.net API
  *
  * @package default
  * @link http://www.flukso.net

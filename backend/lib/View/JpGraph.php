@@ -31,9 +31,9 @@ require_once \Volkszaehler\BACKEND_DIR . '/lib/vendor/JpGraph/jpgraph_scatter.ph
 require_once \Volkszaehler\BACKEND_DIR . '/lib/vendor/JpGraph/jpgraph_date.php';
 
 /**
- * plotting and graphing of data on the server side
+ * Plotting and graphing of data on the server side
  *
- * this view uses the JpGraph PHP5 plotting library
+ * This view uses the JpGraph PHP5 plotting library
  *
  * @package default
  * @author Steffen Vogel <info@steffenvogel.de>

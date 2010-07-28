@@ -26,7 +26,7 @@ namespace Volkszaehler\Model;
 use Volkszaehler\Util;
 
 /**
- * entity superclass for all models with database persistance
+ * Entity superclass for all models with database persistance
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
@@ -49,7 +49,7 @@ abstract class Entity {
 	}
 
 	/**
-	 * getter & setter
+	 * Getter & setter
 	 */
 	public function getId() { return $this->id; }		// read only
 	public function getUuid() { return $this->uuid; }	// read only

@@ -23,17 +23,25 @@
 
 namespace Volkszaehler;
 
-/**
- * @author Steffen Vogel <info@steffenvogel.de>
- */
 use Doctrine\DBAL;
 
+/**
+ * @author Steffen Vogel <info@steffenvogel.de>
+ * @package default
+ */
 class DataAggregationIterator extends DataIterator {
 	protected $packageSize;		// count of readings in tuple
 	protected $aggregatedSize;	// total readings
 	protected $aggregatedKey = -1;
 
-	public function __construct(DBAL\Statement $stmt, $size, $tuples) {
+	/**
+	 * Constructor
+	 *
+	 * @param \PDOStatement $stmt
+	 * @param unknown_type $size
+	 * @param unknown_type $tuples
+	 */
+	public function __construct(\PDOStatement  $stmt, $size, $tuples) {
 		parent::__construct($stmt, $size);
 
 		if ($tuples < $this->size) {						// return $tuples values
@@ -47,7 +55,7 @@ class DataAggregationIterator extends DataIterator {
 	}
 
 	/**
-	 * aggregate data
+	 * Aggregate data
 	 */
 	public function next() {
 		$current = array (0, 0);
@@ -71,14 +79,26 @@ class DataAggregationIterator extends DataIterator {
 		$this->current[2] = $this->packageSize;
 	}
 
+	/**
+	 * @return array with data
+	 */
 	public function current() {
 		return $this->current;
 	}
 
+	/**
+	 * @return integer the nth data row
+	 */
 	public function key() {
 		return $this->aggregatedKey;
 	}
 
+	/**
+	 * Rewind the iterator
+	 *
+	 * Should only be called once
+	 * PDOStatements doest support rewind()
+	 */
 	public function rewind() {
 		parent::rewind();
 
@@ -90,7 +110,7 @@ class DataAggregationIterator extends DataIterator {
 	}
 
 	/**
-	 * getter & setter
+	 * Getter & setter
 	 */
 	public function getPackageSize() { return $this->packageSize; }
 }

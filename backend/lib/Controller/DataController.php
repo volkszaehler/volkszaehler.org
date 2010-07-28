@@ -24,11 +24,10 @@
 namespace Volkszaehler\Controller;
 
 use Volkszaehler\Model;
-
 use Volkszaehler\Util;
 
 /**
- * data controller
+ * Data controller
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @todo call via redirect from Controller\Channel
@@ -37,7 +36,7 @@ use Volkszaehler\Util;
 class DataController extends Controller {
 
 	/**
-	 * query for data
+	 * Query for data by given channel or group
 	 *
 	 * @todo authentification/indentification
 	 * @todo use uuids for groups or channels
@@ -72,7 +71,7 @@ class DataController extends Controller {
 	}
 
 	/**
-	 * log new readings
+	 * Log new readings with logger interfaces
 	 *
 	 * @todo authentification/indentification
 	 */

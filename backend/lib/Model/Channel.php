@@ -86,7 +86,7 @@ class Channel extends Entity {
 	}
 
 	/**
-	 * add a new data to the database
+	 * Add a new data to the database
 	 * @todo move to Logger\Logger?
 	 */
 	public function addData(\Volkszaehler\Model\Data $data) {
@@ -94,11 +94,27 @@ class Channel extends Entity {
 	}
 
 	/**
-	 * obtain channels data interpreter to calculate statistical information
+	 * Obtain channel interpreter to obtain data and statistical information for a given time interval
+	 *
+	 * @param Doctrine\ORM\EntityManager $em
+	 * @param integer $from timestamp in ms since 1970
+	 * @param integer $to timestamp in ms since 1970
+	 * @return Interpreter
 	 */
 	public function getInterpreter(\Doctrine\ORM\EntityManager $em, $from, $to) {
 		$interpreterClassName = 'Volkszaehler\Interpreter\\' . ucfirst($this->getType()) . 'Interpreter';
 		return new $interpreterClassName($this, $em, $from, $to);
+	}
+
+	/**
+	 * Validate
+	 *
+	 * @PrePersist @PreUpdate
+	 */
+	protected function validate() {
+		if ($this->getResolution() <= 0 && $this->getType() == 'meter') {
+			throw new Exception('resolution has to be a positive integer');
+		}
 	}
 
 	/**

@@ -24,7 +24,7 @@
 namespace Volkszaehler\Controller;
 
 /**
- * group controller
+ * Group controller
  *
  * @author Steffen Vogel (info@steffenvogel.de)
  * @package default
@@ -34,7 +34,7 @@ use Volkszaehler\Model;
 class GroupController extends Controller {
 
 	/**
-	 * get groups by filter
+	 * Get groups by filter
 	 *
 	 * @todo filter to root groups when using recursion
 	 */
@@ -63,7 +63,9 @@ class GroupController extends Controller {
 	}
 
 	/**
-	 * add new group as child of a parent group
+	 * Add new group as child of a parent group
+	 *
+	 * @todo add parent validation to model?
 	 */
 	public function add() {
 		$ugid = $this->view->request->getParameter('ugid');

@@ -26,7 +26,7 @@ namespace Volkszaehler\Util;
 use Doctrine\DBAL\Logging;
 
 /**
- * static debugging class
+ * Static debugging class
  *
  * @package util
  * @author Steffen Vogel <info@steffenvogel.de>

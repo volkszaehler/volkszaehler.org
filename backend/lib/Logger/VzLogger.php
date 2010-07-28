@@ -50,6 +50,9 @@ class VzLogger extends Logger {
 		$data = new Model\Data($channel, $value, $ts);
 	}
 
+	/**
+	 * @return string the version
+	 */
 	public function getVersion() {
 		return $this->request->getParameter('version');
 	}

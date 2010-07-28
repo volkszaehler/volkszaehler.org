@@ -42,7 +42,7 @@ interface InterpreterInterface {
 }
 
 /**
- * interpreter superclass for all interpreters
+ * Interpreter superclass for all interpreters
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
@@ -56,9 +56,12 @@ abstract class Interpreter implements InterpreterInterface {
 	protected $to;
 
 	/**
+	 * Constructor
 	 *
-	 * @param $channel
-	 * @param $em
+	 * @param Channel $channel
+	 * @param EntityManager $em
+	 * @param integer $from timestamp in ms since 1970
+	 * @param integer $to timestamp in ms since 1970
 	 */
 	public function __construct(\Volkszaehler\Model\Channel $channel, \Doctrine\ORM\EntityManager $em, $from = NULL, $to = NULL) {
 		$this->channel = $channel;
@@ -69,11 +72,10 @@ abstract class Interpreter implements InterpreterInterface {
 	}
 
 	/**
+	 * Get raw data
 	 *
-	 * @param integer $from timestamp in ms since 1970
-	 * @param integer $to timestamp in ms since 1970
-	 * @param mixed $groupBy
-	 * @todo split in two functions
+	 * @param string|integer $groupBy
+	 * @return Volkszaehler\DataIterator
 	 */
 	protected function getData($groupBy = NULL) {
 		// get dbal connection from EntityManager
@@ -98,8 +100,7 @@ abstract class Interpreter implements InterpreterInterface {
 
 		$rowCount = $conn->fetchColumn($sqlRowCount, $params, 0);
 
-		$stmt = $conn->prepare('SELECT ' . $sqlFields . $sqlFrom . $sqlWhere . $sqlGroupBy . $sqlOrderBy);
-		$stmt->execute($params);
+		$stmt = $conn->executeQuery('SELECT ' . $sqlFields . $sqlFrom . $sqlWhere . $sqlGroupBy . $sqlOrderBy, $params);
 
 		if ($sqlGroupBy || is_null($groupBy)) {		// aggregation by sql or skip it
 			return new Volkszaehler\DataIterator($stmt, $rowCount);
@@ -114,10 +115,10 @@ abstract class Interpreter implements InterpreterInterface {
 	}
 
 	/**
-	 * builds sql query part for grouping data by date functions
+	 * Builds sql query part for grouping data by date functions
 	 *
 	 * @param string $groupBy
-	 * @return string $sql the sql part
+	 * @return string the sql part
 	 * @todo make compatible with: MSSql (Transact-SQL), Sybase, Firebird/Interbase, IBM, Informix, MySQL, Oracle, DB2, PostgreSQL, SQLite
 	 */
 	protected static function buildGroupBySQL($groupBy) {
@@ -157,6 +158,13 @@ abstract class Interpreter implements InterpreterInterface {
 		}
 	}
 
+	/**
+	 * Build sql query part to filter specified time interval
+	 *
+	 * @param integer $from timestamp in ms since 1970
+	 * @param integer $to timestamp in ms since 1970
+	 * @return string the sql part
+	 */
 	protected static function buildTimeFilterSQL($from = NULL, $to = NULL) {
 		$sql = '';
 

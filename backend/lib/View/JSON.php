@@ -30,12 +30,12 @@ use Volkszaehler\Model;
 /**
  * JSON view
  *
- * also used for data
- *
  * @package default
  * @author Steffen Vogel <info@steffenvogel.de>
  */
 class JSON extends View {
+	const PRECISSION = 5;
+
 	protected $json = array();
 
 	protected $padding = FALSE;
@@ -63,18 +63,21 @@ class JSON extends View {
 		$jsonChannel['unit'] = $channel->getUnit();
 		$jsonChannel['name'] = $channel->getName();
 		$jsonChannel['description'] = $channel->getDescription();
-		$jsonChannel['resolution'] = (int) $channel->getResolution();
-		$jsonChannel['cost'] = (float) $channel->getCost();
+
+		if ($channel->getType() == 'meter') {
+			$jsonChannel['resolution'] = (int) $channel->getResolution();
+			$jsonChannel['cost'] = (float) $channel->getCost();
+		}
 
 		if (isset($data)) {
-			$jsonChannel['data'] = $data;
+			$jsonChannel['data'] = self::convertData($data);
 		}
 
 		$this->json['channels'][] = $jsonChannel;
 	}
 
 	public function addGroup(Model\Group $group, $recursive = FALSE) {
-		$this->json['groups'][] = $this->toJson($group, $recursive);
+		$this->json['groups'][] = self::convertJson($group, $recursive);
 	}
 
 	public function addDebug(Util\Debug $debug) {
@@ -99,7 +102,7 @@ class JSON extends View {
 		);
 	}
 
-	protected function toJson(Model\Group $group, $recursive = FALSE) {
+	protected static function convertGroup(Model\Group $group, $recursive = FALSE) {
 		$jsonGroup = array();
 
 		$jsonGroup['uuid'] = (string) $group->getUuid();
@@ -120,6 +123,20 @@ class JSON extends View {
 		}
 
 		return $jsonGroup;
+	}
+
+	protected static function convertData($data) {
+		$jsonData = array();
+
+		foreach ($data as $reading) {
+			$jsonData[] = array(
+				(int) $reading[0],
+				(float) round($reading[1], JSON::PRECISSION),
+				(int) $reading[2]
+			);
+		}
+
+		return $jsonData;
 	}
 
 	public function renderResponse() {

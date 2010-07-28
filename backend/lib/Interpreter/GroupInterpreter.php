@@ -26,9 +26,27 @@ namespace Volkszaehler\Interpreter;
 use Doctrine\ORM;
 use Volkszaehler\Model;
 
+/**
+ * Group interpreter
+ *
+ * The GroupInterpreter is used to aggregate multiple channels with the same
+ * indicator
+ *
+ * @author Steffen Vogel <info@steffenvogel.de>
+ * @package default
+ *
+ */
 class GroupInterpreter {
 	protected $channelInterpreter;
 
+	/**
+	 * Constructor
+	 *
+	 * @param Model\Group $group should only contain channels with the same indicator
+	 * @param ORM\EntityManager $em
+	 * @param integer $from timestamp in ms since 1970
+	 * @param integer $to timestamp in ms since 1970
+	 */
 	public function __construct(Model\Group $group, ORM\EntityManager $em, $from, $to) {
 		foreach ($group->getChannels() as $channel) {
 			if (isset($indicator) && $indicator != $channel->getIndicator) {
@@ -43,15 +61,20 @@ class GroupInterpreter {
 	}
 
 	/**
+	 * Just a passthrough to the channel interpreters
 	 *
+	 * @param string|integer $groupBy
 	 * @todo to be implemented
+	 * @return array of values
 	 */
 	public function getValues($groupBy = NULL) {
 
 	}
 
 	/**
+	 * Just a passthrough to the channel interpreters
 	 *
+	 * @return array with the smallest value
 	 */
 	public function getMin() {
 		$min = current($this->channelInterpreter)->getMax();
@@ -65,7 +88,9 @@ class GroupInterpreter {
 	}
 
 	/**
+	 * Just a passthrough to the channel interpreters
 	 *
+	 * @return array with the biggest value
 	 */
 	public function getMax() {
 		$max = current($this->channelInterpreter)->getMax();
@@ -79,7 +104,9 @@ class GroupInterpreter {
 	}
 
 	/**
+	 * Just a passthrough to the channel interpreters
 	 *
+	 * @return float average value
 	 */
 	public function getAverage() {
 		$sum = 0;

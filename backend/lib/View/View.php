@@ -40,7 +40,7 @@ interface ViewInterface {
 }
 
 /**
- * superclass for all view classes
+ * Superclass for all view classes
  *
  * @package default
  * @author Steffen Vogel <info@steffenvogel.de>

@@ -23,49 +23,75 @@
 
 namespace Volkszaehler;
 
-/**
- * @author Steffen Vogel <info@steffenvogel.de>
- */
 use Doctrine\DBAL;
 
+/**
+ * @author Steffen Vogel <info@steffenvogel.de>
+ * @package default
+ */
 class DataIterator implements \Iterator, \Countable {
 	protected $current;
 	protected $key;			// incrementing key
-	protected $pdoStmt;		// PDOStatement
+	protected $stmt;		// PDOStatement
 	protected $size;	// total readings in PDOStatement
 
-	public function __construct(DBAL\Statement $stmt, $size) {
+	/**
+	 * Constructor
+	 *
+	 * @param \PDOStatement $stmt
+	 * @param unknown_type $size
+	 */
+	public function __construct(\PDOStatement $stmt, $size) {
 		$this->size = $size;
 
-		$this->pdoStmt = $stmt->getWrappedStatement();
-		$this->pdoStmt->setFetchMode(\PDO::FETCH_NUM);
+		$this->stmt = $stmt;
+		$this->stmt->setFetchMode(\PDO::FETCH_NUM);
 	}
 
+	/**
+	 * @return array with data
+	 */
 	public function current() {
 		return $this->current;
 	}
 
+	/**
+	 * Fetch next row from database
+	 */
 	public function next() {
 		$this->key++;
-		$this->current = $this->pdoStmt->fetch();
+		$this->current = $this->stmt->fetch();
+
 	}
 
+	/**
+	 * @return integer the nth data row
+	 */
 	public function key() {
 		return $this->key;
 	}
 
+	/**
+	 * @return boolean do we have another row in the resultset?
+	 */
 	public function valid() {
 		return (boolean) $this->current;
 	}
 
 	/**
-	 * NoRewindIterator
+	 * Rewind the iterator
+	 *
+	 * Should only be called once
+	 * PDOStatements doest support rewind()
 	 */
 	public function rewind() {
 		$this->key = 0;
-		$this->current = $this->pdoStmt->fetch();
+		$this->current = $this->stmt->fetch();
 	}
 
+	/**
+	 * @return integer
+	 */
 	public function count() { return $this->size; }
 }
 
