@@ -70,8 +70,6 @@ class UUID {
 	const nsURL  = '6ba7b811-9dad-11d1-80b4-00c04fd430c8';
 	const nsOID  = '6ba7b812-9dad-11d1-80b4-00c04fd430c8';
 	const nsX500 = '6ba7b814-9dad-11d1-80b4-00c04fd430c8';
-	protected static $randomFunc = 'randomTwister';
-	protected static $randomSource = NULL;
 
 	//instance properties
 	protected $bytes;
@@ -210,7 +208,7 @@ class UUID {
 		// Reorder bytes to their proper locations in the UUID
 		$uuid  = $time[4].$time[5].$time[6].$time[7].$time[2].$time[3].$time[0].$time[1];
 		// Generate a random clock sequence
-		$uuid .= self::randomBytes(2);
+		$uuid .= Random::getBytes(2);
 		// set variant
 		$uuid[8] = chr(ord($uuid[8]) & self::clearVar | self::varRFC);
 		// set version
@@ -221,7 +219,7 @@ class UUID {
 		if (!$node) {
 			// If no node was provided or if the node was invalid,
 			//  generate a random MAC address and set the multicast bit
-			$node = self::randomBytes(6);
+			$node = Random::getBytes(6);
 			$node[0] = pack("C", ord($node[0]) | 1);
 		}
 		$uuid .= $node;
@@ -232,7 +230,7 @@ class UUID {
 		/* Generate a Version 4 UUID.
 		 These are derived soly from random numbers. */
 		// generate random fields
-		$uuid = self::randomBytes(16);
+		$uuid = Random::getBytes(16);
 		// set variant
 		$uuid[8] = chr(ord($uuid[8]) & self::clearVar | self::varRFC);
 		// set version
@@ -280,51 +278,6 @@ class UUID {
 		return FALSE;
 		else
 		return pack("H*", $str);
-	}
-
-	public static function initRandom() {
-		/* Look for a system-provided source of randomness, which is usually crytographically secure.
-		 /dev/urandom is tried first simply out of bias for Linux systems. */
-		if (is_readable('/dev/urandom')) {
-			self::$randomSource = fopen('/dev/urandom', 'rb');
-			self::$randomFunc = 'randomFRead';
-		}
-		else if (class_exists('COM', 0)) {
-			try {
-				self::$randomSource = new COM('CAPICOM.Utilities.1');  // See http://msdn.microsoft.com/en-us/library/aa388182(VS.85).aspx
-				self::$randomFunc = 'randomCOM';
-			}
-			catch(\Exception $e) {}
-		}
-		return self::$randomFunc;
-	}
-
-	public static function randomBytes($bytes) {
-		return call_user_func(array('self', self::$randomFunc), $bytes);
-	}
-
-	protected static function randomTwister($bytes) {
-		/* Get the specified number of random bytes, using mt_rand().
-		 Randomness is returned as a string of bytes. */
-		$rand = "";
-		for ($a = 0; $a < $bytes; $a++) {
-			$rand .= chr(mt_rand(0, 255));
-		}
-		return $rand;
-	}
-
-	protected static function randomFRead($bytes) {
-		/* Get the specified number of random bytes using a file handle
-		 previously opened with UUID::initRandom().
-		 Randomness is returned as a string of bytes. */
-		return fread(self::$randomSource, $bytes);
-	}
-
-	protected static function randomCOM($bytes) {
-		/* Get the specified number of random bytes using Windows'
-		 randomness source via a COM object previously created by UUID::initRandom().
-		 Randomness is returned as a string of bytes. */
-		return base64_decode(self::$randomSource->GetRandom($bytes,0)); // straight binary mysteriously doesn't work, hence the base64
 	}
 }
 

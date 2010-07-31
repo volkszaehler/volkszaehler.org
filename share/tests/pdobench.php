@@ -1,8 +1,11 @@
 <?php
 /**
+ * Some testing for PDOs performence
+ *
  * @package tests
  * @copyright Copyright (c) 2010, The volkszaehler.org project
  * @license http://www.gnu.org/licenses/gpl.txt GNU Public License
+ * @author Steffen Vogel <info@steffenvogel.de>
  */
 /*
  * This file is part of volkzaehler.org
