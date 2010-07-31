@@ -42,7 +42,7 @@ class GroupInterpreter {
 	/**
 	 * Constructor
 	 *
-	 * @param Model\Group $group should only contain channels with the same indicator
+	 * @param Model\Group $group should only contain channels of the same indicator
 	 * @param ORM\EntityManager $em
 	 * @param integer $from timestamp in ms since 1970
 	 * @param integer $to timestamp in ms since 1970

@@ -98,16 +98,19 @@ abstract class Interpreter implements InterpreterInterface {
 			$sqlFields = ' timestamp, value';
 		}
 
+		// get total row count for grouping
 		$rowCount = $conn->fetchColumn($sqlRowCount, $params, 0);
 
+		// query for data
 		$stmt = $conn->executeQuery('SELECT ' . $sqlFields . $sqlFrom . $sqlWhere . $sqlGroupBy . $sqlOrderBy, $params);
 
+		// return iterators
 		if ($sqlGroupBy || is_null($groupBy)) {		// aggregation by sql or skip it
-			return new Volkszaehler\DataIterator($stmt, $rowCount);
+			return new DataIterator($stmt, $rowCount);
 		}
 		elseif (is_numeric($groupBy) ) {			// aggregation by php
 			$tuples = (int) $groupBy;
-			return new Volkszaehler\DataAggregationIterator($stmt, $rowCount, $tuples);
+			return new DataAggregationIterator($stmt, $rowCount, $tuples);
 		}
 		else {
 			throw new \Exception('invalid groupBy parameter');

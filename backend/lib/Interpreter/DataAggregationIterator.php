@@ -21,7 +21,7 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace Volkszaehler;
+namespace Volkszaehler\Interpreter;
 
 use Doctrine\DBAL;
 
@@ -75,8 +75,8 @@ class DataAggregationIterator extends DataIterator {
 
 		$this->aggregatedKey++;
 		$this->current = $current;
-		$this->current[0] = $tuple[0];
-		$this->current[2] = $this->packageSize;
+		$this->current[0] = $tuple[0];				// the last timestamp of a package
+		$this->current[2] = $this->packageSize;		// how many pulses do we have aggregated? how accurate is our result?
 	}
 
 	/**

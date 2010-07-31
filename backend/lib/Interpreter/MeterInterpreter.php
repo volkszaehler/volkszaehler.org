@@ -105,19 +105,12 @@ class MeterInterpreter extends Interpreter {
 	 */
 	public function getValues($groupBy = NULL) {
 		$pulses = parent::getData($groupBy);
-		$count = $pulses->count();
 
 		$values = array();
 		foreach ($pulses as $pulse) {
 			if (isset($last)) {
-				$delta = $pulse[0] - $last[0];
+				$values[] = $this->raw2differential($last, $pulse);
 				$last = $pulse;
-
-				$values[] = array(
-					(int) ($pulse[0] - $delta / 2),															// timestamp
-					$pulse[1] * (3600000 / (($this->channel->getResolution() / 1000) * $delta)),	// value
-					(isset($pulse[2])) ? $pulse[2] : 1
-				);
 			}
 			else {
 				$last = $pulse;
@@ -125,6 +118,22 @@ class MeterInterpreter extends Interpreter {
 		}
 
 		return $values;
+	}
+
+	/**
+	 * Calculates the differential quotient of two consecutive pulses
+	 *
+	 * @param array $last the last pulse
+	 * @param array $next the next pulse
+	 */
+	protected function raw2differential(array $last, array $next) {
+		$delta = $next[0] - $last[0];
+
+		return array(
+			(int) ($next[0] - $delta / 2),												// timestamp
+			$next[1] * (3600000 / (($this->channel->getResolution() / 1000) * $delta)),	// value
+			(isset($next[2])) ? $next[2] : 1
+		);
 	}
 }
 
