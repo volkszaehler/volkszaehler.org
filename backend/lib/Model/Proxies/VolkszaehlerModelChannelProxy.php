@@ -22,8 +22,7 @@ class VolkszaehlerModelChannelProxy extends \Volkszaehler\Model\Channel implemen
             if ($this->_entityPersister->load($this->_identifier, $this) === null) {
                 throw new \Doctrine\ORM\EntityNotFoundException();
             }
-            unset($this->_entityPersister);
-            unset($this->_identifier);
+            unset($this->_entityPersister, $this->_identifier);
         }
     }
 
@@ -34,10 +33,10 @@ class VolkszaehlerModelChannelProxy extends \Volkszaehler\Model\Channel implemen
         return parent::addData($data);
     }
 
-    public function getInterpreter(\Doctrine\ORM\EntityManager $em)
+    public function getInterpreter(\Doctrine\ORM\EntityManager $em, $from, $to)
     {
         $this->_load();
-        return parent::getInterpreter($em);
+        return parent::getInterpreter($em, $from, $to);
     }
 
     public function getName()
@@ -64,18 +63,6 @@ class VolkszaehlerModelChannelProxy extends \Volkszaehler\Model\Channel implemen
         return parent::setDescription($description);
     }
 
-    public function getUnit()
-    {
-        $this->_load();
-        return parent::getUnit();
-    }
-
-    public function getIndicator()
-    {
-        $this->_load();
-        return parent::getIndicator();
-    }
-
     public function getResolution()
     {
         $this->_load();
@@ -100,6 +87,48 @@ class VolkszaehlerModelChannelProxy extends \Volkszaehler\Model\Channel implemen
         return parent::setCost($cost);
     }
 
+    public function getType()
+    {
+        $this->_load();
+        return parent::getType();
+    }
+
+    public function getUnit()
+    {
+        $this->_load();
+        return parent::getUnit();
+    }
+
+    public function getIndicator()
+    {
+        $this->_load();
+        return parent::getIndicator();
+    }
+
+    public function validateToken($token)
+    {
+        $this->_load();
+        return parent::validateToken($token);
+    }
+
+    public function getToken()
+    {
+        $this->_load();
+        return parent::getToken();
+    }
+
+    public function getProperty($name)
+    {
+        $this->_load();
+        return parent::getProperty($name);
+    }
+
+    public function setProperty($name)
+    {
+        $this->_load();
+        return parent::setProperty($name);
+    }
+
     public function getId()
     {
         $this->_load();
@@ -115,9 +144,6 @@ class VolkszaehlerModelChannelProxy extends \Volkszaehler\Model\Channel implemen
 
     public function __sleep()
     {
-        if (!$this->__isInitialized__) {
-            throw new \RuntimeException("Not fully loaded proxy can not be serialized.");
-        }
-        return array('name', 'description', 'indicator', 'data', 'resolution', 'cost', 'groups', 'id', 'uuid');
+        return array('__isInitialized__', 'id', 'uuid', 'tokens', 'properties', 'data', 'groups');
     }
 }

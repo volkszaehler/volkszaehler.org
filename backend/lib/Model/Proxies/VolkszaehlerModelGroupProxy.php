@@ -22,8 +22,7 @@ class VolkszaehlerModelGroupProxy extends \Volkszaehler\Model\Group implements \
             if ($this->_entityPersister->load($this->_identifier, $this) === null) {
                 throw new \Doctrine\ORM\EntityNotFoundException();
             }
-            unset($this->_entityPersister);
-            unset($this->_identifier);
+            unset($this->_entityPersister, $this->_identifier);
         }
     }
 
@@ -34,10 +33,22 @@ class VolkszaehlerModelGroupProxy extends \Volkszaehler\Model\Group implements \
         return parent::addGroup($child);
     }
 
+    public function removeGroup(\Volkszaehler\Model\Group $child)
+    {
+        $this->_load();
+        return parent::removeGroup($child);
+    }
+
     public function addChannel(\Volkszaehler\Model\Channel $child)
     {
         $this->_load();
         return parent::addChannel($child);
+    }
+
+    public function removeChannel(\Volkszaehler\Model\Channel $child)
+    {
+        $this->_load();
+        return parent::removeChannel($child);
     }
 
     public function getName()
@@ -82,6 +93,36 @@ class VolkszaehlerModelGroupProxy extends \Volkszaehler\Model\Group implements \
         return parent::getChannels();
     }
 
+    public function getInterpreter(\Doctrine\ORM\EntityManager $em)
+    {
+        $this->_load();
+        return parent::getInterpreter($em);
+    }
+
+    public function validateToken($token)
+    {
+        $this->_load();
+        return parent::validateToken($token);
+    }
+
+    public function getToken()
+    {
+        $this->_load();
+        return parent::getToken();
+    }
+
+    public function getProperty($name)
+    {
+        $this->_load();
+        return parent::getProperty($name);
+    }
+
+    public function setProperty($name)
+    {
+        $this->_load();
+        return parent::setProperty($name);
+    }
+
     public function getId()
     {
         $this->_load();
@@ -97,9 +138,6 @@ class VolkszaehlerModelGroupProxy extends \Volkszaehler\Model\Group implements \
 
     public function __sleep()
     {
-        if (!$this->__isInitialized__) {
-            throw new \RuntimeException("Not fully loaded proxy can not be serialized.");
-        }
-        return array('name', 'description', 'channels', 'children', 'parents', 'id', 'uuid');
+        return array('__isInitialized__', 'id', 'uuid', 'tokens', 'properties', 'channels', 'children', 'parents');
     }
 }
