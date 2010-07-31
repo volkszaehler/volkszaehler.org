@@ -35,15 +35,8 @@ use Doctrine\Common\Collections\ArrayCollection;
  * @package default
  *
  * @Entity
- * @Table(name="groups")
  */
 class Group extends Entity {
-	/** @Column(type="string", nullable=false) */
-	protected $name;
-
-	/** @Column(type="string", nullable=true) */
-	protected $description;
-
 	/**
 	 * @ManyToMany(targetEntity="Channel", inversedBy="groups")
 	 * @JoinTable(name="groups_channel",
@@ -111,6 +104,8 @@ class Group extends Entity {
 
 	/**
 	 * getter & setter
+	 *
+	 * @todo change to new property model
 	 */
 	public function getName() { return $this->name; }
 	public function setName($name) { $this->name = $name; }

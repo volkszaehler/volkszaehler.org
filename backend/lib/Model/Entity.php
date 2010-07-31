@@ -23,6 +23,7 @@
 
 namespace Volkszaehler\Model;
 
+use Doctrine\Common\Collections;
 use Volkszaehler\Util;
 
 /**
@@ -31,12 +32,16 @@ use Volkszaehler\Util;
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
  *
- * @MappedSuperclass
+ * @Entity
+ * @Table(name="entities")
+ * @InheritanceType("SINGLE_TABLE")
+ * @DiscriminatorColumn(name="type", type="string")
+ * @DiscriminatorMap({"channel" = "Channel", "group" = "Group"})
  */
 abstract class Entity {
 	/**
 	 * @Id
-	 * @Column(type="integer", nullable=false)
+	 * @Column(type="smallint", nullable=false)
 	 * @GeneratedValue(strategy="AUTO")
 	 */
 	protected $id;
@@ -44,8 +49,41 @@ abstract class Entity {
 	/** @Column(type="string", length=36, nullable=false) */
 	protected $uuid;
 
+	/**
+	 * @OneToMany(targetEntity="Token", mappedBy="entity")
+	 */
+	protected $tokens = NULL;
+
+	/**
+	 * @OneToMany(targetEntity="Property", mappedBy="entity")
+	 * @OrderBy({"key" = "ASC"})
+	 */
+	protected $properties = NULL;
+
 	public function __construct() {
 		$this->uuid = Util\UUID::mint();
+		$this->tokens = new Collections\ArrayCollection();
+		$this->properties = new Collections\ArrayCollection();
+	}
+
+	/**
+	 *
+	 * @param unknown_type $token
+	 */
+	public function validateToken($token) {
+
+	}
+
+	public function getToken() {
+
+	}
+
+	public function getProperty($name) {
+
+	}
+
+	public function setProperty($name) {
+
 	}
 
 	/**

@@ -1,10 +1,13 @@
-CREATE TABLE data (timestamp BIGINT NOT NULL, channel_id INT DEFAULT NULL, value NUMERIC(10, 5) NOT NULL, PRIMARY KEY(timestamp)) ENGINE = InnoDB;
-CREATE TABLE channels (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(255) NOT NULL, description VARCHAR(255) DEFAULT NULL, indicator VARCHAR(255) NOT NULL, resolution INT DEFAULT NULL, cost NUMERIC(5, 2) DEFAULT NULL, uuid VARCHAR(36) NOT NULL, PRIMARY KEY(id)) ENGINE = InnoDB;
-CREATE TABLE groups (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(255) NOT NULL, description VARCHAR(255) DEFAULT NULL, uuid VARCHAR(36) NOT NULL, PRIMARY KEY(id)) ENGINE = InnoDB;
-CREATE TABLE groups_channel (group_id INT NOT NULL, channel_id INT NOT NULL, PRIMARY KEY(group_id, channel_id)) ENGINE = InnoDB;
-CREATE TABLE groups_groups (parent_id INT NOT NULL, child_id INT NOT NULL, PRIMARY KEY(parent_id, child_id)) ENGINE = InnoDB;
-ALTER TABLE data ADD FOREIGN KEY (channel_id) REFERENCES channels(id);
-ALTER TABLE groups_channel ADD FOREIGN KEY (group_id) REFERENCES groups(id);
-ALTER TABLE groups_channel ADD FOREIGN KEY (channel_id) REFERENCES channels(id);
-ALTER TABLE groups_groups ADD FOREIGN KEY (parent_id) REFERENCES groups(id);
-ALTER TABLE groups_groups ADD FOREIGN KEY (child_id) REFERENCES groups(id)
+CREATE TABLE entities (id SMALLINT NOT NULL, uuid VARCHAR(36) NOT NULL, type VARCHAR(255) NOT NULL, PRIMARY KEY(id)) ENGINE = InnoDB;
+CREATE TABLE groups_channel (group_id SMALLINT NOT NULL, channel_id SMALLINT NOT NULL, PRIMARY KEY(group_id, channel_id)) ENGINE = InnoDB;
+CREATE TABLE groups_groups (parent_id SMALLINT NOT NULL, child_id SMALLINT NOT NULL, PRIMARY KEY(parent_id, child_id)) ENGINE = InnoDB;
+CREATE TABLE data (id SMALLINT NOT NULL, channel_id SMALLINT DEFAULT NULL, timestamp BIGINT NOT NULL, value NUMERIC(5, 2) NOT NULL, PRIMARY KEY(id)) ENGINE = InnoDB;
+CREATE TABLE tokens (id SMALLINT NOT NULL, entity_id SMALLINT DEFAULT NULL, token VARCHAR(255) NOT NULL, valid BIGINT NOT NULL, UNIQUE INDEX tokens_token_uniq (token), PRIMARY KEY(id)) ENGINE = InnoDB;
+CREATE TABLE properties (id SMALLINT NOT NULL, entity_id SMALLINT DEFAULT NULL, name VARCHAR(255) NOT NULL, value VARCHAR(255) NOT NULL, PRIMARY KEY(id)) ENGINE = InnoDB;
+ALTER TABLE groups_channel ADD FOREIGN KEY (group_id) REFERENCES entities(id);
+ALTER TABLE groups_channel ADD FOREIGN KEY (channel_id) REFERENCES entities(id);
+ALTER TABLE groups_groups ADD FOREIGN KEY (parent_id) REFERENCES entities(id);
+ALTER TABLE groups_groups ADD FOREIGN KEY (child_id) REFERENCES entities(id);
+ALTER TABLE data ADD FOREIGN KEY (channel_id) REFERENCES entities(id);
+ALTER TABLE tokens ADD FOREIGN KEY (entity_id) REFERENCES entities(id);
+ALTER TABLE properties ADD FOREIGN KEY (entity_id) REFERENCES entities(id)

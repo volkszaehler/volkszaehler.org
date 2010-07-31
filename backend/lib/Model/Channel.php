@@ -32,34 +32,21 @@ use Doctrine\Common\Collections\ArrayCollection;
  * @package default
  *
  * @Entity
- * @Table(name="channels")
  */
 class Channel extends Entity {
-	/** @Column(type="string", nullable=false) */
-	protected $name;
-
-	/** @Column(type="string", nullable=true) */
-	protected $description;
-
-	/** @Column(type="string", nullable=false) */
-	protected $indicator;
-
 	/**
 	 * @OneToMany(targetEntity="Data", mappedBy="channel", cascade={"remove"})
+	 * @OrderBy({"timestamp" = "ASC"})
 	 */
 	protected $data = NULL;
-
-	/** @Column(type="integer", nullable=true) */
-	protected $resolution;
-
-	/** @Column(type="decimal", precision="5", scale="2", nullable=true) */
-	protected $cost;
 
 	/** @ManyToMany(targetEntity="Group", mappedBy="channels") */
 	protected $groups;
 
 	/**
 	 * indicator => interpreter, unit mapping
+	 *
+	 * @todo replace by properties?
 	 */
 	protected static $indicators = array(
 		'power' =>			array('meter', 'W'),
@@ -119,6 +106,8 @@ class Channel extends Entity {
 
 	/**
 	 * getter & setter
+	 *
+	 * @todo change to new property model
 	 */
 	public function getName() { return $this->name; }
 	public function setName($name) { $this->name = $name; }

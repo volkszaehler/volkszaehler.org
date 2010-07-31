@@ -23,19 +23,18 @@
 
 namespace Volkszaehler\Model;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Volkszaehler\Model;
 
 /**
- * Data entity
+ * Property entity
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
  *
  * @Entity
- * @Table(name="data")
+ * @Table(name="properties")
  */
-class Data {
+class Property {
 	/**
 	 * @Id
 	 * @Column(type="smallint", nullable=false)
@@ -45,43 +44,25 @@ class Data {
 	 */
 	protected $id;
 
-	/**
-	 * ending timestamp of period in ms since 1970
-	 *
-	 * @Column(type="bigint")
-	 */
-	protected $timestamp;
+	/** @Column(type="string", nullable=false) */
+	protected $name;
 
-	/**
-	 * @Column(type="decimal", precision="5", scale="2")
-	 * @todo change to float after DCC-67 has been closed
-	 */
+	/** @Column(type="string", nullable=false) */
 	protected $value;
 
-	/**
-	 * @ManyToOne(targetEntity="Channel", inversedBy="data")
-	 * @JoinColumn(name="channel_id", referencedColumnName="id")
-	 */
-	protected $channel;
-
-	public function __construct(Model\Channel $channel, $value, $timestamp) {
-		$channel->addData($this);	// bidirectional association
-		$this->channel = $channel;
-
-		$this->value = $value;
-		$this->timestamp = $timestamp;
-	}
-
-	public function toArray() {
-		return array('channel' => $this->channel, 'timestamp' => $this->timestamp, 'value' => $this->value);
-	}
+	/** @ManyToOne(targetEntity="Entity", inversedBy="properties") */
+	protected $entity;
 
 	/**
-	 * setter & getter
+	 * Constructor
+	 *
+	 * @param string $key
+	 * @param string $value
 	 */
-	public function getValue() { return $this->value; }
-	public function getTimestamp() { return $this->timestamp; }
-	public function getChannel() { return $this->channel; }
+	public function __construct($name, $value) {
+		$this->name = (string) $name;
+		$this->value = (string) $value;
+	}
 }
 
 ?>

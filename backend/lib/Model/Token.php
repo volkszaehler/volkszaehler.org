@@ -23,19 +23,20 @@
 
 namespace Volkszaehler\Model;
 
-use Doctrine\Common\Collections\ArrayCollection;
+use Volkszaehler\Util;
+
 use Volkszaehler\Model;
 
 /**
- * Data entity
+ * Token entity
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
  *
  * @Entity
- * @Table(name="data")
+ * @Table(name="tokens")
  */
-class Data {
+class Token {
 	/**
 	 * @Id
 	 * @Column(type="smallint", nullable=false)
@@ -46,42 +47,51 @@ class Data {
 	protected $id;
 
 	/**
-	 * ending timestamp of period in ms since 1970
+	 * @Column(type="string", nullable=false, unique=true)
+	 */
+	protected $token;
+
+	/**
+	 * var integer timestamp until token is valid
 	 *
 	 * @Column(type="bigint")
+	 * @todo implement
 	 */
-	protected $timestamp;
+	protected $valid;
 
 	/**
-	 * @Column(type="decimal", precision="5", scale="2")
-	 * @todo change to float after DCC-67 has been closed
+	 * @ManyToOne(targetEntity="Entity", inversedBy="tokens")
 	 */
-	protected $value;
+	protected $entity;
+
+	const LENGTH = 10;
+
+	protected static $chars = array(
+		'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+		'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'v', 'u', 'w', 'x', 'y', 'z',
+		'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'V', 'U', 'W', 'X', 'Y', 'Z'
+	);
 
 	/**
-	 * @ManyToOne(targetEntity="Channel", inversedBy="data")
-	 * @JoinColumn(name="channel_id", referencedColumnName="id")
+	 * Constructor
+	 *
+	 * @param integer $length of the token
 	 */
-	protected $channel;
-
-	public function __construct(Model\Channel $channel, $value, $timestamp) {
-		$channel->addData($this);	// bidirectional association
-		$this->channel = $channel;
-
-		$this->value = $value;
-		$this->timestamp = $timestamp;
+	public function __construct() {
+		$this->token = self::generate();
 	}
 
-	public function toArray() {
-		return array('channel' => $this->channel, 'timestamp' => $this->timestamp, 'value' => $this->value);
+	protected static function generate($length = Token::LENGTH) {
+		return Util\Random::getString(self::$chars, $length);
 	}
 
-	/**
-	 * setter & getter
-	 */
-	public function getValue() { return $this->value; }
-	public function getTimestamp() { return $this->timestamp; }
-	public function getChannel() { return $this->channel; }
+	public function __toString() {
+		return $this->getToken();
+	}
+
+	public function getToken() {
+		return $this->token;
+	}
 }
 
 ?>
