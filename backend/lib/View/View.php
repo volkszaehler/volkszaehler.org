@@ -47,6 +47,8 @@ interface ViewInterface {
  *
  */
 abstract class View implements ViewInterface {
+	const PRECISSION = 5;
+
 	public $request;
 	protected $response;
 

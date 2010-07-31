@@ -34,8 +34,6 @@ use Volkszaehler\Model;
  * @author Steffen Vogel <info@steffenvogel.de>
  */
 class JSON extends View {
-	const PRECISSION = 5;
-
 	protected $json = array();
 
 	protected $padding = FALSE;
@@ -131,7 +129,7 @@ class JSON extends View {
 		foreach ($data as $reading) {
 			$jsonData[] = array(
 				(int) $reading[0],
-				(float) round($reading[1], JSON::PRECISSION),
+				(float) round($reading[1], View::PRECISSION),
 				(int) $reading[2]
 			);
 		}

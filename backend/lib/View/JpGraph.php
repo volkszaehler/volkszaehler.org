@@ -94,34 +94,39 @@ class JpGraph extends View {
 	 * @param $data
 	 */
 	public function addChannel(Model\Channel $channel, array $data = NULL){
-		$count = count($this->channels);
-		$xData = $yData = array();
+		if (isset($data) && count($data) > 0) {
+			$count = count($this->channels);
+			$xData = $yData = array();
 
-		foreach ($data as $reading) {
-			$xData[] = $reading[0] / 1000;
-			$yData[] = $reading[1];
-		}
+			foreach ($data as $reading) {
+				$xData[] = $reading[0] / 1000;
+				$yData[] = $reading[1];
+			}
 
-		// Create the scatter plot
-		$plot = new \ScatterPlot($yData, $xData);
+			// Create the scatter plot
+			$plot = new \ScatterPlot($yData, $xData);
 
-		$plot->setLegend($channel->getName() . ': ' . $channel->getDescription() . ' [' . $channel->getUnit() . ']');
-		$plot->SetLinkPoints(TRUE, self::$colors[$count]);
+			$plot->setLegend($channel->getName() . ': ' . $channel->getDescription() . ' [' . $channel->getUnit() . ']');
+			$plot->SetLinkPoints(TRUE, self::$colors[$count]);
 
-		$plot->mark->SetColor(self::$colors[$count]);
-		$plot->mark->SetFillColor(self::$colors[$count]);
-		$plot->mark->SetType(MARK_DIAMOND);
-		$plot->mark->SetWidth(1);
+			$plot->mark->SetColor(self::$colors[$count]);
+			$plot->mark->SetFillColor(self::$colors[$count]);
+			$plot->mark->SetType(MARK_DIAMOND);
+			$plot->mark->SetWidth(1);
 
-		$axis = $this->getAxisIndex($channel);
-		if ($axis >= 0) {
-			$this->graph->AddY($axis, $plot);
+			$axis = $this->getAxisIndex($channel);
+			if ($axis >= 0) {
+				$this->graph->AddY($axis, $plot);
+			}
+			else {
+				$this->graph->Add($plot);
+			}
+
+			$this->channels[] = $channel;
 		}
 		else {
-			$this->graph->Add($plot);
+			throw new \Exception('can\'t plot channels without data!');
 		}
-
-		$this->channels[] = $channel;
 	}
 
 	/**
