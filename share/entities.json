@@ -1,0 +1,108 @@
+/**
+ * Definition of entities 
+ *
+ * @author Steffen Vogel <info@steffenvogel.de>
+ * @copyright Copyright (c) 2010, The volkszaehler.org project
+ * @package default
+ * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ */
+/*
+ * This file is part of volkzaehler.org
+ *
+ * volkzaehler.org is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * volkzaehler.org is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
+ */
+ 
+{	
+	"entities" : [
+		/*{
+			"name" : "",				// discriminator for database column
+			"required" : [],			// list of required properties
+			"optional" : [],			// list of optional properties
+										// allowed properties = optional + required
+			"interpreter" : "",			// classname of intepreter (see backend/lib/Interpreter/)
+			"unit" : "",				// not required for group
+			"icon" : ""				// TODO url relative or absolute?
+		}*/
+		{
+			"name" : "group",
+			"required" : ["name"],
+			"optional" : ["description", "details:", "owner:", "tolerance"],
+			"interpreter" : "GroupInterpreter",
+			"icon" : ""				// TODO look for an group icon
+		},
+		{
+			"name" : "power",
+			"required" : ["name", "resolution"],
+			"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
+			"interpreter" : "MeterInterpreter",
+			"icon" : ""				// TODO look for an power icon
+		},
+		{
+			"name" : "gas",
+			"required" : ["name", "resolution"],
+			"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
+			"interpreter" : "MeterInterpreter",
+			"icon" : ""				// TODO look for an water icon
+		},
+		{
+			"name" : "rainfall",
+			"required" : ["name", "resolution"],
+			"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
+			"interpreter" : "MeterInterpreter",
+			"icon" : ""				// TODO look for an water icon
+		},
+		{
+			"name" : "temperature",
+			"required" : ["name"],
+			"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
+			"interpreter" : "SensorInterpreter",
+			"icon" : ""				// TODO look for an water icon
+		},
+		{
+			"name" : "pressure",
+			"required" : ["name"],
+			"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
+			"interpreter" : "SensorInterpreter",
+			"icon" : ""				// TODO look for an water icon
+		},
+		{
+			"name" : "humidity",
+			"required" : ["name"],
+			"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
+			"interpreter" : "SensorInterpreter",
+			"icon" : ""				// TODO look for an water icon
+		},
+		{
+			"name" : "windspeed",
+			"required" : ["name"],
+			"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
+			"interpreter" : "SensorInterpreter",
+			"icon" : ""				// TODO look for an water icon
+		},
+		{
+			"name" : "radition",
+			"required" : ["name"],
+			"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
+			"interpreter" : "SensorInterpreter",
+			"icon" : ""				// TODO look for an water icon
+		},
+		{
+			"name" : "luminosity",
+			"required" : ["name"],
+			"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
+			"interpreter" : "SensorInterpreter",
+			"icon" : ""				// TODO look for an water icon
+		},
+	]
+}

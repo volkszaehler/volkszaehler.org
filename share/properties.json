@@ -1,0 +1,106 @@
+/**
+ * Definition of properties for entities 
+ *
+ * @author Steffen Vogel <info@steffenvogel.de>
+ * @copyright Copyright (c) 2010, The volkszaehler.org project
+ * @package default
+ * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ */
+/*
+ * This file is part of volkzaehler.org
+ *
+ * volkzaehler.org is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * volkzaehler.org is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+{
+	"properties" : [
+		/*{
+			"name" : "",				// discriminator for database column
+			"type" : "",				// one of: string, numeric, multiple
+			"pattern" : "",				// regex pattern to match if type == string
+			"min" : 0,					// minimal value if type == numeric
+										// required string length if type == string
+			"max" : 100,				// maximal value if type == numeric
+										// allowed string length if type == string
+			"choices" : ["", "", ""]	// list of possible choices if type == multiple
+										// (type as in javascript: 1.2 => numeric, "test" => string)
+		},*/
+		{
+			"name" : "name",
+			"type" : "string",
+			"pattern" : "/[a-z0-9 ]/",
+			"max" : 255,
+		},
+		{
+			"name" : "description",
+			"type" : "string",
+			"pattern" : "/[a-z0-9 ]/",	// TODO add whitespaces as \t \n \r
+			"max" : 255,				// TODO allowed column size in database?
+		},
+		{
+			"name" : "cost",
+			"type" : "numeric",
+			"min" : 0,
+		},
+		{
+			"name" : "resolution",
+			"type" : "numeric",
+			"min" : 1,
+		},
+		{
+			"name" : "tolerance",
+			"type" : "numeric",
+			"min" : 0,
+			"max" : 1
+		},
+		{
+			"name" : "address:lat",
+			"type" : "numeric",
+			"min" : -90,
+			"max" : 90
+		},
+		{
+			"name" : "address:lon",
+			"type" : "numeric",
+			"min" : -90,
+			"max" : 90
+		},
+		{
+			"name" : "address:city",
+			"type" : "string",
+			"pattern" : ""				// TODO add pattern
+		},
+		{
+			"name" : "address:houseno",
+			"type" : "string"
+		},
+		{
+			"name" : "address:postal",
+			"type" : "string"
+		},
+		{
+			"name" : "address:state",
+			"type" : "string"
+		},
+		{
+			"name" : "address:country",
+			"type" : "string"
+		},
+		{
+			"name" : "photo:url",
+			"type" : "string",
+			"pattern" : ""				// TODO add pattern
+		},
+	]
+}
