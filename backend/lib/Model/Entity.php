@@ -46,7 +46,7 @@ abstract class Entity {
 	 */
 	protected $id;
 
-	/** @Column(type="string", length=36, nullable=false) */
+	/** @Column(type="string", length=36, nullable=false, unique=true) */
 	protected $uuid;
 
 	/**
@@ -56,41 +56,99 @@ abstract class Entity {
 
 	/**
 	 * @OneToMany(targetEntity="Property", mappedBy="entity")
-	 * @OrderBy({"key" = "ASC"})
+	 * @OrderBy({"name" = "ASC"})
 	 */
 	protected $properties = NULL;
 
-	public function __construct() {
+	/**
+	 * Constructor
+	 *
+	 * @param array $properties of Model\Property
+	 */
+	public function __construct($properties = array()) {
 		$this->uuid = Util\UUID::mint();
 		$this->tokens = new Collections\ArrayCollection();
 		$this->properties = new Collections\ArrayCollection();
 	}
 
 	/**
-	 *
-	 * @param unknown_type $token
+	 * Getter & setter
 	 */
-	public function validateToken($token) {
 
-	}
-
-	public function getToken() {
-
-	}
-
+	/**
+	 *
+	 * @param string $name
+	 * @return Model\Property
+	 */
 	public function getProperty($name) {
 
 	}
 
-	public function setProperty($name) {
+	public function getProperties() {
+		return $this->properties;
+	}
+
+	public function setProperty($name, $value) {
 
 	}
 
-	/**
-	 * Getter & setter
-	 */
+	public function unsetProperty($name) {
+
+	}
+
 	public function getId() { return $this->id; }		// read only
 	public function getUuid() { return $this->uuid; }	// read only
+}
+
+class EntityDefiniton extends Util\JSONDefinition {
+	/**
+	 * File containing the JSON definitons
+	 *
+	 * @var string
+	 */
+	const FILE = '/share/entities.json';
+
+	/**
+	 * List of required properties
+	 * Allowed properties = optional + required
+	 * @var array
+	 */
+	protected $required = array();
+
+	/**
+	 * List of optional properties
+	 * Allowed properties = optional + required
+	 * @var array
+	 */
+	protected $optional = array();
+
+	/**
+	 * Classname of intepreter (see backend/lib/Interpreter/)
+	 * @var string
+	 */
+	protected $interpreter;
+
+	/**
+	 * Not required for group entity
+	 * @var string
+	 */
+	protected $unit;
+
+	/**
+	 * @todo url relative or absolute?
+	 * @var string
+	 */
+	protected $icon;
+
+	/**
+	 * Check for required and optional properties
+	 *
+	 * @return boolean
+	 */
+	public function checkProperties() {
+
+	}
+
 }
 
 ?>

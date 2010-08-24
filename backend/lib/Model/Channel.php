@@ -44,30 +44,11 @@ class Channel extends Entity {
 	protected $groups;
 
 	/**
-	 * indicator => interpreter, unit mapping
-	 *
-	 * @todo replace by properties?
+	 * Constructor
 	 */
-	protected static $indicators = array(
-		'power' =>			array('meter', 'W'),
-		'gas' =>			array('meter', 'm³'),
-		'water' =>			array('meter', 'm³'),
-		'temperature' =>	array('sensor', '°C'),
-		'pressure' =>		array('sensor', 'hPa'),
-		'humidity' =>		array('sensor', '%')
-	);
+	public function __construct($properties = array()) {
+		parent::__construct($properties);
 
-	/**
-	 * constructor
-	 */
-	public function __construct($indicator) {
-		parent::__construct();
-
-		if (!in_array($indicator, array_keys(self::$indicators))) {
-			throw new \Exception($indicator . ' is no known indicator');
-		}
-
-		$this->indicator = $indicator;
 		$this->data = new ArrayCollection();
 		$this->groups = new ArrayCollection();
 	}
@@ -118,10 +99,6 @@ class Channel extends Entity {
 	public function setResolution($resolution) { $this->resolution = $resolution; }
 	public function getCost() { return $this->cost; }
 	public function setCost($cost) { $this->cost = $cost; }
-
-	public function getType() { return self::$indicators[$this->indicator][0]; }
-	public function getUnit() { return self::$indicators[$this->indicator][1]; }
-	public function getIndicator() { return $this->indicator; }
 }
 
 ?>

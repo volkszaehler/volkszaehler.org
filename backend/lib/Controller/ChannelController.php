@@ -40,7 +40,7 @@ class ChannelController extends Controller {
 	 * @todo implement filters
 	 */
 	public function get() {
-		$dql = 'SELECT c FROM Volkszaehler\Model\Channel c';
+		$dql = 'SELECT c, p FROM Volkszaehler\Model\Channel c LEFT JOIN c.properties p';
 
 		if ($uuid = $this->view->request->getParameter('uuid')) {
 			// TODO add conditions

@@ -1,5 +1,7 @@
 /**
  * Definition of entities 
+ 
+ * Format is specified in EntityDefinition class
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @copyright Copyright (c) 2010, The volkszaehler.org project
@@ -22,87 +24,83 @@
  * You should have received a copy of the GNU General Public License
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
- 
-{	
-	"entities" : [
-		/*{
-			"name" : "",				// discriminator for database column
-			"required" : [],			// list of required properties
-			"optional" : [],			// list of optional properties
-										// allowed properties = optional + required
-			"interpreter" : "",			// classname of intepreter (see backend/lib/Interpreter/)
-			"unit" : "",				// not required for group
-			"icon" : ""				// TODO url relative or absolute?
-		}*/
-		{
-			"name" : "group",
-			"required" : ["name"],
-			"optional" : ["description", "details:", "owner:", "tolerance"],
-			"interpreter" : "GroupInterpreter",
-			"icon" : ""				// TODO look for an group icon
-		},
-		{
-			"name" : "power",
-			"required" : ["name", "resolution"],
-			"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
-			"interpreter" : "MeterInterpreter",
-			"icon" : ""				// TODO look for an power icon
-		},
-		{
-			"name" : "gas",
-			"required" : ["name", "resolution"],
-			"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
-			"interpreter" : "MeterInterpreter",
-			"icon" : ""				// TODO look for an water icon
-		},
-		{
-			"name" : "rainfall",
-			"required" : ["name", "resolution"],
-			"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
-			"interpreter" : "MeterInterpreter",
-			"icon" : ""				// TODO look for an water icon
-		},
-		{
-			"name" : "temperature",
-			"required" : ["name"],
-			"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
-			"interpreter" : "SensorInterpreter",
-			"icon" : ""				// TODO look for an water icon
-		},
-		{
-			"name" : "pressure",
-			"required" : ["name"],
-			"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
-			"interpreter" : "SensorInterpreter",
-			"icon" : ""				// TODO look for an water icon
-		},
-		{
-			"name" : "humidity",
-			"required" : ["name"],
-			"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
-			"interpreter" : "SensorInterpreter",
-			"icon" : ""				// TODO look for an water icon
-		},
-		{
-			"name" : "windspeed",
-			"required" : ["name"],
-			"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
-			"interpreter" : "SensorInterpreter",
-			"icon" : ""				// TODO look for an water icon
-		},
-		{
-			"name" : "radition",
-			"required" : ["name"],
-			"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
-			"interpreter" : "SensorInterpreter",
-			"icon" : ""				// TODO look for an water icon
-		},
-		{
-			"name" : "luminosity",
-			"required" : ["name"],
-			"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
-			"interpreter" : "SensorInterpreter",
-			"icon" : ""				// TODO look for an water icon
-		},
-	]
-}
+
+[
+	{
+		"name" : "group",
+		"required" : ["name"],
+		"optional" : ["description", "details:", "owner:", "tolerance"],
+		"interpreter" : "GroupInterpreter",
+		"icon" : ""					// TODO look for an icon
+	},
+	{
+		"name" : "power",
+		"required" : ["name", "resolution"],
+		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
+		"interpreter" : "MeterInterpreter",
+		"unit" : "kW/h",
+		"icon" : ""					// TODO look for an icon
+	},
+	{
+		"name" : "gas",
+		"required" : ["name", "resolution"],
+		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
+		"interpreter" : "MeterInterpreter",
+		"unit" : "m³/h",
+		"icon" : ""					// TODO look for an icon
+	},
+	{
+		"name" : "water",
+		"required" : ["name", "resolution"],
+		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
+		"interpreter" : "MeterInterpreter",
+		"unit" : "m³/h",
+		"icon" : ""					// TODO look for an icon
+	},
+	{
+		"name" : "temperature",
+		"required" : ["name"],
+		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
+		"interpreter" : "SensorInterpreter",
+		"unit" : "°C",
+		"icon" : ""					// TODO look for an icon
+	},
+	{
+		"name" : "pressure",
+		"required" : ["name"],
+		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
+		"interpreter" : "SensorInterpreter",
+		"unit" : "hPa",
+		"icon" : ""					// TODO look for an icon
+	},
+	{
+		"name" : "humidity",
+		"required" : ["name"],
+		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
+		"interpreter" : "SensorInterpreter",
+		"unit" : "%",
+		"icon" : ""					// TODO look for an icon
+	},
+	{
+		"name" : "windspeed",
+		"required" : ["name"],
+		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
+		"interpreter" : "SensorInterpreter",
+		"unit" : "km/h",
+		"icon" : ""					// TODO look for an icon
+	},
+	{
+		"name" : "radition",
+		"required" : ["name"],
+		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
+		"interpreter" : "SensorInterpreter",
+		"icon" : ""					// TODO look for an icon
+	},
+	{
+		"name" : "luminosity",
+		"required" : ["name"],
+		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
+		"interpreter" : "SensorInterpreter",
+		"icon" : ""					// TODO look for an icon
+	},
+]

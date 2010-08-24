@@ -34,7 +34,7 @@ use Volkszaehler\Model;
  * @author Steffen Vogel <info@steffenvogel.de>
  */
 class JSON extends View {
-	protected $json = array();
+	protected $json;
 
 	protected $padding = FALSE;
 
@@ -44,8 +44,10 @@ class JSON extends View {
 	public function __construct(HTTP\Request $request, HTTP\Response $response) {
 		parent::__construct($request, $response);
 
+		$this->json = new Util\JSON();
+
 		$this->json['source'] = 'volkszaehler.org';
-		$this->json['version'] = \Volkszaehler\VERSION;
+		$this->json['version'] = VZ_VERSION;
 
 		$this->response->setHeader('Content-type', 'application/json');
 
@@ -56,15 +58,10 @@ class JSON extends View {
 
 	public function addChannel(Model\Channel $channel, array $data = NULL) {
 		$jsonChannel['uuid'] = (string) $channel->getUuid();
-		$jsonChannel['type'] = $channel->getType();
-		$jsonChannel['indicator'] = $channel->getIndicator();
-		$jsonChannel['unit'] = $channel->getUnit();
-		$jsonChannel['name'] = $channel->getName();
-		$jsonChannel['description'] = $channel->getDescription();
 
-		if ($channel->getType() == 'meter') {
-			$jsonChannel['resolution'] = (int) $channel->getResolution();
-			$jsonChannel['cost'] = (float) $channel->getCost();
+
+		foreach ($channel->getProperties() as $property) {
+			$jsonChannel[$property->getName()] = $property->getValue();
 		}
 
 		if (isset($data)) {
@@ -138,67 +135,13 @@ class JSON extends View {
 	}
 
 	public function renderResponse() {
-		$json = json_encode($this->json);
-
-		if (Util\Debug::isActivated()) {
-			$json = self::format($json);
-		}
+		$json = $this->json->encode((Util\Debug::isActivated()) ? JSON_PRETTY : 0);
 
 		if ($this->padding) {
 			$json = 'if (self.' . $this->padding . ') { ' . $this->padding  . '(' . $json . '); }';
 		}
 
 		echo $json;
-	}
-
-	protected static function format($json) {
-		$formatted = '';
-		$indentLevel = 0;
-		$inString = FALSE;
-
-		$len = strlen($json);
-		for($c = 0; $c < $len; $c++) {
-			$char = $json[$c];
-			switch($char) {
-				case '{':
-				case '[':
-					$formatted .= $char;
-					if (!$inString && (ord($json[$c+1]) != ord($char)+2)) {
-						$indentLevel++;
-						$formatted .= "\n" . str_repeat("\t", $indentLevel);
-					}
-					break;
-				case '}':
-				case ']':
-					if (!$inString && (ord($json[$c-1]) != ord($char)-2)) {
-						$indentLevel--;
-						$formatted .= "\n" . str_repeat("\t", $indentLevel);
-					}
-					$formatted .= $char;
-					break;
-				case ',':
-					$formatted .= $char;
-					if (!$inString) {
-						$formatted .= "\n" . str_repeat("\t", $indentLevel);
-					}
-					break;
-				case ':':
-					$formatted .= $char;
-					if (!$inString) {
-						$formatted .= ' ';
-					}
-					break;
-				case '"':
-					if ($c > 0 && $json[$c-1] != '\\') {
-						$inString = !$inString;
-					}
-				default:
-					$formatted .= $char;
-					break;
-			}
-		}
-
-		return $formatted;
 	}
 }
 

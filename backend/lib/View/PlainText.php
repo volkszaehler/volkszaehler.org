@@ -41,7 +41,7 @@ class PlainText extends View {
 		parent::__construct($request, $response);
 
 		echo 'source: volkszaehler.org' . PHP_EOL;
-		echo 'version: ' . \Volkszaehler\VERSION . PHP_EOL;
+		echo 'version: ' . VZ_VERSION . PHP_EOL;
 
 		$this->response->setHeader('Content-type', 'text/plain');
 	}

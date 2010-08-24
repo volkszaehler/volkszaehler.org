@@ -27,6 +27,24 @@ class VolkszaehlerModelPropertyProxy extends \Volkszaehler\Model\Property implem
     }
 
     
+    public function getName()
+    {
+        $this->_load();
+        return parent::getName();
+    }
+
+    public function getValue()
+    {
+        $this->_load();
+        return parent::getValue();
+    }
+
+    public function setValue($value)
+    {
+        $this->_load();
+        return parent::setValue($value);
+    }
+
 
     public function __sleep()
     {

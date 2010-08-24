@@ -87,46 +87,28 @@ class VolkszaehlerModelChannelProxy extends \Volkszaehler\Model\Channel implemen
         return parent::setCost($cost);
     }
 
-    public function getType()
-    {
-        $this->_load();
-        return parent::getType();
-    }
-
-    public function getUnit()
-    {
-        $this->_load();
-        return parent::getUnit();
-    }
-
-    public function getIndicator()
-    {
-        $this->_load();
-        return parent::getIndicator();
-    }
-
-    public function validateToken($token)
-    {
-        $this->_load();
-        return parent::validateToken($token);
-    }
-
-    public function getToken()
-    {
-        $this->_load();
-        return parent::getToken();
-    }
-
     public function getProperty($name)
     {
         $this->_load();
         return parent::getProperty($name);
     }
 
-    public function setProperty($name)
+    public function getProperties()
     {
         $this->_load();
-        return parent::setProperty($name);
+        return parent::getProperties();
+    }
+
+    public function setProperty($name, $value)
+    {
+        $this->_load();
+        return parent::setProperty($name, $value);
+    }
+
+    public function unsetProperty($name)
+    {
+        $this->_load();
+        return parent::unsetProperty($name);
     }
 
     public function getId()

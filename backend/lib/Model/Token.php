@@ -55,7 +55,7 @@ class Token {
 	 * var integer timestamp until token is valid
 	 *
 	 * @Column(type="bigint")
-	 * @todo implement
+	 * @todo to be implemented
 	 */
 	protected $valid;
 

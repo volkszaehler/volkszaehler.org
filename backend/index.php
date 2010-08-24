@@ -30,9 +30,10 @@ use Volkszaehler\Util;
 use Volkszaehler\Controller;
 
 // TODO replace by state class
-const VERSION = 1.1;
-const BACKEND_DIR = '/home/steffen/workspace/volkszaehler.org/backend';	// TODO realpath(__DIR__)
-const DEV_ENV = TRUE;
+define('VZ_VERSION', 0.2);
+define('VZ_DIR', '/home/steffen/workspace/volkszaehler.org');	// TODO realpath(__DIR__)
+define('BACKEND_DIR', VZ_DIR . '/backend');
+define('DEV_ENV', TRUE);
 
 // class autoloading
 require BACKEND_DIR . '/lib/Util/ClassLoader.php';

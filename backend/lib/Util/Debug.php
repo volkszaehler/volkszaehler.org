@@ -78,8 +78,8 @@ class Debug implements Logging\SQLLogger {
 	 * @param string $sql the sql query
 	 * @param array $parameters optional parameters for prepared queries
 	 */
-	function logSQL($sql, array $parameters = NULL) {
-		$this->queries[] = array('sql' => $sql, 'parameters' => $parameters);
+	function logSQL($sql, array $parameters = NULL, $executionMS = null) {
+		$this->queries[] = array('sql' => $sql, 'parameters' => $parameters, 'execution' => round($executionMS, 5));
 	}
 
 	/*

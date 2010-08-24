@@ -47,7 +47,7 @@ class XML extends View {
 		$this->xmlRoot = $this->xmlDoc->createElement('volkszaehler');
 		$this->xmlDoc->appendChild($this->xmlRoot);
 
-		$this->xmlRoot->setAttribute('version', \Volkszaehler\VERSION);
+		$this->xmlRoot->setAttribute('version', VZ_VERSION);
 		$this->xmlRoot->setAttribute('source', 'volkszaehler.org');
 
 		$this->response->setHeader('Content-type', 'application/xml; charset=UTF-8');

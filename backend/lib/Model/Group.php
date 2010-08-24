@@ -61,10 +61,10 @@ class Group extends Entity {
 	protected $parents = NULL;
 
 	/**
-	 * construct
+	 * Construct
 	 */
-	public function __construct() {
-		parent::__construct();
+	public function __construct($properties = array()) {
+		parent::__construct($properties);
 
 		$this->channels = new ArrayCollection();
 		$this->children = new ArrayCollection();
@@ -72,7 +72,7 @@ class Group extends Entity {
 	}
 
 	/**
-	 * adds group as new child
+	 * Adds group as new child
 	 *
 	 * @param Group $child
 	 * @todo check against endless recursion
@@ -88,7 +88,7 @@ class Group extends Entity {
 	}
 
 	/**
-	 * adds channel as new child
+	 * Adds channel as new child
 	 *
 	 * @param Channel $child
 	 * @todo check if the channel is already member of the group
@@ -103,7 +103,7 @@ class Group extends Entity {
 	}
 
 	/**
-	 * getter & setter
+	 * Getter & setter
 	 *
 	 * @todo change to new property model
 	 */
