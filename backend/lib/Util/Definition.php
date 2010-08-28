@@ -27,21 +27,23 @@ namespace Volkszaehler\Util;
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package util
  */
-abstract class JSONDefinition {
-	/**
-	 * Cached json definitions
-	 *
-	 * @var array
-	 */
+abstract class Definition {
+	/** @var array cached json definitions */
 	protected static $definitions = NULL;
 
-	/** Discriminator for database column */
+	/** @var string discriminator for database column */
 	protected $name;
+
+	/** @var string title for UI */
+	protected $title;
+
+	/** @var string description for UI */
+	protected $description;
 
 	/**
 	 * Hide default constructor
 	 *
-	 * @param array $name
+	 * @param array $object to cast from
 	 */
 	protected function __construct($object) {
 		foreach (get_object_vars($object) as $name => $value) {
@@ -49,7 +51,7 @@ abstract class JSONDefinition {
 				$this->$name = $value;
 			}
 			else {
-				throw new \Exception('unknown definition: ' . $name);
+				throw new \Exception('unknown definition syntax: ' . $name);
 			}
 		}
 	}
@@ -59,14 +61,10 @@ abstract class JSONDefinition {
 	 * Factory method for creating new instances
 	 *
 	 * @param string $name
-	 * @return Model\PropertyDefinition
+	 * @return Util\Definition
 	 */
 	public static function get($name) {
-		if (is_null(self::$definitions)) {
-			self::load();
-		}
-
-		if (!isset(self::$definitions[$name])) {
+		if (!self::exists($name)) {
 			throw new \Exception('unknown definition');
 		}
 
@@ -74,16 +72,24 @@ abstract class JSONDefinition {
 	}
 
 	/**
+	 * Checks if $name is defined
+	 * @param string $name
+	 */
+	public static function exists($name) {
+		if (is_null(self::$definitions)) {
+			self::load();
+		}
+
+		Debug::log('definitions', self::$definitions);
+
+		return isset(self::$definitions[$name]);
+	}
+
+	/**
 	 * Load JSON definitions from file (via lazy loading from get())
 	 */
 	protected static function load() {
-		$json = file_get_contents(VZ_DIR . static::FILE);
-		$json = JSON::strip($json);
-		$json = json_decode($json);	// TODO move to Util\JSON class
-
-		if (!is_array($json) || count($json) == 0) {
-			throw new \Exception('syntax error in definition');
-		}
+		$json = JSON::decode(file_get_contents(VZ_DIR . static::FILE));
 
 		self::$definitions = array();
 

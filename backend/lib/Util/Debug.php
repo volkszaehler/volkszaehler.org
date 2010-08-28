@@ -37,18 +37,14 @@ class Debug implements Logging\SQLLogger {
 	protected $queries = array();
 	protected $messages = array();
 
-	/**
-	 * @var float holds timestamp of initialization, used later to return time of execution
-	 */
+	/** @var float holds timestamp of initialization, used later to return time of execution */
 	protected $started;
 
-	/**
-	 * @var integer the debug level
-	 */
+	/** * @var integer the debug level */
 	protected $level;
 
 	/**
-	 * constructor
+	 * Constructor
 	 *
 	 * @param integer $level the debug level
 	 */
@@ -68,12 +64,10 @@ class Debug implements Logging\SQLLogger {
 		assert_options(ASSERT_BAIL, FALSE);
 		assert_options(ASSERT_WARNING, FALSE);
 		assert_options(ASSERT_CALLBACK, array($this, 'assertHandler'));
-
-
 	}
 
 	/**
-	 * interface for doctrine's dbal sql logger
+	 * interface for Doctrine's DBAL SQLLogger
 	 *
 	 * @param string $sql the sql query
 	 * @param array $parameters optional parameters for prepared queries
@@ -134,7 +128,8 @@ class Debug implements Logging\SQLLogger {
 	}
 
 	/**
-	 * is debugging enabled?
+	 * Is debugging enabled?
+	 * @return boolean
 	 */
 	public static function isActivated() { return isset(self::$instance); }
 
@@ -152,6 +147,12 @@ class Debug implements Logging\SQLLogger {
 	 * @return 2 dimensional array with messages
 	 */
 	public function getMessages() { return $this->messages; }
+
+	/**
+	 * @return Debug the Debug instance if available
+	 * @todo OOP? Should we remove this? Replace by State class?
+	 */
+	public static function getInstance() { return self::$instance; }
 }
 
 ?>

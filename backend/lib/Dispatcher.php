@@ -93,13 +93,12 @@ class Dispatcher {
 		$this->em = Dispatcher::createEntityManager();
 
 		// starting debugging
-		if (($debug = $request->getParameter('debug')) !== FALSE || $debug = Util\Configuration::read('debug')) {
+		if (($debug = $request->getParameter('debug')) != NULL || $debug = Util\Configuration::read('debug')) {
 			if ($debug > 0) {
 				$this->debug = new Util\Debug($debug);
 				$this->em->getConnection()->getConfiguration()->setSQLLogger($this->debug);
 			}
 		}
-		// TODO debug controll via configuration file
 
 		// initialize view
 		switch ($format) {
@@ -154,7 +153,7 @@ class Dispatcher {
 		$this->controller->run($action);	// run controllers actions (usually CRUD: http://de.wikipedia.org/wiki/CRUD)
 
 		if (Util\Debug::isActivated()) {
-			$this->view->addDebug($this->debug);
+			$this->addDebug($this->debug);
 		}
 
 		$this->view->sendResponse();				// render view & send http response
@@ -164,22 +163,23 @@ class Dispatcher {
 	 * Factory for doctrines entitymanager
 	 *
 	 * @todo create extra singleton class?
+	 * @todo add other caching drivers (memcache, xcache)
 	 */
 	public static function createEntityManager() {
 		$config = new \Doctrine\ORM\Configuration;
 
-		if (extension_loaded('apc')) {
+		if (extension_loaded('apc') && Util\Configuration::read('devmode') == FALSE) {
 			$cache = new \Doctrine\Common\Cache\ApcCache;
 			$config->setMetadataCacheImpl($cache);
 			$config->setQueryCacheImpl($cache);
 		}
 
-		$driverImpl = $config->newDefaultAnnotationDriver(BACKEND_DIR . '/lib/Model');
+		$driverImpl = $config->newDefaultAnnotationDriver(VZ_BACKEND_DIR . '/lib/Model');
 		$config->setMetadataDriverImpl($driverImpl);
 
-		$config->setProxyDir(BACKEND_DIR . '/lib/Model/Proxies');
-		$config->setProxyNamespace('Volkszaehler\Model\Proxies');
-		$config->setAutoGenerateProxyClasses(DEV_ENV == TRUE);
+		$config->setProxyDir(VZ_BACKEND_DIR . '/lib/Model/Proxy');
+		$config->setProxyNamespace('Volkszaehler\Model\Proxy');
+		$config->setAutoGenerateProxyClasses(Util\Configuration::read('devmode'));
 
 		return \Doctrine\ORM\EntityManager::create(Util\Configuration::read('db'), $config);
 	}
