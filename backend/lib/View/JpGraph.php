@@ -26,9 +26,9 @@ namespace Volkszaehler\View;
 use Volkszaehler\Model;
 use Volkszaehler\Util;
 
-require_once \Volkszaehler\BACKEND_DIR . '/lib/vendor/JpGraph/jpgraph.php';
-require_once \Volkszaehler\BACKEND_DIR . '/lib/vendor/JpGraph/jpgraph_scatter.php';
-require_once \Volkszaehler\BACKEND_DIR . '/lib/vendor/JpGraph/jpgraph_date.php';
+require_once VZ_BACKEND_DIR . '/lib/vendor/JpGraph/jpgraph.php';
+require_once VZ_BACKEND_DIR . '/lib/vendor/JpGraph/jpgraph_scatter.php';
+require_once VZ_BACKEND_DIR . '/lib/vendor/JpGraph/jpgraph_date.php';
 
 /**
  * Plotting and graphing of data on the server side
@@ -106,7 +106,7 @@ class JpGraph extends View {
 			// Create the scatter plot
 			$plot = new \ScatterPlot($yData, $xData);
 
-			$plot->setLegend($channel->getName() . ': ' . $channel->getDescription() . ' [' . $channel->getUnit() . ']');
+			$plot->setLegend($channel->getProperty('name')->getValue() . ': ' . $channel->getProperty('description')->getValue() . ' [' . $channel->getDefinition()->getUnit() . ']');
 			$plot->SetLinkPoints(TRUE, self::$colors[$count]);
 
 			$plot->mark->SetColor(self::$colors[$count]);
@@ -132,10 +132,10 @@ class JpGraph extends View {
 	/**
 	 * adds all channel of group as new plots to the graph
 	 *
-	 * @param Model\Group $group
+	 * @param Model\Aggregator $aggregator
 	 */
-	public function addGroup(Model\Group $group) {
-		foreach ($group->getChannels() as $child) {
+	public function addAggregator(Model\Aggregator $aggregator) {
+		foreach ($aggregator->getChannels() as $child) {
 			$this->addChannel($child);
 		}
 	}
@@ -157,24 +157,25 @@ class JpGraph extends View {
 	 * check weather a axis for the indicator of $channel exists
 	 *
 	 * @param \Volkszaehler\Model\Channel $channel
+	 * @todo call getType() only once
 	 */
 	protected function getAxisIndex(\Volkszaehler\Model\Channel $channel) {
-		if (!in_array($channel->getIndicator(), array_keys($this->axes))) {
+		if (!in_array($channel->getType(), array_keys($this->axes))) {
 			$count =count($this->axes);
 			if ($count == 0) {
-				$this->axes[$channel->getIndicator()] = -1;
+				$this->axes[$channel->getType()] = -1;
 
 				$yaxis = $this->graph->yaxis;
 			}
 			else {
-				$this->axes[$channel->getIndicator()] = $count - 1;
+				$this->axes[$channel->getType()] = $count - 1;
 
-				$this->graph->SetYScale($this->axes[$channel->getIndicator()],'lin');
+				$this->graph->SetYScale($this->axes[$channel->getType()],'lin');
 
-				$yaxis = $this->graph->ynaxis[$this->axes[$channel->getIndicator()]];
+				$yaxis = $this->graph->ynaxis[$this->axes[$channel->getType()]];
 			}
 
-			$yaxis->title->Set($channel->getUnit());
+			$yaxis->title->Set($channel->getDefinition()->getUnit());
 
 			$yaxis->SetFont(FF_ARIAL);
 			$yaxis->title->SetFont(FF_ARIAL);
@@ -182,7 +183,7 @@ class JpGraph extends View {
 			$yaxis->SetTitleMargin('50');
 		}
 
-		return $this->axes[$channel->getIndicator()];
+		return $this->axes[$channel->getType()];
 	}
 
 	/**

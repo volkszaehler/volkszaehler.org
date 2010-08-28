@@ -29,14 +29,15 @@ use Doctrine\Common\Collections;
 use Doctrine\Common\Collections\ArrayCollection;
 
 /**
- * Group entity
+ * Aggregator entity
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
+ * @todo use nested sets: http://github.com/blt04/doctrine2-nestedset
  *
  * @Entity
  */
-class Group extends Entity {
+class Aggregator extends Entity {
 	/**
 	 * @ManyToMany(targetEntity="Channel", inversedBy="groups")
 	 * @JoinTable(name="groups_channel",
@@ -47,7 +48,7 @@ class Group extends Entity {
 	protected $channels = NULL;
 
 	/**
-	 * @ManyToMany(targetEntity="Group", inversedBy="parents")
+	 * @ManyToMany(targetEntity="Aggregator", inversedBy="parents")
 	 * @JoinTable(name="groups_groups",
 	 * 		joinColumns={@JoinColumn(name="parent_id", referencedColumnName="id")},
 	 * 		inverseJoinColumns={@JoinColumn(name="child_id", referencedColumnName="id")}
@@ -56,7 +57,7 @@ class Group extends Entity {
 	protected $children = NULL;
 
 	/**
-	 * @ManyToMany(targetEntity="Group", mappedBy="children")
+	 * @ManyToMany(targetEntity="Aggregator", mappedBy="children")
 	 */
 	protected $parents = NULL;
 
@@ -74,16 +75,16 @@ class Group extends Entity {
 	/**
 	 * Adds group as new child
 	 *
-	 * @param Group $child
+	 * @param Aggregator $child
 	 * @todo check against endless recursion
 	 * @todo check if the group is already member of the group
 	 * @todo add bidirectional association
 	 */
-	public function addGroup(Group $child) {
+	public function addAggregator(Aggregator $child) {
 		$this->children->add($child);
 	}
 
-	public function removeGroup(Group $child) {
+	public function removeAggregator(Aggregator $child) {
 		$this->children->removeElement($child);
 	}
 
@@ -101,22 +102,6 @@ class Group extends Entity {
 	public function removeChannel(Channel $child) {
 		$this->channels->removeElement($child);
 	}
-
-	/**
-	 * Getter & setter
-	 *
-	 * @todo change to new property model
-	 */
-	public function getName() { return $this->name; }
-	public function setName($name) { $this->name = $name; }
-	public function getDescription() { return $this->description; }
-	public function setDescription($description) { $this->description = $description; }
-
-	public function getChildren() { return $this->children->toArray(); }
-	public function getParents() { return $this->parents->toArray(); }
-	public function getChannels() { return $this->channels->toArray(); }
-
-	public function getInterpreter(ORM\EntityManager $em) { return new Interpreter\GroupInterpreter($this, $em); }
 }
 
 ?>

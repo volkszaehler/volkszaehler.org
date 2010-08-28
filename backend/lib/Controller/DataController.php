@@ -42,14 +42,11 @@ class DataController extends Controller {
 	 * @todo use uuids for groups or channels
 	 */
 	public function get() {
-		if ($ucid = $this->view->request->getParameter('ucid')) {
-			$entity = $this->em->getRepository('Volkszaehler\Model\Channel')->findOneBy(array('uuid' => $ucid));
-		}
-		elseif ($ugid = $this->view->request->getParameter('ugid')) {
-			$entity = $this->em->getRepository('Volkszaehler\Model\Group')->findOneBy(array('uuid' => $ugid));
+		if ($uuid = $this->view->request->getParameter('uuid')) {
+			$entity = $this->em->getRepository('Volkszaehler\Model\Entity')->findOneBy(array('uuid' => $uuid));
 		}
 		else {
-			throw new \Exception('you have to specifiy an ugid or ucid paramter');
+			throw new \Exception('you have to specifiy the uuid parameter');
 		}
 
 		if ($entity === FALSE) {
@@ -62,8 +59,8 @@ class DataController extends Controller {
 
 		$data = $entity->getInterpreter($this->em, $from, $to)->getValues($groupBy);
 
-		if ($entity instanceof Model\Group) {
-			$this->view->addGroup($entity, $data);
+		if ($entity instanceof Model\Aggregator) {
+			$this->view->addAggregator($entity, $data);
 		}
 		elseif ($entity instanceof Model\Channel) {
 			$this->view->addChannel($entity, $data);

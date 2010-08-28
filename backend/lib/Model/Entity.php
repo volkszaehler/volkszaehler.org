@@ -27,7 +27,7 @@ use Doctrine\Common\Collections;
 use Volkszaehler\Util;
 
 /**
- * Entity superclass for all models with database persistance
+ * Entity superclass for all objects referenced by a UUID
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
@@ -35,8 +35,12 @@ use Volkszaehler\Util;
  * @Entity
  * @Table(name="entities")
  * @InheritanceType("SINGLE_TABLE")
- * @DiscriminatorColumn(name="type", type="string")
- * @DiscriminatorMap({"channel" = "Channel", "group" = "Group"})
+ * @DiscriminatorColumn(name="class", type="string")
+ * @DiscriminatorMap({
+ * 		"channel" = "Channel",
+ * 		"group" = "Aggregator"
+ * })
+ * @HasLifecycleCallbacks
  */
 abstract class Entity {
 	/**
@@ -48,6 +52,9 @@ abstract class Entity {
 
 	/** @Column(type="string", length=36, nullable=false, unique=true) */
 	protected $uuid;
+
+	/** @Column(type="string", nullable=false) */
+	protected $type;
 
 	/**
 	 * @OneToMany(targetEntity="Token", mappedBy="entity")
@@ -63,75 +70,122 @@ abstract class Entity {
 	/**
 	 * Constructor
 	 *
+	 * @param string $type
 	 * @param array $properties of Model\Property
 	 */
-	public function __construct($properties = array()) {
+	public function __construct($type, $properties = NULL) {
+		if (!EntityDefinition::exists($type)) {
+			throw new \Exception('unknown entity type');
+		}
+
+		$this->type = $type;
 		$this->uuid = Util\UUID::mint();
+
 		$this->tokens = new Collections\ArrayCollection();
 		$this->properties = new Collections\ArrayCollection();
+
+		if (isset($properties)) {
+			foreach($properties as $property) {
+				$this->properies->add($property);
+			}
+		}
 	}
 
 	/**
-	 * Getter & setter
+	 * Checks for optional and required properties according to share/entities.json
+	 *
+	 * Throws an exception if something is incorrect
+	 *
+	 * @PrePersist
+	 * @PreUpdate
+	 * @PostLoad
+	 * @todo to be implemented
 	 */
+	protected function validate() {
+
+	}
 
 	/**
+	 * Get a property by name
 	 *
 	 * @param string $name
 	 * @return Model\Property
 	 */
 	public function getProperty($name) {
-
+		return $this->properties->filter(function($property) use ($name) {
+			return $property->getName() == $name;
+		})->first();
 	}
 
-	public function getProperties() {
-		return $this->properties;
+	/**
+	 * Get all properties or properties by prefix
+	 *
+	 * @param string $prefix
+	 */
+	public function getProperties($prefix = NULL) {
+		if (is_null($prefix)) {
+			return $this->properties;
+		}
+		else {
+			return $this->properties->filter(function($property) use ($prefix) {
+				return substr($property->getName(), 0, strlen($prefix) + 1) == $prefix . ':';
+			});
+		}
 	}
 
+	/**
+	 * @param string $name of the property
+	 * @param string|integer|float $value of the property
+	 * @todo to be implemented
+	 */
 	public function setProperty($name, $value) {
 
 	}
 
+	/**
+	 * @param string $name of the property
+	 * @todo to be implemented
+	 */
 	public function unsetProperty($name) {
 
 	}
 
+	/*
+	 * Setter & Getter
+	 */
 	public function getId() { return $this->id; }		// read only
 	public function getUuid() { return $this->uuid; }	// read only
+	public function getType() { return $this->type; }	// read only
+	public function getDefinition() { return EntityDefinition::get($this->type); }
+
+	/**
+	 * Get interpreter to obtain data and statistical information for a given time interval
+	 *
+	 * @param Doctrine\ORM\EntityManager $em
+	 * @param integer $from timestamp in ms since 1970
+	 * @param integer $to timestamp in ms since 1970
+	 * @return Interpreter
+	 */
+	public function getInterpreter(\Doctrine\ORM\EntityManager $em, $from, $to) {
+		$interpreterClassName = 'Volkszaehler\Interpreter\\' . $this->getDefinition()->getInterpreter();
+		return new $interpreterClassName($this, $em, $from, $to);
+	}
 }
 
-class EntityDefiniton extends Util\JSONDefinition {
-	/**
-	 * File containing the JSON definitons
-	 *
-	 * @var string
-	 */
+class EntityDefinition extends Util\Definition {
+	/** @var string File containing the JSON definitons */
 	const FILE = '/share/entities.json';
 
-	/**
-	 * List of required properties
-	 * Allowed properties = optional + required
-	 * @var array
-	 */
+	/** @var array list of required properties */
 	protected $required = array();
 
-	/**
-	 * List of optional properties
-	 * Allowed properties = optional + required
-	 * @var array
-	 */
+	/** @var array list of optional properties */
 	protected $optional = array();
 
-	/**
-	 * Classname of intepreter (see backend/lib/Interpreter/)
-	 * @var string
-	 */
+	/** @var string classname of intepreter (see backend/lib/Interpreter/) */
 	protected $interpreter;
 
-	/**
-	 * Not required for group entity
-	 * @var string
-	 */
+	/** @var string optional for Aggregator class entities */
 	protected $unit;
 
 	/**
@@ -140,15 +194,11 @@ class EntityDefiniton extends Util\JSONDefinition {
 	 */
 	protected $icon;
 
-	/**
-	 * Check for required and optional properties
-	 *
-	 * @return boolean
+	/*
+	 * Setter & Getter
 	 */
-	public function checkProperties() {
-
-	}
-
+	public function getInterpreter() { return $this->interpreter; }
+	public function getUnit() { return $this->unit; }
 }
 
 ?>

@@ -27,29 +27,35 @@ use Doctrine\ORM;
 use Volkszaehler\Model;
 
 /**
- * Group interpreter
+ * Interpreter too aggregate several other Channels or Aggregators
  *
- * The GroupInterpreter is used to aggregate multiple channels with the same
+ * The AggregatorInterpreter is used to aggregate multiple channels with the same
  * indicator
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
  *
  */
-class GroupInterpreter {
-	protected $channelInterpreter;
+class AggregatorInterpreter {
+	/**
+	 * @var array of Interpreter
+	 */
+	protected $channelInterpreter = array();
 
 	/**
 	 * Constructor
 	 *
-	 * @param Model\Group $group should only contain channels of the same indicator
+	 * @param Model\Aggregator $group should only contain channels of the same indicator
 	 * @param ORM\EntityManager $em
 	 * @param integer $from timestamp in ms since 1970
 	 * @param integer $to timestamp in ms since 1970
+	 * @todo handle channels in nested aggregators
 	 */
-	public function __construct(Model\Group $group, ORM\EntityManager $em, $from, $to) {
-		foreach ($group->getChannels() as $channel) {
-			if (isset($indicator) && $indicator != $channel->getIndicator) {
+	public function __construct(Model\Aggregator $aggregator, ORM\EntityManager $em, $from, $to) {
+		$indicator = NULL;
+
+		foreach ($aggregator->getChannels() as $channels) {
+			if (isset($indicator) && $indicator != $channel->getIndicator()) {
 				throw new \Exception('we only can aggregate channels of the same indicator');
 			}
 			else {

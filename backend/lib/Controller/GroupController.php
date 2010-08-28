@@ -39,7 +39,7 @@ class GroupController extends Controller {
 	 * @todo filter to root groups when using recursion
 	 */
 	public function get() {
-		$dql = 'SELECT g, c, d FROM Volkszaehler\Model\Group g LEFT JOIN g.children c LEFT JOIN g.channels d';
+		$dql = 'SELECT g, c, d FROM Volkszaehler\Model\Aggregator g LEFT JOIN g.children c LEFT JOIN g.channels d';
 
 		// TODO fix this (depending on DDC-719)
 		if ($recursion = $this->view->request->getParameter('recursive')) {
@@ -58,7 +58,7 @@ class GroupController extends Controller {
 		$groups = $q->getResult();
 
 		foreach ($groups as $group) {
-			$this->view->addGroup($group, $recursion);
+			$this->view->addAggregator($group, $recursion);
 		}
 	}
 
@@ -69,19 +69,19 @@ class GroupController extends Controller {
 	 */
 	public function add() {
 		$ugid = $this->view->request->getParameter('ugid');
-		$parent = $this->em->getRepository('Volkszaehler\Model\Group')->findOneBy(array('uuid' => $ugid));
+		$parent = $this->em->getRepository('Volkszaehler\Model\Aggregator')->findOneBy(array('uuid' => $ugid));
 
 		if ($parent == FALSE) {
 			throw new \Exception('every group needs a parent');
 		}
 
-		$group = new Model\Group();
+		$group = new Model\Aggregator();
 
 		$group->setName($this->view->request->getParameter('name'));
 		$group->setDescription($this->view->request->getParameter('description'));
 
 		$this->em->persist($group);
-		$parent->addGroup($group);
+		$parent->addAggregator($group);
 
 		$this->em->flush();
 
@@ -93,7 +93,7 @@ class GroupController extends Controller {
 	 */
 	public function delete() {
 		$ugid = $this->view->request->getParameter('ugid');
-		$group = $this->em->getRepository('Volkszaehler\Model\Group')->findOneBy(array('uuid' => $ugid));
+		$group = $this->em->getRepository('Volkszaehler\Model\Aggregator')->findOneBy(array('uuid' => $ugid));
 
 		$this->em->remove($group);
 		$this->em->flush();
@@ -102,7 +102,7 @@ class GroupController extends Controller {
 	/**
 	 * edit group properties
 	 *
-	 * @todo implement Controller\Group::edit()
+	 * @todo implement Controller\Aggregator::edit()
 	 */
 	public function edit() {
 

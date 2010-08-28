@@ -23,7 +23,7 @@
 
 namespace Volkszaehler\Controller;
 
-use \Volkszaehler\Model;
+use Volkszaehler\Model;
 
 /**
  * Channel controller
@@ -43,15 +43,7 @@ class ChannelController extends Controller {
 		$dql = 'SELECT c, p FROM Volkszaehler\Model\Channel c LEFT JOIN c.properties p';
 
 		if ($uuid = $this->view->request->getParameter('uuid')) {
-			// TODO add conditions
-		}
-
-		if ($ugid = $this->view->request->getParameter('ugid')) {
-			// TODO add conditions
-		}
-
-		if ($indicator = $this->view->request->getParameter('indicator')) {
-			// TODO add conditions
+			$dql .= ' WHERE c.uuid = \'' . $uuid . '\'';
 		}
 
 		$q = $this->em->createQuery($dql);
@@ -64,17 +56,17 @@ class ChannelController extends Controller {
 
 	/**
 	 * Add channel
-	 *
-	 * @todo validate input and throw exceptions
 	 */
 	public function add() {
-		$channel = new Model\Channel($this->view->request->getParameter('indicator'));
+		$properties = array();
 
-		$channel->setName($this->view->request->getParameter('name'));
-		$channel->setDescription($this->view->request->getParameter('description'));
+		foreach ($this->view->request->getParameters() as $parameter => $value) {
+			if (Model\PropertyDefinition::exists($parameter)) {
+				$properties[] = new Model\Property($parameter, $value);
+			}
+		}
 
-		$channel->setResolution($this->view->request->getParameter('resolution'));
-		$channel->setCost($this->view->request->getParameter('cost'));
+		$channel = new Model\Channel($this->view->request->getParameter('type'), $properties);
 
 		$this->em->persist($channel);
 		$this->em->flush();

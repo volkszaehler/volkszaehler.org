@@ -28,14 +28,21 @@
 [
 	{
 		"name" : "group",
-		"required" : ["name"],
+		"required" : ["title"],
 		"optional" : ["description", "details:", "owner:", "tolerance"],
-		"interpreter" : "GroupInterpreter",
+		"interpreter" : "AggregatorInterpreter",
+		"icon" : ""					// TODO look for an icon
+	},
+	{
+		"name" : "user",
+		"required" : ["title"],
+		"optional" : ["description", "details:", "owner:", "tolerance"],
+		"interpreter" : "AggregatorInterpreter",
 		"icon" : ""					// TODO look for an icon
 	},
 	{
 		"name" : "power",
-		"required" : ["name", "resolution"],
+		"required" : ["title", "resolution"],
 		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
 		"interpreter" : "MeterInterpreter",
 		"unit" : "kW/h",
@@ -43,7 +50,7 @@
 	},
 	{
 		"name" : "gas",
-		"required" : ["name", "resolution"],
+		"required" : ["title", "resolution"],
 		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
 		"interpreter" : "MeterInterpreter",
 		"unit" : "m³/h",
@@ -51,7 +58,7 @@
 	},
 	{
 		"name" : "water",
-		"required" : ["name", "resolution"],
+		"required" : ["title", "resolution"],
 		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
 		"interpreter" : "MeterInterpreter",
 		"unit" : "m³/h",
@@ -59,7 +66,7 @@
 	},
 	{
 		"name" : "temperature",
-		"required" : ["name"],
+		"required" : ["title"],
 		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
 		"interpreter" : "SensorInterpreter",
 		"unit" : "°C",
@@ -67,7 +74,7 @@
 	},
 	{
 		"name" : "pressure",
-		"required" : ["name"],
+		"required" : ["title"],
 		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
 		"interpreter" : "SensorInterpreter",
 		"unit" : "hPa",
@@ -75,7 +82,7 @@
 	},
 	{
 		"name" : "humidity",
-		"required" : ["name"],
+		"required" : ["title"],
 		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
 		"interpreter" : "SensorInterpreter",
 		"unit" : "%",
@@ -83,7 +90,7 @@
 	},
 	{
 		"name" : "windspeed",
-		"required" : ["name"],
+		"required" : ["title"],
 		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
 		"interpreter" : "SensorInterpreter",
 		"unit" : "km/h",
@@ -91,16 +98,16 @@
 	},
 	{
 		"name" : "radition",
-		"required" : ["name"],
+		"required" : ["title"],
 		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
 		"interpreter" : "SensorInterpreter",
 		"icon" : ""					// TODO look for an icon
 	},
 	{
 		"name" : "luminosity",
-		"required" : ["name"],
+		"required" : ["title"],
 		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
 		"interpreter" : "SensorInterpreter",
 		"icon" : ""					// TODO look for an icon
-	},
+	}
 ]

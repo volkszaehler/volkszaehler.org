@@ -51,8 +51,8 @@ class PlainText extends View {
 		var_dump($data);
 	}
 
-	public function addGroup(Model\Group $group) {
-		var_dump($group);
+	public function addAggregator(Model\Aggregator $aggregator) {
+		var_dump($aggregator);
 	}
 
 	public function addDebug(Util\Debug $debug) {

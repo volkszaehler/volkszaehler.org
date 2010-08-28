@@ -29,6 +29,8 @@ namespace Volkszaehler\Interpreter;
  * @author Steffen Vogel <info@steffenvogel.de>
  *
  */
+use Volkszaehler\Iterator;
+
 use Volkszaehler;
 
 use Doctrine\ORM\Query;
@@ -106,11 +108,11 @@ abstract class Interpreter implements InterpreterInterface {
 
 		// return iterators
 		if ($sqlGroupBy || is_null($groupBy)) {		// aggregation by sql or skip it
-			return new DataIterator($stmt, $rowCount);
+			return new Iterator\DataIterator($stmt, $rowCount);
 		}
 		elseif (is_numeric($groupBy) ) {			// aggregation by php
 			$tuples = (int) $groupBy;
-			return new DataAggregationIterator($stmt, $rowCount, $tuples);
+			return new Iterator\DataAggregationIterator($stmt, $rowCount, $tuples);
 		}
 		else {
 			throw new \Exception('invalid groupBy parameter');

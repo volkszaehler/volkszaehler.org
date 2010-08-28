@@ -40,14 +40,14 @@ class Channel extends Entity {
 	 */
 	protected $data = NULL;
 
-	/** @ManyToMany(targetEntity="Group", mappedBy="channels") */
-	protected $groups;
+	/** @ManyToMany(targetEntity="Aggregator", mappedBy="channels") */
+	protected $aggregators;
 
 	/**
 	 * Constructor
 	 */
-	public function __construct($properties = array()) {
-		parent::__construct($properties);
+	public function __construct($type, $properties = array()) {
+		parent::__construct($type, $properties);
 
 		$this->data = new ArrayCollection();
 		$this->groups = new ArrayCollection();
@@ -60,45 +60,6 @@ class Channel extends Entity {
 	public function addData(\Volkszaehler\Model\Data $data) {
 		$this->data->add($data);
 	}
-
-	/**
-	 * Obtain channel interpreter to obtain data and statistical information for a given time interval
-	 *
-	 * @param Doctrine\ORM\EntityManager $em
-	 * @param integer $from timestamp in ms since 1970
-	 * @param integer $to timestamp in ms since 1970
-	 * @return Interpreter
-	 */
-	public function getInterpreter(\Doctrine\ORM\EntityManager $em, $from, $to) {
-		$interpreterClassName = 'Volkszaehler\Interpreter\\' . ucfirst($this->getType()) . 'Interpreter';
-		return new $interpreterClassName($this, $em, $from, $to);
-	}
-
-	/**
-	 * Validate
-	 *
-	 * @PrePersist @PreUpdate
-	 */
-	protected function validate() {
-		if ($this->getResolution() <= 0 && $this->getType() == 'meter') {
-			throw new Exception('resolution has to be a positive integer');
-		}
-	}
-
-	/**
-	 * getter & setter
-	 *
-	 * @todo change to new property model
-	 */
-	public function getName() { return $this->name; }
-	public function setName($name) { $this->name = $name; }
-	public function getDescription() { return $this->description; }
-	public function setDescription($description) { $this->description = $description; }
-
-	public function getResolution() { return $this->resolution; }
-	public function setResolution($resolution) { $this->resolution = $resolution; }
-	public function getCost() { return $this->cost; }
-	public function setCost($cost) { $this->cost = $cost; }
 }
 
 ?>

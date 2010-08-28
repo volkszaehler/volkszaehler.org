@@ -56,7 +56,7 @@ class CSV extends View {
 		$this->csv = array_merge($this->csv, $data);
 	}
 
-	public function addGroup(Model\Group $group) {
+	public function addAggregator(Model\Aggregator $aggregator) {
 
 	}
 

@@ -71,8 +71,8 @@ class JSON extends View {
 		$this->json['channels'][] = $jsonChannel;
 	}
 
-	public function addGroup(Model\Group $group, $recursive = FALSE) {
-		$this->json['groups'][] = self::convertJson($group, $recursive);
+	public function addAggregator(Model\Aggregator $aggregator, $recursive = FALSE) {
+		$this->json['groups'][] = self::convertJson($aggregator, $recursive);
 	}
 
 	public function addDebug(Util\Debug $debug) {
@@ -97,27 +97,27 @@ class JSON extends View {
 		);
 	}
 
-	protected static function convertGroup(Model\Group $group, $recursive = FALSE) {
-		$jsonGroup = array();
+	protected static function convertAggregator(Model\Aggregator $aggregator, $recursive = FALSE) {
+		$jsonAggregator = array();
 
-		$jsonGroup['uuid'] = (string) $group->getUuid();
-		$jsonGroup['name'] = $group->getName();
-		$jsonGroup['description'] = $group->getDescription();
-		$jsonGroup['channels'] = array();
+		$jsonAggregator['uuid'] = (string) $aggregator->getUuid();
+		$jsonAggregator['name'] = $aggregator->getName();
+		$jsonAggregator['description'] = $aggregator->getDescription();
+		$jsonAggregator['channels'] = array();
 
-		foreach ($group->getChannels() as $channel) {
-			$jsonGroup['channels'][] = (string) $channel->getUuid();
+		foreach ($aggregator->getChannels() as $channel) {
+			$jsonAggregator['channels'][] = (string) $channel->getUuid();
 		}
 
 		if ($recursive) {
-			$jsonGroup['children'] = array();
+			$jsonAggregator['children'] = array();
 
-			foreach ($group->getChildren() as $subGroup) {
-				$jsonGroup['children'][] = $this->toJson($subGroup, $recursive);	// recursion
+			foreach ($aggregator->getChildren() as $subAggregator) {
+				$jsonAggregator['children'][] = $this->toJson($subAggregator, $recursive);	// recursion
 			}
 		}
 
-		return $jsonGroup;
+		return $jsonAggregator;
 	}
 
 	protected static function convertData($data) {

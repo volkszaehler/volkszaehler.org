@@ -37,7 +37,7 @@ class XML extends View {
 	protected $xmlDoc = NULL;
 	protected $xmlRoot = NULL;
 	protected $xmlChannels = NULL;
-	protected $xmlGroups = NULL;
+	protected $xmlAggregators = NULL;
 
 	public function __construct(HTTP\Request $request, HTTP\Response $response) {
 		parent::__construct($request, $response);
@@ -88,32 +88,32 @@ class XML extends View {
 		$this->xmlChannels->appendChild($xmlChannel);
 	}
 
-	public function addGroup(Model\Group $group, $recursive = FALSE) {
-		if (!isset($this->xmlGroups)) {
-			$this->xmlGroups = $this->xmlDoc->createElement('groups');
-			$this->xmlRoot->appendChild($this->xmlGroups);
+	public function addAggregator(Model\Aggregator $aggregator, $recursive = FALSE) {
+		if (!isset($this->xmlAggregators)) {
+			$this->xmlAggregators = $this->xmlDoc->createElement('groups');
+			$this->xmlRoot->appendChild($this->xmlAggregators);
 		}
 
-		$this->xmlGroups->appendChild($this->toXml($group, $recursive));
+		$this->xmlAggregators->appendChild($this->toXml($aggregator, $recursive));
 	}
 
-	public function toXml(Model\Group $group, $recursive = FALSE) {
-		$xmlGroup = $this->xmlDoc->createElement('group');
-		$xmlGroup->setAttribute('uuid', $group->getUuid());
-		$xmlGroup->appendChild($this->xmlDoc->createElement('name', $group->getName()));
-		$xmlGroup->appendChild($this->xmlDoc->createElement('description', $group->getDescription()));
+	public function toXml(Model\Aggregator $aggregator, $recursive = FALSE) {
+		$xmlAggregator = $this->xmlDoc->createElement('group');
+		$xmlAggregator->setAttribute('uuid', $aggregator->getUuid());
+		$xmlAggregator->appendChild($this->xmlDoc->createElement('name', $aggregator->getName()));
+		$xmlAggregator->appendChild($this->xmlDoc->createElement('description', $aggregator->getDescription()));
 
 		if ($recursive) {
 			$xmlChildren = $this->xmlDoc->createElement('children');
 
-			foreach ($group->getChildren() as $child) {
+			foreach ($aggregator->getChildren() as $child) {
 				$xmlChildren->appendChild($this->toXml($child, $recursive));
 			}
 
-			$xmlGroup->appendChild($xmlChildren);
+			$xmlAggregator->appendChild($xmlChildren);
 		}
 
-		return $xmlGroup;
+		return $xmlAggregator;
 	}
 
 	public function addDebug(Util\Debug $debug) {

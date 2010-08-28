@@ -46,7 +46,7 @@ class Data {
 	protected $id;
 
 	/**
-	 * ending timestamp of period in ms since 1970
+	 * Ending timestamp of period in ms since 1970
 	 *
 	 * @Column(type="bigint")
 	 */

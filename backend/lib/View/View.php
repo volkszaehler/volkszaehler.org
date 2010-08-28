@@ -35,7 +35,7 @@ use Volkszaehler\Util;
  */
 interface ViewInterface {
 	public function addChannel(Model\Channel $channel, array $data = NULL);
-	function addGroup(Model\Group $group);
+	function addAggregator(Model\Aggregator $aggregator);
 	function addDebug(Util\Debug $debug);
 }
 
@@ -73,13 +73,16 @@ abstract class View implements ViewInterface {
 
 		$code = ($exception->getCode() == 0 && HTTP\Response::getCodeDescription($exception->getCode())) ? 400 : $exception->getCode();
 		$this->response->setCode($code);
+		$this->sendResponse();
 
-		echo $exception;
-		//$this->sendResponse();
 		die();
 	}
 
 	public function sendResponse() {
+		if (Util\Debug::isActivated()) {
+			$this->addDebug(Util\Debug::getInstance());
+		}
+
 		$this->renderResponse();
 		$this->response->send();
 	}
