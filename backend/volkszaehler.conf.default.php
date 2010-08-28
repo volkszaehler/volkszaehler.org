@@ -27,12 +27,46 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @var string PDO driver for Doctrine DBAL
+ * @url http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en#getting-a-connection:driver
+ */
 $config['db']['driver']				= 'pdo_mysql';
+
+/**
+ * @var string hostname of database server. Use 'localhost' for the machine your webserver is running on.
+ * @url http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
+ */
 $config['db']['host']				= 'localhost';
-$config['db']['user']				= 'volkszaehler';
-$config['db']['password']			= '';
+
+/**
+ * @var string username for the database server
+ * @url http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
+ */
+$config['db']['user']				= 'vz';
+
+/**
+ * @var string password for the database server
+ * @url http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
+ */
+$config['db']['password']			= 'demo';
+
+/**
+ * @var string name of the database the backend should use
+ * @url http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
+ */
 $config['db']['dbname']				= 'volkszaehler';
 
-$config['debug']					= FALSE;
+/**
+ * @var string path of the sqlite database
+ * @url http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
+ */
+//$config['db']['path']				= 'volkszaehler';
+
+/** @var boolean disables some optimizations. Only use it when you exactly know what you are doing. */
+$config['devmode']					= TRUE;
+
+/** @var integer set to > 0 to show debugging messages */
+$config['debug']					= 5;
 
 ?>
