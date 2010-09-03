@@ -28,9 +28,6 @@ namespace Volkszaehler\Util;
  * @package util
  */
 abstract class Definition {
-	/** @var array cached json definitions */
-	protected static $definitions = NULL;
-
 	/** @var string discriminator for database column */
 	protected $name;
 
@@ -64,11 +61,11 @@ abstract class Definition {
 	 * @return Util\Definition
 	 */
 	public static function get($name) {
-		if (!self::exists($name)) {
+		if (!static::exists($name)) {
 			throw new \Exception('unknown definition');
 		}
 
-		return self::$definitions[$name];
+		return static::$definitions[$name];
 	}
 
 	/**
@@ -76,13 +73,11 @@ abstract class Definition {
 	 * @param string $name
 	 */
 	public static function exists($name) {
-		if (is_null(self::$definitions)) {
-			self::load();
+		if (is_null(static::$definitions)) {
+			static::load();
 		}
 
-		Debug::log('definitions', self::$definitions);
-
-		return isset(self::$definitions[$name]);
+		return isset(static::$definitions[$name]);
 	}
 
 	/**
@@ -91,10 +86,10 @@ abstract class Definition {
 	protected static function load() {
 		$json = JSON::decode(file_get_contents(VZ_DIR . static::FILE));
 
-		self::$definitions = array();
+		static::$definitions = array();
 
 		foreach ($json as $property) {
-			self::$definitions[$property->name] = new static($property);
+			static::$definitions[$property->name] = new static($property);
 		}
 	}
 }

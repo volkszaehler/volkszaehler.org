@@ -23,6 +23,8 @@
 
 namespace Volkszaehler\Util;
 
+use Doctrine\ORM;
+
 use Doctrine\DBAL\Logging;
 
 /**
@@ -31,11 +33,11 @@ use Doctrine\DBAL\Logging;
  * @package util
  * @author Steffen Vogel <info@steffenvogel.de>
  */
-class Debug implements Logging\SQLLogger {
+class Debug {
 	protected static $instance = NULL;
 
-	protected $queries = array();
 	protected $messages = array();
+	protected $sqlLogger;
 
 	/** @var float holds timestamp of initialization, used later to return time of execution */
 	protected $started;
@@ -48,11 +50,16 @@ class Debug implements Logging\SQLLogger {
 	 *
 	 * @param integer $level the debug level
 	 */
-	public function __construct($level) {
+	public function __construct($level, ORM\EntityManager $em) {
 		// taking timestamp to stop execution time
 		$this->created = microtime(TRUE);
 
+		// saving debug level
 		$this->level = $level;
+
+		// starting logging of sql queries
+		$this->sqlLogger = new Logging\DebugStack();
+		$em->getConnection()->getConfiguration()->setSQLLogger($this->sqlLogger);
 
 		if (isset(self::$instance)) {
 			throw new \Exception('debugging has already been started. please use the static functions!');
@@ -66,16 +73,6 @@ class Debug implements Logging\SQLLogger {
 		assert_options(ASSERT_CALLBACK, array($this, 'assertHandler'));
 	}
 
-	/**
-	 * interface for Doctrine's DBAL SQLLogger
-	 *
-	 * @param string $sql the sql query
-	 * @param array $parameters optional parameters for prepared queries
-	 */
-	function logSQL($sql, array $parameters = NULL, $executionMS = null) {
-		$this->queries[] = array('sql' => $sql, 'parameters' => $parameters, 'execution' => round($executionMS, 5));
-	}
-
 	/*
 	 * logs messages to the debug stack including file, lineno, args and a stacktrace
 	 *
@@ -85,14 +82,15 @@ class Debug implements Logging\SQLLogger {
 	static public function log($message) {
 		if (isset(self::$instance)) {
 			$trace = debug_backtrace();
+			$info = $trace[0];
 
 			self::$instance->messages[] = array(
 				'message' => $message,
-				'file' => $trace[0]['file'],
-				'line' => $trace[0]['line'],
+				'file' => $info['file'],
+				'line' => $info['line'],
 				'time' => date('r'),
-				'args' => array_slice($trace[0]['args'], 1),
-				'trace' => $trace
+				'args' => array_slice($info['args'], 1),
+				'trace' => array_slice($trace, 1)
 			);
 		}
 	}
@@ -123,7 +121,7 @@ class Debug implements Logging\SQLLogger {
 			'file' => $info['file'],
 			'line' => $info['line'],
 			'time' => date('r'),
-			'trace' => array_slice($trace, 2)
+			'trace' => array_slice($trace, 3)
 		);
 	}
 
@@ -141,7 +139,7 @@ class Debug implements Logging\SQLLogger {
 	/**
 	 * @return 2 dimensional array with sql queries and parameters
 	 */
-	public function getQueries() { return $this->queries; }
+	public function getQueries() { return $this->sqlLogger->queries; }
 
 	/**
 	 * @return 2 dimensional array with messages
