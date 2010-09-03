@@ -35,7 +35,7 @@ use Doctrine\Common\Collections\ArrayCollection;
  */
 class Channel extends Entity {
 	/**
-	 * @OneToMany(targetEntity="Data", mappedBy="channel", cascade={"remove"})
+	 * @OneToMany(targetEntity="Data", mappedBy="channel", cascade={"remove", "persist"})
 	 * @OrderBy({"timestamp" = "ASC"})
 	 */
 	protected $data = NULL;

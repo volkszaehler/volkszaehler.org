@@ -56,6 +56,8 @@ class PropertyDefinition extends Util\Definition {
 	 */
 	protected $choices = array();
 
+	protected static $definitions = NULL;
+
 
 	/**
 	 * File containing the JSON definitons
@@ -80,11 +82,11 @@ class PropertyDefinition extends Util\Definition {
 				break;
 
 			case 'integer':
-				$invalid = !is_int($value);
+				$invalid = !is_int($value);	// TODO check for numeric string
 				break;
 
 			case 'float':
-				$invalid = !is_float($value);
+				$invalid = !is_float($value);	// TODO check for numeric string
 				break;
 
 			case 'multiple':
@@ -95,7 +97,7 @@ class PropertyDefinition extends Util\Definition {
 				throw new \Exception('unknown property type');
 		}
 
-		if ($type == 'integer' || $type == 'float') {
+		if ($this->type == 'integer' || $this->type == 'float') {
 			$invalid |= isset($this->min) && $value < $this->min;
 			$invalid |= isset($this->max) && $value > $this->max;
 		}

@@ -102,6 +102,11 @@ class Aggregator extends Entity {
 	public function removeChannel(Channel $child) {
 		$this->channels->removeElement($child);
 	}
+
+	/**
+	 * @todo return array via ArrayCollection::toArray()?
+	 */
+	public function getChannels() { return $this->channels; }
 }
 
 ?>

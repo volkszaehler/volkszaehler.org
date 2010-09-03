@@ -38,7 +38,7 @@ use Volkszaehler\Util;
  * @DiscriminatorColumn(name="class", type="string")
  * @DiscriminatorMap({
  * 		"channel" = "Channel",
- * 		"group" = "Aggregator"
+ * 		"aggregator" = "Aggregator"
  * })
  * @HasLifecycleCallbacks
  */
@@ -57,12 +57,12 @@ abstract class Entity {
 	protected $type;
 
 	/**
-	 * @OneToMany(targetEntity="Token", mappedBy="entity")
+	 * @OneToMany(targetEntity="Token", mappedBy="entity", cascade={"remove", "persist"})
 	 */
 	protected $tokens = NULL;
 
 	/**
-	 * @OneToMany(targetEntity="Property", mappedBy="entity")
+	 * @OneToMany(targetEntity="Property", mappedBy="entity", cascade={"remove", "persist"})
 	 * @OrderBy({"name" = "ASC"})
 	 */
 	protected $properties = NULL;
@@ -73,7 +73,7 @@ abstract class Entity {
 	 * @param string $type
 	 * @param array $properties of Model\Property
 	 */
-	public function __construct($type, $properties = NULL) {
+	public function __construct($type) {
 		if (!EntityDefinition::exists($type)) {
 			throw new \Exception('unknown entity type');
 		}
@@ -83,12 +83,6 @@ abstract class Entity {
 
 		$this->tokens = new Collections\ArrayCollection();
 		$this->properties = new Collections\ArrayCollection();
-
-		if (isset($properties)) {
-			foreach($properties as $property) {
-				$this->properies->add($property);
-			}
-		}
 	}
 
 	/**
@@ -136,10 +130,10 @@ abstract class Entity {
 	/**
 	 * @param string $name of the property
 	 * @param string|integer|float $value of the property
-	 * @todo to be implemented
+	 * @todo check if already set for this entity
 	 */
-	public function setProperty($name, $value) {
-
+	public function setProperty(Property $property) {
+		$this->properties->add($property);
 	}
 
 	/**
@@ -170,35 +164,6 @@ abstract class Entity {
 		$interpreterClassName = 'Volkszaehler\Interpreter\\' . $this->getDefinition()->getInterpreter();
 		return new $interpreterClassName($this, $em, $from, $to);
 	}
-}
-
-class EntityDefinition extends Util\Definition {
-	/** @var string File containing the JSON definitons */
-	const FILE = '/share/entities.json';
-
-	/** @var array list of required properties */
-	protected $required = array();
-
-	/** @var array list of optional properties */
-	protected $optional = array();
-
-	/** @var string classname of intepreter (see backend/lib/Interpreter/) */
-	protected $interpreter;
-
-	/** @var string optional for Aggregator class entities */
-	protected $unit;
-
-	/**
-	 * @todo url relative or absolute?
-	 * @var string
-	 */
-	protected $icon;
-
-	/*
-	 * Setter & Getter
-	 */
-	public function getInterpreter() { return $this->interpreter; }
-	public function getUnit() { return $this->unit; }
 }
 
 ?>

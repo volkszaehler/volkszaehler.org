@@ -66,9 +66,11 @@ class Property {
 	 * @param string $key
 	 * @param string $value
 	 */
-	public function __construct($name, $value) {
+	public function __construct(Model\Entity $entity, $name, $value) {
 		$this->setName($name);
 		$this->setValue($value);
+
+		$this->entity = $entity;
 	}
 
 	/**
@@ -90,12 +92,14 @@ class Property {
 	 */
 	public function getName() { return $this->name; }
 	public function getValue() { return $this->value; }
-	public function getDefinition() { return PropertyDefinition::get($name); }
+	public function getDefinition() { return PropertyDefinition::get($this->name); }
 
 	public function setValue($value) {
-		if (!$this->definition->validate($value)) {
-			throw new \Exception('invalid property value'); $this->value = $value;
+		if (!$this->getDefinition()->validateValue($value)) {
+			throw new \Exception('invalid property value');
 		}
+
+		$this->value = $value;
 	}
 
 	/**

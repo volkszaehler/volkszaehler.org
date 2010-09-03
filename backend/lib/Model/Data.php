@@ -31,6 +31,7 @@ use Volkszaehler\Model;
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
+ * @todo rename? Bsp: DataSample, Sample, Reading
  *
  * @Entity
  * @Table(name="data")
