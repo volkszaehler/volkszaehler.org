@@ -57,16 +57,16 @@ class VolkszaehlerModelAggregatorProxy extends \Volkszaehler\Model\Aggregator im
         return parent::getProperty($name);
     }
 
-    public function getProperties()
+    public function getProperties($prefix = NULL)
     {
         $this->_load();
-        return parent::getProperties();
+        return parent::getProperties($prefix);
     }
 
-    public function setProperty($name, $value)
+    public function setProperty(\Volkszaehler\Model\Property $property)
     {
         $this->_load();
-        return parent::setProperty($name, $value);
+        return parent::setProperty($property);
     }
 
     public function unsetProperty($name)
@@ -85,6 +85,12 @@ class VolkszaehlerModelAggregatorProxy extends \Volkszaehler\Model\Aggregator im
     {
         $this->_load();
         return parent::getUuid();
+    }
+
+    public function getType()
+    {
+        $this->_load();
+        return parent::getType();
     }
 
     public function getDefinition()
