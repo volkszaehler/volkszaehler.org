@@ -27,12 +27,34 @@ use Volkszaehler\Util;
 use Volkszaehler\Model;
 
 /**
- * Channel controller
+ * Entity controller
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
  */
-class ChannelController extends EntityController {
+class EntityController extends Controller {
+
+	/**
+	 * Get channels by filter
+	 *
+	 * @todo authentification/indentification
+	 * @todo implement filters
+	 */
+	public function get() {
+		$dql = 'SELECT c, p FROM Volkszaehler\Model\Channel c LEFT JOIN c.properties p';
+
+		if ($uuid = $this->view->request->getParameter('uuid')) {
+			$dql .= ' WHERE c.uuid = \'' . $uuid . '\'';
+		}
+
+		$q = $this->em->createQuery($dql);
+		$channels = $q->getResult();
+
+		foreach ($channels as $channel) {
+			$this->view->addChannel($channel);
+		}
+	}
+
 	/**
 	 * Add channel
 	 */
@@ -50,6 +72,29 @@ class ChannelController extends EntityController {
 		$this->em->flush();
 
 		$this->view->addChannel($channel);
+	}
+
+	/**
+	 * Delete channel by uuid
+	 *
+	 * @todo authentification/indentification
+	 */
+	public function delete() {
+		$ucid = $this->view->request->getParameter('ucid');
+		$channel = $this->em->getRepository('Volkszaehler\Model\Channel')->findOneBy(array('uuid' => $ucid));
+
+		$this->em->remove($channel);
+		$this->em->flush();
+	}
+
+	/**
+	 * Edit channel properties
+	 *
+	 * @todo authentification/indentification
+	 * @todo to be implemented
+	 */
+	public function edit() {
+
 	}
 }
 

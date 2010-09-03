@@ -53,6 +53,11 @@ class Dispatcher {
 	protected $controller;
 
 	/**
+	 * @var Router
+	 */
+	protected $router;
+
+	/**
 	 * @var Util\Debug optional debugging instance
 	 */
 	protected $debug = NULL;
@@ -75,32 +80,27 @@ class Dispatcher {
 		$request = new HTTP\Request();
 		$response = new HTTP\Response();
 
-		if ($format = $request->getParameter('format')) {
-			$format = strtolower($format);
-		}
-		else {
-			$format = 'json';	// default view
-		}
-
-		if ($controller = $request->getParameter('controller')) {
-			$controller = strtolower($controller);
-		}
-		else {
-			throw new \Exception('no controller specified');
-		}
-
 		// initialize entity manager
 		$this->em = Dispatcher::createEntityManager();
 
 		// starting debugging
-		if (($debug = $request->getParameter('debug')) != NULL || $debug = Util\Configuration::read('debug')) {
-			if ($debug > 0) {
-				$this->debug = new Util\Debug($debug);
-				$this->em->getConnection()->getConfiguration()->setSQLLogger($this->debug);
+		if (($debugLevel = $request->getParameter('debug')) != NULL || $debugLevel = Util\Configuration::read('debug')) {
+			if ($debugLevel > 0) {
+				$this->debug = new Util\Debug($debugLevel, $this->em);
 			}
 		}
 
+		// initialize router
+		$this->router = new Router($this->em);
+
 		// initialize view
+		if ($this->router->getFormat()) {
+			$format = $this->router->getFormat();
+		}
+		else {
+			$format = 'json';
+		}
+
 		switch ($format) {
 			case 'png':
 			case 'jpeg':
@@ -129,9 +129,8 @@ class Dispatcher {
 		}
 
 		// initialize controller
-		$controllerClassName = 'Volkszaehler\Controller\\' . ucfirst($controller) . 'Controller';
-		if (!(Util\ClassLoader::classExists($controllerClassName)) || !is_subclass_of($controllerClassName, '\Volkszaehler\Controller\Controller')) {
-			throw new \Exception('\'' . $controllerClassName . '\' is not a valid controller');
+		if (!($controllerClassName = $this->router->getController())) {
+			throw new \Exception('no controller specified');
 		}
 		$this->controller = new $controllerClassName($this->view, $this->em);
 	}
@@ -140,8 +139,8 @@ class Dispatcher {
 	 * Execute application
 	 */
 	public function run() {
-		if ($this->view->request->getParameter('action')) {
-			$action = $this->view->request->getParameter('action');
+		if ($this->router->getAction()) {
+			$action = $this->router->getAction();
 		}
 		elseif (self::$actionMapping[strtolower($this->view->request->getMethod())]) {
 			$action = self::$actionMapping[strtolower($this->view->request->getMethod())];
@@ -151,18 +150,12 @@ class Dispatcher {
 		}
 
 		$this->controller->run($action);	// run controllers actions (usually CRUD: http://de.wikipedia.org/wiki/CRUD)
-
-		if (Util\Debug::isActivated()) {
-			$this->addDebug($this->debug);
-		}
-
-		$this->view->sendResponse();				// render view & send http response
+		$this->view->sendResponse();		// render view & send http response
 	}
 
 	/**
 	 * Factory for doctrines entitymanager
 	 *
-	 * @todo create extra singleton class?
 	 * @todo add other caching drivers (memcache, xcache)
 	 */
 	public static function createEntityManager() {

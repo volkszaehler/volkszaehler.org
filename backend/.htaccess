@@ -1,6 +1,8 @@
-Order Allow,Deny
-Deny from all
+<IfModule rewrite_module>
+	RewriteEngine On
 
-<Files "index.php">
-	Allow from all
-</Files>
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteCond %{REQUEST_FILENAME} !-d
+
+	RewriteRule (.*) index.php/$1 [L]
+</IfModule>
