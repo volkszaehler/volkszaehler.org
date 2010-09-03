@@ -24,6 +24,6 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
-header('Location: frontend');
+header('Location: frontend/');
 
 ?>

@@ -1,6 +1,6 @@
 <?php
 /**
- * Backend bootstrapping entrypoint
+ * Backend bootstrap entrypoint
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @copyright Copyright (c) 2010, The volkszaehler.org project
@@ -29,6 +29,9 @@ namespace Volkszaehler;
 use Volkszaehler\Util;
 use Volkszaehler\Controller;
 
+// enable strict error reporting
+error_reporting(E_ALL);
+
 // TODO replace by state class
 define('VZ_VERSION', 0.2);
 define('VZ_DIR', realpath(__DIR__ . '/..'));
@@ -39,16 +42,13 @@ define('DEV_ENV', TRUE);
 require VZ_BACKEND_DIR . '/lib/Util/ClassLoader.php';
 
 $classLoaders = array();
-$classLoaders[] = new Util\ClassLoader('Doctrine', VZ_BACKEND_DIR . '/lib/vendor/Doctrine');
-$classLoaders[] = new Util\ClassLoader('Symfony', VZ_BACKEND_DIR . '/lib/vendor/Symfony');
 $classLoaders[] = new Util\ClassLoader('Volkszaehler', VZ_BACKEND_DIR . '/lib');
+$classLoaders[] = new Util\ClassLoader('Doctrine', VZ_BACKEND_DIR . '/lib/vendor/Doctrine');
+//$classLoaders[] = new Util\ClassLoader('Symfony', VZ_BACKEND_DIR . '/lib/vendor/Symfony'); // only required for the cli
 
 foreach ($classLoaders as $loader) {
 	$loader->register(); // register on SPL autoload stack
 }
-
-// enable strict error reporting
-error_reporting(E_ALL);
 
 Util\Configuration::load(VZ_BACKEND_DIR . '/volkszaehler.conf');
 

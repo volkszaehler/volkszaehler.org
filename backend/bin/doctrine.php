@@ -27,23 +27,22 @@
 use Volkszaehler\Util;
 
 // TODO replace by state class
-const BACKEND_DIR = '/home/steffen/workspace/volkszaehler.org/backend';
-const DEV_ENV = TRUE;
+const VZ_BACKEND_DIR = '/home/steffen/workspace/volkszaehler.org/backend';
 
 // class autoloading
-require BACKEND_DIR . '/lib/Util/ClassLoader.php';
+require VZ_BACKEND_DIR . '/lib/Util/ClassLoader.php';
 
 $classLoaders = array();
-$classLoaders[] = new Volkszaehler\Util\ClassLoader('Doctrine', BACKEND_DIR . '/lib/vendor/Doctrine');
-$classLoaders[] = new Volkszaehler\Util\ClassLoader('Symfony', BACKEND_DIR . '/lib/vendor/Symfony');
-$classLoaders[] = new Volkszaehler\Util\ClassLoader('Volkszaehler', BACKEND_DIR . '/lib');
+$classLoaders[] = new Volkszaehler\Util\ClassLoader('Doctrine', VZ_BACKEND_DIR . '/lib/vendor/Doctrine');
+$classLoaders[] = new Volkszaehler\Util\ClassLoader('Symfony', VZ_BACKEND_DIR . '/lib/vendor/Symfony');
+$classLoaders[] = new Volkszaehler\Util\ClassLoader('Volkszaehler', VZ_BACKEND_DIR . '/lib');
 
 foreach ($classLoaders as $loader) {
 	$loader->register(); // register on SPL autoload stack
 }
 
 // load configuration
-Util\Configuration::load(BACKEND_DIR . '/volkszaehler.conf');
+Util\Configuration::load(VZ_BACKEND_DIR . '/volkszaehler.conf');
 
 $em = Volkszaehler\Dispatcher::createEntityManager();
 
@@ -52,8 +51,9 @@ $helperSet = new \Symfony\Component\Console\Helper\HelperSet(array(
 	'em' => new \Doctrine\ORM\Tools\Console\Helper\EntityManagerHelper($em)
 ));
 
+
 $cli = new \Symfony\Component\Console\Application('Doctrine Command Line Interface', Doctrine\ORM\Version::VERSION);
-$cli->setCatchExceptions(TRUE);
+$cli->setCatchExceptions(true);
 $cli->setHelperSet($helperSet);
 $cli->addCommands(array(
 	// DBAL Commands
@@ -74,7 +74,7 @@ $cli->addCommands(array(
 	new \Doctrine\ORM\Tools\Console\Command\GenerateProxiesCommand(),
 	new \Doctrine\ORM\Tools\Console\Command\ConvertMappingCommand(),
 	new \Doctrine\ORM\Tools\Console\Command\RunDqlCommand(),
-	new \Doctrine\ORM\Tools\Console\Command\ValidateSchemaCommand(),
+	new \Doctrine\ORM\Tools\Console\Command\ValidateSchemaCommand()
 ));
 $cli->run();
 
