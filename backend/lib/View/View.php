@@ -47,11 +47,29 @@ interface ViewInterface {
  *
  */
 abstract class View implements ViewInterface {
+	/**
+	 * @var integer round all values to x decimals
+	 */
 	const PRECISSION = 5;
 
+	/**
+	 * @var HTTP\Request
+	 * @todo do we need this?
+	 * @todo why public? not via getter?
+	 */
 	public $request;
+
+	/**
+	 * @var HTTP\Response
+	 */
 	protected $response;
 
+	/**
+	 * Constructor
+	 *
+	 * @param HTTP\Request $request
+	 * @param HTTP\Response $response
+	 */
 	public function __construct(HTTP\Request $request, HTTP\Response $response) {
 		$this->request = $request;
 		$this->response = $response;
@@ -69,7 +87,7 @@ abstract class View implements ViewInterface {
 	}
 
 	final public function exceptionHandler(\Exception $exception) {
-		$this->addException($exception);
+		$this->addException($exception, Util\Debug::isActivated());
 
 		$code = ($exception->getCode() == 0 && HTTP\Response::getCodeDescription($exception->getCode())) ? 400 : $exception->getCode();
 		$this->response->setCode($code);

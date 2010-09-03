@@ -61,7 +61,7 @@ class JpGraph extends View {
 	 * @param HTTP\Response $response
 	 * @param string $format one of png, jpeg, gif
 	 */
-	public function __construct(HTTP\Request $request, HTTP\Response $response, $format) {
+	public function __construct(HTTP\Request $request, HTTP\Response $response, $format = 'png') {
 		parent::__construct($request, $response);
 
 		$this->graph = new \Graph($this->width,$this->height);
