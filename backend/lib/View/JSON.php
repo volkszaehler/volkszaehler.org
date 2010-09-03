@@ -54,15 +54,8 @@ class JSON extends View {
 		$this->padding = $this->request->getParameter('padding');
 	}
 
-	public function setPadding($padding) { $this->padding = $padding; }
-
 	public function addChannel(Model\Channel $channel, array $data = NULL) {
-		$jsonChannel['uuid'] = (string) $channel->getUuid();
-
-
-		foreach ($channel->getProperties() as $property) {
-			$jsonChannel[$property->getName()] = $property->getValue();
-		}
+		$jsonChannel = self::convertEntity($channel);
 
 		if (isset($data)) {
 			$jsonChannel['data'] = self::convertData($data);
@@ -72,7 +65,7 @@ class JSON extends View {
 	}
 
 	public function addAggregator(Model\Aggregator $aggregator, $recursive = FALSE) {
-		$this->json['groups'][] = self::convertJson($aggregator, $recursive);
+		$this->json['groups'][] = self::convertAggregator($aggregator, $recursive);
 	}
 
 	public function addDebug(Util\Debug $debug) {
@@ -86,24 +79,39 @@ class JSON extends View {
 		);
 	}
 
-	protected function addException(\Exception $exception) {
-		$this->json['exception'] = array(
+	protected function addException(\Exception $exception, $debug = FALSE) {
+		$exceptionInfo = array(
 			'type' => get_class($exception),
 			'message' => $exception->getMessage(),
-			'code' => $exception->getCode(),
-			'file' => $exception->getFile(),
-			'line' => $exception->getLine(),
-			'trace' => $exception->getTrace()
+			'code' => $exception->getCode()
 		);
+
+		if ($debug) {
+			$debugInfo = array('file' => $exception->getFile(),
+				'line' => $exception->getLine(),
+				'trace' => $exception->getTrace()
+			);
+
+			$this->json['exception'] = array_merge($exceptionInfo, $debugInfo);
+		}
+		else {
+			$this->json['exception'] = $exceptionInfo;
+		}
+	}
+
+	protected static function convertEntity(Model\Entity $entity) {
+		$jsonEntity = array();
+		$jsonEntity['uuid'] = (string) $entity->getUuid();
+
+		foreach ($entity->getProperties() as $property) {
+			$jsonEntity[$property->getName()] = $property->getValue();
+		}
+
+		return $jsonEntity;
 	}
 
 	protected static function convertAggregator(Model\Aggregator $aggregator, $recursive = FALSE) {
-		$jsonAggregator = array();
-
-		$jsonAggregator['uuid'] = (string) $aggregator->getUuid();
-		$jsonAggregator['name'] = $aggregator->getName();
-		$jsonAggregator['description'] = $aggregator->getDescription();
-		$jsonAggregator['channels'] = array();
+		$jsonAggregator = self::convertEntity($aggregator);
 
 		foreach ($aggregator->getChannels() as $channel) {
 			$jsonAggregator['channels'][] = (string) $channel->getUuid();
@@ -143,6 +151,11 @@ class JSON extends View {
 
 		echo $json;
 	}
+
+	/*
+	 * Setter & getter
+	 */
+	public function setPadding($padding) { $this->padding = $padding; }
 }
 
 ?>
