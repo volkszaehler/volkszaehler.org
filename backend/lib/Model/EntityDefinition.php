@@ -24,10 +24,8 @@
 namespace Volkszaehler;
 
 /**
- *
  * @author Steffen Vogel <info@steffenvogel.de>
- * @todo extract to extra file
- *
+ * @package default
  */
 class EntityDefinition extends Util\Definition {
 	/** @var string File containing the JSON definitons */

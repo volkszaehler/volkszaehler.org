@@ -25,6 +25,7 @@
  */
 
 use Volkszaehler\Util;
+
 include '../../backend/lib/Util/Configuration.php';
 echo '<pre>';
 

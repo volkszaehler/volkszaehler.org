@@ -27,6 +27,7 @@ namespace Volkszaehler\Util;
  * Extensible PRNG
  *
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @package util
  */
 class Random {
 	protected static $func = 'twister';

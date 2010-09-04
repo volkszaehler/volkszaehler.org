@@ -29,37 +29,37 @@
 
 /**
  * @var string PDO driver for Doctrine DBAL
- * @url http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en#getting-a-connection:driver
+ * @link http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en#getting-a-connection:driver
  */
 $config['db']['driver']				= 'pdo_mysql';
 
 /**
  * @var string hostname of database server. Use 'localhost' for the machine your webserver is running on.
- * @url http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
+ * @link http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
  */
 $config['db']['host']				= 'localhost';
 
 /**
  * @var string username for the database server
- * @url http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
+ * @link http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
  */
 $config['db']['user']				= 'vz';
 
 /**
  * @var string password for the database server
- * @url http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
+ * @link http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
  */
 $config['db']['password']			= 'demo';
 
 /**
  * @var string name of the database the backend should use
- * @url http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
+ * @link http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
  */
 $config['db']['dbname']				= 'volkszaehler';
 
 /**
  * @var string path of the sqlite database
- * @url http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
+ * @link http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
  */
 //$config['db']['path']				= 'volkszaehler';
 

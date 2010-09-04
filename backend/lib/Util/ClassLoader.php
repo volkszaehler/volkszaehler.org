@@ -2,7 +2,6 @@
 /**
  * @copyright Copyright (c) 2010, The volkszaehler.org project
  * @package util
- * @author Steffen Vogel <info@steffenvogel.de>
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  */
 /*
@@ -31,6 +30,7 @@ namespace Volkszaehler\Util;
  *
  * @package util
  * @author Roman Borschel <roman@code-factory.org>
+ * @author Steffen Vogel <info@steffenvogel.de>
  * @license http://www.opensource.org/licenses/lgpl-license.php Lesser GNU Public License
  */
 class ClassLoader {

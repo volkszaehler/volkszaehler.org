@@ -1,6 +1,6 @@
 <?php
 /**
- * @author Steffen Vogel <info@steffenvogel.de>
+ * @package util
  * @copyright Copyright (c) 2010, The volkszaehler.org project
  * @license http://www.gnu.org/licenses/gpl.txt GNU Public License
  */
@@ -65,10 +65,23 @@ class JSON extends \ArrayObject {
 		return $json;
 	}
 
+	/**
+	 * Cast to string
+	 *
+	 * @return string
+	 */
 	public function __toString() {
 		return $this->encode();
 	}
 
+	/**
+	 * Formats json with indents and new lines
+	 *
+	 * @param string $json
+	 * @param string $indent
+	 * @param string $newLine
+	 * @return string the formatted json
+	 */
 	protected static function format($json, $indent = "\t", $newLine = "\n") {
 		$formatted = '';
 		$indentLevel = 0;
@@ -143,7 +156,7 @@ class JSON extends \ArrayObject {
 class JSONException extends \Exception {
 	/**
 	 * @var array errorcodes defined by json_last_error()
-	 * @url http://www.php.net/manual/en/json.constants.php
+	 * @link http://www.php.net/manual/en/json.constants.php
 	 */
 	protected static $errors = array(
 		JSON_ERROR_NONE => 'No error has occurred',

@@ -25,6 +25,10 @@ namespace Volkszaehler\Model;
 
 use Volkszaehler\Util;
 
+/**
+ * @author Steffen Vogel <info@steffenvogel.de>
+ * @package default
+ */
 class PropertyDefinition extends Util\Definition {
 	/** One of: string, numeric, multiple */
 	public $type;

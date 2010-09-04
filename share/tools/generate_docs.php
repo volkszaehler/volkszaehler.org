@@ -55,7 +55,7 @@ $output[] = $cmd . PHP_EOL;
 exec($cmd, $output, $rc);
 
 if ($rc == 0) {
-	# update dokumentation
+	# update documentation
 	$cmd = $vzDir . '/phpdoc/phpdoc -c ' . $vzDir . '/github/share/tools/phpdoc.ini';
 	//$cmd = 'php5 ' . $vzDir . '/phpdoctor/phpdoc.php ' . $vzDir . '/github/share/tools/phpdoctor.ini';
 	$output[] = PHP_EOL . $cmd . PHP_EOL;

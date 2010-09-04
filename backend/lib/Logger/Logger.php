@@ -48,7 +48,8 @@ interface LoggerInterface {
 /**
  *
  * @author Steffen Vogel <info@steffenvogel.de>
- *
+ * @package default
+ * @todo to be implemented
  */
 abstract class Logger implements LoggerInterface {
 	protected $request;
