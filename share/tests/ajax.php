@@ -1,6 +1,6 @@
 <?php
 /**
- * Simple test for jquery, ajax and json padding
+ * Simple test for jquery, ajax and JSON padding
  *
  * @package tests
  * @copyright Copyright (c) 2010, The volkszaehler.org project

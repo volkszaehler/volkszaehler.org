@@ -283,5 +283,19 @@
 		"name" : "photo:url",
 		"type" : "string",
 		"pattern" : ""				// TODO add pattern
+	},
+	{
+		"name" : "cuuid",
+		"type" : "string",
+		"max" : 37
+	},
+	{
+		"name" : "port",
+		"type" : "string",
+		"max" : 6
+	},
+	{
+		"name" : "active",
+		"type" : "boolean"
 	}
 ]

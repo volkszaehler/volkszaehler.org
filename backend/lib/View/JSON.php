@@ -34,24 +34,29 @@ use Volkszaehler\Model;
  * @author Steffen Vogel <info@steffenvogel.de>
  */
 class JSON extends View {
+	/**
+	 * @var array holds the JSON data in an array
+	 */
 	protected $json;
 
+	/**
+	 * @var string padding function name or NULL if disabled
+	 */
 	protected $padding = FALSE;
 
 	/**
 	 * constructor
 	 */
-	public function __construct(HTTP\Request $request, HTTP\Response $response) {
+	public function __construct(HTTP\Request $request, HTTP\Response $response, $padding = FALSE) {
 		parent::__construct($request, $response);
 
 		$this->json = new Util\JSON();
-
 		$this->json['source'] = 'volkszaehler.org';
 		$this->json['version'] = VZ_VERSION;
 
-		$this->response->setHeader('Content-type', 'application/json');
+		$this->setPadding($padding);
 
-		$this->padding = $this->request->getParameter('padding');
+		$this->response->setHeader('Content-type', 'application/json');
 	}
 
 	public function addChannel(Model\Channel $channel, array $data = NULL) {

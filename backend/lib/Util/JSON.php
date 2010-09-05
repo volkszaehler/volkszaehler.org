@@ -75,12 +75,12 @@ class JSON extends \ArrayObject {
 	}
 
 	/**
-	 * Formats json with indents and new lines
+	 * Formats JSON with indents and new lines
 	 *
 	 * @param string $json
 	 * @param string $indent
 	 * @param string $newLine
-	 * @return string the formatted json
+	 * @return string the formatted JSON
 	 */
 	protected static function format($json, $indent = "\t", $newLine = "\n") {
 		$formatted = '';
