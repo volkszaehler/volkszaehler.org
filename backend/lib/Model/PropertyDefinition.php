@@ -23,15 +23,13 @@
 
 namespace Volkszaehler\Model;
 
-use Volkszaehler\Util;
-
 /**
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
  */
-class PropertyDefinition extends Util\Definition {
-	/** One of: string, numeric, multiple */
-	public $type;
+class PropertyDefinition extends Definition {
+	/** One of: string, integer, float, boolean, multiple */
+	protected $type;
 
 	/** @var string regex pattern to match if type == string */
 	protected $pattern;
@@ -54,7 +52,7 @@ class PropertyDefinition extends Util\Definition {
 
 	/**
 	 * List of possible choices if type == multiple
-	 * (type as in javascript: 1.2 => float, 5 => integer, "test" => string)
+	 * (type as in javascript: 1.2 => float, 5 => integer, true => boolean, "test" => string)
 	 *
 	 * @var array
 	 */
@@ -93,6 +91,10 @@ class PropertyDefinition extends Util\Definition {
 				$invalid = !is_float($value);	// TODO check for numeric string
 				break;
 
+			case 'boolean':
+				$invalid = !is_bool($value);	// TODO check for numeric string
+				break;
+
 			case 'multiple':
 				$invalid = !in_array($value, $this->choices, TRUE);
 				break;
@@ -108,6 +110,11 @@ class PropertyDefinition extends Util\Definition {
 
 		return !$invalid;
 	}
+
+	/*
+	 * Setter & getter
+	 */
+	public function getType() { return $this->type; }
 }
 
 ?>

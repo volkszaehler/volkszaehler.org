@@ -74,17 +74,32 @@ class Property {
 	}
 
 	/**
+	 * Cast property value according to $this->type
+	 *
+	 * @PostLoad
+	 */
+	public function castValue() {
+		if ($this->getDefinition()->getType() != 'multiple') {
+			settype($this->value, $this->getDefinition()->getType());
+		}
+	}
+
+	/**
 	 * Validate property name & value
 	 *
 	 * Throws an exception if something is incorrect
 	 *
 	 * @PrePersist
 	 * @PreUpdate
-	 * @PostLoad
-	 * @todo to be implemented
 	 */
-	function validate() {
+	public function validate() {
+		if (!PropertyDefinition::exists($this->name)) {
+			throw new \Exception('invalid property name: ' . $this->name);
+		}
 
+		if (!$this->getDefinition()->validateValue($this->value)) {
+			throw new \Exception('invalid property value: ' . $this->value);
+		}
 	}
 
 	/*
@@ -94,20 +109,7 @@ class Property {
 	public function getValue() { return $this->value; }
 	public function getDefinition() { return PropertyDefinition::get($this->name); }
 
-	public function setValue($value) {
-		if (!$this->getDefinition()->validateValue($value)) {
-			throw new \Exception('invalid property value');
-		}
-
-		$this->value = $value;
-	}
-
-	/**
-	 *
-	 * @param string $name
-	 * @todo validation
-	 */
-	protected function setName($name) { $this->name = $name; }
+	public function setValue($value) { $this->value = $value; }
 }
 
 ?>

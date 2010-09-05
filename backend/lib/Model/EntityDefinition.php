@@ -27,7 +27,7 @@ namespace Volkszaehler;
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
  */
-class EntityDefinition extends Util\Definition {
+class EntityDefinition extends Definition {
 	/** @var string File containing the JSON definitons */
 	const FILE = '/share/entities.json';
 

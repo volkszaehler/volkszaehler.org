@@ -1,7 +1,7 @@
 <?php
 /**
  * @copyright Copyright (c) 2010, The volkszaehler.org project
- * @package util
+ * @package default
  * @license http://www.gnu.org/licenses/gpl.txt GNU Public License
  */
 /*
@@ -21,21 +21,23 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace Volkszaehler\Util;
+namespace Volkszaehler\Model;
+
+use Volkszaehler\Util;
 
 /**
  * @author Steffen Vogel <info@steffenvogel.de>
- * @package util
+ * @package default
  */
 abstract class Definition {
 	/** @var string discriminator for database column */
 	protected $name;
 
 	/** @var string title for UI */
-	protected $title;
+	//protected $title;
 
 	/** @var string description for UI */
-	protected $description;
+	//protected $description;
 
 	/**
 	 * Hide default constructor
@@ -84,7 +86,7 @@ abstract class Definition {
 	 * Load JSON definitions from file (via lazy loading from get())
 	 */
 	protected static function load() {
-		$json = JSON::decode(file_get_contents(VZ_DIR . static::FILE));
+		$json = Util\JSON::decode(file_get_contents(VZ_DIR . static::FILE));
 
 		static::$definitions = array();
 
