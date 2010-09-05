@@ -83,7 +83,7 @@ class Dispatcher {
 		// initialize entity manager
 		$this->em = Dispatcher::createEntityManager();
 
-		// starting debugging
+		// initialize debugging
 		if (($debugLevel = $request->getParameter('debug')) != NULL || $debugLevel = Util\Configuration::read('debug')) {
 			if ($debugLevel > 0) {
 				$this->debug = new Util\Debug($debugLevel, $this->em);
@@ -108,15 +108,14 @@ class Dispatcher {
 				$this->view = new View\JpGraph($request, $response, $format);
 				break;
 
-			case 'json':
 			case 'xml':
 			case 'csv':
-				$viewClassName = 'Volkszaehler\View\\' . strtoupper($format);
-				if (!(Util\ClassLoader::classExists($viewClassName)) || !is_subclass_of($viewClassName, '\Volkszaehler\View\View')) {
-					throw new \Exception('\'' . $viewClassName . '\' is not a valid View');
-				}
+				$padding = FALSE;
+			case 'json':
+				$padding = $request->getParameter('padding');
 
-				$this->view = new $viewClassName($request, $response);
+				$viewClassName = 'Volkszaehler\View\\' . strtoupper($format);
+				$this->view = new $viewClassName($request, $response, $padding);
 				break;
 
 			case 'txt':
@@ -130,9 +129,9 @@ class Dispatcher {
 
 		// initialize controller
 		if (!($controllerClassName = $this->router->getController())) {
-			throw new \Exception('no controller specified');
+			throw new \Exception('invalid controller specified');
 		}
-		$this->controller = new $controllerClassName($this->view, $this->em);
+		$this->controller = new $controllerClassName($this->view, $this->em, $this->router->getIdentifier());
 	}
 
 	/**
@@ -157,6 +156,7 @@ class Dispatcher {
 	 * Factory for doctrines entitymanager
 	 *
 	 * @todo add other caching drivers (memcache, xcache)
+	 * @todo put into static class? singleton?
 	 */
 	public static function createEntityManager() {
 		$config = new \Doctrine\ORM\Configuration;

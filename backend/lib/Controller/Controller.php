@@ -50,7 +50,7 @@ abstract class Controller {
 	 * @param string $action runs the action if class method is available
 	 */
 	public function run($action) {
-		if (!method_exists($this, $action)) {
+		if (!is_callable(array($this, $action))) {
 			throw new \Exception('\'' . $action . '\' is not a valid controller action');
 		}
 

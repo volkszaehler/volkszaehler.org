@@ -24,19 +24,19 @@
 namespace Volkszaehler\Controller;
 
 /**
- * Group controller
+ * Aggregator controller
  *
  * @author Steffen Vogel (info@steffenvogel.de)
  * @package default
  */
 use Volkszaehler\Model;
 
-class GroupController extends Controller {
+class AggregatorController extends Controller {
 
 	/**
-	 * Get groups by filter
+	 * Get aggregators by filter
 	 *
-	 * @todo filter to root groups when using recursion
+	 * @todo filter to root aggregators when using recursion
 	 */
 	public function get() {
 		$dql = 'SELECT g, c, d, p FROM Volkszaehler\Model\Aggregator g LEFT JOIN g.children c LEFT JOIN g.channels d LEFT JOIN g.properties p';
@@ -55,7 +55,7 @@ class GroupController extends Controller {
 	}
 
 	/**
-	 * Add new group as child of a parent group
+	 * Add new aggregator as child of a parent aggregator
 	 *
 	 * @todo add parent validation to model?
 	 */
@@ -78,26 +78,6 @@ class GroupController extends Controller {
 		$this->em->flush();
 
 		$this->view->add($group);
-	}
-
-	/**
-	 * @todo authentification/indentification
-	 */
-	public function delete() {
-		$ugid = $this->view->request->getParameter('ugid');
-		$group = $this->em->getRepository('Volkszaehler\Model\Aggregator')->findOneBy(array('uuid' => $ugid));
-
-		$this->em->remove($group);
-		$this->em->flush();
-	}
-
-	/**
-	 * edit group properties
-	 *
-	 * @todo implement Controller\Aggregator::edit()
-	 */
-	public function edit() {
-
 	}
 }
 

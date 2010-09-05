@@ -33,25 +33,56 @@ use Volkszaehler\Model;
  * @package default
  */
 class EntityController extends Controller {
+	protected $entity = NULL;
+
+	public function __construct(\Volkszaehler\View\View $view, \Doctrine\ORM\EntityManager $em, $identifier) {
+		parent::__construct($view, $em);
+
+		if ($identifier) {
+			$dql = 'SELECT e, p
+					FROM Volkszaehler\Model\Entity e
+					LEFT JOIN e.properties p
+					WHERE e.uuid LIKE \'%' . $identifier . '\'';
+
+			$q = $this->em->createQuery($dql);
+
+			if (count($q->getResult() == 1)) {
+				$this->entitiy = $q->getFirstResult();
+			}
+			elseif (count($q->getResult() > 1)) {
+				throw new Exception('identifier is not unique');
+			}
+			elseif (count($q->getResult() < 1)) {
+				throw new Exception('no entity found');
+			}
+		}
+	}
 
 	/**
-	 * Get channels by filter
+	 * Get Entities
 	 *
 	 * @todo authentification/indentification
 	 * @todo implement filters
 	 */
 	public function get() {
-		$dql = 'SELECT c, p FROM Volkszaehler\Model\Channel c LEFT JOIN c.properties p';
+		Util\Debug::log('unique', print_r($this->entity, TRUE));
 
-		if ($uuid = $this->view->request->getParameter('uuid')) {
-			$dql .= ' WHERE c.uuid = \'' . $uuid . '\'';
+		if (isset($this->entity)) {
+
+			$this->view->addChannel($this->entity);
 		}
+		else {
+			$dql = 'SELECT e, p
+					FROM Volkszaehler\Model\Channel e
+					LEFT JOIN e.properties p';
 
-		$q = $this->em->createQuery($dql);
-		$channels = $q->getResult();
+			$q = $this->em->createQuery($dql);
+			$entities = $q->getResult();
 
-		foreach ($channels as $channel) {
-			$this->view->addChannel($channel);
+			foreach ($entities as $entity) {
+				// distinction between channels & aggregators
+				$this->view->addChannel($entity);
+			}
 		}
 	}
 
