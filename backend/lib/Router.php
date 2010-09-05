@@ -84,7 +84,7 @@ class Router {
 			}
 		}
 		else {
-			throw new \Exception('no PATH_INFO found');
+			throw new \Exception('no CGI PATH_INFO envvar found');
 		}
 	}
 
@@ -99,6 +99,9 @@ class Router {
 		}
 		elseif (isset($_SERVER['ORIG_PATH_INFO'])) {
 			return $_SERVER['ORIG_PATH_INFO'];
+		}
+		elseif (strlen($_SERVER['PHP_SELF']) > strlen($_SERVER['SCRIPT_NAME'])) {
+			return substr($_SERVER['PHP_SELF'], strlen($_SERVER['SCRIPT_NAME']));
 		}
 		else {
 			return FALSE;
