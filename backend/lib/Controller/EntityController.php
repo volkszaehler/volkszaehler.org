@@ -45,15 +45,16 @@ class EntityController extends Controller {
 					WHERE e.uuid LIKE \'%' . $identifier . '\'';
 
 			$q = $this->em->createQuery($dql);
+			$result = $q->getResult();
 
-			if (count($q->getResult() == 1)) {
-				$this->entitiy = $q->getFirstResult();
+			if (count($result) == 1) {
+				$this->entity = reset($result);
 			}
-			elseif (count($q->getResult() > 1)) {
-				throw new Exception('identifier is not unique');
+			elseif (count($result) > 1) {
+				throw new \Exception('identifier is not unique');
 			}
-			elseif (count($q->getResult() < 1)) {
-				throw new Exception('no entity found');
+			elseif (count($result) < 1) {
+				throw new \Exception('no entity found');
 			}
 		}
 	}
@@ -65,10 +66,8 @@ class EntityController extends Controller {
 	 * @todo implement filters
 	 */
 	public function get() {
-		Util\Debug::log('unique', print_r($this->entity, TRUE));
-
 		if (isset($this->entity)) {
-
+			// distinction between channels & aggregators
 			$this->view->addChannel($this->entity);
 		}
 		else {
@@ -90,19 +89,21 @@ class EntityController extends Controller {
 	 * Add channel
 	 */
 	public function add() {
-		$channel = new Model\Channel($this->view->request->getParameter('type'));
+		if (is_null($this->entity)) {
+			$channel = new Model\Channel($this->view->request->getParameter('type'));
 
-		foreach ($this->view->request->getParameters() as $parameter => $value) {
-			if (Model\PropertyDefinition::exists($parameter)) {
-				$property = new Model\Property($channel, $parameter, $value);
-				$channel->setProperty($property);
+			foreach ($this->view->request->getParameters() as $parameter => $value) {
+				if (Model\PropertyDefinition::exists($parameter)) {
+					$property = new Model\Property($channel, $parameter, $value);
+					$channel->setProperty($property);
+				}
 			}
+
+			$this->em->persist($channel);
+			$this->em->flush();
+
+			$this->view->addChannel($channel);
 		}
-
-		$this->em->persist($channel);
-		$this->em->flush();
-
-		$this->view->addChannel($channel);
 	}
 
 	/**
@@ -111,11 +112,10 @@ class EntityController extends Controller {
 	 * @todo authentification/indentification
 	 */
 	public function delete() {
-		$ucid = $this->view->request->getParameter('ucid');
-		$channel = $this->em->getRepository('Volkszaehler\Model\Channel')->findOneBy(array('uuid' => $ucid));
-
-		$this->em->remove($channel);
-		$this->em->flush();
+		if (isset($this->entity)) {
+			$this->em->remove($this->entity);
+			$this->em->flush();
+		}
 	}
 
 	/**
@@ -125,7 +125,20 @@ class EntityController extends Controller {
 	 * @todo to be implemented
 	 */
 	public function edit() {
+		if (isset($this->entity)) {
+			foreach ($this->view->request->getParameters() as $parameter => $value) {
+				if (Model\PropertyDefinition::exists($parameter)) {
+					$property = new Model\Property($channel, $parameter, $value);
+					$this->entity->setProperty($property);
+				}
+			}
 
+			$this->em->persist($channel);
+			$this->em->flush();
+
+			// distinction between channels & aggregators
+			$this->view->addChannel($channel);
+		}
 	}
 }
 

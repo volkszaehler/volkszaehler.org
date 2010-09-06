@@ -33,24 +33,7 @@ use Volkszaehler\Model;
  * @package default
  */
 class ChannelController extends EntityController {
-	/**
-	 * Add channel
-	 */
-	public function add() {
-		$channel = new Model\Channel($this->view->request->getParameter('type'));
-
-		foreach ($this->view->request->getParameters() as $parameter => $value) {
-			if (Model\PropertyDefinition::exists($parameter)) {
-				$property = new Model\Property($channel, $parameter, $value);
-				$channel->setProperty($property);
-			}
-		}
-
-		$this->em->persist($channel);
-		$this->em->flush();
-
-		$this->view->addChannel($channel);
-	}
+//TODO log data
 }
 
 ?>

@@ -33,7 +33,7 @@ use Volkszaehler\Util;
  * @todo call via redirect from Controller\Channel
  * @package default
  */
-class DataController extends Controller {
+class DataController extends EntityController {
 
 	/**
 	 * Query for data by given channel or group
@@ -42,28 +42,19 @@ class DataController extends Controller {
 	 * @todo use uuids for groups or channels
 	 */
 	public function get() {
-		if ($uuid = $this->view->request->getParameter('uuid')) {
-			$entity = $this->em->getRepository('Volkszaehler\Model\Entity')->findOneBy(array('uuid' => $uuid));
-		}
-		else {
-			throw new \Exception('you have to specifiy the uuid parameter');
-		}
+		if (isset($this->entity)) {
+			$from = $this->view->request->getParameter('from');
+			$to = $this->view->request->getParameter('to');
+			$groupBy = ($this->view->request->getParameter('groupBy'));	// get all readings by default
 
-		if ($entity === FALSE) {
-			throw new \Exception('no group/channel found');
-		}
+			$data = $this->entity->getInterpreter($this->em, $from, $to)->getValues($groupBy);
 
-		$from = $this->view->request->getParameter('from');
-		$to = $this->view->request->getParameter('to');
-		$groupBy = ($this->view->request->getParameter('groupBy'));	// get all readings by default
-
-		$data = $entity->getInterpreter($this->em, $from, $to)->getValues($groupBy);
-
-		if ($entity instanceof Model\Aggregator) {
-			$this->view->addAggregator($entity, $data);
-		}
-		elseif ($entity instanceof Model\Channel) {
-			$this->view->addChannel($entity, $data);
+			if ($this->entity instanceof Model\Aggregator) {
+				$this->view->addAggregator($entity, $data);
+			}
+			elseif ($this->entity instanceof Model\Channel) {
+				$this->view->addChannel($this->entity, $data);
+			}
 		}
 	}
 

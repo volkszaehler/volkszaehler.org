@@ -32,53 +32,8 @@ namespace Volkszaehler\Controller;
 use Volkszaehler\Model;
 
 class AggregatorController extends Controller {
-
-	/**
-	 * Get aggregators by filter
-	 *
-	 * @todo filter to root aggregators when using recursion
-	 */
-	public function get() {
-		$dql = 'SELECT g, c, d, p FROM Volkszaehler\Model\Aggregator g LEFT JOIN g.children c LEFT JOIN g.channels d LEFT JOIN g.properties p';
-
-		// TODO fix this (depending on DDC-719)
-		if ($recursion = $this->view->request->getParameter('recursive')) {
-			//$dql .= ' WHERE g.parents IS EMPTY';
-		}
-
-		$q = $this->em->createQuery($dql);
-		$groups = $q->getResult();
-
-		foreach ($groups as $group) {
-			$this->view->addAggregator($group, $recursion);
-		}
-	}
-
-	/**
-	 * Add new aggregator as child of a parent aggregator
-	 *
-	 * @todo add parent validation to model?
-	 */
-	public function add() {
-		$ugid = $this->view->request->getParameter('ugid');
-		$parent = $this->em->getRepository('Volkszaehler\Model\Aggregator')->findOneBy(array('uuid' => $ugid));
-
-		if ($parent == FALSE) {
-			throw new \Exception('every group needs a parent');
-		}
-
-		$group = new Model\Aggregator();
-
-		$group->setName($this->view->request->getParameter('name'));
-		$group->setDescription($this->view->request->getParameter('description'));
-
-		$this->em->persist($group);
-		$parent->addAggregator($group);
-
-		$this->em->flush();
-
-		$this->view->add($group);
-	}
+// TODO add/remove channels
+// TODO add/remove aggregators
 }
 
 ?>
