@@ -21,7 +21,7 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace Volkszaehler;
+namespace Volkszaehler\Model;
 
 /**
  * @author Steffen Vogel <info@steffenvogel.de>

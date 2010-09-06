@@ -110,6 +110,7 @@ class Property {
 	public function getDefinition() { return PropertyDefinition::get($this->name); }
 
 	public function setValue($value) { $this->value = $value; }
+	protected function setName($name) { $this->name = $name; }
 }
 
 ?>

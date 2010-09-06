@@ -39,9 +39,10 @@ class Router {
 
 	protected static $controllerMapping = array(
 		'channels'		=> 'Volkszaehler\Controller\ChannelController',
-		'groups'			=> 'Volkszaehler\Controller\GroupController',
-		'tokens'			=> 'Volkszaehler\Controller\TokenController',
-		'capabilities'	=> 'Volkszaehler\Controller\CapabilitiesController'
+		'groups'		=> 'Volkszaehler\Controller\GroupController',
+		'tokens'		=> 'Volkszaehler\Controller\TokenController',
+		'capabilities'	=> 'Volkszaehler\Controller\CapabilitiesController',
+		'data'			=> 'Volkszaehler\Controller\DataController'
 	);
 
 	/**
@@ -61,6 +62,9 @@ class Router {
 		// PATH_INFO: /channel/550e8400-e29b-11d4-a716-446655440000/edit.json
 		$pi = $this->getPathInfo();
 
+		//Util\Debug::log('PATH_INFO', $pi);
+		//Util\Debug::log('_SERVER', $_SERVER);
+
 		if ($pi) {
 			$pi = substr($pi, 1);
 			$pie = explode('/', $pi);
@@ -71,7 +75,7 @@ class Router {
 				$i++;
 			}
 
-			if (isset($pie[$i]) && preg_match('/[a-f0-9\-]{3,36}/', $pie[$i])) {
+			if (isset($pie[$i]) && preg_match('/[a-f0-9\-]{5,36}/', $pie[$i])) {
 				$this->identifier = $pie[$i];
 			}
 			$i++;
