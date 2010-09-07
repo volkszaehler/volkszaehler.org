@@ -82,9 +82,23 @@ class Response {
 	 * constructor
 	 */
 	public function __construct() {
-		$this->headers = apache_response_headers();
+		$this->headers = self::getHeaders();
 
 		ob_start(array($this, 'obCallback'));
+	}
+
+	protected static function getHeaders() {
+		if (function_exists('apache_response_headers')) {
+			return apache_response_headers();
+		}
+		else {
+			$headers = array();
+			foreach (headers_list() as $header) {
+				$sp = strpos($header, ':');
+				$headers[substr($header, 0, $sp)] = substr($header, $sp);
+			}
+			return $headers;
+		}
 	}
 
 	public function obCallback($output) {
