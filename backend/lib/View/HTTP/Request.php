@@ -46,8 +46,7 @@ class Request {
 	 * constructor
 	 */
 	public function __construct() {
-		$this->headers = apache_response_headers();	// NOTICE only works for Apache Webservers
-
+		$this->headers = self::getHeaders();
 		$this->method = $_SERVER['REQUEST_METHOD'];
 
 		$this->parameters= array(
@@ -55,9 +54,23 @@ class Request {
 								'post' => $_POST,
 								'cookies' => $_COOKIE,
 								'files' => $_FILES
-							);
+		);
 
 		unset($_GET, $_POST, $_COOKIE, $_FILES);
+	}
+
+	protected static function getHeaders() {
+		if (!function_exists('apache_request_headers')) {
+			foreach ($_SERVER as $name => $value) {
+				if (substr($name, 0, 5) == 'HTTP_') {
+					$headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+				}
+			}
+			return $headers;
+		}
+		else {
+			return apache_request_headers();
+		}
 	}
 
 	/**
