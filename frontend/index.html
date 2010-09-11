@@ -394,7 +394,7 @@ function getData() {
 	
 	$('#debug').append('<a href="../backend/index.php/data/'+myUUID+'/format/json/from/'+myWindowStart+'/to/'+myWindowEnd+'">json</a>');
 	// load json data with given time window
-	$.getJSON("../backend/index.php/" + myUUID, function(j){
+	$.getJSON("../backend/index.php/data/" + myUUID, function(j){
 		data = j;
 		$('#debug').empty().append(data.toSource());
 		// then show/reload the chart
@@ -585,3 +585,4 @@ function generateAxisTicks() {
 
 </body>
 </html>
+
