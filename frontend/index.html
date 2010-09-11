@@ -161,8 +161,8 @@
 	<form>
 
 	<fieldset>
-		<label for="ucid">ucid</label>
-		<input type="text" name="ucid" id="ucid" class="text ui-widget-content ui-corner-all" />
+		<label for="uuid">uuid</label>
+		<input type="text" name="uuid" id="uuid" class="text ui-widget-content ui-corner-all" />
 	</fieldset>
 	</form>
 </div>
@@ -235,8 +235,8 @@ $(document).ready(function() {
 	
 	
 	// code for adding a channel
-	var 	ucid = $("#ucid"),
-		allFields = $([]).add(ucid),
+	var 	uuid = $("#uuid"),
+		allFields = $([]).add(uuid),
 		tips = $(".validateTips");
 
 	
@@ -283,7 +283,7 @@ $(document).ready(function() {
 					var bValid = true;
 					allFields.removeClass('ui-state-error');
 
-					bValid = bValid && checkLength(ucid,"UCID",36,36);
+					bValid = bValid && checkLength(uuid,"UUID",36,36);
 
 					//bValid = bValid && checkRegexp(name,/^[a-z]([0-9a-z_])+$/i,"Username may consist of a-z, 0-9, underscores, begin with a letter.");
 					// From jquery.validate.js (by joern), contributed by Scott Gonzalez: http://projects.scottsplayground.com/email_address_validation/
@@ -323,9 +323,10 @@ $(document).ready(function() {
 function loadChannelList() {
 	
 	
-	$('#debug').append('<a href="../backend/index.php?uuid='+myUUID+'&controller=channel&action=get&format=json">json</a>');
+	$('#debug').append('<a href="../backend/index.php/data/"' + myUUID + '"/channel">json</a>');
 	// load json data
-	$.getJSON("../backend/index.php",{uuid: myUUID, controller: 'channel', action: 'get', format: 'json'}, function(j){
+	$.getJSON("../backend/index.php/data/" + myUUID + {format: 'json'});
+	/*$.getJSON("../backend/index.php/data/" + myUUID + {format: 'json'}, function(j){
 		
 		$('#channelList').empty();
 		
@@ -337,7 +338,7 @@ function loadChannelList() {
 		
 		// initioal load data with all channels
 		getData();
-	});
+	});*/
 	
 }
 
@@ -368,7 +369,7 @@ function moveWindow(mode) {
 function getData() {
 	
 	if(f.ids.length>0)
-		$('#loading').empty().html('<img src="images/ladebild.gif" />');
+ 		$('#loading').empty().html('<img src="images/ladebild.gif" />');
 	
 	// list of channel ids, comma separated
 	ids_parameter = "";
@@ -387,10 +388,11 @@ function getData() {
 	// calcMyWindowStart
 	myWindowStart = calcMyWindowStart();
 	
-	$('#debug').append('<a href="../backend/index.php?uuid='+myUUID+'&controller=data&action=get&format=json&ids='+ids_parameter+'&from='+myWindowStart+'&to='+myWindowEnd+'&groupBy='+f.grouping.value+'">json</a>');
+	$('#debug').append('<a href="../backend/index.php/data/'+myUUID+'/format/json/from/'+myWindowStart+'/to/'+myWindowEnd+'">json</a>');
 	// load json data with given time window
 	//$.getJSON("../backend/index.php",{uuid: myUUID,mode: 'getPulses', ids: ids_parameter, windowEnd: myWindowEnd, windowSize: f.window.value.substring(0,1), windowInterval: f.window.value.substring(1)}, function(j){
-	$.getJSON("../backend/index.php",{uuid: myUUID, controller: 'data', action: 'get', format: 'json', ids: ids_parameter, from: myWindowStart, to: myWindowEnd, groupBy: f.grouping.value}, function(j){
+	$.getJSON("../backend/index.php/data/" + myUUID + {format: 'json', ids: ids_parameter, from: myWindowStart, to: myWindowEnd});
+	/* $.getJSON("../backend/index.php/data/" + myUUID + {format: 'json', ids: ids_parameter, from: myWindowStart, to: myWindowEnd, groupBy: f.grouping.value}, function(j){
 		data = j;
 		//$('#debug').empty().append(data.toSource());
 		// then show/reload the chart
@@ -401,7 +403,7 @@ function getData() {
 			showChart();
 		
 		$('#loading').empty();
-	});
+	});*/
 	
 	return false;
 }
