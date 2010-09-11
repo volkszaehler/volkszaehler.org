@@ -89,36 +89,6 @@
 			<button id="addChannel">add channel</button>
 			<br>
 			
-			<b>Information:</b><br>
-			<select name="info">
-				<option value="power">Leistung</option>
-				<option value="energy">Energie</option>
-				<option value="infos">weitere Infos</option>
-			</select>
-			<br><br>
-			
-			<b>Anzeigebereich:</b><br>
-			<select name="window">
-				<option value="1HOUR">1 Stunde</option>
-				<option value="1DAY">1 Tag</option>
-				<option value="3DAY">3 Tage</option>
-				<option value="7DAY">7 Tage</option>
-				<option value="1MONTH" selected="selected">1 Monat</option>
-				<option value="1YEAR">1 Jahr</option>
-			</select>
-			<br><br>
-			
-			<b>Gruppierung:</b><br>
-			<select name="grouping">
-				<option value="400">dynamisch</option>
-				<option value="minute">Minute</option>
-				<option value="hour" selected="selected">Stunde</option>
-				<option value="day">Tag</option>
-				<option value="month">Monat</option>
-				<option value="year">Jahr</option>
-			</select>
-			<br><br>
-			
 			<div style="font-size:8pt;">
 				<input type="checkbox" name="stackChannels" /> Kan&auml;le addieren<br>
 				<input type="checkbox" name="autoReload" /> auto reload (5s)<br>
@@ -394,16 +364,12 @@ function getData() {
 	
 	$('#debug').append('<a href="../backend/index.php/data/'+myUUID+'/format/json/from/'+myWindowStart+'/to/'+myWindowEnd+'">json</a>');
 	// load json data with given time window
-	$.getJSON("../backend/index.php/data/" + myUUID, function(j){
+	$.getJSON("../backend/index.php/data/" + myUUID + '/format/json/from/'+myWindowStart+'/to/'+myWindowEnd, function(j){
 		data = j;
 		$('#debug').empty().append(data.toSource());
 		// then show/reload the chart
 		//if(data.channels.length > 0 && data.channels[0].pulses.length > 0)
-		if(f.info.value == 'infos')
-			showInfos()
-		else
 			showChart();
-		
 		$('#loading').empty();
 	});
 	
@@ -448,83 +414,19 @@ function showChart() {
 		jqOptions.series.push({label:data.channels[i]['description']});
 	}
 	
-	// different formatStrings for different grouping times
-	switch(f.grouping.value) {
-		case 'year':
-			EformatString = '%Y';
-			break;
-		case 'month':
-			EformatString = '%m/%Y';
-			break;
-		case 'day':
-			EformatString = '%d.%m.%y';
-			break;
-		case 'hour':
-			EformatString = '%d.%m.%y %H:%M';
-			break;
-		case 'minute':
-			EformatString = '%d.%m.%y %H:%M';
-			break;
-		default:
-			EformatString = '%d.%m.%y %H:%M:%S';
-	}
+		EformatString = '%d.%m.%y %H:%M';
 	
-	// power
-	if(f.info.value == 'power') {
+	// for each channel in json response
+	for(var i=0;i<data.channels.length;i++) {
+		// power (moving average) gray line
+		//series_chart.push({showLabel:false,color:'#808080'})
 		
-		// for each channel in json response
-		for(var i=0;i<data.channels.length;i++) {
-			// power (moving average) gray line
-			//jqData.push(raw2Power(data.channels[i],true));
-			//series_chart.push({showLabel:false,color:'#808080'})
-			
-			// power
-			/*if(f.grouping.value == '') {
-				jqData.push(raw2Power(data.channels[i],false));
-			}
-			else {
-				jqData.push(raw2Energy(data.channels[i]));
-			}*/
-			
-			//$('#debug').empty().append(raw2Energy(data.channels[i]).toSource());
-			jqData.push(json2jqplot(data.channels[i].data));
-		}
-		jqOptions.axes = {
-				yaxis:{autoscale:true, min:0, label:"Leistung (Watt)", tickOptions:{formatString:'%.3f'},labelRenderer: $.jqplot.CanvasAxisLabelRenderer},
-				xaxis:{autoscale:true, min:calcMyWindowStart(), max:myWindowEnd, tickOptions:{formatString:EformatString,angle:-30},pad:1, renderer:$.jqplot.DateAxisRenderer,rendererOptions:{tickRenderer:$.jqplot.CanvasAxisTickRenderer}},
-			};
-		
+		jqData.push(json2jqplot(data.channels[i].data));
 	}
-	// energy
-	else if(f.info.value == 'energy') {
-		
-		// thats not possible without grouping
-		if(f.grouping.value == '' )
-			return;
-		
-		// for each channel in json response
-		for(var i=0;i<data.channels.length;i++) {
-			jqData.push(raw2Energy(data.channels[i]));
-		}
-		
-		//jqData = json2jqplot(data);
-		
-		jqOptions.axes={
-				yaxis:{autoscale:true, min:0, tickOptions:{formatString:'%.3f'},label:"Energie (kWh)",labelRenderer: $.jqplot.CanvasAxisLabelRenderer},
-				xaxis:{
-					renderer:$.jqplot.CategoryAxisRenderer,
-					autoscale:true, 
-					tickOptions:{formatString:'%d.%m.%y %H:%M:%S',angle:-30},
-					pad:1, 
-					rendererOptions:{tickRenderer:$.jqplot.CanvasAxisTickRenderer},
-					ticks:generateAxisTicks()
-					}
-				};
-		jqOptions.highlighter={sizeAdjust: 7.5};
-
-		jqOptions.seriesDefaults.renderer=$.jqplot.BarRenderer;
-		jqOptions.cursor={show:false,zoom:false,showTooltip:true,showMarker:true}
-	}
+	jqOptions.axes = {
+			yaxis:{autoscale:true, min:0, label:"Leistung (Watt)", tickOptions:{formatString:'%.3f'},labelRenderer: $.jqplot.CanvasAxisLabelRenderer},
+			xaxis:{autoscale:true, min:calcMyWindowStart(), max:myWindowEnd, tickOptions:{formatString:EformatString,angle:-30},pad:1, renderer:$.jqplot.DateAxisRenderer,rendererOptions:{tickRenderer:$.jqplot.CanvasAxisTickRenderer}},
+	};
 	
 	chart = $.jqplot("ChartDIV",jqData,jqOptions);
 	chart.replot();
@@ -568,14 +470,7 @@ function generateAxisTicks() {
 	
 	for(var timestamp in data_grouped_time) {
 		var time = new Date(timestamp*1000);
-		if(f.grouping.value == 'month')
-			ticks.push((time.getMonth()+1)+'/'+time.getFullYear());
-		if(f.grouping.value == 'day')
-			ticks.push(time.getDate()+'.'+(time.getMonth()+1)+'.');
-		if(f.grouping.value == 'hour')
-			ticks.push(time.getDate()+'.'+(time.getMonth()+1)+'.'+' '+time.getHours()+':00');
-		if(f.grouping.value == 'minute')
-			ticks.push(time.getDate()+'.'+(time.getMonth()+1));
+		ticks.push(time.getDate()+'.'+(time.getMonth()+1)+'.'+' '+time.getHours()+':00');
 	}
 	
 	return ticks;
