@@ -227,7 +227,8 @@ $(document).ready(function() {
 	}
 	
 	// load channel list
-	loadChannelList();
+	// loadChannelList();
+	
 	
 	
 	// start autoReload timer
@@ -317,6 +318,8 @@ $(document).ready(function() {
 			return false;
 		});
 
+
+	getData();
 });
 
 
@@ -368,6 +371,7 @@ function moveWindow(mode) {
 
 function getData() {
 	
+	/*
 	if(f.ids.length>0)
  		$('#loading').empty().html('<img src="images/ladebild.gif" />');
 	
@@ -383,18 +387,16 @@ function getData() {
 				ids_parameter += f.ids[i].value + ",";
 			}
 		}
-	}
+	}*/
 	
 	// calcMyWindowStart
 	myWindowStart = calcMyWindowStart();
 	
 	$('#debug').append('<a href="../backend/index.php/data/'+myUUID+'/format/json/from/'+myWindowStart+'/to/'+myWindowEnd+'">json</a>');
 	// load json data with given time window
-	//$.getJSON("../backend/index.php",{uuid: myUUID,mode: 'getPulses', ids: ids_parameter, windowEnd: myWindowEnd, windowSize: f.window.value.substring(0,1), windowInterval: f.window.value.substring(1)}, function(j){
-	$.getJSON("../backend/index.php/data/" + myUUID + {format: 'json', ids: ids_parameter, from: myWindowStart, to: myWindowEnd});
-	/* $.getJSON("../backend/index.php/data/" + myUUID + {format: 'json', ids: ids_parameter, from: myWindowStart, to: myWindowEnd, groupBy: f.grouping.value}, function(j){
+	$.getJSON("../backend/index.php/" + myUUID, function(j){
 		data = j;
-		//$('#debug').empty().append(data.toSource());
+		$('#debug').empty().append(data.toSource());
 		// then show/reload the chart
 		//if(data.channels.length > 0 && data.channels[0].pulses.length > 0)
 		if(f.info.value == 'infos')
@@ -403,7 +405,7 @@ function getData() {
 			showChart();
 		
 		$('#loading').empty();
-	});*/
+	});
 	
 	return false;
 }
@@ -477,17 +479,21 @@ function showChart() {
 			//series_chart.push({showLabel:false,color:'#808080'})
 			
 			// power
-			if(f.grouping.value == '') {
+			/*if(f.grouping.value == '') {
 				jqData.push(raw2Power(data.channels[i],false));
 			}
 			else {
 				jqData.push(raw2Energy(data.channels[i]));
-			}
+			}*/
+			
+			//$('#debug').empty().append(raw2Energy(data.channels[i]).toSource());
+			jqData.push(json2jqplot(data.channels[i].data));
 		}
 		jqOptions.axes = {
 				yaxis:{autoscale:true, min:0, label:"Leistung (Watt)", tickOptions:{formatString:'%.3f'},labelRenderer: $.jqplot.CanvasAxisLabelRenderer},
 				xaxis:{autoscale:true, min:calcMyWindowStart(), max:myWindowEnd, tickOptions:{formatString:EformatString,angle:-30},pad:1, renderer:$.jqplot.DateAxisRenderer,rendererOptions:{tickRenderer:$.jqplot.CanvasAxisTickRenderer}},
 			};
+		
 	}
 	// energy
 	else if(f.info.value == 'energy') {
@@ -500,6 +506,8 @@ function showChart() {
 		for(var i=0;i<data.channels.length;i++) {
 			jqData.push(raw2Energy(data.channels[i]));
 		}
+		
+		//jqData = json2jqplot(data);
 		
 		jqOptions.axes={
 				yaxis:{autoscale:true, min:0, tickOptions:{formatString:'%.3f'},label:"Energie (kWh)",labelRenderer: $.jqplot.CanvasAxisLabelRenderer},
@@ -542,6 +550,15 @@ function showChart() {
 			getData();
 		}
 	});*/
+}
+
+function json2jqplot(raw) {
+	
+	for(i=0;i<raw.length;i++) {
+		raw[i][0] *= 1000;
+		raw[i][1] /= 1000;
+	}
+	return raw;
 }
 
 function generateAxisTicks() {
