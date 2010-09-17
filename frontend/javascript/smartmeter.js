@@ -61,7 +61,7 @@ function calcMyWindowStart() {
 	//var windowInterval = f.window.value.substring(1);
 	var windowInterval = "MONTH"; // we want to display 1 day (for now)
 	
-			myWindowStart.setMonth(myWindowStart.getMonth()-windowSize);
+	myWindowStart.setMonth(myWindowStart.getMonth()-windowSize);
 	return myWindowStart.getTime();
 }
 

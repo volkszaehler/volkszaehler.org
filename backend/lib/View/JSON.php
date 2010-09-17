@@ -138,9 +138,11 @@ class JSON extends View {
 
 		foreach ($data as $reading) {
 			$jsonData[] = array(
-				(int) $reading[0],
+				//(int) $reading[0],
+				(float) $reading[0],
 				(float) round($reading[1], View::PRECISSION),
-				(int) $reading[2]
+				//(int) $reading[2]
+				(float) $reading[2]
 			);
 		}
 
