@@ -47,30 +47,29 @@ class JSON extends View {
 	/**
 	 * constructor
 	 */
-	public function __construct(HTTP\Request $request, HTTP\Response $response, $padding = FALSE) {
+	public function __construct(HTTP\Request $request, HTTP\Response $response) {
 		parent::__construct($request, $response);
 
 		$this->json = new Util\JSON();
 		$this->json['source'] = 'volkszaehler.org';
 		$this->json['version'] = VZ_VERSION;
 
-		$this->setPadding($padding);
-
-		$this->response->setHeader('Content-type', 'application/json');
+		$this->setPadding($request->getParameter('padding'));
 	}
 
 	public function addChannel(Model\Channel $channel, array $data = NULL) {
 		$jsonChannel = self::convertEntity($channel);
+		$jsonChannel['type'] = $channel->getType();
 
 		if (isset($data)) {
 			$jsonChannel['data'] = self::convertData($data);
 		}
 
-		$this->json['channels'][] = $jsonChannel;
+		$this->json['channel'] = $jsonChannel;
 	}
 
 	public function addAggregator(Model\Aggregator $aggregator, $recursive = FALSE) {
-		$this->json['groups'][] = self::convertAggregator($aggregator, $recursive);
+		$this->json['group'] = self::convertAggregator($aggregator, $recursive);
 	}
 
 	public function addDebug(Util\Debug $debug) {
@@ -108,8 +107,8 @@ class JSON extends View {
 		$jsonEntity = array();
 		$jsonEntity['uuid'] = (string) $entity->getUuid();
 
-		foreach ($entity->getProperties() as $property) {
-			$jsonEntity[$property->getName()] = $property->getValue();
+		foreach ($entity->getProperties() as $key => $value) {
+			$jsonEntity[$key] = $value;
 		}
 
 		return $jsonEntity;
@@ -123,10 +122,10 @@ class JSON extends View {
 		}
 
 		if ($recursive) {
-			$jsonAggregator['children'] = array();
+			$jsonAggregator['groups'] = array();
 
 			foreach ($aggregator->getChildren() as $subAggregator) {
-				$jsonAggregator['children'][] = $this->toJson($subAggregator, $recursive);	// recursion
+				$jsonAggregator['groups'][] = $this->toJson($subAggregator, $recursive);	// recursion
 			}
 		}
 
@@ -134,26 +133,21 @@ class JSON extends View {
 	}
 
 	protected static function convertData($data) {
-		$jsonData = array();
+		array_walk($data, function(&$reading) {
+			$reading[1] = round($reading[1], View::PRECISSION);
+		});
 
-		foreach ($data as $reading) {
-			$jsonData[] = array(
-				(int) $reading[0],
-				(float) round($reading[1], View::PRECISSION),
-				(int) $reading[2]
-			);
-		}
-
-		return $jsonData;
+		return $data;
 	}
 
-	public function renderResponse() {
+	public function render() {
 		$json = $this->json->encode((Util\Debug::isActivated()) ? JSON_PRETTY : 0);
 
 		if ($this->padding) {
 			$json = 'if (self.' . $this->padding . ') { ' . $this->padding  . '(' . $json . '); }';
 		}
 
+		$this->response->setHeader('Content-type', 'application/json');
 		echo $json;
 	}
 

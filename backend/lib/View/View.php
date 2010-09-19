@@ -28,25 +28,13 @@ use Volkszaehler\View\HTTP;
 use Volkszaehler\Util;
 
 /**
- * Interface for all View classes
- *
- * @author Steffen Vogel <info@steffenvogel.de>
- * @package default
- */
-interface ViewInterface {
-	public function addChannel(Model\Channel $channel, array $data = NULL);
-	function addAggregator(Model\Aggregator $aggregator);
-	function addDebug(Util\Debug $debug);
-}
-
-/**
- * Superclass for all view classes
+ * Base class for all view formats
  *
  * @package default
  * @author Steffen Vogel <info@steffenvogel.de>
  *
  */
-abstract class View implements ViewInterface {
+abstract class View {
 	/**
 	 * @var integer round all values to x decimals
 	 */
@@ -79,6 +67,11 @@ abstract class View implements ViewInterface {
 		set_error_handler(array($this, 'errorHandler'));
 	}
 
+	public function __desctruct() {
+		restore_exception_handler();
+		restore_error_handler();
+	}
+
 	/**
 	 * error & exception handling
 	 */
@@ -91,22 +84,52 @@ abstract class View implements ViewInterface {
 
 		$code = ($exception->getCode() == 0 && HTTP\Response::getCodeDescription($exception->getCode())) ? 400 : $exception->getCode();
 		$this->response->setCode($code);
-		$this->sendResponse();
+		$this->send();
 
 		die();
 	}
 
-	public function sendResponse() {
+	public function send() {
 		if (Util\Debug::isActivated()) {
 			$this->addDebug(Util\Debug::getInstance());
 		}
 
-		$this->renderResponse();
+		$this->render();
 		$this->response->send();
 	}
 
-	protected abstract function renderResponse();
+	/**
+	 *
+	 * @param mixed $data
+	 */
+	public function add($data) {
+		if (isset($data)) {
+			if (is_array($data)) {
+				array_walk($data, array($this, 'add'));
+			}
+			else {
+				if ($data instanceof Model\Channel) {
+					$this->addChannel($data);
+				}
+				elseif ($data instanceof Model\Aggregator) {
+					$this->addAggregator($data);
+				}
+				elseif ($data instanceof \Exception) {
+					$this->addException($data);
+				}
+				elseif ($data instanceof Util\Debug) {
+					$this->addDebug($data);
+				}
+				else {
+					throw new \Exception('Can\'t show ' . get_class($data));
+				}
+			}
+		}
+	}
+
+	protected abstract function render();
 	protected abstract function addException(\Exception $exception);
+	protected abstract function addDebug(Util\Debug $debug);
 }
 
 ?>

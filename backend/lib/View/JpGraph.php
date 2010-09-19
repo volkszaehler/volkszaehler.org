@@ -48,8 +48,8 @@ class JpGraph extends View {
 
 	protected $channels = array();
 
-	protected $width = 800;
-	protected $height = 400;
+	const WIDTH = 800;
+	const HEIGHT = 400;
 
 	protected static $colors = array('chartreuse', 'chocolate1', 'cyan', 'blue', 'lightcyan4', 'gold');
 
@@ -64,7 +64,10 @@ class JpGraph extends View {
 	public function __construct(HTTP\Request $request, HTTP\Response $response, $format = 'png') {
 		parent::__construct($request, $response);
 
-		$this->graph = new \Graph($this->width,$this->height);
+		$width = $this->request->getParameter('width') ? $this->request->getParameter('width') : self::WIDTH;
+		$height = $this->request->getParameter('height') ? $this->request->getParameter('height') : self::HEIGHT;
+
+		$this->graph = new \Graph($width, $height);
 
 		$this->graph->img->SetImgFormat($format);
 
@@ -125,7 +128,7 @@ class JpGraph extends View {
 			$this->channels[] = $channel;
 		}
 		else {
-			throw new \Exception('can\'t plot channels without data!');
+			throw new \Exception('Can\'t plot channels without data!');
 		}
 	}
 
