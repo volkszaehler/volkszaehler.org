@@ -23,27 +23,47 @@
 
 namespace Volkszaehler\Model;
 
+use Volkszaehler\Util;
+
 /**
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
  */
 class EntityDefinition extends Definition {
-	/** @var string File containing the JSON definitons */
-	const FILE = '/share/entities.json';
+	/**
+	 * File containing the JSON definitons
+	 *
+	 * @var string
+	 */
+	const FILE = '/share/definitions/entities.json';
 
-	/** @var array list of required properties */
+	/**
+	 * List of required properties
+	 *
+	 * @var array
+	 */
 	protected $required = array();
 
-	/** @var array list of optional properties */
+	/**
+	 * List of optional properties
+	 *
+	 * @var array
+	 */
 	protected $optional = array();
 
-	/** @var string classname of intepreter (see backend/lib/Interpreter/) */
+	/**
+	 * Classname of intepreter (see backend/lib/Interpreter/)
+	 *
+	 * @var string
+	 */
 	protected $interpreter;
 
-	/** @var string optional for Aggregator class entities */
+	/**
+	 * Optional for Aggregator class entities
+	 *
+	 * @var string
+	 */
 	protected $unit;
-
-	static protected $definitions = NULL;
 
 	/**
 	 * @todo url relative or absolute?
@@ -51,11 +71,15 @@ class EntityDefinition extends Definition {
 	 */
 	protected $icon;
 
+	static protected $definitions = NULL;
+
 	/*
 	 * Setter & Getter
 	 */
 	public function getInterpreter() { return $this->interpreter; }
 	public function getUnit() { return $this->unit; }
+	public function getRequiredProperties() { return $this->required; }
+	public function getValidProperties() { return array_merge($this->required, $this->optional); }
 }
 
 ?>

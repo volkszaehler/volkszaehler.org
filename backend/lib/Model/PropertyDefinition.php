@@ -28,10 +28,25 @@ namespace Volkszaehler\Model;
  * @package default
  */
 class PropertyDefinition extends Definition {
-	/** One of: string, integer, float, boolean, multiple */
+	/**
+	 * File containing the JSON definitons
+	 *
+	 * @var string
+	 */
+	const FILE = '/share/definitions/properties.json';
+
+	/**
+	 * One of: string, integer, float, boolean, multiple
+	 *
+	 * @var string
+	 */
 	protected $type;
 
-	/** @var string regex pattern to match if type == string */
+	/**
+	 * Regex pattern to match if type == string
+	 *
+	 * @var string
+	 */
 	protected $pattern;
 
 	/**
@@ -60,14 +75,6 @@ class PropertyDefinition extends Definition {
 
 	protected static $definitions = NULL;
 
-
-	/**
-	 * File containing the JSON definitons
-	 *
-	 * @var string
-	 */
-	const FILE = '/share/properties.json';
-
 	/**
 	 * Validate value according to $this->type
 	 *
@@ -84,15 +91,15 @@ class PropertyDefinition extends Definition {
 				break;
 
 			case 'integer':
-				$invalid = !is_int($value);	// TODO check for numeric string
+				$invalid = !is_int($value);
 				break;
 
 			case 'float':
-				$invalid = !is_float($value);	// TODO check for numeric string
+				$invalid = !is_float($value);
 				break;
 
 			case 'boolean':
-				$invalid = !is_bool($value);	// TODO check for numeric string
+				$invalid = !is_bool($value);
 				break;
 
 			case 'multiple':
@@ -100,7 +107,7 @@ class PropertyDefinition extends Definition {
 				break;
 
 			default:
-				throw new \Exception('unknown property type');
+				throw new \Exception('Unknown property type: ' . $type);
 		}
 
 		if ($this->type == 'integer' || $this->type == 'float') {
