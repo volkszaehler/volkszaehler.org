@@ -33,42 +33,31 @@ use Volkszaehler\Util;
  * @todo call via redirect from Controller\Channel
  * @package default
  */
-class DataController extends EntityController {
+class DataController extends Controller {
 
 	/**
 	 * Query for data by given channel or group
-	 *
-	 * @todo authentification/indentification
-	 * @todo use uuids for groups or channels
 	 */
-	public function get() {
-		if (isset($this->entity)) {
-			$from = $this->view->request->getParameter('from');
-			$to = $this->view->request->getParameter('to');
-			$groupBy = ($this->view->request->getParameter('groupBy'));	// get all readings by default
+	public function get(Model\Entity $entity) {
+		$from = $this->view->request->getParameter('from');
+		$to = $this->view->request->getParameter('to');
+		$groupBy = $this->view->request->getParameter('groupBy');
 
-			$data = $this->entity->getInterpreter($this->em, $from, $to)->getValues($groupBy);
-
-			if ($this->entity instanceof Model\Aggregator) {
-				$this->view->addAggregator($entity, $data);
-			}
-			elseif ($this->entity instanceof Model\Channel) {
-				$this->view->addChannel($this->entity, $data);
-			}
-		}
+		return $entity->getInterpreter($this->em, $from, $to)->getValues($groupBy);
 	}
 
 	/**
 	 * Log new readings with logger interfaces
 	 *
 	 * @todo authentification/indentification
+	 * @todo reimplement
 	 */
 	public function add() {
-		$loggerClassName = 'Volkszaehler\Logger\\' . ucfirst($this->view->request->getParameter('logger')) . 'Logger';
-		if (!(Util\ClassLoader::classExists($loggerClassName)) || !is_subclass_of($loggerClassName, '\Volkszaehler\Logger\Logger')) {
-			throw new \Exception('\'' . $loggerClassName . '\' is not a valid controller');
+		$class = 'Volkszaehler\Logger\\' . ucfirst($this->view->request->getParameter('logger')) . 'Logger';
+		if (!(Util\ClassLoader::classExists($class)) || !is_subclass_of($class, '\Volkszaehler\Logger\Logger')) {
+			throw new \Exception('Unkown logger: ' . $class);
 		}
-		$logger = new $loggerClassName($this->view->request, $this->em);
+		$logger = new $class($this->view->request, $this->em);
 
 		$logger->log();
 	}

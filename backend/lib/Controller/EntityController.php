@@ -32,113 +32,44 @@ use Volkszaehler\Model;
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
  */
-class EntityController extends Controller {
-	protected $entity = NULL;
-
-	public function __construct(\Volkszaehler\View\View $view, \Doctrine\ORM\EntityManager $em, $identifier) {
-		parent::__construct($view, $em);
-
-		if ($identifier) {
-			$dql = 'SELECT e, p
-					FROM Volkszaehler\Model\Entity e
-					LEFT JOIN e.properties p
-					WHERE e.uuid LIKE \'%' . $identifier . '\'';
-
-			$q = $this->em->createQuery($dql);
-			$result = $q->getResult();
-
-			if (count($result) == 1) {
-				$this->entity = reset($result);
-			}
-			elseif (count($result) > 1) {
-				throw new \Exception('identifier is not unique');
-			}
-			elseif (count($result) < 1) {
-				throw new \Exception('no entity found');
-			}
-		}
-	}
-
+abstract class EntityController extends Controller {
 	/**
-	 * Get Entities
+	 * Get entity
 	 *
-	 * @todo authentification/indentification
-	 * @todo implement filters
+	 * @param unknown_type $identifier
 	 */
-	public function get() {
-		if (isset($this->entity)) {
-			// distinction between channels & aggregators
-			$this->view->addChannel($this->entity);
-		}
-		else {
-			$dql = 'SELECT e, p
-					FROM Volkszaehler\Model\Channel e
-					LEFT JOIN e.properties p';
+	abstract public function get($identifier);
 
-			$q = $this->em->createQuery($dql);
-			$entities = $q->getResult();
+	/**
+	 * Delete entity by uuid
+	 */
+	public function delete($identifier) {
+		$entity = $this->get($identifier);
 
-			foreach ($entities as $entity) {
-				// distinction between channels & aggregators
-				$this->view->addChannel($entity);
-			}
-		}
+		$this->em->remove($entity);
+		$this->em->flush();
 	}
 
 	/**
-	 * Add channel
+	 * Edit entity properties
 	 */
-	public function add() {
-		if (is_null($this->entity)) {
-			$channel = new Model\Channel($this->view->request->getParameter('type'));
+	public function edit($identifier) {
+		$entity = $this->get($identifier);
 
-			foreach ($this->view->request->getParameters() as $parameter => $value) {
-				if (Model\PropertyDefinition::exists($parameter)) {
-					$property = new Model\Property($channel, $parameter, $value);
-					$channel->setProperty($property);
+		foreach ($this->view->request->getParameters() as $parameter => $value) {
+			if (Model\PropertyDefinition::exists($parameter)) {
+				if ($value == '') {
+					$entity->unsetProperty($parameter, $this->em);
+				}
+				else {
+					$entity->setProperty($parameter, $value);
 				}
 			}
-
-			$this->em->persist($channel);
-			$this->em->flush();
-
-			$this->view->addChannel($channel);
 		}
-	}
 
-	/**
-	 * Delete channel by uuid
-	 *
-	 * @todo authentification/indentification
-	 */
-	public function delete() {
-		if (isset($this->entity)) {
-			$this->em->remove($this->entity);
-			$this->em->flush();
-		}
-	}
+		$this->em->flush();
 
-	/**
-	 * Edit channel properties
-	 *
-	 * @todo authentification/indentification
-	 * @todo to be implemented
-	 */
-	public function edit() {
-		if (isset($this->entity)) {
-			foreach ($this->view->request->getParameters() as $parameter => $value) {
-				if (Model\PropertyDefinition::exists($parameter)) {
-					$property = new Model\Property($channel, $parameter, $value);
-					$this->entity->setProperty($property);
-				}
-			}
-
-			$this->em->persist($channel);
-			$this->em->flush();
-
-			// distinction between channels & aggregators
-			$this->view->addChannel($channel);
-		}
+		return $entity;
 	}
 }
 

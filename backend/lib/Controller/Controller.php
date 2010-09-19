@@ -45,16 +45,16 @@ abstract class Controller {
 	}
 
 	/**
-	 * Run controller actions
+	 * Run operation
 	 *
-	 * @param string $action runs the action if class method is available
+	 * @param string $operation runs the operation if class method is available
 	 */
-	public function run($action) {
-		if (!is_callable(array($this, $action))) {
-			throw new \Exception('\'' . $action . '\' is not a valid controller action');
+	public function run($operation, $params = NULL) {
+		if (!is_callable(array($this, $operation))) {
+			throw new \Exception('Invalid context operation: ' . $operation);
 		}
 
-		$this->$action();
+		return $this->$operation($params);
 	}
 }
 

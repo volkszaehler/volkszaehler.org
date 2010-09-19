@@ -31,9 +31,42 @@ namespace Volkszaehler\Controller;
  */
 use Volkszaehler\Model;
 
-class AggregatorController extends Controller {
-// TODO add/remove channels
-// TODO add/remove aggregators
+class AggregatorController extends EntityController {
+
+	/**
+	 * Get aggregator
+	 *
+	 * @param string $identifier
+	 */
+	public function get($identifier) {
+		$dql = 'SELECT a, p
+				FROM Volkszaehler\Model\Aggregator a
+				LEFT JOIN a.properties p
+				WHERE a.uuid = ?1';
+
+		$q = $this->em->createQuery($dql);
+		$q->setParameter(1, $identifier);
+
+		return $q->getSingleResult();
+	}
+
+	/**
+	 * Add aggregator
+	 */
+	public function add() {
+		$aggregator = new Model\Aggregator('group');	// TODO support for other aggregator types
+
+		foreach ($this->view->request->getParameters() as $parameter => $value) {
+			if (Model\PropertyDefinition::exists($parameter)) {
+				$aggregator->setProperty($parameter, $value);
+			}
+		}
+
+		$this->em->persist($aggregator);
+		$this->em->flush();
+
+		return $aggregator;
+	}
 }
 
 ?>

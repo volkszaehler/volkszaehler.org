@@ -23,9 +23,6 @@
 
 namespace Volkszaehler\Controller;
 
-use Volkszaehler\Util;
-use Volkszaehler\Model;
-
 /**
  * Channel controller
  *
@@ -33,7 +30,41 @@ use Volkszaehler\Model;
  * @package default
  */
 class ChannelController extends EntityController {
-//TODO log data
+
+	/**
+	 * Get channel
+	 *
+	 * @param string $identifier
+	 */
+	public function get($identifier) {
+		$dql = 'SELECT c, p
+				FROM Volkszaehler\Model\Channel c
+				LEFT JOIN c.properties p
+				WHERE c.uuid = ?1';
+
+		$q = $this->em->createQuery($dql);
+		$q->setParameter(1, $identifier);
+
+		return $q->getSingleResult();
+	}
+
+	/**
+	 * Add channel
+	 */
+	public function add() {
+		$channel = new Model\Channel($this->view->request->getParameter('type'));
+
+		foreach ($this->view->request->getParameters() as $parameter => $value) {
+			if (Model\PropertyDefinition::exists($parameter)) {
+				$channel->setProperty($parameter, $value);
+			}
+		}
+
+		$this->em->persist($channel);
+		$this->em->flush();
+
+		return $channel;
+	}
 }
 
 ?>
