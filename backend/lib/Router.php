@@ -23,73 +23,178 @@
 
 namespace Volkszaehler;
 
+use Volkszaehler\View;
+use Volkszaehler\Util;
+use Volkszaehler\View\HTTP;
+use Doctrine\ORM;
+
 /**
+ *  Router
+ *
+ * This class acts as a frontcontroller to route incomming requests
+ *
  * @package default
  * @author Steffen Vogel <info@steffenvogel.de>
  */
-use Volkszaehler\Util;
-
-use Doctrine\ORM;
-
 class Router {
-	protected $format;
-	protected $controller;
-	protected $identifier;
-	protected $action;
+	/**
+	 * @var \Doctrine\ORM\EntityManager Doctrine EntityManager
+	 */
+	public $em;
 
+	/**
+	 * @var View\View
+	 */
+	public $view;
+
+	/**
+	 * @var Util\Debug optional debugging instance
+	 */
+	public $debug;
+
+	/**
+	 * PATH_INFO envvar
+	 * @var string
+	 */
+	protected $pathInfo;
+
+	/**
+	 * @var array HTTP-method => operation mapping
+	 */
+	protected static $operationMapping = array(
+		'post'			=> 'add',
+		'delete'		=> 'delete',
+		'get'			=> 'get',
+		'pull'			=> 'edit'
+	);
+
+	/**
+	 * @var array context => controller mapping
+	 */
 	protected static $controllerMapping = array(
-		'channels'		=> 'Volkszaehler\Controller\ChannelController',
-		'groups'		=> 'Volkszaehler\Controller\GroupController',
-		'tokens'		=> 'Volkszaehler\Controller\TokenController',
+		'channel'		=> 'Volkszaehler\Controller\ChannelController',
+		'group'			=> 'Volkszaehler\Controller\AggregatorController',
+		'token'			=> 'Volkszaehler\Controller\TokenController',
 		'capabilities'	=> 'Volkszaehler\Controller\CapabilitiesController',
 		'data'			=> 'Volkszaehler\Controller\DataController'
 	);
 
 	/**
-	 * Constructor
-	 *
-	 * @param ORM\EntityManager $em
+	 * @var array format => view mapping
 	 */
-	public function __construct(ORM\EntityManager $em) {
-		$this->parsePathInfo();
+	protected static $viewMapping = array(
+		'png'			=> 'Volkszaehler\View\JpGraph',
+		'jpeg'			=> 'Volkszaehler\View\JpGraph',
+		'jpg'			=> 'Volkszaehler\View\JpGraph',
+		'gif'			=> 'Volkszaehler\View\JpGraph',
+		'xml'			=> 'Volkszaehler\View\XML',
+		'csv'			=> 'Volkszaehler\View\CSV',
+		'json'			=> 'Volkszaehler\View\JSON',
+		'txt'			=> 'Volkszaehler\View\PlainText'
+	);
+
+	/**
+	 * Constructor
+	 */
+	public function __construct() {
+		// initialize HTTP request & response (required to initialize view & controllers)
+		$request = new HTTP\Request();
+		$response = new HTTP\Response();
+
+		// early default format
+		$this->view = new View\JSON($request, $response);
+
+		// initialize entity manager
+		$this->em = self::createEntityManager();
+
+		// initialize debugging
+		if (($debugLevel = $request->getParameter('debug')) != NULL || $debugLevel = Util\Configuration::read('debug')) {
+			if ($debugLevel > 0) {
+				$this->debug = new Util\Debug($debugLevel, $this->em);
+			}
+		}
+
+		// initialize view
+		$this->pathInfo = self::getPathInfo();
+		$this->format = self::getFormat($this->pathInfo);
+		$this->operation = self::getOperation($request);
+
+		if (empty(self::$viewMapping[$this->format])) {
+			if (empty($this->format)) {
+				throw new \Exception('Missing format');
+			}
+			else {
+				throw new \Exception('Unknown format: ' . $this->format);
+			}
+		}
+
+		$class = self::$viewMapping[$this->format];
+		$this->view = new $class($request, $response, $this->format);
+
+		// some general debugging information
+		//Util\Debug::log('_SERVER', $_SERVER);
+		//Util\Debug::log('PATH_INFO', $this->pathInfo);
 	}
 
 	/**
-	 * @todo add alternative url schema without PATH_INFO
+	 * Processes the request
+	 *
+	 * Request Example: http://sub.domain.local/vz/backend/channel/550e8400-e29b-11d4-a716-446655440000/data.json?operation=edit&title=New Title
 	 */
-	protected function parsePathInfo() {
-		// Request: http://sub.domain.local/vz/backend/channel/550e8400-e29b-11d4-a716-446655440000/edit.json?title=New Title
-		// PATH_INFO: /channel/550e8400-e29b-11d4-a716-446655440000/edit.json
-		$pi = $this->getPathInfo();
+	public function run() {
+		$pathInfo = substr($this->pathInfo, 1, strrpos($this->pathInfo, '.') -1);	// remove leading slash and format
+		$pathInfo = explode('/', $pathInfo);										// split into path segments
 
-		//Util\Debug::log('PATH_INFO', $pi);
-		//Util\Debug::log('_SERVER', $_SERVER);
+		if (array_key_exists($pathInfo[0], self::$controllerMapping)) {
+			$class = self::$controllerMapping[$pathInfo[0]];
+			$controller = new $class($this->view, $this->em);
 
-		if ($pi) {
-			$pi = substr($pi, 1);
-			$pie = explode('/', $pi);
-			$i = 0;
+			if (isset($pathInfo[1])) {
+				if (Util\UUID::validate($pathInfo[1], TRUE)) {
+					if (isset($pathInfo[2])) {
+						if (array_key_exists($pathInfo[2], self::$controllerMapping)) {
+							$class = self::$controllerMapping[$pathInfo[2]];
+							$subcontroller = new $class($this->view, $this->em);
 
-			if (isset($pie[$i]) && array_key_exists($pie[$i], self::$controllerMapping)) {
-				$this->controller = self::$controllerMapping[$pie[$i]];
-				$i++;
+							$result = $subcontroller->run($this->operation, $controller->run('get', $pathInfo[1]));
+						}
+						else {
+							throw new \Exception('Unknown subcontext: ' . $pathInfo[2]);
+						}
+					}
+					else {
+						$result = $controller->run($this->operation, $pathInfo[1]);
+					}
+				}
+				else {
+					throw new \Exception('Invalid identifier: ' . $pathInfo[1]);
+				}
 			}
-
-			if (isset($pie[$i]) && preg_match('/[a-f0-9\-]{5,36}/', $pie[$i])) {
-				$this->identifier = $pie[$i];
-			}
-			$i++;
-
-			if (isset($pie[$i]) && strpos($pie[$i], '.') !== FALSE) {
-				list($this->action, $this->format) = explode('.', $pie[$i]);
-			}
-			elseif (isset($pie[$i])) {
-				$this->action = $pie[$i];
+			else {
+				$result = $controller->run($this->operation);
 			}
 		}
 		else {
-			throw new \Exception('no CGI PATH_INFO envvar found');
+			throw new \Exception('Unknown context: ' . $pathInfo[0]);
 		}
+
+		$this->view->add($result);
+	}
+
+	protected static function getOperation(HTTP\Request $request) {
+		if ($operation = $request->getParameter('operation')) {
+			return $operation;
+		}
+		elseif (isset(self::$operationMapping[strtolower($request->getMethod())])) {
+			return self::$operationMapping[strtolower($request->getMethod())];
+		}
+		else {
+			throw new \Exception('Can\'t determine operation');
+		}
+	}
+
+	protected static function getFormat($pathInfo) {
+		return pathinfo($pathInfo, PATHINFO_EXTENSION);
 	}
 
 	/**
@@ -108,17 +213,34 @@ class Router {
 			return substr($_SERVER['PHP_SELF'], strlen($_SERVER['SCRIPT_NAME']));
 		}
 		else {
-			return FALSE;
+			throw new \Exception('Can\'t get PATH_INFO');
 		}
 	}
 
-	/*
-	 * Getter & setter
+	/**
+	 * Factory for doctrines entitymanager
+	 *
+	 * @todo add other caching drivers (memcache, xcache)
+	 * @todo put into static class? singleton? function or state class?
 	 */
-	public function getFormat() { return $this->format; }
-	public function getController() { return $this->controller; }
-	public function getIdentifier() { return $this->identifier; }
-	public function getAction() { return $this->action; }
+	public static function createEntityManager() {
+		$config = new \Doctrine\ORM\Configuration;
+
+		if (extension_loaded('apc') && Util\Configuration::read('devmode') == FALSE) {
+			$cache = new \Doctrine\Common\Cache\ApcCache;
+			$config->setMetadataCacheImpl($cache);
+			$config->setQueryCacheImpl($cache);
+		}
+
+		$driverImpl = $config->newDefaultAnnotationDriver(VZ_BACKEND_DIR . '/lib/Model');
+		$config->setMetadataDriverImpl($driverImpl);
+
+		$config->setProxyDir(VZ_BACKEND_DIR . '/lib/Model/Proxy');
+		$config->setProxyNamespace('Volkszaehler\Model\Proxy');
+		$config->setAutoGenerateProxyClasses(Util\Configuration::read('devmode'));
+
+		return \Doctrine\ORM\EntityManager::create(Util\Configuration::read('db'), $config);
+	}
 }
 
 ?>
