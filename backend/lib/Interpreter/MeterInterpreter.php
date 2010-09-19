@@ -31,6 +31,7 @@ namespace Volkszaehler\Interpreter;
  *
  */
 use Volkszaehler;
+use Volkszaehler\Util;
 
 class MeterInterpreter extends Interpreter {
 
