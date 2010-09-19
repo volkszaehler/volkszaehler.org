@@ -36,7 +36,7 @@ use Volkszaehler\Model;
  * @Table(
  * 		name="properties",
  * 		uniqueConstraints={
- * 			@UniqueConstraint(name="unique_properties", columns={"id", "name"})
+ * 			@UniqueConstraint(name="unique_keys", columns={"entity_id", "`key`	"})
  * 		}
  * )
  * @HasLifecycleCallbacks
@@ -51,8 +51,8 @@ class Property {
 	 */
 	protected $id;
 
-	/** @Column(type="string", nullable=false) */
-	protected $name;
+	/** @Column(name="`key`", type="string", nullable=false) */
+	protected $key;
 
 	/** @Column(type="string", nullable=false) */
 	protected $value;
@@ -66,11 +66,11 @@ class Property {
 	 * @param string $key
 	 * @param string $value
 	 */
-	public function __construct(Model\Entity $entity, $name, $value) {
-		$this->setName($name);
-		$this->setValue($value);
-
+	public function __construct(Model\Entity $entity, $key, $value) {
 		$this->entity = $entity;
+
+		$this->key = $key;
+		$this->value = $value;
 	}
 
 	/**
@@ -78,14 +78,14 @@ class Property {
 	 *
 	 * @PostLoad
 	 */
-	public function castValue() {
+	public function cast() {
 		if ($this->getDefinition()->getType() != 'multiple') {
 			settype($this->value, $this->getDefinition()->getType());
 		}
 	}
 
 	/**
-	 * Validate property name & value
+	 * Validate property key & value
 	 *
 	 * Throws an exception if something is incorrect
 	 *
@@ -93,24 +93,43 @@ class Property {
 	 * @PreUpdate
 	 */
 	public function validate() {
-		if (!PropertyDefinition::exists($this->name)) {
-			throw new \Exception('invalid property name: ' . $this->name);
+		if (!PropertyDefinition::exists($this->key)) {
+			throw new \Exception('Invalid property key: ' . $this->key);
 		}
 
+		$this->cast();	// TODO not safe
+
 		if (!$this->getDefinition()->validateValue($this->value)) {
-			throw new \Exception('invalid property value: ' . $this->value);
+			throw new \Exception('Invalid property value: ' . $this->value);
+		}
+	}
+
+	/**
+	 * @PreRemove
+	 */
+	public function checkRemove() {
+		if (in_array($this->key, $this->entity->getDefinition()->getRequiredProperties())) {
+			throw new \Exception('"' . $this->key . '" is a required property for the "' . $this->entity->getType() . '" entity');
+		}
+	}
+
+	/**
+	 * @PrePersist
+	 */
+	public function checkPersist() {
+		if (!in_array($this->key, $this->entity->getDefinition()->getValidProperties())) {
+			throw new \Exception('"' . $this->key . '" is not a valid property for the "' . $this->entity->getType() . '" entity');
 		}
 	}
 
 	/*
 	 * Setter & Getter
 	 */
-	public function getName() { return $this->name; }
+	public function getKey() { return $this->key; }
 	public function getValue() { return $this->value; }
-	public function getDefinition() { return PropertyDefinition::get($this->name); }
+	public function getDefinition() { return PropertyDefinition::get($this->key); }
 
 	public function setValue($value) { $this->value = $value; }
-	protected function setName($name) { $this->name = $name; }
 }
 
 ?>

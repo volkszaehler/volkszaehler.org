@@ -30,13 +30,12 @@ use Volkszaehler\Util;
 use Volkszaehler\Controller;
 
 // enable strict error reporting
-error_reporting(E_ALL);
+error_reporting(E_ALL | E_STRICT);
 
 // TODO replace by state class
 define('VZ_VERSION', 0.2);
 define('VZ_DIR', realpath(__DIR__ . '/..'));
 define('VZ_BACKEND_DIR', VZ_DIR . '/backend');
-define('DEV_ENV', TRUE);
 
 // class autoloading
 require VZ_BACKEND_DIR . '/lib/Util/ClassLoader.php';
@@ -44,7 +43,6 @@ require VZ_BACKEND_DIR . '/lib/Util/ClassLoader.php';
 $classLoaders = array();
 $classLoaders[] = new Util\ClassLoader('Volkszaehler', VZ_BACKEND_DIR . '/lib');
 $classLoaders[] = new Util\ClassLoader('Doctrine', VZ_BACKEND_DIR . '/lib/vendor/Doctrine');
-//$classLoaders[] = new Util\ClassLoader('Symfony', VZ_BACKEND_DIR . '/lib/vendor/Symfony'); // only required for the cli
 
 foreach ($classLoaders as $loader) {
 	$loader->register(); // register on SPL autoload stack
@@ -52,7 +50,8 @@ foreach ($classLoaders as $loader) {
 
 Util\Configuration::load(VZ_BACKEND_DIR . '/volkszaehler.conf');
 
-$fc = new Dispatcher;	// spawn frontcontroller / dispatcher
-$fc->run();				// execute controller and sends output
+$r = new Router();
+$r->run();
+$r->view->send();
 
 ?>

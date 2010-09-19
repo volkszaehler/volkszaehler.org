@@ -27,7 +27,9 @@
 use Volkszaehler\Util;
 
 // TODO replace by state class
-const VZ_BACKEND_DIR = '/home/steffen/workspace/volkszaehler.org/backend';
+define('VZ_VERSION', 0.2);
+define('VZ_DIR', realpath(__DIR__ . '/../..'));
+define('VZ_BACKEND_DIR', VZ_DIR . '/backend');
 
 // class autoloading
 require VZ_BACKEND_DIR . '/lib/Util/ClassLoader.php';
@@ -44,7 +46,7 @@ foreach ($classLoaders as $loader) {
 // load configuration
 Util\Configuration::load(VZ_BACKEND_DIR . '/volkszaehler.conf');
 
-$em = Volkszaehler\Dispatcher::createEntityManager();
+$em = Volkszaehler\Router::createEntityManager();
 
 $helperSet = new \Symfony\Component\Console\Helper\HelperSet(array(
 	'db' => new \Doctrine\DBAL\Tools\Console\Helper\ConnectionHelper($em->getConnection()),

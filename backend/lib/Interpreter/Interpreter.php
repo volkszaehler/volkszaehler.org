@@ -115,7 +115,7 @@ abstract class Interpreter implements InterpreterInterface {
 			return new Iterator\DataAggregationIterator($stmt, $rowCount, $tuples);
 		}
 		else {
-			throw new \Exception('invalid groupBy parameter');
+			throw new \Exception('Invalid parameter: "groupBy"');
 		}
 	}
 

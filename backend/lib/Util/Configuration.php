@@ -38,7 +38,7 @@ class Configuration {
 	 */
 	static public function write($var, $value) {
 		if (!is_scalar($value) && !is_array($value)) {
-			throw new \Exception('sry we can\'t store this datatype in the configuration');
+			throw new \Exception('Can\'t store this datatype in the configuration');
 		}
 
 		$values =& self::$values;
@@ -94,13 +94,13 @@ class Configuration {
 		$filename .= '.php';
 
 		if (!file_exists($filename)) {
-			throw new \Exception('configuration file not found: ' . $filename);
+			throw new \Exception('Configuration file not found: ' . $filename);
 		}
 
 		include $filename;
 
 		if (!isset($config)) {
-			throw new \Exception('no variable $config found in ' . $filename);
+			throw new \Exception('No variable $config found in ' . $filename);
 		}
 
 		self::$values = $config;

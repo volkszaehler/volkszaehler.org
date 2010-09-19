@@ -25,8 +25,6 @@ namespace Volkszaehler\Model;
 
 use Volkszaehler\Util;
 
-use Volkszaehler\Model;
-
 /**
  * Token entity
  *

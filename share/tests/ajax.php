@@ -36,7 +36,7 @@
 
 <script type="text/javascript">
 $(document).ready(function() {
-	$.getJSON('../../backend/index.php?format=json&controller=group&action=get&recursive=1', function(data) {
+	$.getJSON('../../backend/group.json?operation=get&recursive=1', function(data) {
 		$('#tree').jstree({
 			'plugins' : [ 'themes', 'ui', ],
 			'types' : {

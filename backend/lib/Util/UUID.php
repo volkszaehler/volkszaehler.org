@@ -94,7 +94,7 @@ class UUID {
 				return new self(self::mintTime($node));
 			case 2:
 				// Version 2 is not supported
-				throw new \Exception("Version 2 is unsupported.");
+				throw new \Exception('Version 2 is unsupported.');
 			case 3:
 				return new self(self::mintName(self::MD5, $node, $ns));
 			case 4:
@@ -102,17 +102,40 @@ class UUID {
 			case 5:
 				return new self(self::mintName(self::SHA1, $node, $ns));
 			default:
-				throw new \Exception("Selected version is invalid or unsupported.");
+				throw new \Exception('Selected version is invalid or unsupported.');
 		}
 	}
 
 	/**
 	 * Import an existing UUID
 	 *
-	 * @param unkown_type $uuid
+	 * @param unknown_type $uuid
 	 */
 	public static function import($uuid) {
 		return new self(self::makeBin($uuid, 16));
+	}
+
+	/**
+	 * Performant validation of UUID's
+	 *
+	 * Replaces preg_match('/[a-f0-9\-]{36}/', $uuid);
+	 *
+	 * @param string $uuid
+	 * @param boolen $short whether to allow abbreviated form of UUID's or not
+	 */
+	public static function validate($uuid, $short = FALSE) {
+		$len = strlen($uuid);
+
+		for ($i = 0; $i < $len; $i++) {
+			$char = $uuid[$i];
+			$ord = ord($char);
+
+			if (($ord > 57 || $ord < 48) && ($ord > 70 || $ord < 65) && ($ord > 102 || $ord < 97) && $ord != 45) {
+				return FALSE;	// char not allowed
+			}
+		}
+
+		return ($short) ? $len <= 36 : $len == 36;	// check for strlen
 	}
 
 	/**
@@ -133,43 +156,42 @@ class UUID {
 
 	public function __get($var) {
 		switch($var) {
-			case "bytes":
+			case 'bytes':
 				return $this->bytes;
-			case "hex":
+			case 'hex':
 				return bin2hex($this->bytes);
-			case "string":
+			case 'string':
 				return $this->__toString();
-			case "urn":
-				return "urn:uuid:".$this->__toString();
-			case "version":
+			case 'urn':
+				return 'urn:uuid:' . $this->__toString();
+			case 'version':
 				return ord($this->bytes[6]) >> 4;
-			case "variant":
+			case 'variant':
 				$byte = ord($this->bytes[8]);
-				if ($byte >= self::varRes)
-				return 3;
-				if ($byte >= self::varMS)
-				return 2;
-				if ($byte >= self::varRFC)
-				return 1;
-				else
-				return 0;
-			case "node":
-				if (ord($this->bytes[6])>>4==1)
-				return bin2hex(substr($this->bytes,10));
-				else
-				return NULL;
-			case "time":
+				if ($byte >= self::varRes) return 3;
+				if ($byte >= self::varMS) return 2;
+				if ($byte >= self::varRFC) return 1;
+				else return 0;
+			case 'node':
+				if (ord($this->bytes[6])>>4==1) {
+					return bin2hex(substr($this->bytes,10));
+				}
+				else {
+					return NULL;
+				}
+			case 'time':
 				if (ord($this->bytes[6])>>4==1) {
 					// Restore contiguous big-endian byte order
 					$time = bin2hex($this->bytes[6].$this->bytes[7].$this->bytes[4].$this->bytes[5].$this->bytes[0].$this->bytes[1].$this->bytes[2].$this->bytes[3]);
 					// Clear version flag
-					$time[0] = "0";
+					$time[0] = '0';
 					// Do some reverse arithmetic to get a Unix timestamp
 					$time = (hexdec($time) - self::interval) / 10000000;
 					return $time;
 				}
-				else
-				return NULL;
+				else {
+					return NULL;
+				}
 			default:
 				return NULL;
 		}
@@ -177,76 +199,104 @@ class UUID {
 
 	protected function __construct($uuid) {
 		if (strlen($uuid) != 16) {
-			throw new \Exception("Input must be a 128-bit integer.");
+			throw new \Exception('Input must be a 128-bit integer.');
 		}
 
 		$this->bytes  = $uuid;
 
 		// Optimize the most common use
 		$this->string =
-		bin2hex(substr($uuid,0,4))."-".
-		bin2hex(substr($uuid,4,2))."-".
-		bin2hex(substr($uuid,6,2))."-".
-		bin2hex(substr($uuid,8,2))."-".
+		bin2hex(substr($uuid,0,4)).'-'.
+		bin2hex(substr($uuid,4,2)).'-'.
+		bin2hex(substr($uuid,6,2)).'-'.
+		bin2hex(substr($uuid,8,2)).'-'.
 		bin2hex(substr($uuid,10,6));
 	}
 
+	/**
+	 * Generates a Version 1 UUID.
+	 * These are derived from the time at which they were generated.
+	 *
+	 * @param $node
+	 */
 	protected static function mintTime($node = NULL) {
-		/* Generates a Version 1 UUID.
-		 These are derived from the time at which they were generated. */
 		// Get time since Gregorian calendar reform in 100ns intervals
 		// This is exceedingly difficult because of PHP's (and pack()'s)
 		//  integer size limits.
 		// Note that this will never be more accurate than to the microsecond.
-		$time = microtime(1) * 10000000 + self::interval;
+		$time = microtime(TRUE) * 10000000 + self::interval;
+
 		// Convert to a string representation
-		$time = sprintf("%F", $time);
-		preg_match("/^\d+/", $time, $time); //strip decimal point
+		$time = sprintf('%F', $time);
+		preg_match('/^\d+/', $time, $time); //strip decimal point
+
 		// And now to a 64-bit binary representation
 		$time = base_convert($time[0], 10, 16);
-		$time = pack("H*", str_pad($time, 16, "0", STR_PAD_LEFT));
+		$time = pack('H*', str_pad($time, 16, '0', STR_PAD_LEFT));
+
 		// Reorder bytes to their proper locations in the UUID
 		$uuid  = $time[4].$time[5].$time[6].$time[7].$time[2].$time[3].$time[0].$time[1];
+
 		// Generate a random clock sequence
 		$uuid .= Random::getBytes(2);
+
 		// set variant
 		$uuid[8] = chr(ord($uuid[8]) & self::clearVar | self::varRFC);
+
 		// set version
 		$uuid[6] = chr(ord($uuid[6]) & self::clearVer | self::version1);
+
 		// Set the final 'node' parameter, a MAC address
-		if ($node)
-		$node = self::makeBin($node, 6);
-		if (!$node) {
+		if ($node) {
+			$node = self::makeBin($node, 6);
+		}
+		else {
 			// If no node was provided or if the node was invalid,
 			//  generate a random MAC address and set the multicast bit
 			$node = Random::getBytes(6);
-			$node[0] = pack("C", ord($node[0]) | 1);
+			$node[0] = pack('C', ord($node[0]) | 1);
 		}
+
 		$uuid .= $node;
 		return $uuid;
 	}
 
+	/**
+	 * Generate a Version 4 UUID.
+	 * These are derived soly from random numbers.
+	 */
 	protected static function mintRand() {
-		/* Generate a Version 4 UUID.
-		 These are derived soly from random numbers. */
 		// generate random fields
 		$uuid = Random::getBytes(16);
+
 		// set variant
 		$uuid[8] = chr(ord($uuid[8]) & self::clearVar | self::varRFC);
+
 		// set version
 		$uuid[6] = chr(ord($uuid[6]) & self::clearVer | self::version4);
+
 		return $uuid;
 	}
 
+	/**
+	 * Generates a Version 3 or Version 5 UUID.
+	 * These are derived from a hash of a name and its namespace, in binary form.
+	 *
+	 * @param integer $ver the version (MD5 or SHA1)
+	 * @param string $node the name string
+	 * $param string $ns the namespace
+	 */
 	protected static function mintName($ver, $node, $ns) {
-		/* Generates a Version 3 or Version 5 UUID.
-		 These are derived from a hash of a name and its namespace, in binary form. */
-		if (!$node)
-		throw new \Exception("A name-string is required for Version 3 or 5 UUIDs.");
+		if (!$node) {
+			throw new \Exception('A name-string is required for Version 3 or 5 UUIDs.');
+		}
+
 		// if the namespace UUID isn't binary, make it so
 		$ns = self::makeBin($ns, 16);
-		if (!$ns)
-		throw new \Exception("A binary namespace is required for Version 3 or 5 UUIDs.");
+		if (!$ns) {
+			throw new \Exception('A binary namespace is required for Version 3 or 5 UUIDs.');
+		}
+
 		switch($ver) {
 			case self::MD5:
 				$version = self::version3;
@@ -257,27 +307,43 @@ class UUID {
 				$uuid = substr(sha1($ns.$node,1),0, 16);
 				break;
 		}
+
 		// set variant
 		$uuid[8] = chr(ord($uuid[8]) & self::clearVar | self::varRFC);
+
 		// set version
 		$uuid[6] = chr(ord($uuid[6]) & self::clearVer | $version);
+
 		return ($uuid);
 	}
 
+	/**
+	 * Insure that an input string is either binary or hexadecimal.
+	 * Returns binary representation, or FALSE on failure.
+	 *
+	 * @param unkown_type $str
+	 * @param integer $len
+	 */
 	protected static function makeBin($str, $len) {
-		/* Insure that an input string is either binary or hexadecimal.
-		 Returns binary representation, or FALSE on failure. */
-		if ($str instanceof self)
-		return $str->bytes;
-		if (strlen($str)==$len)
-		return $str;
-		else
-		$str = preg_replace("/^urn:uuid:/is", "", $str); // strip URN scheme and namespace
-		$str = preg_replace("/[^a-f0-9]/is", "", $str);  // strip non-hex characters
-		if (strlen($str) != ($len * 2))
-		return FALSE;
-		else
-		return pack("H*", $str);
+		if ($str instanceof self) {
+			return $str->bytes;
+		}
+
+		if (strlen($str) == $len) {
+			return $str;
+		}
+		else {
+			$str = preg_replace('/^urn:uuid:/is', '', $str); // strip URN scheme and namespace
+		}
+
+		$str = preg_replace('/[^a-f0-9]/is', '', $str);  // strip non-hex characters
+
+		if (strlen($str) != ($len * 2)) {
+			return FALSE;
+		}
+		else {
+			return pack('H*', $str);
+		}
 	}
 }
 

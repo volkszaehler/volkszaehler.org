@@ -23,6 +23,8 @@
 
 namespace Volkszaehler\Model;
 
+use Doctrine\ORM;
+
 use Doctrine\Common\Collections;
 use Volkszaehler\Util;
 
@@ -63,7 +65,7 @@ abstract class Entity {
 
 	/**
 	 * @OneToMany(targetEntity="Property", mappedBy="entity", cascade={"remove", "persist"})
-	 * @OrderBy({"name" = "ASC"})
+	 * @OrderBy({"key" = "ASC"})
 	 */
 	protected $properties = NULL;
 
@@ -71,77 +73,103 @@ abstract class Entity {
 	 * Constructor
 	 *
 	 * @param string $type
-	 * @param array $properties of Model\Property
 	 */
 	public function __construct($type) {
 		if (!EntityDefinition::exists($type)) {
-			throw new \Exception('unknown entity type');
+			throw new \Exception('Unknown entity type');
 		}
 
 		$this->type = $type;
-		$this->uuid = Util\UUID::mint();
+		$this->uuid = (string) Util\UUID::mint();
 
 		$this->tokens = new Collections\ArrayCollection();
 		$this->properties = new Collections\ArrayCollection();
 	}
 
+
 	/**
-	 * Checks for optional and required properties according to share/entities.json
-	 *
-	 * Throws an exception if something is incorrect
+	 * Checks for required and invalid properties
 	 *
 	 * @PrePersist
-	 * @PreUpdate
-	 * @PostLoad
-	 * @todo to be implemented
 	 */
-	protected function validate() {
+	public function checkProperties() {
+		$missingProperties = array_diff($this->getDefinition()->getRequiredProperties(), array_keys($this->getProperties()));
+		$invalidProperties = array_diff(array_keys($this->getProperties()), $this->getDefinition()->getValidProperties());
 
+		if (count($missingProperties) > 0) {
+			throw new \Exception('Entity "' . $this->getType() . '" requires propert' . ((count($missingProperties) == 1) ? 'y' : 'ies') . ': "' . implode(', ', $missingProperties) . '"');
+		}
+
+		if (count($invalidProperties) > 0) {
+			throw new \Exception('Propert' . ((count($invalidProperties) == 1) ? 'y' : 'ies') . ' "' . implode(', ', $unallowedProperties) . '" ' . ((count($unallowedProperties) == 1) ? 'is' : 'are') . ' not allowed for entity "' . $this->getType() . '"');
+		}
 	}
 
 	/**
 	 * Get a property by name
 	 *
-	 * @param string $name
-	 * @return Model\Property
+	 * @param string $key
+	 * @return mixed
 	 */
-	public function getProperty($name) {
-		return $this->properties->filter(function($property) use ($name) {
-			return $property->getName() == $name;
-		})->first();
+	public function getProperty($key) {
+		return $this->findProperty($key)->getValue();
 	}
 
 	/**
 	 * Get all properties or properties by prefix
 	 *
 	 * @param string $prefix
+	 * @return array
 	 */
 	public function getProperties($prefix = NULL) {
-		if (is_null($prefix)) {
-			return $this->properties;
+		$properties = array();
+		foreach ($this->properties as $property) {
+			if (substr($property->getKey(), 0, strlen($prefix)) == $prefix) {
+				$properties[$property->getKey()] = $property->getValue();
+			}
 		}
-		else {
-			return $this->properties->filter(function($property) use ($prefix) {
-				return substr($property->getName(), 0, strlen($prefix) + 1) == $prefix . ':';
-			});
+		return $properties;
+	}
+
+	/**
+	 *
+	 * @param string $key
+	 * @return Model\Property
+	 */
+	protected function findProperty($key) {
+		foreach ($this->properties as $property) {
+			if ($property->getKey() == $key) {
+				return $property;
+			}
 		}
 	}
 
 	/**
-	 * @param string $name of the property
-	 * @param string|integer|float $value of the property
-	 * @todo check if already set for this entity
+	 * Set property
+	 *
+	 * @param string $key name of the property
+	 * @param mixed $value of the property
 	 */
-	public function setProperty(Property $property) {
-		$this->properties->add($property);
+	public function setProperty($key, $value) {
+		if ($property = $this->findProperty($key)) {	// property already exists; just change value
+			$property->setValue($value);
+		}
+		else {											// create new property
+			$property = new Property($this, $key, $value);
+			$this->properties->add($property);
+		}
 	}
 
 	/**
+	 * Unset property
+	 *
 	 * @param string $name of the property
-	 * @todo to be implemented
+	 * @param Doctrine\EntityManager $em
 	 */
-	public function unsetProperty($name) {
-
+	public function unsetProperty($key, ORM\EntityManager $em) {
+		$property = $this->findProperty($key);
+		$em->remove($property);
+		$this->properties->remove($index);
 	}
 
 	/*
@@ -161,8 +189,8 @@ abstract class Entity {
 	 * @return Interpreter
 	 */
 	public function getInterpreter(\Doctrine\ORM\EntityManager $em, $from, $to) {
-		$interpreterClassName = 'Volkszaehler\Interpreter\\' . $this->getDefinition()->getInterpreter();
-		return new $interpreterClassName($this, $em, $from, $to);
+		$class = 'Volkszaehler\Interpreter\\' . $this->getDefinition()->getInterpreter();
+		return new $class($this, $em, $from, $to);
 	}
 }
 

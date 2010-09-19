@@ -76,9 +76,6 @@ abstract class Logger implements LoggerInterface {
 			$data = array($data);
 		}
 
-		foreach ($data as $reading) {
-			$this->em->persist($reading);
-		}
 		$this->em->flush();
 	}
 }

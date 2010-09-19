@@ -50,7 +50,7 @@ abstract class Definition {
 				$this->$name = $value;
 			}
 			else {
-				throw new \Exception('unknown definition syntax: ' . $name);
+				throw new \Exception('Unknown definition syntax: ' . $name);
 			}
 		}
 	}
@@ -63,8 +63,12 @@ abstract class Definition {
 	 * @return Util\Definition
 	 */
 	public static function get($name) {
+		if (is_null(static::$definitions)) {
+			static::load();
+		}
+
 		if (!static::exists($name)) {
-			throw new \Exception('unknown definition');
+			throw new \Exception('Unknown definition');
 		}
 
 		return static::$definitions[$name];

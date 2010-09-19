@@ -108,15 +108,15 @@ class ClassLoader {
 	/**
 	 * Loads the given class or interface.
 	 *
-	 * @param string $classname The name of the class to load.
+	 * @param string $class The name of the class to load.
 	 * @return boolean TRUE if the class has been successfully loaded, FALSE otherwise.
 	 */
-	public function loadClass($className) {
-		if ($this->namespace !== NULL && strpos($className, $this->namespace . $this->namespaceSeparator) !== 0) {
+	public function loadClass($class) {
+		if ($this->namespace !== NULL && strpos($class, $this->namespace . $this->namespaceSeparator) !== 0) {
 			return FALSE;
 		}
 
-		$subNamespace = substr($className, strlen($this->namespace));
+		$subNamespace = substr($class, strlen($this->namespace));
 		$parts = explode($this->namespaceSeparator, $subNamespace);
 		$path = implode(DIRECTORY_SEPARATOR, $parts);
 
@@ -128,15 +128,15 @@ class ClassLoader {
 	 * Asks this ClassLoader whether it can potentially load the class (file) with
 	 * the given name.
 	 *
-	 * @param string $className The fully-qualified name of the class.
+	 * @param string $class The fully-qualified name of the class.
 	 * @return boolean TRUE if this ClassLoader can load the class, FALSE otherwise.
 	 */
-	public function canLoadClass($className) {
-		if ($this->namespace !== NULL && strpos($className, $this->namespace . $this->namespaceSeparator) !== 0) {
+	public function canLoadClass($class) {
+		if ($this->namespace !== NULL && strpos($class, $this->namespace . $this->namespaceSeparator) !== 0) {
 			return FALSE;
 		}
 
-		$subNamespace = substr($className, strlen($this->namespace));
+		$subNamespace = substr($class, strlen($this->namespace));
 		$parts = explode($this->namespaceSeparator, $subNamespace);
 		$path = implode(DIRECTORY_SEPARATOR, $parts);
 
@@ -161,11 +161,11 @@ class ClassLoader {
 	 * for its existence. This is not the case with a <tt>ClassLoader</tt>, who separates
 	 * these responsibilities.
 	 *
-	 * @param string $className The fully-qualified name of the class.
+	 * @param string $class The fully-qualified name of the class.
 	 * @return boolean TRUE if the class exists as per the definition given above, FALSE otherwise.
 	 */
-	public static function classExists($className) {
-		if (class_exists($className, FALSE)) {
+	public static function classExists($class) {
+		if (class_exists($class, FALSE)) {
 			return TRUE;
 		}
 
@@ -173,20 +173,20 @@ class ClassLoader {
 			if (is_array($loader)) { // array(???, ???)
 				if (is_object($loader[0])) {
 					if ($loader[0] instanceof ClassLoader) { // array($obj, 'methodName')
-						if ($loader[0]->canLoadClass($className)) {
+						if ($loader[0]->canLoadClass($class)) {
 							return TRUE;
 						}
-					} else if ($loader[0]->{$loader[1]}($className)) {
+					} else if ($loader[0]->{$loader[1]}($class)) {
 						return TRUE;
 					}
-				} else if ($loader[0]::$loader[1]($className)) { // array('ClassName', 'methodName')
+				} else if ($loader[0]::$loader[1]($class)) { // array('className', 'methodName')
 					return TRUE;
 				}
-			} else if ($loader instanceof \Closure) { // function($className) {..}
-				if ($loader($className)) {
+			} else if ($loader instanceof \Closure) { // function($class) {..}
+				if ($loader($class)) {
 					return TRUE;
 				}
-			} else if (is_string($loader) && $loader($className)) { // "MyClass::loadClass"
+			} else if (is_string($loader) && $loader($class)) { // "MyClass::loadClass"
 				return TRUE;
 			}
 		}
@@ -198,13 +198,13 @@ class ClassLoader {
 	 * Gets the <tt>ClassLoader</tt> from the SPL autoload stack that is responsible
 	 * for (and is able to load) the class with the given name.
 	 *
-	 * @param string $className The name of the class.
+	 * @param string $class The name of the class.
 	 * @return The <tt>ClassLoader</tt> for the class or NULL if no such <tt>ClassLoader</tt> exists.
 	 */
-	public static function getClassLoader($className) {
+	public static function getClassLoader($class) {
 		foreach (spl_autoload_functions() as $loader) {
 			if (is_array($loader) && $loader[0] instanceof ClassLoader &&
-			$loader[0]->canLoadClass($className)) {
+			$loader[0]->canLoadClass($class)) {
 				return $loader[0];
 			}
 		}

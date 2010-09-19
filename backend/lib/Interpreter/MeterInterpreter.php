@@ -130,7 +130,7 @@ class MeterInterpreter extends Interpreter {
 		$delta = $next[0] - $last[0];
 
 		return array(
-			(int) ($next[0] - $delta / 2),												// timestamp
+			($next[0] - $delta / 2),												// timestamp
 			$next[1] * (3600000 / (($this->channel->getProperty('resolution')->getValue() / 1000) * $delta)),	// value
 			(isset($next[2])) ? $next[2] : 1
 		);

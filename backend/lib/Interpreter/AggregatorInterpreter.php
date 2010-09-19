@@ -56,7 +56,7 @@ class AggregatorInterpreter {
 
 		foreach ($aggregator->getChannels() as $channels) {
 			if (isset($indicator) && $indicator != $channel->getIndicator()) {
-				throw new \Exception('we only can aggregate channels of the same indicator');
+				throw new \Exception('Can\'t aggregate entities of mixed types!');
 			}
 			else {
 				$indicator = $channel->getIndicator();
