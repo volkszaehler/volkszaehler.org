@@ -27,16 +27,22 @@ class VolkszaehlerModelPropertyProxy extends \Volkszaehler\Model\Property implem
     }
 
     
+    public function cast()
+    {
+        $this->_load();
+        return parent::cast();
+    }
+
     public function validate()
     {
         $this->_load();
         return parent::validate();
     }
 
-    public function getName()
+    public function getKey()
     {
         $this->_load();
-        return parent::getName();
+        return parent::getKey();
     }
 
     public function getValue()
@@ -60,6 +66,6 @@ class VolkszaehlerModelPropertyProxy extends \Volkszaehler\Model\Property implem
 
     public function __sleep()
     {
-        return array('__isInitialized__', 'id', 'name', 'value', 'entity');
+        return array('__isInitialized__', 'id', 'key', 'value', 'entity');
     }
 }

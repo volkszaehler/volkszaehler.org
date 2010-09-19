@@ -27,6 +27,12 @@ class VolkszaehlerModelEntityProxy extends \Volkszaehler\Model\Entity implements
     }
 
     
+    public function checkPersist()
+    {
+        $this->_load();
+        return parent::checkPersist();
+    }
+
     public function getProperty($name)
     {
         $this->_load();
@@ -39,16 +45,16 @@ class VolkszaehlerModelEntityProxy extends \Volkszaehler\Model\Entity implements
         return parent::getProperties($prefix);
     }
 
-    public function setProperty(\Volkszaehler\Model\Property $property)
+    public function setProperty($key, $value)
     {
         $this->_load();
-        return parent::setProperty($property);
+        return parent::setProperty($key, $value);
     }
 
-    public function unsetProperty($name)
+    public function unsetProperty($name, \Doctrine\ORM\EntityManager $em)
     {
         $this->_load();
-        return parent::unsetProperty($name);
+        return parent::unsetProperty($name, $em);
     }
 
     public function getId()
