@@ -1,0 +1,113 @@
+/**
+ * Definition of entities 
+ 
+ * Format is specified in EntityDefinition class
+ *
+ * @author Steffen Vogel <info@steffenvogel.de>
+ * @copyright Copyright (c) 2010, The volkszaehler.org project
+ * @package default
+ * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ */
+/*
+ * This file is part of volkzaehler.org
+ *
+ * volkzaehler.org is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * volkzaehler.org is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+[
+	{
+		"name" : "group",
+		"required" : ["title"],
+		"optional" : ["description", "details:", "owner:", "tolerance"],
+		"interpreter" : "AggregatorInterpreter",
+		"icon" : ""					// TODO look for an icon
+	},
+	{
+		"name" : "user",
+		"required" : ["title"],
+		"optional" : ["description", "details:", "owner:", "tolerance"],
+		"interpreter" : "AggregatorInterpreter",
+		"icon" : ""					// TODO look for an icon
+	},
+	{
+		"name" : "power",
+		"required" : ["title", "resolution"],
+		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
+		"interpreter" : "MeterInterpreter",
+		"unit" : "kW/h",
+		"icon" : ""					// TODO look for an icon
+	},
+	{
+		"name" : "gas",
+		"required" : ["title", "resolution"],
+		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
+		"interpreter" : "MeterInterpreter",
+		"unit" : "m³/h",
+		"icon" : ""					// TODO look for an icon
+	},
+	{
+		"name" : "water",
+		"required" : ["title", "resolution"],
+		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
+		"interpreter" : "MeterInterpreter",
+		"unit" : "m³/h",
+		"icon" : ""					// TODO look for an icon
+	},
+	{
+		"name" : "temperature",
+		"required" : ["title"],
+		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
+		"interpreter" : "SensorInterpreter",
+		"unit" : "°C",
+		"icon" : ""					// TODO look for an icon
+	},
+	{
+		"name" : "pressure",
+		"required" : ["title"],
+		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
+		"interpreter" : "SensorInterpreter",
+		"unit" : "hPa",
+		"icon" : ""					// TODO look for an icon
+	},
+	{
+		"name" : "humidity",
+		"required" : ["title"],
+		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
+		"interpreter" : "SensorInterpreter",
+		"unit" : "%",
+		"icon" : ""					// TODO look for an icon
+	},
+	{
+		"name" : "windspeed",
+		"required" : ["title"],
+		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
+		"interpreter" : "SensorInterpreter",
+		"unit" : "km/h",
+		"icon" : ""					// TODO look for an icon
+	},
+	{
+		"name" : "radition",
+		"required" : ["title"],
+		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
+		"interpreter" : "SensorInterpreter",
+		"icon" : ""					// TODO look for an icon
+	},
+	{
+		"name" : "luminosity",
+		"required" : ["title"],
+		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
+		"interpreter" : "SensorInterpreter",
+		"icon" : ""					// TODO look for an icon
+	}
+]
