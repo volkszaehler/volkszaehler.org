@@ -48,18 +48,9 @@ class DataController extends Controller {
 
 	/**
 	 * Log new readings with logger interfaces
-	 *
-	 * @todo authentification/indentification
-	 * @todo reimplement
 	 */
 	public function add() {
-		$class = 'Volkszaehler\Logger\\' . ucfirst($this->view->request->getParameter('logger')) . 'Logger';
-		if (!(Util\ClassLoader::classExists($class)) || !is_subclass_of($class, '\Volkszaehler\Logger\Logger')) {
-			throw new \Exception('Unkown logger: ' . $class);
-		}
-		$logger = new $class($this->view->request, $this->em);
 
-		$logger->log();
 	}
 }
 

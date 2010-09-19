@@ -109,7 +109,7 @@ class Property {
 	 */
 	public function checkRemove() {
 		if (in_array($this->key, $this->entity->getDefinition()->getRequiredProperties())) {
-			throw new \Exception('"' . $this->key . '" is a required property for the "' . $this->entity->getType() . '" entity');
+			throw new \Exception($this->key . ' is a required property for the entity: ' . $this->entity->getType());
 		}
 	}
 
@@ -118,7 +118,7 @@ class Property {
 	 */
 	public function checkPersist() {
 		if (!in_array($this->key, $this->entity->getDefinition()->getValidProperties())) {
-			throw new \Exception('"' . $this->key . '" is not a valid property for the "' . $this->entity->getType() . '" entity');
+			throw new \Exception($this->key . ' is not a valid property for the entity: ' . $this->entity->getType());
 		}
 	}
 
