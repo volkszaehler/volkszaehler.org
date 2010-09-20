@@ -1,4 +1,4 @@
-d<?php
+<?php
 /**
  * doctrine cli configuration and bootstrapping
  *

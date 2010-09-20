@@ -27,46 +27,34 @@ class VolkszaehlerModelAggregatorProxy extends \Volkszaehler\Model\Aggregator im
     }
 
     
-    public function addAggregator(\Volkszaehler\Model\Aggregator $child)
+    public function addChild(\Volkszaehler\Model\Entity $child)
     {
         $this->_load();
-        return parent::addAggregator($child);
+        return parent::addChild($child);
     }
 
-    public function removeAggregator(\Volkszaehler\Model\Aggregator $child)
+    public function removeChild(\Volkszaehler\Model\Entity $child)
     {
         $this->_load();
-        return parent::removeAggregator($child);
+        return parent::removeChild($child);
     }
 
-    public function addChannel(\Volkszaehler\Model\Channel $child)
+    public function getChildren()
     {
         $this->_load();
-        return parent::addChannel($child);
+        return parent::getChildren();
     }
 
-    public function removeChannel(\Volkszaehler\Model\Channel $child)
+    public function checkProperties()
     {
         $this->_load();
-        return parent::removeChannel($child);
+        return parent::checkProperties();
     }
 
-    public function getChannels()
+    public function getProperty($key)
     {
         $this->_load();
-        return parent::getChannels();
-    }
-
-    public function checkPersist()
-    {
-        $this->_load();
-        return parent::checkPersist();
-    }
-
-    public function getProperty($name)
-    {
-        $this->_load();
-        return parent::getProperty($name);
+        return parent::getProperty($key);
     }
 
     public function getProperties($prefix = NULL)
@@ -81,10 +69,10 @@ class VolkszaehlerModelAggregatorProxy extends \Volkszaehler\Model\Aggregator im
         return parent::setProperty($key, $value);
     }
 
-    public function unsetProperty($name, \Doctrine\ORM\EntityManager $em)
+    public function unsetProperty($key, \Doctrine\ORM\EntityManager $em)
     {
         $this->_load();
-        return parent::unsetProperty($name, $em);
+        return parent::unsetProperty($key, $em);
     }
 
     public function getId()
@@ -120,6 +108,6 @@ class VolkszaehlerModelAggregatorProxy extends \Volkszaehler\Model\Aggregator im
 
     public function __sleep()
     {
-        return array('__isInitialized__', 'id', 'uuid', 'type', 'tokens', 'properties', 'channels', 'children', 'parents');
+        return array('__isInitialized__', 'id', 'uuid', 'type', 'tokens', 'properties', 'parents', 'children');
     }
 }

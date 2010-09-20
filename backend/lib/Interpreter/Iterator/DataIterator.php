@@ -21,7 +21,7 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace Volkszaehler\Iterator;
+namespace Volkszaehler\Interpreter\Iterator;
 
 use Doctrine\DBAL;
 

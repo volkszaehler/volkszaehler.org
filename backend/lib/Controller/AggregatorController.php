@@ -55,20 +55,13 @@ class AggregatorController extends EntityController {
 
 			if ($uuid = $this->view->request->getParameter('uuid')) {
 				$ec = new EntityController($this->view, $this->em);
-				$entity = $ec->get($uuid);
-
-				if ($entity instanceof Model\Channel) {
-					$aggregator->addChannel($entity);
-				}
-				elseif ($entity instanceof Model\Aggregator) {
-					$aggregator->addAggregator($entity);
-				}
+				$aggregator->addChild($ec->get($uuid));
 			}
-			else {					// create new aggregator
+			else {
 				throw new \Exception('You have to specifiy a uuid to add');
 			}
 		}
-		else {
+		else {	// create new aggregator
 			$aggregator = new Model\Aggregator('group');	// TODO support for other aggregator types
 
 			foreach ($this->view->request->getParameters() as $parameter => $value) {
@@ -94,22 +87,15 @@ class AggregatorController extends EntityController {
 
 			if ($uuid) {
 				$ec = new EntityController($this->view, $this->em);
-				$entity = $ec->get($uuid);
-
-				if ($entity instanceof Model\Channel) {
-					$aggregator->removeChannel($entity);
-				}
-				elseif ($entity instanceof Model\Aggregator) {
-					$aggregator->removeAggregator($entity);
-				}
+				$aggregator->removeChild($ec->get($uuid));
 
 				$this->em->flush();
 			}
-			else {					// remove aggregator
+			else {
 				throw new \Exception('You have to specifiy a uuid to remove');
 			}
 		}
-		else {
+		else {	// remove aggregator
 			parent::delete($identifier);
 		}
 

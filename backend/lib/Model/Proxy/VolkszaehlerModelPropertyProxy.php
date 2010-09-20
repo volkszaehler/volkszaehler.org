@@ -39,6 +39,18 @@ class VolkszaehlerModelPropertyProxy extends \Volkszaehler\Model\Property implem
         return parent::validate();
     }
 
+    public function checkRemove()
+    {
+        $this->_load();
+        return parent::checkRemove();
+    }
+
+    public function checkPersist()
+    {
+        $this->_load();
+        return parent::checkPersist();
+    }
+
     public function getKey()
     {
         $this->_load();

@@ -23,6 +23,8 @@
 
 namespace Volkszaehler\Model;
 
+use Doctrine\ORM\Mapping;
+
 use Volkszaehler\Interpreter;
 use Doctrine\ORM;
 use Doctrine\Common\Collections;
@@ -39,27 +41,13 @@ use Doctrine\Common\Collections\ArrayCollection;
  */
 class Aggregator extends Entity {
 	/**
-	 * @ManyToMany(targetEntity="Channel", inversedBy="groups")
-	 * @JoinTable(name="groups_channel",
-	 * 		joinColumns={@JoinColumn(name="group_id", referencedColumnName="id")},
-	 * 		inverseJoinColumns={@JoinColumn(name="channel_id", referencedColumnName="id")}
-	 * )
-	 */
-	protected $channels = NULL;
-
-	/**
-	 * @ManyToMany(targetEntity="Aggregator", inversedBy="parents")
-	 * @JoinTable(name="groups_groups",
+	 * @ManyToMany(targetEntity="Entity", inversedBy="parents")
+	 * @JoinTable(name="entities_in_aggregator",
 	 * 		joinColumns={@JoinColumn(name="parent_id", referencedColumnName="id")},
 	 * 		inverseJoinColumns={@JoinColumn(name="child_id", referencedColumnName="id")}
 	 * )
 	 */
 	protected $children = NULL;
-
-	/**
-	 * @ManyToMany(targetEntity="Aggregator", mappedBy="children")
-	 */
-	protected $parents = NULL;
 
 	/**
 	 * Construct
@@ -69,44 +57,65 @@ class Aggregator extends Entity {
 
 		$this->channels = new ArrayCollection();
 		$this->children = new ArrayCollection();
-		$this->parents = new ArrayCollection();
 	}
 
 	/**
-	 * Adds group as new child
+	 * Adds entity as new child
 	 *
-	 * @param Aggregator $child
-	 * @todo check against endless recursion
-	 * @todo check if the group is already member of the group
-	 * @todo add bidirectional association
+	 * @param Entity $child
+	 * @todo check if the entity is already member of the group
+	 * @todo add bidrectional association
 	 */
-	public function addAggregator(Aggregator $child) {
+	public function addChild(Entity $child) {
+		if ($this->children->contains($child)) {
+			throw new \Exception('Entity is already a child of the group');
+		}
+
+		if ($child instanceof Aggregator && $child->contains($this)) {
+			throw new \Exception('Recursion detected! Can\'t group to itself');
+		}
+
 		$this->children->add($child);
 	}
 
-	public function removeAggregator(Aggregator $child) {
-		return $this->children->removeElement($child);
+	/**
+	 * Checks if aggregator contains given entity
+	 *
+	 * @param Entity $entity
+	 * @param boolean $recursive should we search recursivly?
+	 */
+	protected function contains(Entity $entity, $recursive = FALSE) {
+		if ($this->children->contains($entity)) {
+			return TRUE;
+		}
+
+		if ($recursive) {
+			foreach ($this->children as $child) {
+				if ($child->contains($entity, $recursive)) {
+					return TRUE;
+				}
+			}
+		}
+
+		return FALSE;
 	}
 
 	/**
-	 * Adds channel as new child
+	 * Remove child from group
 	 *
-	 * @param Channel $child
-	 * @todo check if the channel is already member of the group
+	 * @param Entity $child
+	 * @todo check if the entity is member of the group
 	 * @todo add bidrectional association
 	 */
-	public function addChannel(Channel $child) {
-		$this->channels->add($child);
-	}
-
-	public function removeChannel(Channel $child) {
-		return $this->channels->removeElement($child);
+	public function removeChild(Entity $child) {
+		if (!$this->children->removeElement($child)) {
+			throw new \Exception('This entity is not a child of this group');
+		}
 	}
 
 	/*
 	 * Setter & getter
 	 */
-	public function getChannels() { return $this->channels->toArray(); }
 	public function getChildren() { return $this->children->toArray(); }
 }
 

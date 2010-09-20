@@ -70,6 +70,11 @@ abstract class Entity {
 	protected $properties = NULL;
 
 	/**
+	 * @ManyToMany(targetEntity="Aggregator", mappedBy="children")
+	 */
+	protected $parents = NULL;
+
+	/**
 	 * Constructor
 	 *
 	 * @param string $type
@@ -84,6 +89,7 @@ abstract class Entity {
 
 		$this->tokens = new Collections\ArrayCollection();
 		$this->properties = new Collections\ArrayCollection();
+		$this->parents = new Collections\ArrayCollection();
 	}
 
 
