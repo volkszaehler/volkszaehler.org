@@ -365,7 +365,7 @@ function getData() {
 	$('#debug').append('<a href="../backend/index.php/data/'+myUUID+'/format/json/from/'+myWindowStart+'/to/'+myWindowEnd+'">json</a>');
 	// load json data with given time window
 	//$.getJSON("../backend/index.php/data/" + myUUID + '/format/json/from/'+myWindowStart+'/to/'+myWindowEnd, function(j){
-	$.getJSON("../backend/index.php/data/" + myUUID + '?from='+myWindowStart+'&to='+myWindowEnd, function(j){
+	$.getJSON("../backend/index.php/data/" + myUUID + '.json?from='+myWindowStart+'&to='+myWindowEnd, function(j){
 		data = j;
 		$('#debug').empty().append(data.toSource());
 		// then show/reload the chart
@@ -399,20 +399,18 @@ function showChart() {
 	}
 	
 	// legend entries
-	for(var i=0;i<data.channels.length;i++) {
-		jqOptions.series.push({label:data.channels[i]['description']});
+	for( uuid in data.channels ) { 
+		jqOptions.series.push({label:data.channels[uuid]['description']}); 
 	}
 	
-		EformatString = '%d.%m.%y %H:%M';
+	EformatString = '%d.%m.%y %H:%M';
 	
-	// for each channel in json response
-	for(var i=0;i<data.channels.length;i++) {
-		// power (moving average) gray line
-		//series_chart.push({showLabel:false,color:'#808080'})
-		
-		//jqData.push(json2jqplot(data.channels[i].data));
-		jqData.push(data.channels[i].data);
+	// power (moving average) gray line
+	for( uuid in data.data ) { 
+		jqData.push(data.data[uuid]); 
 	}
+
+
 	jqOptions.axes = {
 			yaxis:{autoscale:true, min:0, label:"Leistung (Watt)", tickOptions:{formatString:'%.3f'},labelRenderer: $.jqplot.CanvasAxisLabelRenderer},
 			xaxis:{autoscale:true, min:calcMyWindowStart(), max:myWindowEnd, tickOptions:{formatString:EformatString,angle:-30},pad:1, renderer:$.jqplot.DateAxisRenderer,rendererOptions:{tickRenderer:$.jqplot.CanvasAxisTickRenderer}},
