@@ -23,6 +23,8 @@
 
 namespace Volkszaehler\Model;
 
+use Doctrine\ORM\Mapping;
+
 use Volkszaehler\Interpreter;
 use Doctrine\ORM;
 use Doctrine\Common\Collections;
@@ -65,7 +67,37 @@ class Aggregator extends Entity {
 	 * @todo add bidrectional association
 	 */
 	public function addChild(Entity $child) {
+		if ($this->children->contains($child)) {
+			throw new \Exception('Entity is already a child of the group');
+		}
+
+		if ($child instanceof Aggregator && $child->contains($this)) {
+			throw new \Exception('Recursion detected! Can\'t group to itself');
+		}
+
 		$this->children->add($child);
+	}
+
+	/**
+	 * Checks if aggregator contains given entity
+	 *
+	 * @param Entity $entity
+	 * @param boolean $recursive should we search recursivly?
+	 */
+	protected function contains(Entity $entity, $recursive = FALSE) {
+		if ($this->children->contains($entity)) {
+			return TRUE;
+		}
+
+		if ($recursive) {
+			foreach ($this->children as $child) {
+				if ($child->contains($entity, $recursive)) {
+					return TRUE;
+				}
+			}
+		}
+
+		return FALSE;
 	}
 
 	/**
@@ -76,7 +108,9 @@ class Aggregator extends Entity {
 	 * @todo add bidrectional association
 	 */
 	public function removeChild(Entity $child) {
-		return $this->children->removeElement($child);
+		if (!$this->children->removeElement($child)) {
+			throw new \Exception('This entity is not a child of this group');
+		}
 	}
 
 	/*
