@@ -59,7 +59,7 @@ abstract class Interpreter implements InterpreterInterface {
 		$this->from = (isset($from)) ? self::parseDateTimeString($from, time() * 1000) : NULL;
 		$this->to = (isset($to)) ? self::parseDateTimeString($to, (isset($this->from)) ? $this->from : time() * 1000) : NULL;
 
-		Util\Debug::log('intervall', strftime('%c', $this->from/1000), strftime('%c', $this->to/1000));
+		Util\Debug::log('interval', $this->from, $this->to, strftime('%c', $this->from/1000), strftime('%c', $this->to/1000));
 	}
 
 	/**
@@ -184,11 +184,11 @@ abstract class Interpreter implements InterpreterInterface {
 	 * @return float
 	 */
 	protected static function parseDateTimeString($string, $now) {
-		if ($ts = strtotime($string, round($now/1000))) {
+		if ($ts = strtotime($string, $now / 1000)) {
 			return $ts * 1000;
 		}
 		elseif (ctype_digit($string)) {
-			return (float) $ts;
+			return (float) $string;
 		}
 		else {
 			throw new \Exception('Invalid time format: ' . $string);
