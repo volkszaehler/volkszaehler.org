@@ -32,38 +32,86 @@ namespace Volkszaehler\Controller;
 use Volkszaehler\Model;
 
 class AggregatorController extends EntityController {
-
 	/**
 	 * Get aggregator
-	 *
-	 * @param string $identifier
 	 */
 	public function get($identifier) {
-		$dql = 'SELECT a, p
-				FROM Volkszaehler\Model\Aggregator a
-				LEFT JOIN a.properties p
-				WHERE a.uuid = ?1';
+		$aggregator = parent::get($identifier);
 
-		$q = $this->em->createQuery($dql);
-		$q->setParameter(1, $identifier);
-
-		return $q->getSingleResult();
+		if ($aggregator instanceof Model\Aggregator) {
+			return $aggregator;
+		}
+		else {
+			throw new \Exception($identifier . ' is not a group uuid');
+		}
 	}
 
 	/**
-	 * Add aggregator
+	 * Create new aggregator or add entity to aggregator
 	 */
-	public function add() {
-		$aggregator = new Model\Aggregator('group');	// TODO support for other aggregator types
+	public function add($identifier = NULL) {
+		if (isset($identifier)) {	// add entity to aggregator
+			$aggregator = $this->get($identifier);
 
-		foreach ($this->view->request->getParameters() as $parameter => $value) {
-			if (Model\PropertyDefinition::exists($parameter)) {
-				$aggregator->setProperty($parameter, $value);
+			if ($uuid = $this->view->request->getParameter('uuid')) {
+				$ec = new EntityController($this->view, $this->em);
+				$entity = $ec->get($uuid);
+
+				if ($entity instanceof Model\Channel) {
+					$aggregator->addChannel($entity);
+				}
+				elseif ($entity instanceof Model\Aggregator) {
+					$aggregator->addAggregator($entity);
+				}
+			}
+			else {					// create new aggregator
+				throw new \Exception('You have to specifiy a uuid to add');
 			}
 		}
+		else {
+			$aggregator = new Model\Aggregator('group');	// TODO support for other aggregator types
 
-		$this->em->persist($aggregator);
+			foreach ($this->view->request->getParameters() as $parameter => $value) {
+				if (Model\PropertyDefinition::exists($parameter)) {
+					$aggregator->setProperty($parameter, $value);
+				}
+			}
+
+			$this->em->persist($aggregator);
+		}
+
 		$this->em->flush();
+
+		return $aggregator;
+	}
+
+	/**
+	 * Delete Aggregator or remove entity from aggregator
+	 */
+	public function delete($identifier) {
+		if (isset($identifier) && $uuid = $this->view->request->getParameter('uuid')) {	// remove entity from aggregator
+			$aggregator = $this->get($identifier);
+
+			if ($uuid) {
+				$ec = new EntityController($this->view, $this->em);
+				$entity = $ec->get($uuid);
+
+				if ($entity instanceof Model\Channel) {
+					$aggregator->removeChannel($entity);
+				}
+				elseif ($entity instanceof Model\Aggregator) {
+					$aggregator->removeAggregator($entity);
+				}
+
+				$this->em->flush();
+			}
+			else {					// remove aggregator
+				throw new \Exception('You have to specifiy a uuid to remove');
+			}
+		}
+		else {
+			parent::delete($identifier);
+		}
 
 		return $aggregator;
 	}

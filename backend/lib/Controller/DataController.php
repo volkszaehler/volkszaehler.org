@@ -30,7 +30,6 @@ use Volkszaehler\Util;
  * Data controller
  *
  * @author Steffen Vogel <info@steffenvogel.de>
- * @todo call via redirect from Controller\Channel
  * @package default
  */
 class DataController extends Controller {
@@ -41,16 +40,39 @@ class DataController extends Controller {
 	public function get(Model\Entity $entity) {
 		$from = $this->view->request->getParameter('from');
 		$to = $this->view->request->getParameter('to');
-		$groupBy = $this->view->request->getParameter('groupBy');
 
-		return $entity->getInterpreter($this->em, $from, $to)->getValues($groupBy);
+		return $entity->getInterpreter($this->em, $from, $to);
 	}
 
 	/**
-	 * Log new readings with logger interfaces
+	 * Sporadic test/demo implemenation
+	 *
+	 * @todo replace by pluggable api parser
 	 */
-	public function add() {
+	public function add(Model\Channel $channel) {
+		$timestamp = $this->view->request->getParameter('ts');
+		$value = $this->view->request->getParameter('value');
 
+		if (!$timestamp) {
+			$timestamp = round(microtime(TRUE) * 1000);
+		}
+
+		if (!$value) {
+			$value = 1;
+		}
+
+		$data = new Model\Data($channel, $timestamp, $value);
+
+		$channel->addData($data);
+
+		$this->em->flush();
+	}
+
+	public function run($operation, array $params = array()) {
+		$ec = new EntityController($this->view, $this->em);
+		$params[0] = $ec->get($params[0]);
+
+		return parent::run($operation, $params);
 	}
 }
 

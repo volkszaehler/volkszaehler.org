@@ -32,13 +32,27 @@ use Volkszaehler\Model;
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
  */
-abstract class EntityController extends Controller {
+class EntityController extends Controller {
 	/**
 	 * Get entity
 	 *
-	 * @param unknown_type $identifier
+	 * @param string $identifier
 	 */
-	abstract public function get($identifier);
+	public function get($identifier) {
+		$dql = 'SELECT a, p
+				FROM Volkszaehler\Model\Entity a
+				LEFT JOIN a.properties p
+				WHERE a.uuid = ?1';
+
+		$q = $this->em->createQuery($dql);
+		$q->setParameter(1, $identifier);
+
+		try {
+			return $q->getSingleResult();
+		} catch (\Doctrine\ORM\NoResultException $e) {
+			throw new \Exception('No entity found with uuid: ' . $identifier);
+		}
+	}
 
 	/**
 	 * Delete entity by uuid

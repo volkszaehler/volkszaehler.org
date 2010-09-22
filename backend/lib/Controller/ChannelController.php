@@ -23,6 +23,8 @@
 
 namespace Volkszaehler\Controller;
 
+use Volkszaehler\Model;
+
 /**
  * Channel controller
  *
@@ -30,22 +32,18 @@ namespace Volkszaehler\Controller;
  * @package default
  */
 class ChannelController extends EntityController {
-
 	/**
 	 * Get channel
-	 *
-	 * @param string $identifier
 	 */
 	public function get($identifier) {
-		$dql = 'SELECT c, p
-				FROM Volkszaehler\Model\Channel c
-				LEFT JOIN c.properties p
-				WHERE c.uuid = ?1';
+		$channel = parent::get($identifier);
 
-		$q = $this->em->createQuery($dql);
-		$q->setParameter(1, $identifier);
-
-		return $q->getSingleResult();
+		if ($channel instanceof Model\Channel) {
+			return $channel;
+		}
+		else {
+			throw new \Exception($identifier . ' is not a channel uuid');
+		}
 	}
 
 	/**
