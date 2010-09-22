@@ -23,16 +23,10 @@
 
 namespace Volkszaehler\Interpreter;
 
-/**
- *
- * @package default
- * @author Steffen Vogel <info@steffenvogel.de>
- *
- */
-use Volkszaehler\Iterator;
-use Volkszaehler;
+use Volkszaehler\Interpreter\Iterator;
+use Doctrine\ORM;
+use Volkszaehler\Model;
 use Doctrine\ORM\Query;
-
 
 /**
  * Interpreter superclass for all interpreters
@@ -56,7 +50,7 @@ abstract class Interpreter implements InterpreterInterface {
 	 * @param integer $from timestamp in ms since 1970
 	 * @param integer $to timestamp in ms since 1970
 	 */
-	public function __construct(\Volkszaehler\Model\Channel $channel, \Doctrine\ORM\EntityManager $em, $from = NULL, $to = NULL) {
+	public function __construct(Model\Channel $channel, ORM\EntityManager $em, $from = NULL, $to = NULL) {
 		$this->channel = $channel;
 		$this->em = $em;
 
