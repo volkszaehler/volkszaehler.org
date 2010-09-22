@@ -23,6 +23,8 @@
 
 namespace Volkszaehler\Interpreter;
 
+use Volkszaehler\Util;
+
 use Volkszaehler\Interpreter\Iterator;
 use Doctrine\ORM;
 use Volkszaehler\Model;
@@ -50,12 +52,14 @@ abstract class Interpreter implements InterpreterInterface {
 	 * @param integer $from timestamp in ms since 1970
 	 * @param integer $to timestamp in ms since 1970
 	 */
-	public function __construct(Model\Channel $channel, ORM\EntityManager $em, $from = NULL, $to = NULL) {
+	public function __construct(Model\Channel $channel, ORM\EntityManager $em, $from, $to) {
 		$this->channel = $channel;
 		$this->em = $em;
 
-		$this->from = $from;
-		$this->to = $to;
+		$this->from = (isset($from)) ? self::parseDateTimeString($from, time() * 1000) : NULL;
+		$this->to = (isset($to)) ? self::parseDateTimeString($to, (isset($this->from)) ? $this->from : time() * 1000) : NULL;
+
+		Util\Debug::log('intervall', strftime('%c', $this->from/1000), strftime('%c', $this->to/1000));
 	}
 
 	/**
@@ -72,7 +76,7 @@ abstract class Interpreter implements InterpreterInterface {
 		$params = array(':id' => $this->channel->getId());
 
 		$sqlFrom = ' FROM data';
-		$sqlWhere = ' WHERE channel_id = :id' . self::buildTimeFilterSQL($this->from, $this->to);
+		$sqlWhere = ' WHERE channel_id = :id' . self::buildDateTimeFilterSQL($this->from, $this->to);
 		$sqlOrderBy = ' ORDER BY timestamp ASC';
 
 		if ($sqlGroupBy = self::buildGroupBySQL($groupBy)) {
@@ -155,7 +159,7 @@ abstract class Interpreter implements InterpreterInterface {
 	 * @param integer $to timestamp in ms since 1970
 	 * @return string the sql part
 	 */
-	protected static function buildTimeFilterSQL($from = NULL, $to = NULL) {
+	protected static function buildDateTimeFilterSQL($from = NULL, $to = NULL) {
 		$sql = '';
 
 		if (isset($from)) {
@@ -167,6 +171,28 @@ abstract class Interpreter implements InterpreterInterface {
 		}
 
 		return $sql;
+	}
+
+	/**
+	 * Parses a timestamp
+	 *
+	 * @link http://de3.php.net/manual/en/datetime.formats.php
+	 * @todo add millisecond resolution
+	 *
+	 * @param string $ts string to parse
+	 * @param float $now in ms since 1970
+	 * @return float
+	 */
+	protected static function parseDateTimeString($string, $now) {
+		if ($ts = strtotime($string, round($now/1000))) {
+			return $ts * 1000;
+		}
+		elseif (ctype_digit($string)) {
+			return (float) $ts;
+		}
+		else {
+			throw new \Exception('Invalid time format: ' . $string);
+		}
 	}
 
 	/*
