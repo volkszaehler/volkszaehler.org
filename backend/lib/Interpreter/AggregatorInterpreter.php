@@ -36,11 +36,13 @@ use Volkszaehler\Model;
  * @package default
  *
  */
-class AggregatorInterpreter {
+class AggregatorInterpreter implements InterpreterInterface {
 	/**
 	 * @var array of Interpreter
 	 */
 	protected $channelInterpreter = array();
+
+	protected $aggregator;
 
 	/**
 	 * Constructor
@@ -53,13 +55,14 @@ class AggregatorInterpreter {
 	 */
 	public function __construct(Model\Aggregator $aggregator, ORM\EntityManager $em, $from, $to) {
 		$indicator = NULL;
+		$this->aggregator = $aggregator;
 
-		foreach ($aggregator->getChannels() as $channels) {
-			if (isset($indicator) && $indicator != $channel->getIndicator()) {
+		foreach ($aggregator->getChannels() as $channel) {
+			if (isset($indicator) && $indicator != $channel->getType()) {
 				throw new \Exception('Can\'t aggregate entities of mixed types!');
 			}
 			else {
-				$indicator = $channel->getIndicator();
+				$indicator = $channel->getType();
 			}
 
 			$this->channelInterpreter[] = $channel->getInterpreter($em, $from, $to);
@@ -74,6 +77,13 @@ class AggregatorInterpreter {
 	 * @return array of values
 	 */
 	public function getValues($groupBy = NULL) {
+
+	}
+
+	/**
+	 * @todo to be implemented
+	 */
+	public function getConsumption() {
 
 	}
 
@@ -122,4 +132,9 @@ class AggregatorInterpreter {
 		}
 		return ($sum / count($this->channelInterpreter));
 	}
+
+	/*
+	 * Getter & setter
+	 */
+	public function getUuid() { return $this->aggregator->getUuid(); }
 }

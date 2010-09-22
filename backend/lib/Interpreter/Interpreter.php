@@ -30,18 +30,9 @@ namespace Volkszaehler\Interpreter;
  *
  */
 use Volkszaehler\Iterator;
-
 use Volkszaehler;
-
 use Doctrine\ORM\Query;
 
-interface InterpreterInterface {
-	function getConsumption();
-	function getValues();
-	function getMin();
-	function getMax();
-	function getAverage();
-}
 
 /**
  * Interpreter superclass for all interpreters
@@ -183,6 +174,11 @@ abstract class Interpreter implements InterpreterInterface {
 
 		return $sql;
 	}
+
+	/*
+	 * Getter & setter
+	 */
+	public function getUuid() { return $this->channel->getUuid(); }
 }
 
 ?>

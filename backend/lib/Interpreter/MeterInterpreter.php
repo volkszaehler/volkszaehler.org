@@ -54,7 +54,7 @@ class MeterInterpreter extends Interpreter {
 	}
 
 	/**
-	 *
+	 * @return array (0 => timestamp, 1 => value)
 	 */
 	public function getMin() {
 		$data = $this->getData();
@@ -69,7 +69,7 @@ class MeterInterpreter extends Interpreter {
 	}
 
 	/**
-	 * @return array
+	 * @return array (0 => timestamp, 1 => value)
 	 */
 	public function getMax() {
 		$data = $this->getData();
@@ -84,7 +84,6 @@ class MeterInterpreter extends Interpreter {
 	}
 
 	/**
-	 * @todo calculate timeinterval if no params were given
 	 * @return float
 	 */
 	public function getAverage() {
@@ -93,6 +92,8 @@ class MeterInterpreter extends Interpreter {
 
 	/**
 	 * Just a passthrough of raw data
+	 *
+	 * @deprecated
 	 */
 	public function getPulses($groupBy = NULL) {
 		return parent::getData($groupBy);
@@ -131,8 +132,8 @@ class MeterInterpreter extends Interpreter {
 		$delta = $next[0] - $last[0];
 
 		return array(
-			($next[0] - $delta / 2),												// timestamp
-			$next[1] * (3600000 / (($this->channel->getProperty('resolution')->getValue() / 1000) * $delta)),	// value
+			($next[0] - $delta / 2),	// timestamp
+			$next[1] * (3600000 / (($this->channel->getProperty('resolution') / 1000) * $delta)),	// value
 			(isset($next[2])) ? $next[2] : 1
 		);
 	}
