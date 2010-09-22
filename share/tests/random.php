@@ -31,8 +31,6 @@ include '../../backend/lib/Model/Token.php';
 use Volkszaehler\Model;
 use Volkszaehler\Util;
 
-Util\Random::init();
-
 $chars = array(
 		'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
 		'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'v', 'u', 'w', 'x', 'y', 'z',
@@ -41,10 +39,13 @@ $chars = array(
 
 ?>
 <h4>PRNG tests</h4>
+
+<p>PNRG generator: <?= Util\Random::init() ?></p>
+
 <pre>
 
 <?php
-echo 'Numbers: ' . implode(',', Util\Random::get(0, 100, 100)) . PHP_EOL;
+echo 'Numbers: ' . implode(',', Util\Random::getNumbers(0, 15, 10)) . PHP_EOL;
 echo 'String: ' . Util\Random::getString($chars, 100) . PHP_EOL;
 echo 'Bytes: ' . Util\Random::getBytes(100) . PHP_EOL;
 ?>

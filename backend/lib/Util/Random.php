@@ -30,7 +30,7 @@ namespace Volkszaehler\Util;
  * @package util
  */
 class Random {
-	protected static $func = 'twister';
+	protected static $func = NULL;
 	protected static $source = NULL;
 
 	/**
@@ -44,22 +44,29 @@ class Random {
 			self::$source = fopen('/dev/urandom', 'rb');
 			self::$func = 'fRead';
 		}
-		else if (class_exists('COM', 0)) {
+		elseif (class_exists('COM', 0)) {
 			try {
 				self::$source = new COM('CAPICOM.Utilities.1');  // See http://msdn.microsoft.com/en-us/library/aa388182(VS.85).aspx
 				self::$func = 'COM';
 			}
 			catch(\Exception $e) {}
 		}
+		else {
+			self::$func = 'twister';
+		}
+
 		return self::$func;
 	}
 
 	/**
 	 *
 	 * @param intger $bytes
-	 * @todo check if initialized
 	 */
 	public static function getBytes($count) {
+		if (!isset(self::$func)) {
+			self::init();
+		}
+
 		return call_user_func(array('self', self::$func), $count);
 	}
 
@@ -69,7 +76,7 @@ class Random {
 	 * @param integer $count length of string
 	 */
 	public function getString(array $chars, $length) {
-		$numbers = self::get(0, count($chars) - 1, $length);
+		$numbers = self::getNumbers(0, count($chars) - 1, $length);
 		$string = '';
 
 		foreach ($numbers as $number) {
@@ -87,7 +94,7 @@ class Random {
 	 * @param integer $count
 	 * @return integer|array single integer if $count == 1 or array of integers if $count > 1
 	 */
-	public function get($min, $max, $count = 1) {
+	public static function getNumbers($min, $max, $count = 1) {
 		$bytes = self::getBytes($count);
 
 		$numbers = array();
