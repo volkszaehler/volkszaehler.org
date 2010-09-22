@@ -23,6 +23,8 @@
 
 namespace Volkszaehler\View;
 
+use Volkszaehler\Interpreter;
+
 use Volkszaehler\View\HTTP;
 use Volkszaehler\Util;
 use Volkszaehler\Model;
@@ -38,6 +40,7 @@ class XML extends View {
 	protected $xmlRoot = NULL;
 	protected $xmlChannels = NULL;
 	protected $xmlAggregators = NULL;
+	protected $xmlDatas = NULL;
 
 	public function __construct(HTTP\Request $request, HTTP\Response $response) {
 		parent::__construct($request, $response);
@@ -53,7 +56,30 @@ class XML extends View {
 		$this->response->setHeader('Content-type', 'application/xml; charset=UTF-8');
 	}
 
-	public function addChannel(Model\Channel $channel, array $data = NULL) {
+	protected function addData(Interpreter\Interpreter $interpreter) {
+		$data = $interpreter->getValues();
+
+		$xmlData = $this->xmlDoc->createElement('data');
+
+		foreach ($data as $reading) {
+			$xmlReading = $this->xmlDoc->createElement('reading');
+
+			$xmlReading->setAttribute('timestamp', $reading[0]);	// hardcoded data fields for performance optimization
+			$xmlReading->setAttribute('value', $reading[1]);
+			$xmlReading->setAttribute('count', $reading[2]);
+
+			$xmlData->appendChild($xmlReading);
+		}
+
+		if (!isset($this->xmlDatas)) {
+			$this->xmlDatas = $this->xmlDoc->createElement('datas');
+			$this->xmlRoot->appendChild($this->xmlDatas);
+		}
+
+		$this->xmlDatas->appendChild($xmlData);
+	}
+
+	public function addChannel(Model\Channel $channel) {
 		$xmlChannel = $this->xmlDoc->createElement('channel');
 		$xmlChannel->setAttribute('uuid', $channel->getUuid());
 
@@ -63,22 +89,6 @@ class XML extends View {
 		$xmlChannel->appendChild($this->xmlDoc->createElement('description', $channel->getDescription()));
 		$xmlChannel->appendChild($this->xmlDoc->createElement('resolution', (int) $channel->getResolution()));
 		$xmlChannel->appendChild($this->xmlDoc->createElement('cost', (float) $channel->getCost()));
-
-		if (isset($data)) {
-			$xmlData = $this->xmlDoc->createElement('data');
-
-			foreach ($data as $reading) {
-				$xmlReading = $this->xmlDoc->createElement('reading');
-
-				$xmlReading->setAttribute('timestamp', $reading['timestamp']);	// hardcoded data fields for performance optimization
-				$xmlReading->setAttribute('value', $reading['value']);
-				$xmlReading->setAttribute('count', $reading['count']);
-
-				$xmlData->appendChild($xmlReading);
-			}
-
-			$xmlChannel->appendChild($xmlData);
-		}
 
 		if (!isset($this->xmlChannels)) {
 			$this->xmlChannels = $this->xmlDoc->createElement('channels');
@@ -139,7 +149,7 @@ class XML extends View {
 		$this->xmlRoot->appendChild($xmlException);
 	}
 
-	protected function renderResponse() {
+	protected function render() {
 		echo $this->xmlDoc->saveXML();
 	}
 

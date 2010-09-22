@@ -23,6 +23,8 @@
 
 namespace Volkszaehler\View;
 
+use Volkszaehler\Interpreter;
+
 use Volkszaehler\View\HTTP;
 use Volkszaehler\Util;
 use Volkszaehler\Model;
@@ -57,22 +59,45 @@ class JSON extends View {
 		$this->setPadding($request->getParameter('padding'));
 	}
 
-	public function addChannel(Model\Channel $channel, array $data = NULL) {
-		$jsonChannel = self::convertEntity($channel);
-		$jsonChannel['type'] = $channel->getType();
+	/**
+	 * Process, encode and print output
+	 */
+	protected function render() {
+		$json = $this->json->encode((Util\Debug::isActivated()) ? JSON_PRETTY : 0);
 
-		if (isset($data)) {
-			$jsonChannel['data'] = self::convertData($data);
+		if ($this->padding) {
+			$json = 'if (self.' . $this->padding . ') { ' . $this->padding  . '(' . $json . '); }';
 		}
 
-		$this->json['channel'] = $jsonChannel;
+		$this->response->setHeader('Content-type', 'application/json');
+		echo $json;
 	}
 
-	public function addAggregator(Model\Aggregator $aggregator, $recursive = FALSE) {
+	/**
+	 * Add channel to output queue
+	 *
+	 * @param Model\Channel $channel
+	 */
+	protected function addChannel(Model\Channel $channel) {
+		$this->json['channel'] = self::convertEntity($channel);
+	}
+
+	/**
+	 * Add aggregator to output queue
+	 *
+	 * @param Model\Aggregator $aggregator
+	 * @param boolean $recursive
+	 */
+	protected function addAggregator(Model\Aggregator $aggregator, $recursive = FALSE) {
 		$this->json['group'] = self::convertAggregator($aggregator, $recursive);
 	}
 
-	public function addDebug(Util\Debug $debug) {
+	/**
+	 * Add debugging information include queries and messages to output queue
+	 *
+	 * @param Util\Debug $debug
+	 */
+	protected function addDebug(Util\Debug $debug) {
 		$this->json['debug'] = array(
 			'time' => $debug->getExecutionTime(),
 			'messages' => $debug->getMessages(),
@@ -83,6 +108,12 @@ class JSON extends View {
 		);
 	}
 
+	/**
+	 * Add exception to output queue
+	 *
+	 * @param \Exception $exception
+	 * @param boolean $debug
+	 */
 	protected function addException(\Exception $exception, $debug = FALSE) {
 		$exceptionInfo = array(
 			'type' => get_class($exception),
@@ -103,9 +134,26 @@ class JSON extends View {
 		}
 	}
 
+	/**
+	 * Add data to output queue
+	 *
+	 * @param Interpreter\InterpreterInterface $interpreter
+	 */
+	protected function addData(Interpreter\InterpreterInterface $interpreter) {
+		$this->json['data'][$interpreter->getUuid()] = $interpreter->getValues($this->request->getParameter('groupBy'));
+	}
+
+	/**
+	 * Converts entity to array for json_encode()
+	 *
+	 * @param Model\Entity $entity
+	 * @return array
+	 */
 	protected static function convertEntity(Model\Entity $entity) {
 		$jsonEntity = array();
 		$jsonEntity['uuid'] = (string) $entity->getUuid();
+		$jsonEntity['type'] = $entity->getType();
+
 
 		foreach ($entity->getProperties() as $key => $value) {
 			$jsonEntity[$key] = $value;
@@ -114,41 +162,25 @@ class JSON extends View {
 		return $jsonEntity;
 	}
 
-	protected static function convertAggregator(Model\Aggregator $aggregator, $recursive = FALSE) {
+	/**
+	 * Converts aggregator to array for json_encode
+	 *
+	 * @param Model\Aggregator $aggregator
+	 * @param boolean $recursive
+	 * @return array
+	 */
+	protected static function convertAggregator(Model\Aggregator $aggregator) {
 		$jsonAggregator = self::convertEntity($aggregator);
 
 		foreach ($aggregator->getChannels() as $channel) {
-			$jsonAggregator['channels'][] = (string) $channel->getUuid();
+			$jsonAggregator['channels'][] = self::convertEntity($channel);
 		}
 
-		if ($recursive) {
-			$jsonAggregator['groups'] = array();
-
-			foreach ($aggregator->getChildren() as $subAggregator) {
-				$jsonAggregator['groups'][] = $this->toJson($subAggregator, $recursive);	// recursion
-			}
+		foreach ($aggregator->getChildren() as $subAggregator) {
+			$jsonAggregator['groups'][] = self::convertAggregator($subAggregator);	// recursion
 		}
 
 		return $jsonAggregator;
-	}
-
-	protected static function convertData($data) {
-		array_walk($data, function(&$reading) {
-			$reading[1] = round($reading[1], View::PRECISSION);
-		});
-
-		return $data;
-	}
-
-	public function render() {
-		$json = $this->json->encode((Util\Debug::isActivated()) ? JSON_PRETTY : 0);
-
-		if ($this->padding) {
-			$json = 'if (self.' . $this->padding . ') { ' . $this->padding  . '(' . $json . '); }';
-		}
-
-		$this->response->setHeader('Content-type', 'application/json');
-		echo $json;
 	}
 
 	/*

@@ -23,6 +23,8 @@
 
 namespace Volkszaehler\View;
 
+use Volkszaehler\Interpreter;
+
 use Volkszaehler\Model;
 use Volkszaehler\Util;
 
@@ -39,6 +41,7 @@ require_once VZ_BACKEND_DIR . '/lib/vendor/JpGraph/jpgraph_date.php';
  * @author Steffen Vogel <info@steffenvogel.de>
  * @link http://jpgraph.net/
  * @todo add caching
+ * @todo rework
  */
 class JpGraph extends View {
 	/**
@@ -96,8 +99,10 @@ class JpGraph extends View {
 	 * @param $obj
 	 * @param $data
 	 */
-	public function addChannel(Model\Channel $channel, array $data = NULL){
-		if (isset($data) && count($data) > 0) {
+	public function addData(Interpreter\Interpreter $interpreter){
+		$data = $interpreter->getValues(800);
+
+		if (count($data) > 0) {
 			$count = count($this->channels);
 			$xData = $yData = array();
 
@@ -109,7 +114,7 @@ class JpGraph extends View {
 			// Create the scatter plot
 			$plot = new \ScatterPlot($yData, $xData);
 
-			$plot->setLegend($channel->getProperty('name')->getValue() . ': ' . $channel->getProperty('description')->getValue() . ' [' . $channel->getDefinition()->getUnit() . ']');
+			$plot->setLegend($interpreter->getChannel()->getProperty('title') . ':  [' . $interpreter->getChannel()->getDefinition()->getUnit() . ']');
 			$plot->SetLinkPoints(TRUE, self::$colors[$count]);
 
 			$plot->mark->SetColor(self::$colors[$count]);
@@ -117,7 +122,7 @@ class JpGraph extends View {
 			$plot->mark->SetType(MARK_DIAMOND);
 			$plot->mark->SetWidth(1);
 
-			$axis = $this->getAxisIndex($channel);
+			$axis = $this->getAxisIndex($interpreter->getChannel());
 			if ($axis >= 0) {
 				$this->graph->AddY($axis, $plot);
 			}
@@ -125,30 +130,25 @@ class JpGraph extends View {
 				$this->graph->Add($plot);
 			}
 
-			$this->channels[] = $channel;
-		}
-		else {
-			throw new \Exception('Can\'t plot channels without data!');
+			$this->channels[] = $interpreter->getChannel();
 		}
 	}
 
-	/**
-	 * adds all channel of group as new plots to the graph
-	 *
-	 * @param Model\Aggregator $aggregator
-	 */
+	public function addChannel(Model\Channel $channel) {
+		throw new \Exception(get_class($this) . ' cant show ' . get_class($channel));
+	}
+
 	public function addAggregator(Model\Aggregator $aggregator) {
-		foreach ($aggregator->getChannels() as $child) {
-			$this->addChannel($child);
-		}
+		throw new \Exception(get_class($this) . ' cant show ' . get_class($aggregator));
 	}
 
 	public function addDebug(Util\Debug $debug) {
-		throw new \Exception(get_class($this) . ' cant show debugging information');
+		throw new \Exception(get_class($this) . ' cant show ' . get_class($debug));
 	}
 
 	/**
-	 * shows exception
+	 * Shows exception
+	 *
 	 * @todo avoid graph plotting and set content-type to text/plain
 	 * @param \Exception $exception
 	 */
@@ -160,22 +160,22 @@ class JpGraph extends View {
 	 * check weather a axis for the indicator of $channel exists
 	 *
 	 * @param \Volkszaehler\Model\Channel $channel
-	 * @todo call getType() only once
 	 */
 	protected function getAxisIndex(\Volkszaehler\Model\Channel $channel) {
-		if (!in_array($channel->getType(), array_keys($this->axes))) {
-			$count =count($this->axes);
+		$type = $channel->getType();
+
+		if (!array_key_exists($type, $this->axes)) {
+			$count = count($this->axes);
 			if ($count == 0) {
-				$this->axes[$channel->getType()] = -1;
+				$this->axes[$type] = -1;
 
 				$yaxis = $this->graph->yaxis;
 			}
 			else {
-				$this->axes[$channel->getType()] = $count - 1;
+				$this->axes[$type] = $count - 1;
+				$this->graph->SetYScale($this->axes[$type],'lin');
 
-				$this->graph->SetYScale($this->axes[$channel->getType()],'lin');
-
-				$yaxis = $this->graph->ynaxis[$this->axes[$channel->getType()]];
+				$yaxis = $this->graph->ynaxis[$this->axes[$type]];
 			}
 
 			$yaxis->title->Set($channel->getDefinition()->getUnit());
@@ -186,7 +186,7 @@ class JpGraph extends View {
 			$yaxis->SetTitleMargin('50');
 		}
 
-		return $this->axes[$channel->getType()];
+		return $this->axes[$type];
 	}
 
 	/**
@@ -194,11 +194,11 @@ class JpGraph extends View {
 	 *
 	 * headers has been set automatically
 	 */
-	protected function renderResponse() {
+	protected function render() {
 		$this->graph->SetMargin(75, (count($this->axes) - 1) * 65 + 10, 20, 90);
 
 		// Display the graph
-		$this->graph->Stroke();
+		//$this->graph->Stroke();
 	}
 }
 

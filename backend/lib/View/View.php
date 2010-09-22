@@ -23,6 +23,10 @@
 
 namespace Volkszaehler\View;
 
+use Volkszaehler\Interpreter;
+
+use Volkszaehler\Iterator;
+
 use Volkszaehler\Model;
 use Volkszaehler\View\HTTP;
 use Volkszaehler\Util;
@@ -42,8 +46,7 @@ abstract class View {
 
 	/**
 	 * @var HTTP\Request
-	 * @todo do we need this?
-	 * @todo why public? not via getter?
+	 * @todo do we need this? why public? not via getter?
 	 */
 	public $request;
 
@@ -108,7 +111,10 @@ abstract class View {
 				array_walk($data, array($this, 'add'));
 			}
 			else {
-				if ($data instanceof Model\Channel) {
+				if ($data instanceof Interpreter\InterpreterInterface) {
+					$this->addData($data);
+				}
+				elseif ($data instanceof Model\Channel) {
 					$this->addChannel($data);
 				}
 				elseif ($data instanceof Model\Aggregator) {
@@ -128,6 +134,10 @@ abstract class View {
 	}
 
 	protected abstract function render();
+
+	protected abstract function addData(Interpreter\InterpreterInterface $data);
+	protected abstract function addChannel(Model\Channel $channel);
+	protected abstract function addAggregator(Model\Aggregator $aggregator);
 	protected abstract function addException(\Exception $exception);
 	protected abstract function addDebug(Util\Debug $debug);
 }
