@@ -150,24 +150,11 @@ class Router {
 			$controller = new $class($this->view, $this->em);
 
 			if (isset($pathInfo[1])) {
-				if (Util\UUID::validate($pathInfo[1], TRUE)) {
-					if (isset($pathInfo[2])) {
-						if (array_key_exists($pathInfo[2], self::$controllerMapping)) {
-							$class = self::$controllerMapping[$pathInfo[2]];
-							$subcontroller = new $class($this->view, $this->em);
-
-							$result = $subcontroller->run($this->operation, $controller->run('get', $pathInfo[1]));
-						}
-						else {
-							throw new \Exception('Unknown subcontext: ' . $pathInfo[2]);
-						}
-					}
-					else {
-						$result = $controller->run($this->operation, $pathInfo[1]);
-					}
+				if (Util\UUID::validate($pathInfo[1], TRUE)) {	// TODO make universal
+						$result = $controller->run($this->operation, explode('/', $pathInfo[1]));
 				}
 				else {
-					throw new \Exception('Invalid identifier: ' . $pathInfo[1]);
+					throw new \Exception('Invalid parameter: ' . $pathInfo[1]);
 				}
 			}
 			else {
