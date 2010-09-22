@@ -172,12 +172,14 @@ class JSON extends View {
 	protected static function convertAggregator(Model\Aggregator $aggregator) {
 		$jsonAggregator = self::convertEntity($aggregator);
 
-		foreach ($aggregator->getChannels() as $channel) {
-			$jsonAggregator['channels'][] = self::convertEntity($channel);
-		}
+		foreach ($aggregator->getChildren() as $entity) {
 
-		foreach ($aggregator->getChildren() as $subAggregator) {
-			$jsonAggregator['groups'][] = self::convertAggregator($subAggregator);	// recursion
+			if ($entity instanceof Model\Channel) {
+				$jsonAggregator['channels'][] = self::convertEntity($entity);
+			}
+			elseif ($entity instanceof Model\Aggregator) {
+				$jsonAggregator['groups'][] = self::convertAggregator($entity);
+			}
 		}
 
 		return $jsonAggregator;
