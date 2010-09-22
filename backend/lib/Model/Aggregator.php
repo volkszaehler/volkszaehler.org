@@ -85,7 +85,7 @@ class Aggregator extends Entity {
 	}
 
 	public function removeAggregator(Aggregator $child) {
-		$this->children->removeElement($child);
+		return $this->children->removeElement($child);
 	}
 
 	/**
@@ -93,20 +93,22 @@ class Aggregator extends Entity {
 	 *
 	 * @param Channel $child
 	 * @todo check if the channel is already member of the group
-	 * @todo add bidrection association
+	 * @todo add bidrectional association
 	 */
 	public function addChannel(Channel $child) {
 		$this->channels->add($child);
 	}
 
 	public function removeChannel(Channel $child) {
-		$this->channels->removeElement($child);
+		return $this->channels->removeElement($child);
 	}
 
-	/**
-	 * @todo return array via ArrayCollection::toArray()?
+	/*
+	 * Setter & getter
 	 */
-	public function getChannels() { return $this->channels; }
+	public function getChannels() { return $this->channels->toArray(); }
+	public function getChildren() { return $this->children->toArray(); }
 }
+
 
 ?>

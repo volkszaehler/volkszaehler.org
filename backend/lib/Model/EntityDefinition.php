@@ -66,7 +66,7 @@ class EntityDefinition extends Definition {
 	protected $unit;
 
 	/**
-	 * @todo url relative or absolute?
+	 * Relative url to an icon
 	 * @var string
 	 */
 	protected $icon;

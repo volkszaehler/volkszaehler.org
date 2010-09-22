@@ -70,8 +70,7 @@ class Data {
 	 */
 	protected $channel;
 
-	public function __construct(Model\Channel $channel, $value, $timestamp) {
-		$channel->addData($this);	// bidirectional association
+	public function __construct(Model\Channel $channel, $timestamp, $value) {
 		$this->channel = $channel;
 
 		$this->value = $value;

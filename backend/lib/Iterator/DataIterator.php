@@ -33,7 +33,7 @@ class DataIterator implements \Iterator, \Countable {
 	protected $current;
 	protected $key;			// incrementing key
 	protected $stmt;		// PDOStatement
-	protected $size;	// total readings in PDOStatement
+	protected $size;		// total readings in PDOStatement
 
 	/**
 	 * Constructor

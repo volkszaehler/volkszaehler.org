@@ -28,6 +28,7 @@ namespace Volkszaehler\Util;
  *
  * @package util
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @todo why not with json?
  */
 class Configuration {
 	static protected $values = array();

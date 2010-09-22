@@ -66,7 +66,7 @@ class Debug {
 		self::$instance = $this;
 
 		// assert options
-		assert_options(ASSERT_ACTIVE, TRUE);
+		assert_options(ASSERT_ACTIVE, TRUE);	// activate assertions
 		assert_options(ASSERT_BAIL, FALSE);
 		assert_options(ASSERT_WARNING, FALSE);
 		assert_options(ASSERT_CALLBACK, array($this, 'assertHandler'));
@@ -98,7 +98,6 @@ class Debug {
 	 * simple assertion passthrough for future improvements
 	 *
 	 * @param string $code code to be evaluated
-	 * @todo check how should be en/disabled (options etc..)
 	 */
 	public static function assert($code) {
 		return assert($code);
@@ -147,7 +146,7 @@ class Debug {
 
 	/**
 	 * @return Debug the Debug instance if available
-	 * @todo OOP? Should we remove this? Replace by State class?
+	 * @todo encapsulate in state class? or inherit from singleton class?
 	 */
 	public static function getInstance() { return self::$instance; }
 }

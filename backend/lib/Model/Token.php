@@ -30,6 +30,7 @@ use Volkszaehler\Util;
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
+ * @todo this is a draft! has to be discussed and implemented
  *
  * @Entity
  * @Table(name="tokens")
