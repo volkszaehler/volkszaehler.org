@@ -33,16 +33,16 @@ class VolkszaehlerModelChannelProxy extends \Volkszaehler\Model\Channel implemen
         return parent::addData($data);
     }
 
-    public function checkPersist()
+    public function checkProperties()
     {
         $this->_load();
-        return parent::checkPersist();
+        return parent::checkProperties();
     }
 
-    public function getProperty($name)
+    public function getProperty($key)
     {
         $this->_load();
-        return parent::getProperty($name);
+        return parent::getProperty($key);
     }
 
     public function getProperties($prefix = NULL)
@@ -57,10 +57,10 @@ class VolkszaehlerModelChannelProxy extends \Volkszaehler\Model\Channel implemen
         return parent::setProperty($key, $value);
     }
 
-    public function unsetProperty($name, \Doctrine\ORM\EntityManager $em)
+    public function unsetProperty($key, \Doctrine\ORM\EntityManager $em)
     {
         $this->_load();
-        return parent::unsetProperty($name, $em);
+        return parent::unsetProperty($key, $em);
     }
 
     public function getId()
@@ -96,6 +96,6 @@ class VolkszaehlerModelChannelProxy extends \Volkszaehler\Model\Channel implemen
 
     public function __sleep()
     {
-        return array('__isInitialized__', 'id', 'uuid', 'type', 'tokens', 'properties', 'data', 'aggregators');
+        return array('__isInitialized__', 'id', 'uuid', 'type', 'tokens', 'properties', 'parents', 'data', 'aggregators');
     }
 }

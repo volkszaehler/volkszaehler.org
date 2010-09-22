@@ -27,16 +27,16 @@ class VolkszaehlerModelEntityProxy extends \Volkszaehler\Model\Entity implements
     }
 
     
-    public function checkPersist()
+    public function checkProperties()
     {
         $this->_load();
-        return parent::checkPersist();
+        return parent::checkProperties();
     }
 
-    public function getProperty($name)
+    public function getProperty($key)
     {
         $this->_load();
-        return parent::getProperty($name);
+        return parent::getProperty($key);
     }
 
     public function getProperties($prefix = NULL)
@@ -51,10 +51,10 @@ class VolkszaehlerModelEntityProxy extends \Volkszaehler\Model\Entity implements
         return parent::setProperty($key, $value);
     }
 
-    public function unsetProperty($name, \Doctrine\ORM\EntityManager $em)
+    public function unsetProperty($key, \Doctrine\ORM\EntityManager $em)
     {
         $this->_load();
-        return parent::unsetProperty($name, $em);
+        return parent::unsetProperty($key, $em);
     }
 
     public function getId()
@@ -90,6 +90,6 @@ class VolkszaehlerModelEntityProxy extends \Volkszaehler\Model\Entity implements
 
     public function __sleep()
     {
-        return array('__isInitialized__', 'id', 'uuid', 'type', 'tokens', 'properties');
+        return array('__isInitialized__', 'id', 'uuid', 'type', 'tokens', 'properties', 'parents');
     }
 }
