@@ -1,12 +1,15 @@
 <?php
 /**
- * install script
+ * Installer
  *
- * for creating/updating of the configuration/database
+ * For creating/updating the configuration/database
+ * and downloading of required libraries
+ * and configuration of of the PHP interpreter/webserver
  *
  * @copyright Copyright (c) 2010, The volkszaehler.org project
  * @package tools
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @todo finish
  */
 /*
  * This file is part of volkzaehler.org
@@ -31,22 +34,42 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 	<head>
-		<title>volkszaehler.org - installer</title>
+		<title>volkszaehler.org - installation</title>
 	</head>
 	<body>
+	<h1>volkszaehler.org - installation</h1>
 
 <?php
 
-// TODO complete installer
+// TODO start session with GET-parameter (no cookies)
 
-switch (@$_GET['step']) {
-	case '1':
-		echo 'bla';
-		break;
-
-	default:
-		echo '<p>welcome to the installation of your volkszaehler backend!</p>
-			<p>lets proceed with the <a href="?step=1">next step</a></p>';
+if (isset($_GET['step'])) {
+	if (file_exists($_GET['step'] . '.php')) {
+		include $_GET['step'] . '.php';
+	}
+	else {
+		// TODO check js history call
+		echo '<span style="color: red; font-weight: bold;">Invalid step during installation: ' . $_GET['step'] . '</span>
+			<p><a href="javascript:window.location.back()">back</a></p>';
+	}
+}
+else {
+	echo <<<EOT
+<p>Welcome to the installation of your volkszaehler.org!<br />
+This installer will:
+<ul>
+	<li>check for all requirements</li>
+	<li>install missing libraries</li>
+	<li>setup your database + configuration</li>
+	<li>import your existing data</li>
+	<li>test your installation</li>
+</ul>
+Only fundamental administration knowledge is required :)
+</p>
+<p>
+So, ready? Take a cup of coffee and lets take a look on your system:</p>
+<p><a href="?step=check">Start with step 1: analyze your system</a></p>
+EOT;
 }
 
 ?>

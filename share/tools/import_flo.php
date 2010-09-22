@@ -5,6 +5,8 @@
  * @copyright Copyright (c) 2010, The volkszaehler.org project
  * @package tools
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @todo adapt to doctrine dbal or use native pdo
+ * @todo move to installer
  */
 /*
  * This file is part of volkzaehler.org
