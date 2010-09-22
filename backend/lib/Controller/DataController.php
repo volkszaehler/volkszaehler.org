@@ -68,11 +68,11 @@ class DataController extends Controller {
 		$this->em->flush();
 	}
 
-	public function run($operation, array $params = array()) {
+	public function run($operation, array $identifiers = array()) {
 		$ec = new EntityController($this->view, $this->em);
-		$params[0] = $ec->get($params[0]);
+		$identifiers[0] = $ec->get($identifiers[0]);
 
-		return parent::run($operation, $params);
+		return parent::run($operation, $identifiers);
 	}
 }
 

@@ -38,19 +38,23 @@ class EntityController extends Controller {
 	 *
 	 * @param string $identifier
 	 */
-	public function get($identifier) {
+	public function get($uuid) {
+		if (!Util\UUID::validate($uuid)) {
+			throw new \Exception('Invalid UUID: ' . $uuid);
+		}
+
 		$dql = 'SELECT a, p
 				FROM Volkszaehler\Model\Entity a
 				LEFT JOIN a.properties p
 				WHERE a.uuid = ?1';
 
 		$q = $this->em->createQuery($dql);
-		$q->setParameter(1, $identifier);
+		$q->setParameter(1, $uuid);
 
 		try {
 			return $q->getSingleResult();
 		} catch (\Doctrine\ORM\NoResultException $e) {
-			throw new \Exception('No entity found with uuid: ' . $identifier);
+			throw new \Exception('No entity found with UUID: ' . $uuid);
 		}
 	}
 

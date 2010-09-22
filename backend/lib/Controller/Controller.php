@@ -49,12 +49,12 @@ abstract class Controller {
 	 *
 	 * @param string $operation runs the operation if class method is available
 	 */
-	public function run($operation, array $params = array()) {
+	public function run($operation, array $identifiers = array()) {
 		if (!is_callable(array($this, $operation))) {
 			throw new \Exception('Invalid context operation: ' . $operation);
 		}
 
-		return call_user_func_array(array($this, $operation), $params);
+		return call_user_func_array(array($this, $operation), $identifiers);
 	}
 }
 

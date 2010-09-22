@@ -74,10 +74,9 @@ class Router {
 	protected static $controllerMapping = array(
 		'channel'		=> 'Volkszaehler\Controller\ChannelController',
 		'group'			=> 'Volkszaehler\Controller\AggregatorController',
-		'token'			=> 'Volkszaehler\Controller\TokenController',
-		'capabilities'	=> 'Volkszaehler\Controller\CapabilitiesController',
-		'data'			=> 'Volkszaehler\Controller\DataController',
-		'entity'		=> 'Volkszaehler\Controller\EntityController'
+		'group'			=> 'Volkszaehler\Controller\AggregatorController',
+		'entity'		=> 'Volkszaehler\Controller\EntityController',
+		'data'			=> 'Volkszaehler\Controller\DataController'
 	);
 
 	/**
@@ -151,12 +150,7 @@ class Router {
 			$controller = new $class($this->view, $this->em);
 
 			if (isset($pathInfo[1])) {
-				if (Util\UUID::validate($pathInfo[1], TRUE)) {	// TODO make universal
-						$result = $controller->run($this->operation, explode('/', $pathInfo[1]));
-				}
-				else {
-					throw new \Exception('Invalid parameter: ' . $pathInfo[1]);
-				}
+				$result = $controller->run($this->operation, array_slice($pathInfo, 1));
 			}
 			else {
 				$result = $controller->run($this->operation);
