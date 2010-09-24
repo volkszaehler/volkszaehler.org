@@ -76,7 +76,8 @@ class Router {
 		'group'			=> 'Volkszaehler\Controller\AggregatorController',
 		'group'			=> 'Volkszaehler\Controller\AggregatorController',
 		'entity'		=> 'Volkszaehler\Controller\EntityController',
-		'data'			=> 'Volkszaehler\Controller\DataController'
+		'data'			=> 'Volkszaehler\Controller\DataController',
+		'capabilities'	=> 'Volkszaehler\Controller\CapabilitiesController'
 	);
 
 	/**

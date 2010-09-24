@@ -21,7 +21,7 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace Volkszaehler\Model;
+namespace Volkszaehler\Definition;
 
 use Volkszaehler\Util;
 
@@ -35,7 +35,7 @@ class EntityDefinition extends Definition {
 	 *
 	 * @var string
 	 */
-	const FILE = '/share/definitions/entities.json';
+	const FILE = '/lib/Definition/EntityDefinition.json';
 
 	/**
 	 * List of required properties

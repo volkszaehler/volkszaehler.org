@@ -55,6 +55,7 @@ class JSON extends View {
 		$this->json = new Util\JSON();
 		$this->json['source'] = 'volkszaehler.org';
 		$this->json['version'] = VZ_VERSION;
+		$this->json['component'] = 'backend';
 
 		$this->setPadding($request->getParameter('padding'));
 	}
@@ -98,14 +99,23 @@ class JSON extends View {
 	 * @param Util\Debug $debug
 	 */
 	protected function addDebug(Util\Debug $debug) {
-		$this->json['debug'] = array(
-			'time' => $debug->getExecutionTime(),
-			'messages' => $debug->getMessages(),
-			'database' => array(
+		$queries = $debug->getQueries();
+		$messages = $debug->getMessages();
+
+		$jsonDebug['time'] = $debug->getExecutionTime();
+
+		if (count($messages) > 0) {
+			$jsonDebug['messages'] = $messages;
+		}
+
+		if (count($queries) > 0) {
+			$jsonDebug['database'] = array(
 				'driver' => Util\Configuration::read('db.driver'),
-				'queries' => $debug->getQueries()
-			)
-		);
+				'queries' => $queries
+			);
+		}
+
+		$this->json['debug'] = $jsonDebug;
 	}
 
 	/**
@@ -140,7 +150,13 @@ class JSON extends View {
 	 * @param Interpreter\InterpreterInterface $interpreter
 	 */
 	protected function addData(Interpreter\InterpreterInterface $interpreter) {
-		$this->json['data'][$interpreter->getUuid()] = $interpreter->getValues($this->request->getParameter('groupBy'));
+		$this->json['data'][$interpreter->getUuid()] = $interpreter->getValues($this->request->getParameter('resolution'));
+	}
+
+	protected function addArray($data) {
+		foreach ($data as $index => $value) {
+			$this->json[$index] = $value;
+		}
 	}
 
 	/**
@@ -183,6 +199,15 @@ class JSON extends View {
 		}
 
 		return $jsonAggregator;
+	}
+
+	public function add($data) {
+		if ($data instanceof Util\JSON || is_array($data)) {
+			$this->addArray($data);
+		}
+		else {
+			parent::add($data);
+		}
 	}
 
 	/*

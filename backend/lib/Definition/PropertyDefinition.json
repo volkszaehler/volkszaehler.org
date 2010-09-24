@@ -83,7 +83,7 @@
 	{
 		"name" : "address:state",
 		"type" : "multiple",
-		"choices" : [
+		"options" : [
 			"Albania",
 			"Algeria",
 			"Andorra",

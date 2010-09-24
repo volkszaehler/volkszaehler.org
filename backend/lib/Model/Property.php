@@ -23,6 +23,8 @@
 
 namespace Volkszaehler\Model;
 
+use Volkszaehler\Definition;
+
 use Volkszaehler\Util;
 use Volkszaehler\Model;
 
@@ -93,7 +95,7 @@ class Property {
 	 * @PreUpdate
 	 */
 	public function validate() {
-		if (!PropertyDefinition::exists($this->key)) {
+		if (!Definition\PropertyDefinition::exists($this->key)) {
 			throw new \Exception('Invalid property key: ' . $this->key);
 		}
 
@@ -127,7 +129,7 @@ class Property {
 	 */
 	public function getKey() { return $this->key; }
 	public function getValue() { return $this->value; }
-	public function getDefinition() { return PropertyDefinition::get($this->key); }
+	public function getDefinition() { return Definition\PropertyDefinition::get($this->key); }
 
 	public function setValue($value) { $this->value = $value; }
 }

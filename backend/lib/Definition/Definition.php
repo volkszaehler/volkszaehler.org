@@ -21,7 +21,7 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace Volkszaehler\Model;
+namespace Volkszaehler\Definition;
 
 use Volkszaehler\Util;
 
@@ -90,13 +90,15 @@ abstract class Definition {
 	 * Load JSON definitions from file (via lazy loading from get())
 	 */
 	protected static function load() {
-		$json = Util\JSON::decode(file_get_contents(VZ_DIR . static::FILE));
-
 		static::$definitions = array();
 
-		foreach ($json as $property) {
+		foreach (self::getJSON() as $property) {
 			static::$definitions[$property->name] = new static($property);
 		}
+	}
+
+	public static function getJSON() {
+		return Util\JSON::decode(file_get_contents(VZ_BACKEND_DIR . static::FILE));
 	}
 }
 

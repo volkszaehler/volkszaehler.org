@@ -23,6 +23,8 @@
 
 namespace Volkszaehler\Model;
 
+use Volkszaehler\Definition;
+
 use Doctrine\ORM;
 
 use Doctrine\Common\Collections;
@@ -80,7 +82,7 @@ abstract class Entity {
 	 * @param string $type
 	 */
 	public function __construct($type) {
-		if (!EntityDefinition::exists($type)) {
+		if (!Definition\EntityDefinition::exists($type)) {
 			throw new \Exception('Unknown entity type');
 		}
 
@@ -184,7 +186,7 @@ abstract class Entity {
 	public function getId() { return $this->id; }		// read only
 	public function getUuid() { return $this->uuid; }	// read only
 	public function getType() { return $this->type; }	// read only
-	public function getDefinition() { return EntityDefinition::get($this->type); }
+	public function getDefinition() { return Definition\EntityDefinition::get($this->type); }
 
 	/**
 	 * Get interpreter to obtain data and statistical information for a given time interval

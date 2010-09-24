@@ -23,47 +23,33 @@
 
 namespace Volkszaehler\Controller;
 
-use Volkszaehler\Definition;
-
 use Volkszaehler\Model;
+use Volkszaehler\Util;
 
 /**
- * Channel controller
+ * Capabilities controller
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
  */
-class ChannelController extends EntityController {
-	/**
-	 * Get channel
-	 */
-	public function get($identifier) {
-		$channel = parent::get($identifier);
+class CapabilitiesController extends Controller {
 
-		if ($channel instanceof Model\Channel) {
-			return $channel;
+	/**
+	 * @todo
+	 * @param string $capabilities
+	 * @param string $sub
+	 */
+	public function get($capabilities, $sub) {
+		if ($capabilities == 'definition' && in_array($sub, array('property', 'entity'))) {
+			$class = 'Volkszaehler\Definition\\' . ucfirst($sub) . 'Definition';
+			$json = $class::getJSON();
+			$this->view->add(array('definition' => array($sub => $json)));
+		}
+		elseif ($capabilities == 'version') {
 		}
 		else {
-			throw new \Exception($identifier . ' is not a channel uuid');
+			throw new \Exception('Unknown capability information: ' . implode('/', func_get_args()));
 		}
-	}
-
-	/**
-	 * Add channel
-	 */
-	public function add() {
-		$channel = new Model\Channel($this->view->request->getParameter('type'));
-
-		foreach ($this->view->request->getParameters() as $parameter => $value) {
-			if (Definition\PropertyDefinition::exists($parameter)) {
-				$channel->setProperty($parameter, $value);
-			}
-		}
-
-		$this->em->persist($channel);
-		$this->em->flush();
-
-		return $channel;
 	}
 }
 

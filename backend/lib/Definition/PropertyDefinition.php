@@ -21,7 +21,7 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace Volkszaehler\Model;
+namespace Volkszaehler\Definition;
 
 /**
  * @author Steffen Vogel <info@steffenvogel.de>
@@ -33,7 +33,7 @@ class PropertyDefinition extends Definition {
 	 *
 	 * @var string
 	 */
-	const FILE = '/share/definitions/properties.json';
+	const FILE = '/lib/Definition/PropertyDefinition.json';
 
 	/**
 	 * One of: string, integer, float, boolean, multiple
@@ -71,7 +71,7 @@ class PropertyDefinition extends Definition {
 	 *
 	 * @var array
 	 */
-	protected $choices = array();
+	protected $options = array();
 
 	protected static $definitions = NULL;
 
@@ -103,7 +103,7 @@ class PropertyDefinition extends Definition {
 				break;
 
 			case 'multiple':
-				$invalid = !in_array($value, $this->choices, TRUE);
+				$invalid = !in_array($value, $this->options, TRUE);
 				break;
 
 			default:

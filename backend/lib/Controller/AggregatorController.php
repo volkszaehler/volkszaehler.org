@@ -29,6 +29,8 @@ namespace Volkszaehler\Controller;
  * @author Steffen Vogel (info@steffenvogel.de)
  * @package default
  */
+use Volkszaehler\Definition;
+
 use Volkszaehler\Model;
 
 class AggregatorController extends EntityController {
@@ -65,7 +67,7 @@ class AggregatorController extends EntityController {
 			$aggregator = new Model\Aggregator('group');	// TODO support for other aggregator types
 
 			foreach ($this->view->request->getParameters() as $parameter => $value) {
-				if (Model\PropertyDefinition::exists($parameter)) {
+				if (Definition\PropertyDefinition::exists($parameter)) {
 					$aggregator->setProperty($parameter, $value);
 				}
 			}

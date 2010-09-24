@@ -107,28 +107,23 @@ abstract class View {
 	 */
 	public function add($data) {
 		if (isset($data)) {
-			if (is_array($data)) {
-				array_walk($data, array($this, 'add'));
+			if ($data instanceof Interpreter\InterpreterInterface) {
+				$this->addData($data);
+			}
+			elseif ($data instanceof Model\Channel) {
+				$this->addChannel($data);
+			}
+			elseif ($data instanceof Model\Aggregator) {
+				$this->addAggregator($data);
+			}
+			elseif ($data instanceof \Exception) {
+				$this->addException($data);
+			}
+			elseif ($data instanceof Util\Debug) {
+				$this->addDebug($data);
 			}
 			else {
-				if ($data instanceof Interpreter\InterpreterInterface) {
-					$this->addData($data);
-				}
-				elseif ($data instanceof Model\Channel) {
-					$this->addChannel($data);
-				}
-				elseif ($data instanceof Model\Aggregator) {
-					$this->addAggregator($data);
-				}
-				elseif ($data instanceof \Exception) {
-					$this->addException($data);
-				}
-				elseif ($data instanceof Util\Debug) {
-					$this->addDebug($data);
-				}
-				else {
-					throw new \Exception('Can\'t show ' . get_class($data));
-				}
+				throw new \Exception('Can\'t show ' . get_class($data));
 			}
 		}
 	}

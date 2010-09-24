@@ -23,6 +23,8 @@
 
 namespace Volkszaehler\Controller;
 
+use Volkszaehler\Definition;
+
 use Volkszaehler\Util;
 use Volkszaehler\Model;
 
@@ -75,7 +77,7 @@ class EntityController extends Controller {
 		$entity = $this->get($identifier);
 
 		foreach ($this->view->request->getParameters() as $parameter => $value) {
-			if (Model\PropertyDefinition::exists($parameter)) {
+			if (Definition\PropertyDefinition::exists($parameter)) {
 				if ($value == '') {
 					$entity->unsetProperty($parameter, $this->em);
 				}
