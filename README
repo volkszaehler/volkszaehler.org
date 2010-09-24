@@ -1,9 +1,19 @@
-Hier finden sich alle Skripte, die auf volkszaehler.org laufen.
-Ziel:
-- mein.volkszaehler (Betrieb eines eigenen Servers für Protokollierung und Auswertung)
-- Weiterentwicklung volkszaehler.org
+Hier finden sich alle Skripte, die auf volkszaehler.org laufen:
+
+volkszaehler.org/
+ |_ frontend/			Web Frontend
+ |_ backend/			PHP Backend
+ |_ controller/			Controller Code für verschiedene Plattformen/Programmiersprachen
+ |   \_ php/			Einfach Referenzimplementation des Controller-Codes in PHP
+ |
+ \_ share/			Gemeinsam genutze Codebestandteile
+     |_ docs/			Dokumentation
+     |_ definitions/		Gemeinsame Definitionen über Entities und deren Eigenschaften für Controller, Backend & Frontend
+     |_ sql/			SQL-Schema Dumps für verschieden Datenbanksysteme
+     |   \_ demo/		Demo Daten zum Import in die Datenbank
+     |
+     |_ tools/			Verschiedene Scripts zum Importieren von Daten, Installation, Helper etc.
+     \_ tests/			Einfache Testcases für einige Klasses des Backends
 
 Wiki: http://wiki.volkszaehler.org
 Other: http://volkszaehler.org
-
-Weitere Informationen liegen unter share/docs
