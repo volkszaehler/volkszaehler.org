@@ -34,10 +34,10 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 	<head>
-		<title>volkszaehler.org - installation</title>
+		<title>volkszaehler.org - setup</title>
 	</head>
 	<body>
-	<h1>volkszaehler.org - installation</h1>
+	<h1>volkszaehler.org - setup</h1>
 
 <?php
 
