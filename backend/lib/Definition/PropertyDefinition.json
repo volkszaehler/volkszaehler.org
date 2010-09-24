@@ -31,54 +31,64 @@
 		"type" : "string",
 		"pattern" : "/[a-z0-9 ]/",
 		"min": 3,
-		"max" : 255
+		"max" : 255,
+		"de_name" : "Titel"
 	},
 	{
 		"name" : "description",
-		"type" : "string",
+		"type" : "text",
 		"pattern" : "/[a-z0-9 ]/",	// TODO add whitespaces as \t \n \r
-		"max" : 255					// TODO allowed column size in database?
+		"max" : 255,				// TODO allowed column size in database?
+		"de_name" : "Beschreibung"
 	},
 	{
 		"name" : "cost",
 		"type" : "float",
-		"min" : 0
+		"min" : 0,
+		"de_name" : "Kosten"
 	},
 	{
 		"name" : "resolution",
 		"type" : "integer",
-		"min" : 1
+		"min" : 1,
+		"de_name" : "Auflösung"
 	},
 	{
 		"name" : "tolerance",
 		"type" : "float",
 		"min" : 0,
-		"max" : 1
+		"max" : 1,
+		"de_name" : "Toleranz"
 	},
 	{
 		"name" : "address:lat",
 		"type" : "float",
 		"min" : -90,
-		"max" : 90
+		"max" : 90,
+		"de_name" : "Latitude"
 	},
 	{
 		"name" : "address:lon",
 		"type" : "float",
 		"min" : -90,
-		"max" : 90
+		"max" : 90,
+		"de_name" : "Longitude"
 	},
 	{
 		"name" : "address:city",
 		"type" : "string",
-		"pattern" : ""				// TODO add pattern
+		"pattern" : "",				// TODO add pattern
+		"de_name" : "Stadt"
 	},
 	{
 		"name" : "address:houseno",
-		"type" : "string"
+		"type" : "string",
+		"de_name" : "Hausnummer"
 	},
 	{
 		"name" : "address:postal",
-		"type" : "string"
+		"type" : "string",
+		"de_name" : "Postleitzahl"
 	},
 	{
 		"name" : "address:state",
@@ -273,29 +283,35 @@
 			"Wallis and Futuna Islands",
 			"Yemen",
 			"Zambia"
-		]
+		],
+		"de_name" : "Land"
 	},
 	{
 		"name" : "address:country",
-		"type" : "string"
+		"type" : "string",
+		"de_name" : "Staat"
 	},
 	{
 		"name" : "photo:url",
 		"type" : "string",
-		"pattern" : ""				// TODO add pattern
+		"pattern" : "",				// TODO add pattern
+		"de_name" : "Foto (URL)"
 	},
 	{
 		"name" : "cuuid",
 		"type" : "string",
-		"max" : 37
+		"max" : 37,
+		"de_name" : "Cotroller UUID"
 	},
 	{
 		"name" : "port",
 		"type" : "string",
-		"max" : 6
+		"max" : 6,
+		"de_name" : "Controller Pin"
 	},
 	{
 		"name" : "active",
-		"type" : "boolean"
+		"type" : "boolean",
+		"de_name" : "Aktiv?"
 	}
 ]

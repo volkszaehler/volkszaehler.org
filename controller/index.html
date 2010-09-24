@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>volkszaehler.org - controller setup</title>
+<script src="http://code.jquery.com/jquery-1.4.2.js"
+	type="text/javascript"></script>
+<script src="script.js" type="text/javascript"></script>
+</head>
+<body>
+<h1>volkszaehler.org - controller setup</h1>
+<p>Hier können Sie ihren Stromzähler einrichten.</p>
+
+<h2>Kanäle</h2>
+<p>Derzeit sind folgende Zähler/Sensoren konfiguriert:</p>
+<table id="channels">
+	<tr><th>#</th><th>UUID</th><th>Typ</th><th>Port</th><th>Value</th></tr>
+</table>
+
+<h2>Kanal hinzufügen</h2>
+<p>Hier können sie einen neuen Kanal hinzufügen:</p>
+
+<fieldset><legend>Allgemeine Eigenschaften</legend>
+<table>
+	<tr>
+		<td><label for="type">Typ:</label></td>
+		<td><select name="type"></select></td>
+	</tr>
+</table>
+</fieldset>
+
+<fieldset><legend>Spezifische Eigenschaften</legend>
+<table id="properties">
+</table>
+</fieldset>
+
+
+<hr />
+<h5>Debug</h5>
+<div style="border: 1px dashed grey; padding: 5px" id="debug"></div>
+</body>
+</html>

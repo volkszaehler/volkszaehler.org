@@ -31,14 +31,16 @@
 		"required" : ["title"],
 		"optional" : ["description", "details:", "owner:", "tolerance"],
 		"interpreter" : "AggregatorInterpreter",
-		"icon" : ""					// TODO look for an icon
+		"icon" : "",					// TODO look for an icon
+		"de_name" : "Gruppe"
 	},
 	{
 		"name" : "user",
 		"required" : ["title"],
 		"optional" : ["description", "details:", "owner:", "tolerance"],
 		"interpreter" : "AggregatorInterpreter",
-		"icon" : ""					// TODO look for an icon
+		"icon" : "",				// TODO look for an icon
+		"de_name" : "Nutzer"
 	},
 	{
 		"name" : "power",
@@ -46,7 +48,8 @@
 		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
 		"interpreter" : "MeterInterpreter",
 		"unit" : "kW/h",
-		"icon" : ""					// TODO look for an icon
+		"icon" : "",					// TODO look for an icon
+		"de_name" : "Strom"
 	},
 	{
 		"name" : "gas",
@@ -54,7 +57,8 @@
 		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
 		"interpreter" : "MeterInterpreter",
 		"unit" : "m³/h",
-		"icon" : ""					// TODO look for an icon
+		"icon" : "",					// TODO look for an icon
+		"de_name" : "Gas"
 	},
 	{
 		"name" : "water",
@@ -62,7 +66,8 @@
 		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
 		"interpreter" : "MeterInterpreter",
 		"unit" : "m³/h",
-		"icon" : ""					// TODO look for an icon
+		"icon" : "",					// TODO look for an icon
+		"de_name" : "Wasser"
 	},
 	{
 		"name" : "temperature",
@@ -70,7 +75,8 @@
 		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
 		"interpreter" : "SensorInterpreter",
 		"unit" : "°C",
-		"icon" : ""					// TODO look for an icon
+		"icon" : "",					// TODO look for an icon
+		"de_name" : "Temperatur"
 	},
 	{
 		"name" : "pressure",
@@ -78,7 +84,8 @@
 		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
 		"interpreter" : "SensorInterpreter",
 		"unit" : "hPa",
-		"icon" : ""					// TODO look for an icon
+		"icon" : "",					// TODO look for an icon
+		"de_name" : "Luftdruck"
 	},
 	{
 		"name" : "humidity",
@@ -86,7 +93,8 @@
 		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
 		"interpreter" : "SensorInterpreter",
 		"unit" : "%",
-		"icon" : ""					// TODO look for an icon
+		"icon" : "",					// TODO look for an icon
+		"de_name" : "Luftfeuchtigkeit"
 	},
 	{
 		"name" : "windspeed",
@@ -94,20 +102,23 @@
 		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
 		"interpreter" : "SensorInterpreter",
 		"unit" : "km/h",
-		"icon" : ""					// TODO look for an icon
+		"icon" : "",					// TODO look for an icon
+		"de_name" : "Windgeschwindigkeit"
 	},
 	{
 		"name" : "radition",
 		"required" : ["title"],
 		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
 		"interpreter" : "SensorInterpreter",
-		"icon" : ""					// TODO look for an icon
+		"icon" : "",					// TODO look for an icon
+		"de_name" : "Strahlung"
 	},
 	{
 		"name" : "luminosity",
 		"required" : ["title"],
 		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
 		"interpreter" : "SensorInterpreter",
-		"icon" : ""					// TODO look for an icon
+		"icon" : "",					// TODO look for an icon
+		"de_name" : "Lichtstärke"
 	}
 ]

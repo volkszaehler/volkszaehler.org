@@ -36,7 +36,7 @@ class PropertyDefinition extends Definition {
 	const FILE = '/lib/Definition/PropertyDefinition.json';
 
 	/**
-	 * One of: string, integer, float, boolean, multiple
+	 * One of: string, integer, float, boolean, multiple, text
 	 *
 	 * @var string
 	 */
@@ -84,6 +84,7 @@ class PropertyDefinition extends Definition {
 	public function validateValue($value) {
 		switch ($this->type) {
 			case 'string':
+			case 'text':
 				$invalid = !is_string($value);
 				$invalid |= isset($this->pattern) && !preg_match($this->pattern, $value);
 				$invalid |= isset($this->min) && strlen($value) < $this->min;
