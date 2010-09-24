@@ -98,6 +98,7 @@
 	</div>
 	
 	<div id="Chart">
+		<!-- keep some space free for the chart -->
 		<div id="ChartPlot" style="height:100%">
 		<div class="moveArrow" style="left:0px;">
 			<table cellpadding="0" cellspacing="0" height="100%">
@@ -105,7 +106,8 @@
 					<td><a id="moveBack" href="#" onclick="JavaScript:moveWindow('back');">&laquo;</a></td>
 				</tr>
 			</table>
-		</div>
+		</div> 
+		<!-- jqplot draws the chart into the following DIV -->
 		<div id="ChartDIV" style="height:100%;width:100%;"></div>
 		<div class="moveArrow" style="right:0px;">
 			<table cellpadding="0" cellspacing="0" height="100%">
@@ -138,6 +140,7 @@
 </div>
 
 <div id="json"></div>
+<!-- uncomment the following line to activate debugging -->
 <!--<div id="debug"></div>-->
 
 <script language="JavaScript" type="text/javascript">
@@ -181,6 +184,7 @@ var moveXstart = 0;
 
 
 // executed on document loaded complete
+// this is where it all starts...
 $(document).ready(function() {
 	
 	// resize chart area for low resolution displays
@@ -199,11 +203,8 @@ $(document).ready(function() {
 	// load channel list
 	// loadChannelList();
 	
-	
-	
 	// start autoReload timer
 	window.setInterval("autoReload()",5000);
-	
 	
 	// code for adding a channel
 	var 	uuid = $("#uuid"),
@@ -256,9 +257,6 @@ $(document).ready(function() {
 
 					bValid = bValid && checkLength(uuid,"UUID",36,36);
 
-					//bValid = bValid && checkRegexp(name,/^[a-z]([0-9a-z_])+$/i,"Username may consist of a-z, 0-9, underscores, begin with a letter.");
-					// From jquery.validate.js (by joern), contributed by Scott Gonzalez: http://projects.scottsplayground.com/email_address_validation/
-					
 					if (bValid) {
 						
 						$(this).dialog('close');
@@ -299,19 +297,6 @@ function loadChannelList() {
 	$('#debug').append('<a href="../backend/index.php/data/"' + myUUID + '"/channel">json</a>');
 	// load json data
 	$.getJSON("../backend/index.php/data/" + myUUID + {format: 'json'});
-	/*$.getJSON("../backend/index.php/data/" + myUUID + {format: 'json'}, function(j){
-		
-		$('#channelList').empty();
-		
-		// add channels to table #channelList
-		for(var i=0;i<j.channels.length;i++) {
-			$('#channelList').append('<tr><td><input style="margin:0px;margin-bottom:2px;" type="checkbox"  value="' + j.channels[i]['id'] + '" name="ids" checked="checked" /></td><td>' + j.channels[i]['description'] + '</td><td>(id=' + j.channels[i].id + ')</td></tr>');
-			
-		}
-		
-		// initioal load data with all channels
-		getData();
-	});*/
 	
 }
 
@@ -420,37 +405,7 @@ function showChart() {
 	chart = $.jqplot("ChartDIV",jqData,jqOptions);
 	chart.replot();
 	
-	/*
-	// support for window move by mouse
-	// mouse cursor for plot area (dirty hack: multiple elements with this css class)
-	$('.jqplot-series-canvas').css("cursor", "pointer");
-	
-	
-	$(".jqplot-series-canvas").css("z-index", "6");
-	$(".jqplot-series-canvas").draggable({
-		axis: 'x',
-		start: function(event, ui) { // executed on start of drag
-				moveXstart = event.pageX  },
-		stop:function(event, ui) { // executed on stop of drag
-			
-			differencePX = event.pageX-moveXstart;
-			differenceTime = Math.round(differencePX/($('.jqplot-series-canvas').innerWidth()) * (data.windowEnd-data.windowStart));
-			myWindowEnd = getGroupedTimestamp(data.windowEnd-differenceTime);
-			
-			// load new data from json server with new windowEnd and redraw chart
-			getData();
-		}
-	});*/
 }
-
-/*function json2jqplot(raw) {
-	
-	for(i=0;i<raw.length;i++) {
-		//raw[i][0] *= 1;
-		//raw[i][1] /= 1;
-	}
-	return raw;
-}*/
 
 function generateAxisTicks() {
 	
