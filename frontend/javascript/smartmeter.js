@@ -18,35 +18,6 @@
 * http://www.gnu.org/copyleft/gpl.html
 */  
 
-// return an array with timestamps of e.g. 
-// 2010-05-01 00:00:00, 2010-05-01 01:00, 2010-05-01 02:00 for grouping=hour
-// between windowStart and windowEnd of json response
-function getEmptyGroupArray() {
-	var empty_array = new Object();
-	
-	var iterator = getGroupedTimestamp(myWindowStart);
-	//$('#debug').empty().append('start:'+myWindowStart+'end:'+myWindowEnd);
-	
-	if(myWindowStart < myWindowEnd && iterator < myWindowEnd) {
-		var i=0;
-		while(iterator < myWindowEnd) {
-			i++;
-			
-			empty_array[iterator] = 0;
-			
-			var iteratorDate = new Date(iterator);
-			//$('#debug').append('#'+i+':'+iteratorDate+'<br>');
-			iteratorDate.setDate(iteratorDate.getDate()+1);
-			// very bad bug: infinity loop for summer winter change
-			if(i==750) return empty_array;
-			
-			iterator = iteratorDate.getTime();
-		}
-	}
-	
-	return empty_array
-}
-
 function calcMyWindowStart() {
 	var myWindowStart = new Date(myWindowEnd);
 	
