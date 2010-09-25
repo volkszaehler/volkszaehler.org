@@ -407,19 +407,6 @@ function showChart() {
 	
 }
 
-function generateAxisTicks() {
-	
-	var data_grouped_time = getEmptyGroupArray();
-	var ticks = new Array();
-	
-	for(var timestamp in data_grouped_time) {
-		var time = new Date(timestamp*1000);
-		ticks.push(time.getDate()+'.'+(time.getMonth()+1)+'.'+' '+time.getHours()+':00');
-	}
-	
-	return ticks;
-}
-
 </script>
 
 </body>
