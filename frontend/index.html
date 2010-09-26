@@ -22,63 +22,29 @@
 	
 </head>
 
-<body style="background-color:#9ACC67;">
-<form action="" method="POST" name="formular">
+<body style="background-color: #9ACC67;">
 
-<div>
-	<div id="options">
-			
-			<!--list of available channels - loaded via json-->
-			<b>Kan&auml;le:</b><br>
-			<table id="channelList" style="font-size:7pt;">
-				<tr>
-					<td></td>
-				</tr>
-			</table>
-			<button id="addChannel">add channel</button>
-			<br>
-			
-			<div style="font-size:8pt;">
-				<input type="checkbox" name="stackChannels" /> Kan&auml;le addieren<br>
-				<input type="checkbox" name="autoReload" /> auto reload (5s)<br>
-				<button type="button" onclick="JavaScript:return getData();">anzeigen</button>
-				</div>
-			<div id="loading"></div>
-	</div>
-	
-	<div id="Chart">
+<div id="vz">
+	<div id="chart">
 		<!-- keep some space free for the chart -->
 		<div id="ChartPlot" style="height:100%">
-		<div class="moveArrow" style="left:0px;">
-			<table cellpadding="0" cellspacing="0" height="100%">
-				<tr>
-					<td><a id="moveBack" href="#" onclick="JavaScript:moveWindow('back');">&laquo;</a></td>
-				</tr>
-			</table>
-		</div> 
-		<!-- jqplot draws the chart into the following DIV -->
-		<div id="ChartDIV" style="height:100%;width:100%;"></div>
-		<div class="moveArrow" style="right:0px;">
-			<table cellpadding="0" cellspacing="0" height="100%">
-				<tr>
-					<td>
-						<a id="moveForward" href="#" onclick="JavaScript:moveWindow('forward');">&raquo;</a><br><br />
-						<a id="moveNow" href="#" onclick="JavaScript:moveWindow('last');">&raquo;&raquo;</a>
-					</td>
-				</tr>
-			</table>
+			<!-- jqplot draws the chart into the following DIV -->
+			<div id="ChartDIV" style="height:100%;width:100%;"></div>
 		</div>
-		</div>
-		<div id="ChartInfo" style="display:none;">
-		
-		</div>
+		<div id="ChartInfo" style="display:none;"></div>
 	</div>
+	
+	<table id="move">
+		<tr>
+			<td><a id="moveBack" href="#" onclick="moveWindow('back');">&laquo;</a></td>
+			<td><a id="moveNow" href="#" onclick="moveWindow('last');">&raquo;&raquo;</a></td>
+			<td><a id="moveForward" href="#" onclick="moveWindow('forward');">&raquo;</a></td>
+		</tr>
+	</table>
 </div>
-</form>
 
-<div id="json"></div>
 <!-- uncomment the following line to activate debugging -->
-<!--<div id="debug"></div>-->
+<div id="debug"></div>
 
 </body>
 </html>
