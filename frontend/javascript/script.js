@@ -34,6 +34,8 @@ var windowGrouping = 0;
 // mouse position on mousedown (x-axis)
 var moveXstart = 0;
 
+
+
 // executed on document loaded complete
 // this is where it all starts...
 $(document).ready(function() {
@@ -59,9 +61,9 @@ $(document).ready(function() {
 	window.setInterval("autoReload()",5000);
 	
 	// code for adding a channel
-	var uuid = $("#uuid");
-	var allFields = $([]).add(uuid);
-	var tips = $(".validateTips");
+	var 	uuid = $("#uuid"),
+		allFields = $([]).add(uuid),
+		tips = $(".validateTips");
 
 	getData();
 });
