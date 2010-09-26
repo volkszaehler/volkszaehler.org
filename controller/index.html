@@ -11,32 +11,30 @@
 <h1>volkszaehler.org - controller setup</h1>
 <p>Hier können Sie ihren Stromzähler einrichten.</p>
 
-<h2>Kanäle</h2>
-<p>Derzeit sind folgende Zähler/Sensoren konfiguriert:</p>
-<table id="channels">
-	<tr><th>#</th><th>UUID</th><th>Typ</th><th>Port</th><th>Value</th></tr>
-</table>
+<div id="list">
+	<h2>Kanäle</h2>
+	<p>Derzeit sind folgende Zähler/Sensoren konfiguriert:</p>
+	<table></table>
+</div>
 
-<h2>Kanal hinzufügen</h2>
-<p>Hier können sie einen neuen Kanal hinzufügen:</p>
-
-<fieldset><legend>Allgemeine Eigenschaften</legend>
-<table>
-	<tr>
-		<td><label for="type">Typ:</label></td>
-		<td><select name="type"></select></td>
-	</tr>
-</table>
-</fieldset>
-
-<fieldset><legend>Spezifische Eigenschaften</legend>
-<table id="properties">
-</table>
-</fieldset>
-
-
-<hr />
-<h5>Debug</h5>
-<div style="border: 1px dashed grey; padding: 5px" id="debug"></div>
+<div id="new">
+	<form name="new">
+	<h2>Kanal hinzufügen</h2>
+	<p>Hier können sie einen neuen Kanal hinzufügen:</p>
+	<fieldset><legend>Allgemeine Eigenschaften</legend>
+		<table>
+			<tr><td><label for="type">Typ:</label></td><td><select name="type"></select></td></tr>
+			<tr><td><label for="port">Port:</label></td><td><input type="text" name="port" /></td></tr>
+		</table>
+	</fieldset>
+	
+	<fieldset>
+		<legend>Spezifische Eigenschaften</legend>
+		<table id="properties"></table>
+		<p>(*) required</p>
+	</fieldset>
+	<input type="submit" value="hinzufügen" />
+	</form>
+</div>
 </body>
 </html>
