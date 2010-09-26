@@ -1,7 +1,7 @@
 /**
  * Definition of entities 
  
- * Format is specified in EntityDefinition class
+ * Format is specified in EntityDefinition model
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @copyright Copyright (c) 2010, The volkszaehler.org project
@@ -27,98 +27,111 @@
 
 [
 	{
-		"name" : "group",
-		"required" : ["title"],
-		"optional" : ["description", "details:", "owner:", "tolerance"],
-		"interpreter" : "AggregatorInterpreter",
-		"icon" : "",					// TODO look for an icon
-		"de_name" : "Gruppe"
+		"name"			: "group",
+		"required"		: ["title"],
+		"optional"		: ["description", "details:", "owner:", "tolerance"],
+		"icon"			: "",					// TODO look for an icon
+		"interpreter"	: "Volkszaehler\\Interpreter\\AggregatorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Aggregator",
+		"translation"	: { "de" : "Gruppe" }
 	},
 	{
-		"name" : "user",
-		"required" : ["title"],
-		"optional" : ["description", "details:", "owner:", "tolerance"],
-		"interpreter" : "AggregatorInterpreter",
-		"icon" : "",				// TODO look for an icon
-		"de_name" : "Nutzer"
+		"name"			: "user",
+		"required"		: ["title"],
+		"optional"		: ["description", "details:", "owner:", "tolerance"],
+		"icon"			: "",				// TODO look for an icon
+		"interpreter"	: "Volkszaehler\\Interpreter\\AggregatorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Aggregator",
+		"translation"	: { "de" : "Nutzer" }
 	},
 	{
-		"name" : "power",
-		"required" : ["title", "resolution"],
-		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
-		"interpreter" : "MeterInterpreter",
-		"unit" : "kW/h",
-		"icon" : "",					// TODO look for an icon
-		"de_name" : "Strom"
+		"name"			: "power",
+		"required"		: ["title", "resolution"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance"],
+		"icon"			: "",					// TODO look for an icon
+		"unit"			: "kW/h",
+		"interpreter"	: "Volkszaehler\\Interpreter\\MeterInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"	: { "de" : "Strom" }
 	},
 	{
-		"name" : "gas",
-		"required" : ["title", "resolution"],
-		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
-		"interpreter" : "MeterInterpreter",
-		"unit" : "m³/h",
-		"icon" : "",					// TODO look for an icon
-		"de_name" : "Gas"
+		"name"			: "gas",
+		"required"		: ["title", "resolution"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance"],
+		"icon"			: "",					// TODO look for an icon
+		"unit"			: "m³/h",
+		"interpreter"	: "Volkszaehler\\Interpreter\\MeterInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"	: { "de" : "Gas" }
 	},
 	{
-		"name" : "water",
-		"required" : ["title", "resolution"],
-		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
-		"interpreter" : "MeterInterpreter",
-		"unit" : "m³/h",
-		"icon" : "",					// TODO look for an icon
-		"de_name" : "Wasser"
+		"name"			: "water",
+		"required"		: ["title", "resolution"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance"],
+		"icon"			: "",					// TODO look for an icon
+		"unit"			: "m³/h",
+		"interpreter"	: "Volkszaehler\\Interpreter\\MeterInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"	: { "de" : "Wasser" }
 	},
 	{
-		"name" : "temperature",
-		"required" : ["title"],
-		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
-		"interpreter" : "SensorInterpreter",
-		"unit" : "°C",
-		"icon" : "",					// TODO look for an icon
-		"de_name" : "Temperatur"
+		"name"			: "temperature",
+		"required"		: ["title"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance"],
+		"icon"			: "",					// TODO look for an icon
+		"unit"			: "°C",
+		"interpreter"	: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"	: { "de" : "Temperatur" }
 	},
 	{
-		"name" : "pressure",
-		"required" : ["title"],
-		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
-		"interpreter" : "SensorInterpreter",
-		"unit" : "hPa",
-		"icon" : "",					// TODO look for an icon
-		"de_name" : "Luftdruck"
+		"name"			: "pressure",
+		"required"		: ["title"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance"],
+		"icon"			: "",					// TODO look for an icon
+		"unit"			: "hPa",
+		"interpreter"	: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"	: { "de" : "Luftdruck" }
 	},
 	{
-		"name" : "humidity",
-		"required" : ["title"],
-		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
-		"interpreter" : "SensorInterpreter",
-		"unit" : "%",
-		"icon" : "",					// TODO look for an icon
-		"de_name" : "Luftfeuchtigkeit"
+		"name"			: "humidity",
+		"required"		: ["title"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance"],
+		"icon"			: "",					// TODO look for an icon
+		"unit"			: "%",
+		"interpreter"	: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"	: { "de" : "Luftfeuchtigkeit" }
 	},
 	{
-		"name" : "windspeed",
-		"required" : ["title"],
-		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
-		"interpreter" : "SensorInterpreter",
-		"unit" : "km/h",
-		"icon" : "",					// TODO look for an icon
-		"de_name" : "Windgeschwindigkeit"
+		"name"			: "windspeed",
+		"required"		: ["title"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance"],
+		"icon"			: "",					// TODO look for an icon
+		"unit"			: "km/h",
+		"interpreter"	: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"	: { "de" : "Windgeschwindigkeit" }
 	},
 	{
-		"name" : "radition",
-		"required" : ["title"],
-		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
-		"interpreter" : "SensorInterpreter",
-		"icon" : "",					// TODO look for an icon
-		"de_name" : "Strahlung"
+		"name"			: "radition",
+		"required"		: ["title"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance"],
+		"icon"			: "",					// TODO look for an icon
+		"unit"			: "",					// TODO add unit
+		"interpreter"	: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"	: { "de" : "Strahlung" }
 	},
 	{
-		"name" : "luminosity",
-		"required" : ["title"],
-		"optional" : ["description", "details:", "owner:", "address:", "tolerance"],
-		"interpreter" : "SensorInterpreter",
-		"icon" : "",					// TODO look for an icon
-		"de_name" : "Lichtstärke"
+		"name"			: "luminosity",
+		"required"		: ["title"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance"],
+		"icon"			: "",					// TODO look for an icon
+		"unit"			: "",					// TODO add unit
+		"interpreter"	: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"	: { "de" : "Lichtstärke" }
 	}
 ]

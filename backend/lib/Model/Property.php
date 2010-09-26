@@ -81,8 +81,15 @@ class Property {
 	 * @PostLoad
 	 */
 	public function cast() {
-		if ($this->getDefinition()->getType() != 'multiple') {
-			settype($this->value, $this->getDefinition()->getType());
+		$type = $this->getDefinition()->getType();
+		if ($type == 'multiple') {
+			// TODO
+		}
+		elseif ($type == 'text') {
+			settype($this->value, 'string');
+		}
+		else {
+			settype($this->value, $type);
 		}
 	}
 

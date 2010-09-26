@@ -30,14 +30,15 @@ use Volkszaehler\Util;
  * @package default
  */
 abstract class Definition {
-	/** @var string discriminator for database column */
+	/**
+	 * @var string discriminator for database column
+	 */
 	protected $name;
 
-	/** @var string title for UI */
-	//protected $title;
-
-	/** @var string description for UI */
-	//protected $description;
+	/**
+	 * @var string title for UI
+	 */
+	protected $translation;
 
 	/**
 	 * Hide default constructor

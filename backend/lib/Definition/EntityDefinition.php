@@ -59,6 +59,13 @@ class EntityDefinition extends Definition {
 	protected $interpreter;
 
 	/**
+	 * Classname of model (see backend/lib/Model/)
+	 *
+	 * @var string
+	 */
+	protected $model;
+
+	/**
 	 * Optional for Aggregator class entities
 	 *
 	 * @var string
@@ -71,7 +78,10 @@ class EntityDefinition extends Definition {
 	 */
 	protected $icon;
 
-	static protected $definitions = NULL;
+	/**
+	 * @var array holds definitions
+	 */
+	protected static $definitions = NULL;
 
 	/*
 	 * Setter & Getter

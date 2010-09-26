@@ -4,11 +4,11 @@ volkszaehler.org/
  |_ frontend/			Web Frontend
  |_ backend/			PHP Backend
  |_ controller/			Controller Code für verschiedene Plattformen/Programmiersprachen
- |   \_ php/			Einfach Referenzimplementation des Controller-Codes in PHP
+ |   |_ php/			Einfach Referenzimplementation des Controller-Codes in PHP
+ |   \_ ethersex		Portierung auf ethersex
  |
  \_ share/			Gemeinsam genutze Codebestandteile
      |_ docs/			Dokumentation
-     |_ definitions/		Gemeinsame Definitionen über Entities und deren Eigenschaften für Controller, Backend & Frontend
      |_ sql/			SQL-Schema Dumps für verschieden Datenbanksysteme
      |   \_ demo/		Demo Daten zum Import in die Datenbank
      |

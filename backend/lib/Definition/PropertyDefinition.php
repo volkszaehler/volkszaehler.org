@@ -73,6 +73,9 @@ class PropertyDefinition extends Definition {
 	 */
 	protected $options = array();
 
+	/**
+	 * @var array holds definitions
+	 */
 	protected static $definitions = NULL;
 
 	/**
