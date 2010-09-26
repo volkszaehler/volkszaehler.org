@@ -197,7 +197,7 @@ abstract class Entity {
 	 * @return Interpreter
 	 */
 	public function getInterpreter(\Doctrine\ORM\EntityManager $em, $from, $to) {
-		$class = 'Volkszaehler\Interpreter\\' . $this->getDefinition()->getInterpreter();
+		$class = $this->getDefinition()->getInterpreter();
 		return new $class($this, $em, $from, $to);
 	}
 }

@@ -59,7 +59,7 @@ abstract class Interpreter implements InterpreterInterface {
 		$this->from = (isset($from)) ? self::parseDateTimeString($from, time() * 1000) : NULL;
 		$this->to = (isset($to)) ? self::parseDateTimeString($to, (isset($this->from)) ? $this->from : time() * 1000) : NULL;
 
-		Util\Debug::log('interval', $this->from, $this->to, strftime('%c', $this->from/1000), strftime('%c', $this->to/1000));
+		//Util\Debug::log('interval', $this->from, $this->to, strftime('%c', $this->from/1000), strftime('%c', $this->to/1000));
 	}
 
 	/**
