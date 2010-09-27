@@ -38,12 +38,12 @@ class SensorInterpreter extends Interpreter {
 	public function getValues($groupBy = NULL) {
 		$data = parent::getData($groupBy);
 
-		$values = array();
 		foreach ($data as $reading) {
+			$count = isset($reading[2]) ? $reading[2] : 1;
 			$values[] = array(
 				$reading[0],
-				$reading[1] / $reading[2],	// calculate average (ungroup the sql sum() function)
-				$reading[2]
+				$reading[1] / $count,	// calculate average (ungroup the sql sum() function)
+				$count
 			);
 		}
 
