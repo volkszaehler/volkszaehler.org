@@ -29,11 +29,11 @@
 # configuration
 #
 # backend url
-URL="http://localhost/workspace/volkszaehler.org/backend/index.php"
+URL="http://localhost/workspace/volkszaehler.org/backend"
 
 # 1wire sensor id => volkszaehler.org ucid
 declare -A MAPPING
-MAPPING["1012E6D300080077"]="93f85330-9037-11df-86d3-379c018a387b"
+MAPPING["1012E6D300080077"]="9eed00f0-ca37-11df-9d39-15423b3b842b"
 
 # the digitemp binary, choose the right one for your adaptor
 DIGITEMP="digitemp_DS9097"
@@ -53,8 +53,8 @@ DIGITEMP_OPTS="-t 0"
 # specify credentials, proxy etc here
 CURL_OPTS=""
 
-# enable this for a more verbose output
-#DEBUG=true
+# uncomment this for a more verbose output
+#DEBUG=1
 
 # ========================= do not change anything under this line
 
@@ -75,28 +75,31 @@ IFS=$'\n'
 
 for LINE in $LINES
 do
+	OLD_IFS=${IFS}
 	IFS=";"
 	COLUMNS=( $LINE )
 	IFS=${OLD_IFS}
 
 	if [ -z ${MAPPING[${COLUMNS[1]}]} ]; then
-		echo "sensor ${COLUMNS[1]} is not mapped to an ucid" >&2
+		echo "sensor ${COLUMNS[1]} is not mapped to an UUID" >&2
 		echo "please add it to the script. Example:" >&2
 		echo >&2
 		echo -e "MAPPING[\"${COLUMNS[1]}\"]=\"9aa643b0-9025-11df-9b68-8528e3b655ed\"" >&2
 	elif [ ${COLUMNS[3]:0:2} == "85" ]; then
 		echo "check your wiring; we received an invalid reading!" 1>2&
 	else
-		UCID=${MAPPING[${COLUMNS[1]}]}
-		REQUEST_URL="${URL}?format=json&controller=data&action=add&ucid=${UCID}&value=${COLUMNS[3]}&timestamp=$(( ${COLUMNS[2]} * 1000 ))${URL_PARAMS}${DEBUG:+&debug=1}"
+		UUID=${MAPPING[${COLUMNS[1]}]}
+		REQUEST_URL="${URL}/data/${UUID}.json?value=${COLUMNS[3]}&timestamp=$(( ${COLUMNS[2]} * 1000 ))${URL_PARAMS}${DEBUG:+&debug=1}"
 
 		if [ $DEBUG ]; then
-			echo -e "logging sensor:\t\t${UCID}"
+			echo -e "logging sensor:\t\t${UUID}"
 			echo -e "with value:\t\t${COLUMNS[3]}"
-			echo -e "at\t\t\t$(date -d @${COLUMNS[2]})"
-			echo "|"
+			echo -e "at:\t\t\t$(date -d @${COLUMNS[2]})"
+			echo -e "with request:\t\t${REQUEST_URL}"
 		fi
 
-		curl ${CURL_OPTS} ${DEBUG:-"-s"} ${DEBUG:-"-o /dev/null"} ${DEBUG:+"--verbose"} "${REQUEST_URL}" 2>&1 | sed 's/^/|\t/'
+		curl ${CURL_OPTS} --data "" "${REQUEST_URL}"
 	fi
 done
+
+IFS=${OLD_IFS}
