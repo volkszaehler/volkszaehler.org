@@ -18,34 +18,27 @@
 	<script type="text/javascript" src="javascript/script.js"></script>
 	
 	<link rel="stylesheet" type="text/css" href="javascript/jqplot/jquery.jqplot.css">
-	<link rel="stylesheet" type="text/css" href="style.css">
+	<link rel="stylesheet" type="text/css" href="stylesheets/style.css">
 	
 </head>
 
-<body style="background-color: #9ACC67;">
+<body>
 
 <div id="vz">
-	<div id="chart">
-		<!-- keep some space free for the chart -->
-		<div id="ChartPlot" style="height:100%">
-			<!-- jqplot draws the chart into the following DIV -->
-			<div id="ChartDIV" style="height:100%;width:100%;"></div>
-		</div>
-		<div id="ChartInfo" style="display:none;"></div>
-	</div>
+	<div id="plot"></div>
 	
 	<table id="move">
 		<tr>
-			<td><a id="moveBack" href="#" onclick="moveWindow('back');">&laquo;</a></td>
-			<td><a id="moveNow" href="#" onclick="moveWindow('last');">&raquo;&raquo;</a></td>
-			<td><a id="moveForward" href="#" onclick="moveWindow('forward');">&raquo;</a></td>
+			<td><input type="button" onclick="moveWindow('back')" value="&laquo;" /></td>
+			<td><input type="button" onclick="moveWindow('last')" value="&raquo;&raquo;" /></td>
+			<td><input type="button" onclick="moveWindow('forward')" value="&raquo;" /></td>
 		</tr>
 	</table>
+	<div class="roller" id="legend">Legende</div>
+	<div class="roller" id="channels">Kanäle</div>
+	<!-- uncomment the following line to activate debugging -->
+	<div class="roller" id="debug">Debug</div>
 </div>
-
-<!-- uncomment the following line to activate debugging -->
-<div id="debug"></div>
-
 </body>
 </html>
 

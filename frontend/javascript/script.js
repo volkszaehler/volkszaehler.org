@@ -32,11 +32,11 @@ if($.getUrlVar('uuid'))
 // storing json data
 var data;
 
-// windowStart parameter for json server
-var myWindowStart = 0;
+//windowEnd parameter for json server
+var myWindowEnd = new Date().getTime();
 
-// windowEnd parameter for json server
-var myWindowEnd = getGroupedTimestamp((new Date()).getTime());
+// windowStart parameter for json server
+var myWindowStart = myWindowEnd - 24*60*60*1000;
 
 // windowGrouping for json server
 var windowGrouping = 0;
@@ -52,19 +52,14 @@ $(document).ready(function() {
 	// perhaps you have to reload after display rotation
 	if($(window).width() < 800) {
 		$("#chart").animate({
-			width:$(window).width() - 40,
-			height:$(window).height() - 3,
-		},0);
-		$("#options").animate({
-			height:$(window).height() - 3,
-		},0);
+			width: $(window).width() - 40,
+			height: $(window).height() - 3,
+		}, 0);
 	}
 	
 	// load channel list
 	// loadChannelList();
 	
 	// start autoReload timer
-	window.setInterval("autoReload()",5000);
-	
 	getData();
 });

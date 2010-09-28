@@ -25,63 +25,25 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
-function calcMyWindowStart() {
-	var myWindowStart = new Date(myWindowEnd);
-	
-	var year = myWindowStart.getFullYear();
-	var month = myWindowStart.getMonth();// 0 is january
-	var day = myWindowStart.getDate();	// getDay() returns day of week
-	var hours = myWindowStart.getHours();
-	var minutes = myWindowStart.getMinutes();
-	
-	// var windowSize = f.window.value.substring(0,1);
-	var windowSize = "1";
-	// var windowInterval = f.window.value.substring(1);
-	var windowInterval = "MONTH"; // we want to display 1 day (for now)
-	
-	myWindowStart.setMonth(myWindowStart.getMonth()-windowSize);
-	return myWindowStart.getTime();
-}
-
-// groups a timestamp depending on grouping value
-// e.g. 2010-05-01 23:23:23 will become 2010-05-01 23:00:00 vor grouping=hour
-function getGroupedTimestamp(timestamp) {
-	time = new Date(timestamp);
-		
-	var year = time.getFullYear();
-	var month = time.getMonth();// 0 is january
-	var day = time.getDate();	// getDay() returns day of week
-	var hours = time.getHours();
-	var minutes = time.getMinutes();
-	
-			hours = 0;
-	
-	return (new Date(year,month,day,hours,minutes)).getTime();
-}
-
 function loadChannelList() {
-	$('#debug').append('<a href="../backend/index.php/data/"' + myUUID + '"/channel">json</a><br />');
-	// load json data
-	$.getJSON("../backend/index.php/data/" + myUUID + {format: 'json'});
-	
-}
-
-function autoReload() {
-	if (false) {
-		myWindowEnd = getGroupedTimestamp((new Date()).getTime());
-		getData();
-	}
+	$.getJSON('../backend/index.php/entity/' + myUUID + '.json', {format: 'json'}, function(json) {
+		channels = json;
+	});
 }
 
 function moveWindow(mode) {
+	delta = myWindowEnd - myWindowStart;
 	
 	if(mode == 'last')
 		myWindowEnd = (new Date()).getTime();
+		myWindowStart = myWindowEnd - delta;
 	if(mode == 'back') {
-		myWindowEnd = myWindowStart;
+		myWindowStart -= delta;
+		myWindowEnd -= delta;
 	}
 	if(mode == 'forward') {
-		myWindowEnd += (myWindowEnd-myWindowStart);
+		myWindowStart += delta;
+		myWindowEnd += delta;
 	}
 	
 	getData();
@@ -89,29 +51,10 @@ function moveWindow(mode) {
 
 
 function getData() {
-	
-	/*
-	 * if(f.ids.length>0) $('#loading').empty().html('<img
-	 * src="images/ladebild.gif" />');
-	 *  // list of channel ids, comma separated ids_parameter = "";
-	 * 
-	 * if(typeof f.ids.length == 'undefined') { // only one channel
-	 * ids_parameter = f.ids.value; } else { // more than one channel for(i=0;i<f.ids.length;i++) {
-	 * if(f.ids[i].checked == 1) { ids_parameter += f.ids[i].value + ","; } } }
-	 */
-	
-	// calcMyWindowStart
-	myWindowStart = calcMyWindowStart();
-	
-	$('#debug').append('<a href="../backend/index.php/data/' + myUUID + '.json?from='+myWindowStart+'&to='+myWindowEnd+'&resolution=500">JSON</a><br />');
 	// load json data with given time window
-	// $.getJSON("../backend/index.php/data/" + myUUID +
-	// '/format/json/from/'+myWindowStart+'/to/'+myWindowEnd, function(j){
-	$.getJSON("../backend/index.php/data/" + myUUID + '.json?from='+myWindowStart+'&to='+myWindowEnd+'&resolution=500', function(j){
-		data = j;
-		// then show/reload the chart
-		// if(data.channels.length > 0 && data.channels[0].pulses.length > 0)
-			showChart();
+	$.getJSON("../backend/index.php/data/" + myUUID + '.json?from='+myWindowStart+'&to='+myWindowEnd+'&resolution=500', function(json){
+		data = json;
+		showChart();
 		$('#loading').empty();
 	});
 	
@@ -119,47 +62,65 @@ function getData() {
 }
 
 function showChart() {
-	
 	var jqData = new Array();
-	var series_chart = new Array();
-	
-	$('#ChartInfo').hide();
-	$('#ChartPlot').show();
-	
-	jqOptions = {
-			legend:{show:true},
-			series:[],
-			cursor:{zoom:true, showTooltip:true,constrainZoomTo:'x'},
-			seriesDefaults:{lineWidth:1,showMarker:false}}
-	
-	// legend entries
-	for( uuid in data.channels ) { 
-		jqOptions.series.push({label:data.channels[uuid]['description']}); 
-	}
 	
 	EformatString = '%d.%m.%y %H:%M';
 	
-	// power (moving average) gray line
-	for( uuid in data.data ) { 
-		jqData.push(data.data[uuid]); 
-	}
-
-
-
-	jqOptions.axes = {
-			yaxis:{autoscale:true, min:0, label:"Leistung (Watt)", tickOptions:{formatString:'%.3f'},labelRenderer: $.jqplot.CanvasAxisLabelRenderer},
-			xaxis:{autoscale:true, min:calcMyWindowStart(), max:myWindowEnd, tickOptions:{formatString:EformatString,angle:-30},pad:1, renderer:$.jqplot.DateAxisRenderer,rendererOptions:{tickRenderer:$.jqplot.CanvasAxisTickRenderer}},
+	jqOptions = {
+		series: [],
+		cursor: {
+			zoom: true,
+			showTooltip: true,
+			constrainZoomTo: 'x'
+		},
+		seriesDefaults: {
+			lineWidth: 1,
+			showMarker: false
+		}
 	};
 	
-	chart = $.jqplot("ChartDIV",jqData,jqOptions);
-	chart.replot();
+	// legend entries
+	$.each(data.data, function(index, value) {
+		jqData.push(value.tuples);
+	});
+
+	jqOptions.axes = {
+		yaxis: {
+			autoscale: true,
+			min: 0,
+			label: 'Leistung (Watt)',
+			tickOptions: {
+				formatString: '%.3f'
+			},
+			labelRenderer: $.jqplot.CanvasAxisLabelRenderer
+		},
+		xaxis: {
+			autoscale: true,
+			min: myWindowStart,
+			max: myWindowEnd,
+			tickOptions: {
+				formatString: EformatString,
+				angle: -30
+			},
+			pad: 1,
+			renderer: $.jqplot.DateAxisRenderer,
+			rendererOptions: {
+				tickRenderer: $.jqplot.CanvasAxisTickRenderer
+			}
+		}
+	};
 	
+	$('plot').empty();
+	chart = $.jqplot('plot', jqData, jqOptions);
+	chart.replot({
+		clear: true,
+		resetAxes: true
+	});
 }
 
-/*
+/**
  * jQuery extensions
  */
-
 $.extend({
 	getUrlVars: function(){
 		var vars = [], hash;

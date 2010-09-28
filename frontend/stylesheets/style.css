@@ -1,10 +1,12 @@
-a {
-	color: gray;
-}
-
 body {
 	margin: 0;
 	padding: 0;
+	background-color: #9ACC67;
+	font-family: sans-serif;
+}
+
+a {
+	color: gray;
 }
 
 #vz {
