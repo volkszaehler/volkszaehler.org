@@ -4,6 +4,9 @@
 	<title>volkszaehler.org - web frontend</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<script type="text/javascript" src="javascript/jquery-1.4.2.min.js"></script>
+	<script type="text/javascript" src="javascript/jquery-ui-1.8.5.min.js"></script>
+	<script type="text/javascript" src="javascript/jquery-extensions.js"></script>
+	
 	<script type="text/javascript" src="javascript/jqplot/jquery.jqplot.min.js"></script>
 	<script type="text/javascript" src="javascript/jqplot/plugins/jqplot.canvasTextRenderer.min.js"></script>
 	<script type="text/javascript" src="javascript/jqplot/plugins/jqplot.canvasAxisLabelRenderer.min.js"></script>
@@ -18,8 +21,8 @@
 	<script type="text/javascript" src="javascript/script.js"></script>
 	
 	<link rel="stylesheet" type="text/css" href="javascript/jqplot/jquery.jqplot.css">
+	<link rel="stylesheet" type="text/css" href="stylesheets/ui-lightness/jquery-ui-1.8.4.css" rel="Stylesheet" />	
 	<link rel="stylesheet" type="text/css" href="stylesheets/style.css">
-	
 </head>
 
 <body>
@@ -34,10 +37,20 @@
 			<td><input type="button" onclick="moveWindow('forward')" value="&raquo;" /></td>
 		</tr>
 	</table>
-	<div class="roller" id="legend">Legende</div>
-	<div class="roller" id="channels">Kanäle</div>
-	<!-- uncomment the following line to activate debugging -->
-	<div class="roller" id="debug">Debug</div>
+	
+	<div id="accordion">
+		<h3>Kanäle</h3>
+		<div id="enities">Second content</div>
+		<!-- uncomment the following line to activate debugging -->
+		<h3>Debug</h3>
+		<div id="debug">Third content</div>
+		<h3>Optionen</h3>
+		<div id="debug">
+			<table>
+				<tr><td><label for="reload">Automatisch aktualisieren</label></td><td><input type="checkbox" name="reload" /></td></tr>
+			</table>
+		</div>
+	</div>
 </div>
 </body>
 </html>

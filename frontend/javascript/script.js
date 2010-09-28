@@ -47,6 +47,13 @@ var moveXstart = 0;
 // executed on document loaded complete
 // this is where it all starts...
 $(document).ready(function() {
+	// initialization of user interface
+	$('#accordion h3').click(function() {
+		$(this).next().toggle('slow');
+		return false;
+	}).next().hide();
+
+	
 	// resize chart area for low resolution displays
 	// works fine with HTC hero
 	// perhaps you have to reload after display rotation
@@ -60,6 +67,6 @@ $(document).ready(function() {
 	// load channel list
 	// loadChannelList();
 	
-	// start autoReload timer
+	// load data and show plot
 	getData();
 });
