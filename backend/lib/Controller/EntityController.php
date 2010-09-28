@@ -81,6 +81,10 @@ class EntityController extends Controller {
 		return $entity;
 	}
 
+	/**
+	 * Adds an entity to the uuids cookie
+	 * @param Model\Entity $entity
+	 */
 	protected function setCookie(Model\Entity $entity) {
 		if ($uuids = $this->view->request->getParameter('uuids', 'cookies')) {
 			$uuids = Util\JSON::decode($uuids);
@@ -96,9 +100,13 @@ class EntityController extends Controller {
 		$uuids->exchangeArray(array_unique($uuids->getArrayCopy()));
 
 		// send new cookie to browser
-		setcookie('uuids', $uuids->encode());
+		setcookie('uuids', $uuids->encode(), 0, '/');	// TODO corrent path
 	}
 
+	/**
+	 * Removes an entity from the uuids cookie
+	 * @param Model\Entity $entity
+	 */
 	protected function unsetCookie(Model\Entity $entity) {
 		if ($uuids = $this->view->request->getParameter('uuids', 'cookies')) {
 			$uuids = Util\JSON::decode($uuids);
@@ -113,7 +121,7 @@ class EntityController extends Controller {
 		}));
 
 		// send new cookie to browser
-		setcookie('uuids', $uuids->encode());
+		setcookie('uuids', $uuids->encode(), 0, '/');	// TODO correct path
 	}
 
 	protected function setProperties(Model\Entity $entity) {
