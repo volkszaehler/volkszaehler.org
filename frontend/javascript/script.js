@@ -25,12 +25,62 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*
+ * Constants
+ */
+const backendUrl = '../backend/index.php';
+const jqOptions = {
+	title: 'volkszaehler.org',
+	series: [],
+	cursor: {
+		zoom: true,
+		showTooltip: true,
+		constrainZoomTo: 'x'
+	},
+	seriesDefaults: {
+		lineWidth: 1,
+		showMarker: false
+	},
+	axes: {
+		yaxis: {
+			autoscale: true,
+			min: 0,
+			label: 'Leistung (Watt)',
+			tickOptions: {
+				formatString: '%.3f'
+			},
+			labelRenderer: $.jqplot.CanvasAxisLabelRenderer
+		},
+		xaxis: {
+			autoscale: true,
+			min: myWindowStart,
+			max: myWindowEnd,
+			tickOptions: {
+				formatString: '%d.%m.%y %H:%M',
+				angle: -35
+			},
+			pad: 1,
+			renderer: $.jqplot.DateAxisRenderer,
+			rendererOptions: {
+				tickRenderer: $.jqplot.CanvasAxisTickRenderer
+			}
+		}
+	}
+};
+
+/*
+ * Variables
+ */
 var myUUID = '';
-if($.getUrlVar('uuid'))
+var uuids = $.parseJSON($.cookie('uuids'));
+
+if($.getUrlVar('uuid')) {
 	myUUID = $.getUrlVar('uuid');
+	uuids.push($.getUrlVar('uuid'));
+}
 
 // storing json data
-var data;
+var json;
 
 //windowEnd parameter for json server
 var myWindowEnd = new Date().getTime();
@@ -38,34 +88,32 @@ var myWindowEnd = new Date().getTime();
 // windowStart parameter for json server
 var myWindowStart = myWindowEnd - 24*60*60*1000;
 
-// windowGrouping for json server
-var windowGrouping = 0;
-
-// mouse position on mousedown (x-axis)
-var moveXstart = 0;
-
 // executed on document loaded complete
 // this is where it all starts...
 $(document).ready(function() {
 	// initialization of user interface
 	$('#accordion h3').click(function() {
-		$(this).next().toggle('slow');
+		$(this).next().toggle('fast');
 		return false;
 	}).next().hide();
+	
+	$('#refreshInterval').slider();
 
 	
 	// resize chart area for low resolution displays
 	// works fine with HTC hero
 	// perhaps you have to reload after display rotation
 	if($(window).width() < 800) {
-		$("#chart").animate({
+		$('#chart').animate({
 			width: $(window).width() - 40,
 			height: $(window).height() - 3,
 		}, 0);
 	}
 	
-	// load channel list
-	// loadChannelList();
+	// load all entity information
+	loadEntities();
+	
+	window.setInterval(refresh, 5000);
 	
 	// load data and show plot
 	getData();
