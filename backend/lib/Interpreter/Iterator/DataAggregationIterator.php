@@ -23,96 +23,72 @@
 
 namespace Volkszaehler\Interpreter\Iterator;
 
+use Volkszaehler\Util;
+
 use Doctrine\DBAL;
 
 /**
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
  */
-class DataAggregationIterator extends DataIterator {
-	protected $packageSize;		// count of readings in tuple
-	protected $aggregatedSize;	// total readings
-	protected $aggregatedKey = -1;
+class DataAggregationIterator implements \Iterator, \Countable {
+	protected $current;
+	protected $key;			// key
+	protected $size;		// total readings in PDOStatement
+	protected $iterator;	// subiterator
 
 	/**
 	 * Constructor
 	 *
 	 * @param \PDOStatement $stmt
-	 * @param unknown_type $size
-	 * @param unknown_type $tuples
+	 * @param integer $size
+	 * @param integer $tuples
 	 */
-	public function __construct(\PDOStatement  $stmt, $size, $tuples) {
-		parent::__construct($stmt, $size);
+	public function __construct(\PDOStatement $stmt, $size, $tuples) {
+		$this->iterator = new DataIterator($stmt, $size);
 
-		if ($tuples < $this->size) {						// return $tuples values
-			$this->packageSize = floor($this->size / $tuples);
-			$this->aggregatedSize = $tuples;
-		}
-		else {												// return all values or grouped by year, month, week...
-			$this->packageSize = 1;
-			$this->aggregatedSize = $this->size;
-		}
+		$this->packageSize = floor($size / $tuples);
+		$this->size = (int) $tuples;
 	}
 
 	/**
 	 * Aggregate data
 	 */
 	public function next() {
-		$current = array (0, 0);
+		$current = array(0, 0, 0);
+		for ($i = 0; $i < $this->packageSize && $this->iterator->valid(); $i++, $this->iterator->next()) {
+			$tuple = $this->iterator->current();
 
-		for ($c = 0; $c < $this->packageSize; $c++) {
-			parent::next();
-
-			if (parent::valid()) {
-				$tuple = parent::current();
-				$current[1] += $tuple[1];
-			}
-			else {
-				$this->current = FALSE;
-				return;
-			}
+			$current[0] = $tuple[0];
+			$current[1] += $tuple[1];
+			$current[2] += $tuple[2];
 		}
 
-		$this->aggregatedKey++;
 		$this->current = $current;
-		$this->current[0] = $tuple[0];				// the last timestamp of a package
-		$this->current[2] = $this->packageSize;		// how many pulses do we have aggregated? how accurate is our result?
+		$this->key++;
 	}
 
-	/**
-	 * @return array with data
-	 */
-	public function current() {
-		return $this->current;
-	}
-
-	/**
-	 * @return integer the nth data row
-	 */
-	public function key() {
-		return $this->aggregatedKey;
-	}
-
-	/**
-	 * Rewind the iterator
-	 *
-	 * Should only be called once
-	 * PDOStatements doest support rewind()
-	 */
 	public function rewind() {
-		parent::rewind();
-
-		$offset = $this->size - 1 - $this->aggregatedSize * $this->packageSize;
-		for ($i = 0; $i < $offset; $i++) {
-			parent::next();
+		$this->iterator->rewind();
+		// skip first readings to get an even divisor
+		$skip = count($this->iterator) - count($this) * $this->packageSize;
+		for ($i = 0; $i < $skip; $i++) {
+			$this->iterator->next();
 		}
 		$this->next();
+	}
+
+	public function valid() {
+		return $this->key <= $this->size;
 	}
 
 	/**
 	 * Getter & setter
 	 */
 	public function getPackageSize() { return $this->packageSize; }
+	public function count() { return $this->size; }
+	public function key() { return $this->key; }
+	public function current() { return $this->current; }
 }
 
 ?>

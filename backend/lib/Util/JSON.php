@@ -35,6 +35,7 @@ define('JSON_PRETTY', 32);
  * @author Steffen Vogel <info@steffenvogel.de>
  */
 class JSON extends \ArrayObject {
+
 	/**
 	 * OOP wrapper and factory
 	 * @param string $json

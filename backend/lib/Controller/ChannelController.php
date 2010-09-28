@@ -53,15 +53,13 @@ class ChannelController extends EntityController {
 	 */
 	public function add() {
 		$channel = new Model\Channel($this->view->request->getParameter('type'));
-
-		foreach ($this->view->request->getParameters() as $parameter => $value) {
-			if (Definition\PropertyDefinition::exists($parameter)) {
-				$channel->setProperty($parameter, $value);
-			}
-		}
-
+		$this->setProperties($channel);
 		$this->em->persist($channel);
 		$this->em->flush();
+
+		if ($this->view->request->getParameter('setcookie')) {
+			$this->setCookie($channel);
+		}
 
 		return $channel;
 	}

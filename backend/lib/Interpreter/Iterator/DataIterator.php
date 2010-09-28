@@ -23,6 +23,8 @@
 
 namespace Volkszaehler\Interpreter\Iterator;
 
+use Volkszaehler\Util;
+
 use Doctrine\DBAL;
 
 /**
@@ -31,7 +33,7 @@ use Doctrine\DBAL;
  */
 class DataIterator implements \Iterator, \Countable {
 	protected $current;
-	protected $key;			// incrementing key
+	protected $key;			// key
 	protected $stmt;		// PDOStatement
 	protected $size;		// total readings in PDOStatement
 
@@ -39,7 +41,7 @@ class DataIterator implements \Iterator, \Countable {
 	 * Constructor
 	 *
 	 * @param \PDOStatement $stmt
-	 * @param unknown_type $size
+	 * @param integer $size
 	 */
 	public function __construct(\PDOStatement $stmt, $size) {
 		$this->size = $size;
@@ -61,7 +63,6 @@ class DataIterator implements \Iterator, \Countable {
 	public function next() {
 		$this->key++;
 		$this->current = $this->stmt->fetch();
-
 	}
 
 	/**
@@ -75,7 +76,7 @@ class DataIterator implements \Iterator, \Countable {
 	 * @return boolean do we have another row in the resultset?
 	 */
 	public function valid() {
-		return (boolean) $this->current;
+		return is_array($this->current);
 	}
 
 	/**

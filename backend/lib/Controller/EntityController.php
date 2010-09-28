@@ -75,7 +75,48 @@ class EntityController extends Controller {
 	 */
 	public function edit($identifier) {
 		$entity = $this->get($identifier);
+		$this->setProperties($entity);
+		$this->em->flush();
 
+		return $entity;
+	}
+
+	protected function setCookie(Model\Entity $entity) {
+		if ($uuids = $this->view->request->getParameter('uuids', 'cookies')) {
+			$uuids = Util\JSON::decode($uuids);
+		}
+		else {
+			$uuids = new Util\JSON();
+		}
+
+		// add new UUID
+		$uuids->append($entity->getUuid());
+
+		// remove duplicates
+		$uuids->exchangeArray(array_unique($uuids->getArrayCopy()));
+
+		// send new cookie to browser
+		setcookie('uuids', $uuids->encode());
+	}
+
+	protected function unsetCookie(Model\Entity $entity) {
+		if ($uuids = $this->view->request->getParameter('uuids', 'cookies')) {
+			$uuids = Util\JSON::decode($uuids);
+		}
+		else {
+			$uuids = new Util\JSON();
+		}
+
+		// remove old UUID
+		$uuids->exchangeArray(array_filter($uuids->getArrayCopy, function($uuid) use ($entity) {
+			return $uuid != $entity->getUuid();
+		}));
+
+		// send new cookie to browser
+		setcookie('uuids', $uuids->encode());
+	}
+
+	protected function setProperties(Model\Entity $entity) {
 		foreach ($this->view->request->getParameters() as $parameter => $value) {
 			if (Definition\PropertyDefinition::exists($parameter)) {
 				if ($value == '') {
@@ -86,10 +127,6 @@ class EntityController extends Controller {
 				}
 			}
 		}
-
-		$this->em->flush();
-
-		return $entity;
 	}
 }
 

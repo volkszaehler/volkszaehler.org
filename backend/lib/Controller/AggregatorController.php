@@ -65,14 +65,12 @@ class AggregatorController extends EntityController {
 		}
 		else {	// create new aggregator
 			$aggregator = new Model\Aggregator('group');	// TODO support for other aggregator types
-
-			foreach ($this->view->request->getParameters() as $parameter => $value) {
-				if (Definition\PropertyDefinition::exists($parameter)) {
-					$aggregator->setProperty($parameter, $value);
-				}
-			}
-
+			$this->setProperties($aggregator);
 			$this->em->persist($aggregator);
+
+			if ($this->view->request->getParameter('setcookie')) {
+				$this->setCookie($channel);
+			}
 		}
 
 		$this->em->flush();

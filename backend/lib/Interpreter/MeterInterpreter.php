@@ -38,10 +38,10 @@ class MeterInterpreter extends Interpreter {
 	/**
 	 * Calculates the consumption for interval speciefied by $from and $to
 	 *
-	 * @todo untested
+	 * @todo reimplement according to new env
 	 */
 	public function getConsumption() {
-		$sql = 'SELECT SUM(value) AS count
+		/*$sql = 'SELECT SUM(value) AS count
 				FROM data
 				WHERE
 					channel_id = ' . (int) $this->id . ' &&
@@ -50,14 +50,15 @@ class MeterInterpreter extends Interpreter {
 
 		$result = $this->dbh->query($sql)->rewind();
 
-		return $result['count'] / $this->resolution / 1000;	// returns Wh
+		return $result['count'] / $this->resolution / 1000;	// returns Wh*/
 	}
 
 	/**
 	 * @return array (0 => timestamp, 1 => value)
+	 * @todo reimplement according to new env
 	 */
 	public function getMin() {
-		$data = $this->getData();
+		/*$data = $this->getData();
 
 		$min = current($data);
 		foreach ($data as $reading) {
@@ -65,14 +66,15 @@ class MeterInterpreter extends Interpreter {
 				$min = $reading;
 			}
 		}
-		return $min;
+		return $min;*/
 	}
 
 	/**
 	 * @return array (0 => timestamp, 1 => value)
+	 * @todo reimplement according to new env
 	 */
 	public function getMax() {
-		$data = $this->getData();
+		/*$data = $this->getData();
 
 		$max = current($data);
 		foreach ($data as $reading) {
@@ -80,33 +82,25 @@ class MeterInterpreter extends Interpreter {
 				$max = $reading;
 			}
 		}
-		return $max;
+		return $max;*/
 	}
 
 	/**
 	 * @return float
+	 * @todo reimplement according to new env
 	 */
 	public function getAverage() {
-		return $this->getConsumption() / ($this->to - $this->from) / 1000;	// return W
-	}
-
-	/**
-	 * Just a passthrough of raw data
-	 *
-	 * @deprecated
-	 */
-	public function getPulses($groupBy = NULL) {
-		return parent::getData($groupBy);
+		//return $this->getConsumption() / ($this->to - $this->from) / 1000;	// return W
 	}
 
 	/**
 	 * Raw pulses to power conversion
 	 *
 	 * @todo untested
-	 * @return array with timestamp and values in [W]
+	 * @return array with timestamp, values, and pulse count
 	 */
-	public function getValues($groupBy = NULL) {
-		$pulses = parent::getData($groupBy);
+	public function getValues($tuples = NULL, $groupBy = NULL) {
+		$pulses = parent::getData($tuples, $groupBy);
 
 		$values = array();
 		foreach ($pulses as $pulse) {
@@ -134,7 +128,7 @@ class MeterInterpreter extends Interpreter {
 		return array(
 			($next[0] - $delta / 2),	// timestamp
 			$next[1] * (3600000 / (($this->channel->getProperty('resolution') / 1000) * $delta)),	// value
-			(isset($next[2])) ? $next[2] : 1
+			$next[2]
 		);
 	}
 }

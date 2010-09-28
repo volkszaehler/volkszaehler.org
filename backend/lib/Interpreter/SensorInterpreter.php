@@ -29,21 +29,23 @@ namespace Volkszaehler\Interpreter;
  * @package default
  * @author Steffen Vogel <info@steffenvogel.de>
  */
+use Volkszaehler\Util;
+
 class SensorInterpreter extends Interpreter {
 
 	/**
 	 * @todo untested
 	 * @param string|integer $groupBy
 	 */
-	public function getValues($groupBy = NULL) {
-		$data = parent::getData($groupBy);
+	public function getValues($tuples = NULL, $groupBy = NULL) {
+		$data = parent::getData($tuples, $groupBy);
 
+		$values = array();
 		foreach ($data as $reading) {
-			$count = isset($reading[2]) ? $reading[2] : 1;
 			$values[] = array(
-				$reading[0],
-				$reading[1] / $count,	// calculate average (ungroup the sql sum() function)
-				$count
+				(float) $reading[0],
+				(float) $reading[1] / $reading[2],
+				(int) $reading[2]
 			);
 		}
 
@@ -56,7 +58,7 @@ class SensorInterpreter extends Interpreter {
 	 * @return array (0 => timestamp, 1 => value)
 	 */
 	public function getMin() {
-		return $this->dbh->query('SELECT value, timestamp FROM data WHERE channel_id = ' . (int) $this->id . self::buildFilterTime($this->from, $this->to) . ' ORDER BY value ASC', 1)->current();
+		//return $this->dbh->query('SELECT value, timestamp FROM data WHERE channel_id = ' . (int) $this->id . self::buildFilterTime($this->from, $this->to) . ' ORDER BY value ASC', 1)->current();
 	}
 
 	/**
@@ -65,7 +67,7 @@ class SensorInterpreter extends Interpreter {
 	 * @return array (0 => timestamp, 1 => value)
 	 */
 	public function getMax() {
-		return $this->dbh->query('SELECT value, timestamp FROM data WHERE channel_id = ' . (int) $this->id . self::buildFilterTime($this->from, $this->to) . ' ORDER BY value DESC', 1)->current();
+		//return $this->dbh->query('SELECT value, timestamp FROM data WHERE channel_id = ' . (int) $this->id . self::buildFilterTime($this->from, $this->to) . ' ORDER BY value DESC', 1)->current();
 	}
 
 	/**
@@ -74,7 +76,7 @@ class SensorInterpreter extends Interpreter {
 	 * @return float
 	 */
 	public function getAverage() {
-		return $this->dbh->query('SELECT AVG(value) AS value FROM data WHERE channel_id = ' . (int) $this->id . self::buildFilterTime($this->from, $this->to))->current();
+		//return $this->dbh->query('SELECT AVG(value) AS value FROM data WHERE channel_id = ' . (int) $this->id . self::buildFilterTime($this->from, $this->to))->current();
 	}
 
 	/**

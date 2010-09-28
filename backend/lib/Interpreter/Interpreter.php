@@ -59,7 +59,6 @@ abstract class Interpreter implements InterpreterInterface {
 		$this->from = (isset($from)) ? self::parseDateTimeString($from, time() * 1000) : NULL;
 		$this->to = (isset($to)) ? self::parseDateTimeString($to, (isset($this->from)) ? $this->from : time() * 1000) : NULL;
 
-		//Util\Debug::log('interval', $this->from, $this->to, strftime('%c', $this->from/1000), strftime('%c', $this->to/1000));
 	}
 
 	/**
@@ -68,43 +67,40 @@ abstract class Interpreter implements InterpreterInterface {
 	 * @param string|integer $groupBy
 	 * @return Volkszaehler\DataIterator
 	 */
-	protected function getData($groupBy = NULL) {
+	protected function getData($tuples = NULL, $groupBy = NULL) {
 		// get dbal connection from EntityManager
 		$conn = $this->em->getConnection();
 
 		// prepare sql
-		$params = array(':id' => $this->channel->getId());
+		$parameters = array(':id' => $this->channel->getId());
 
-		$sqlFrom = ' FROM data';
-		$sqlWhere = ' WHERE channel_id = :id' . self::buildDateTimeFilterSQL($this->from, $this->to);
-		$sqlOrderBy = ' ORDER BY timestamp ASC';
+		$sql['from']	= ' FROM data';
+		$sql['where']	= ' WHERE channel_id = :id' . self::buildDateTimeFilterSQL($this->from, $this->to);
+		$sql['orderBy']	= ' ORDER BY timestamp ASC';
 
-		if ($sqlGroupBy = self::buildGroupBySQL($groupBy)) {
-			$sqlRowCount = 'SELECT COUNT(DISTINCT ' . $sqlGroupBy . ')' . $sqlFrom . $sqlWhere;
-			$sqlGroupBy = ' GROUP BY ' . $sqlGroupBy;
-			$sqlFields = ' MAX(timestamp) AS timestamp, SUM(value) AS value, COUNT(timestamp) AS count';
+		if ($groupBy && $sql['groupFields'] = self::buildGroupBySQL($groupBy)) {
+			$sql['rowCount']	= 'SELECT COUNT(DISTINCT ' . $sql['groupFields'] . ')' . $sql['from'] . $sql['where'];
+			$sql['fields']		= ' MAX(timestamp) AS timestamp, SUM(value) AS value, COUNT(timestamp) AS count';
+			$sql['groupBy']		= ' GROUP BY ' . $sql['groupFields'];
 		}
 		else {
-			$sqlRowCount = 'SELECT COUNT(*)' . $sqlFrom . $sqlWhere;
-			$sqlFields = ' timestamp, value';
+			$sql['rowCount']	= 'SELECT COUNT(*)' . $sql['from'] . $sql['where'];
+			$sql['fields']		= ' timestamp, value, 1';
+			$sql['groupBy']		= '';
 		}
 
 		// get total row count for grouping
-		$rowCount = $conn->fetchColumn($sqlRowCount, $params, 0);
+		$rowCount = $conn->fetchColumn($sql['rowCount'], $parameters, 0);
 
 		// query for data
-		$stmt = $conn->executeQuery('SELECT ' . $sqlFields . $sqlFrom . $sqlWhere . $sqlGroupBy . $sqlOrderBy, $params);
+		$stmt = $conn->executeQuery('SELECT ' . $sql['fields'] . $sql['from'] . $sql['where'] . $sql['groupBy'] . $sql['orderBy'], $parameters);
 
 		// return iterators
-		if ($sqlGroupBy || is_null($groupBy)) {		// aggregation by sql or skip it
+		if ($sql['groupBy'] || is_null($tuples) || $rowCount < $tuples) {
 			return new Iterator\DataIterator($stmt, $rowCount);
 		}
-		elseif (is_numeric($groupBy) ) {			// aggregation by php
-			$tuples = (int) $groupBy;
-			return new Iterator\DataAggregationIterator($stmt, $rowCount, $tuples);
-		}
 		else {
-			throw new \Exception('Invalid parameter: "groupBy"');
+			return new Iterator\DataAggregationIterator($stmt, $rowCount, $tuples);
 		}
 	}
 
@@ -163,11 +159,11 @@ abstract class Interpreter implements InterpreterInterface {
 		$sql = '';
 
 		if (isset($from)) {
-			$sql .= ' && timestamp > ' . $from;
+			$sql .= ' && timestamp >= ' . $from;
 		}
 
 		if (isset($to)) {
-			$sql .= ' && timestamp < ' . $to;
+			$sql .= ' && timestamp <= ' . $to;
 		}
 
 		return $sql;
