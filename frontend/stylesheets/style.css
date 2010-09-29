@@ -27,3 +27,18 @@ body {
 	-moz-border-radius: 4px;
 	font-size: 0.9em;
 }
+
+/* treeTable for entities */
+#entities {
+	border-collapse: collapse;
+}
+
+#entities thead tr th {
+	padding: 0.3em 1.67em;
+	text-align: left;
+}
+
+#entities tbody tr td {
+	padding: 0.3em 1.5em;
+	white-space: nowrap;
+}

@@ -3,24 +3,26 @@
 <head>
 	<title>volkszaehler.org - web frontend</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<script type="text/javascript" src="javascript/jquery-1.4.2.min.js"></script>
-	<script type="text/javascript" src="javascript/jquery-ui-1.8.5.min.js"></script>
-	<script type="text/javascript" src="javascript/jquery-extensions.js"></script>
+	<script type="text/javascript" src="javascripts/jquery-1.4.2.min.js"></script>
+	<script type="text/javascript" src="javascripts/jquery-ui-1.8.5.min.js"></script>
+	<script type="text/javascript" src="javascripts/jquery-treeTable.min.js"></script>
+	<script type="text/javascript" src="javascripts/jquery-extensions.js"></script>
 	
-	<script type="text/javascript" src="javascript/jqplot/jquery.jqplot.min.js"></script>
-	<script type="text/javascript" src="javascript/jqplot/plugins/jqplot.canvasTextRenderer.min.js"></script>
-	<script type="text/javascript" src="javascript/jqplot/plugins/jqplot.canvasAxisLabelRenderer.min.js"></script>
-	<script type="text/javascript" src="javascript/jqplot/plugins/jqplot.canvasAxisTickRenderer.min.js"></script>
-	<script type="text/javascript" src="javascript/jqplot/plugins/jqplot.dateAxisRenderer.min.js"></script>
-	<script type="text/javascript" src="javascript/jqplot/plugins/jqplot.cursor.min.js"></script>
-	<script type="text/javascript" src="javascript/jqplot/plugins/jqplot.categoryAxisRenderer.min.js"></script>
-	<script type="text/javascript" src="javascript/jqplot/plugins/jqplot.barRenderer.min.js"></script>
-	<script type="text/javascript" src="javascript/jqplot/plugins/jqplot.highlighter.min.js"></script>
+	<script type="text/javascript" src="javascripts/jqplot/jquery.jqplot.min.js"></script>
+	<script type="text/javascript" src="javascripts/jqplot/plugins/jqplot.canvasTextRenderer.min.js"></script>
+	<script type="text/javascript" src="javascripts/jqplot/plugins/jqplot.canvasAxisLabelRenderer.min.js"></script>
+	<script type="text/javascript" src="javascripts/jqplot/plugins/jqplot.canvasAxisTickRenderer.min.js"></script>
+	<script type="text/javascript" src="javascripts/jqplot/plugins/jqplot.dateAxisRenderer.min.js"></script>
+	<script type="text/javascript" src="javascripts/jqplot/plugins/jqplot.cursor.min.js"></script>
+	<script type="text/javascript" src="javascripts/jqplot/plugins/jqplot.categoryAxisRenderer.min.js"></script>
+	<script type="text/javascript" src="javascripts/jqplot/plugins/jqplot.barRenderer.min.js"></script>
+	<script type="text/javascript" src="javascripts/jqplot/plugins/jqplot.highlighter.min.js"></script>
 	
-	<script type="text/javascript" src="javascript/functions.js"></script>
-	<script type="text/javascript" src="javascript/script.js"></script>
+	<script type="text/javascript" src="javascripts/functions.js"></script>
+	<script type="text/javascript" src="javascripts/script.js"></script>
 	
-	<link rel="stylesheet" type="text/css" href="javascript/jqplot/jquery.jqplot.css">
+	<link rel="stylesheet" type="text/css" href="stylesheets/jquery.jqplot.min.css">
+	<link rel="stylesheet" type="text/css" href="stylesheets/jquery.treeTable.css">
 	<link rel="stylesheet" type="text/css" href="stylesheets/ui-lightness/jquery-ui-1.8.4.css" rel="Stylesheet" />	
 	<link rel="stylesheet" type="text/css" href="stylesheets/style.css">
 </head>
@@ -40,7 +42,17 @@
 	
 	<div id="accordion">
 		<h3>Kanäle</h3>
-		<table id="entities"></table>
+		<table id="entities">
+			<thead>
+				<tr>
+					<th>UUID</th>
+					<th>Title</th>
+					<th>Typ</th>
+					<th>Operationen</th>
+				</tr>
+			</thead>
+			<tbody></tbody>
+		</table>
 		<h3>Optionen</h3>
 		<div id="options">
 			<table>

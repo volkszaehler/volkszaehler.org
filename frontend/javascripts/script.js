@@ -39,7 +39,12 @@ const jqOptions = {
 	},
 	seriesDefaults: {
 		lineWidth: 1,
-		showMarker: false
+		showMarker: true,
+		showLine: false,
+		markerOptions: {
+			style: 'dash',
+			size: 2
+		}
 	},
 	axes: {
 		yaxis: {
@@ -68,21 +73,27 @@ const jqOptions = {
 	}
 };
 
-/*
- * Variables
- */
+// uuids
 var myUUID = '';
-var uuids = $.parseJSON($.cookie('uuids'));
+var uuids = new Array;
+
+if ($.getCookie('uuids')) {
+	var uuids = $.parseJSON($.getCookie('uuids'));
+}
 
 if($.getUrlVar('uuid')) {
 	myUUID = $.getUrlVar('uuid');
 	uuids.push($.getUrlVar('uuid'));
 }
 
+if (uuids.length == 0) {
+	alert('Error: No UUIDs given!')
+}
+
 // storing json data
 var json;
 
-//windowEnd parameter for json server
+// windowEnd parameter for json server
 var myWindowEnd = new Date().getTime();
 
 // windowStart parameter for json server
@@ -91,15 +102,6 @@ var myWindowStart = myWindowEnd - 24*60*60*1000;
 // executed on document loaded complete
 // this is where it all starts...
 $(document).ready(function() {
-	// initialization of user interface
-	$('#accordion h3').click(function() {
-		$(this).next().toggle('fast');
-		return false;
-	}).next().hide();
-	
-	$('#refreshInterval').slider();
-
-	
 	// resize chart area for low resolution displays
 	// works fine with HTC hero
 	// perhaps you have to reload after display rotation
@@ -113,7 +115,16 @@ $(document).ready(function() {
 	// load all entity information
 	loadEntities();
 	
+	// start auto refresh timer
 	window.setInterval(refresh, 5000);
+	
+	// initialization of user interface
+	$('#accordion h3').click(function() {
+		$(this).next().toggle('fast');
+		return false;
+	}).next().hide();
+	
+	$('#refreshInterval').slider();
 	
 	// load data and show plot
 	getData();
