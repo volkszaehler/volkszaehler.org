@@ -83,6 +83,34 @@ function showChart() {
 }
 
 /*
+ * Cookie & UUID related functions
+ */
+function getUUIDs() {
+	if ($.getCookie('uuids')) {
+		return JSON.parse($.getCookie('uuids'));
+	}
+	else {
+		return new Array;
+	}
+}
+
+function addUUID(uuid) {
+	if (!uuids.contains(uuid)) {
+		uuids.push(uuid);
+		$.setCookie('uuids', JSON.stringify(uuids));
+	}
+}
+
+function removeUUID(uuid) {
+	if (uuids.contains(uuid)) {
+		uuids.filter(function(value) {
+			return value != uuid;
+		});
+		$.setCookie('uuids', JSON.stringify(uuids));
+	}
+}
+
+/*
  * Entity list related functions
  */
 
@@ -128,7 +156,7 @@ function showEntities() {
 					.attr('type', 'image')
 					.attr('src', 'images/delete.png')
 					.attr('alt', 'delete')
-					.bind('click', entity, function(event) { alert('delete: ' + event.data.uuid); })
+					.bind('click', entity, function(event) { removeUUID(event.data.uuid); })
 				)
 			)
 			.append($('<td>')

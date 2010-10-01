@@ -91,14 +91,14 @@ var myWindowStart = myWindowEnd - 24*60*60*1000;
 // executed on document loaded complete
 // this is where it all starts...
 $(document).ready(function() {
-	// parse uuids from cookie and url
+	// parse uuids from cookie
 	uuids = getUUIDs();
 
-	var uuid;
-	if($.getUrlVar('uuid') && !uuids.contains($.getUrlVar('uuid'))) {
-		uuids.push($.getUrlVar('uuid'));
-		$.setCookie('uuids', JSON.stringify(uuids));
+	// add optional uuid from url
+	if($.getUrlVar('uuid')) {
+		addUUID($.getUrlVar('uuid'));
 	}
+	console.log('cookie uuids', uuids);
 	
 	// start auto refresh timer
 	window.setInterval(refreshWindow, 5000);
