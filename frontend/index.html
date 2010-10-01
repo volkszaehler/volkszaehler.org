@@ -18,6 +18,7 @@
 	<script type="text/javascript" src="javascripts/jqplot/plugins/jqplot.barRenderer.min.js"></script>
 	<script type="text/javascript" src="javascripts/jqplot/plugins/jqplot.highlighter.min.js"></script>
 	
+	<script type="text/javascript" src="javascripts/json2.js"></script>
 	<script type="text/javascript" src="javascripts/functions.js"></script>
 	<script type="text/javascript" src="javascripts/script.js"></script>
 	
@@ -29,37 +30,49 @@
 
 <body>
 
-<div id="vz">
+<div id="content">
 	<div id="plot"></div>
 	
 	<table id="move">
 		<tr>
-			<td><input type="button" onclick="moveWindow('back')" value="&laquo;" /></td>
-			<td><input type="button" onclick="moveWindow('last')" value="&raquo;&raquo;" /></td>
-			<td><input type="button" onclick="moveWindow('forward')" value="&raquo;" /></td>
+			<td><input type="image" src="images/control_rewind_blue.png" onclick="moveWindow('back')" value="&laquo;" /></td>
+			<td>
+				<input type="image" src="images/control_end_blue.png" onclick="moveWindow('last')" value="&raquo;&raquo;" />
+				<input type="image" src="images/arrow_refresh.png" onclick="loadData()" alt="refresh" />
+			</td>
+			<td><input type="image" src="images/control_fastforward_blue.png" onclick="moveWindow('forward')" value="&raquo;" /></td>
 		</tr>
 	</table>
 	
 	<div id="accordion">
 		<h3>Kanäle</h3>
-		<table id="entities">
+		<div id="entities">
+		<table>
 			<thead>
 				<tr>
-					<th>UUID</th>
-					<th>Title</th>
+					<th>Titel</th>
 					<th>Typ</th>
 					<th>Operationen</th>
+					<th>Anzeige</th>
 				</tr>
 			</thead>
 			<tbody></tbody>
 		</table>
+		<div id="addEntity"><input type="text" size="36" maxlength="36" name="uuid" value="UUID" /> <button><img src="images/add.png" alt="add" />Kanal hinzuf&uuml;gen</button></div>
+		</div>
 		<h3>Optionen</h3>
 		<div id="options">
 			<table>
-				<tr><td><label for="refresh">Automatisch aktualisieren</label></td><td><input type="checkbox" name="refresh" /><div id="refreshInterval"></div></td></tr>
+				<tr><td><label for="refresh"><img src="images/arrow_refresh.png" alt="refresh" /> Automatisch aktualisieren</label></td><td><input type="checkbox" name="refresh" /></td></tr>
+				<tr><td><label for="trendline"><img src="images/chart_line.png" alt="trendline" /> Trendline anzeigen</label></td><td><input type="checkbox" name="trendline" /></td></tr>
+				<tr><td><label for="backend"><img src="images/server.png" alt="backendUrl" /> Backend-Adresse</label></td><td><input type="text" name="backendUrl" /></td></tr>
+				<tr><td><label for="tuples"><img src="images/shading.png" alt="tuples" /> Tuples (Auflösung)</label></td><td><input type="text" name="tuples" /></td></tr>
 			</table>
 		</div>
 	</div>
+</div>
+<div id="footer">
+&copy; 2010 - <a href="http://volkszaehler.org/">volkszaehler.org</a> - the open smartmeter platform
 </div>
 </body>
 </html>

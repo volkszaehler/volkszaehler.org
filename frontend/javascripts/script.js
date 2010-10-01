@@ -26,11 +26,12 @@
  */
 
 /*
- * Constants
+ * Constants & settings
  */
-const backendUrl = '../backend/index.php';
-const jqOptions = {
-	title: 'volkszaehler.org',
+var backendUrl = '../backend/index.php';
+var tuples = 300;
+var colors = ['#83CAFF', '#7E0021', '#579D1C', '#FFD320', '#FF420E', '#004586', '#0084D1', '#C5000B', '#FF950E', '#4B1F6F', '#AECF00', '#314004'];
+var jqOptions = {
 	series: [],
 	cursor: {
 		zoom: true,
@@ -43,7 +44,11 @@ const jqOptions = {
 		showLine: false,
 		markerOptions: {
 			style: 'dash',
+			shadow: false,
 			size: 2
+		},
+		trendline: {
+			shadow: false
 		}
 	},
 	axes: {
@@ -73,59 +78,50 @@ const jqOptions = {
 	}
 };
 
-// uuids
-var myUUID = '';
+// storing entities
+var entities = new Array;
 var uuids = new Array;
-
-if ($.getCookie('uuids')) {
-	var uuids = $.parseJSON($.getCookie('uuids'));
-}
-
-if($.getUrlVar('uuid')) {
-	myUUID = $.getUrlVar('uuid');
-	uuids.push($.getUrlVar('uuid'));
-}
-
-if (uuids.length == 0) {
-	alert('Error: No UUIDs given!')
-}
-
-// storing json data
-var json;
 
 // windowEnd parameter for json server
 var myWindowEnd = new Date().getTime();
 
-// windowStart parameter for json server
+// windowStart parameter for json server (last 24 hours)
 var myWindowStart = myWindowEnd - 24*60*60*1000;
 
 // executed on document loaded complete
 // this is where it all starts...
 $(document).ready(function() {
-	// resize chart area for low resolution displays
-	// works fine with HTC hero
-	// perhaps you have to reload after display rotation
-	if($(window).width() < 800) {
-		$('#chart').animate({
-			width: $(window).width() - 40,
-			height: $(window).height() - 3,
-		}, 0);
+	// parse uuids from cookie and url
+	uuids = getUUIDs();
+
+	var uuid;
+	if($.getUrlVar('uuid') && !uuids.contains($.getUrlVar('uuid'))) {
+		uuids.push($.getUrlVar('uuid'));
+		$.setCookie('uuids', JSON.stringify(uuids));
 	}
 	
-	// load all entity information
-	loadEntities();
-	
 	// start auto refresh timer
-	window.setInterval(refresh, 5000);
+	window.setInterval(refreshWindow, 5000);
 	
-	// initialization of user interface
 	$('#accordion h3').click(function() {
 		$(this).next().toggle('fast');
 		return false;
 	}).next().hide();
 	
-	$('#refreshInterval').slider();
+	// add new entity to list
+	$('#addEntity button').click(function() {
+		uuids.push($(this).prev().val());
+		loadEntities(uuids);
+	});
 	
-	// load data and show plot
-	getData();
+	// options
+	$('input[name=trendline]').change(function() {
+		jqOptions.seriesDefaults.trendline.show = $(this).attr('checked');
+	});
+	
+	$('input[name=backendUrl]').val(backendUrl);
+	$('input[name=tuples]').val(tuples);
+	
+	// load all entity information
+	loadEntities(uuids);
 });

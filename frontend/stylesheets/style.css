@@ -1,17 +1,24 @@
 body {
 	margin: 0;
 	padding: 0;
-	background-color: #9ACC67;
+	background-color: #769AFF;
 	font-family: sans-serif;
 }
 
-#vz {
-	margin: 150px auto;
+#content {
+	margin: 20px auto;
 	width: 800px;
 	padding: 10px;
 	-moz-border-radius: 10px;
 	background-color: white;
 	border: 1px solid black;
+}
+
+#footer {
+	text-align: center;
+	font-size: 0.7em;
+	color: white;
+	margin: 10px;
 }
 
 #move {
@@ -20,25 +27,69 @@ body {
 	margin: 5px;
 }
 
-#accordion h3 {
+#accordion {
 	background-color: lightgrey;
-	padding: 4px;
-	margin: 2px;
 	-moz-border-radius: 4px;
+}
+
+#accordion h3 {
+	background-color: grey;
+	padding: 4px;
+	margin: 2px 0px;
+	color: white;
+	cursor: pointer;
 	font-size: 0.9em;
+	-moz-border-radius: 4px;
+}
+
+#accordion div {
+	padding: 5px;
 }
 
 /* treeTable for entities */
-#entities {
+#entities table {
 	border-collapse: collapse;
+	width: 100%;
 }
 
 #entities thead tr th {
-	padding: 0.3em 1.67em;
+	padding: 0.1em 1.67em;
+	border-bottom: 2px solid grey;
+	
 	text-align: left;
+	font-size: 0.9em;
 }
 
 #entities tbody tr td {
-	padding: 0.3em 1.5em;
-	white-space: nowrap;
+	padding: 0.1em 1.5em;
+	border-bottom: 1px solid #A7A7A7;
+}
+
+#entities tbody span {
+	background-position: left center;
+	background-repeat: no-repeat;
+	padding: 0.2em 0 0.2em 1.5em;
+}
+
+#entities tbody span.channel {
+	background-image: url("../images/chart_curve.png");
+}
+
+#entities tbody span.group {
+	background-image: url("../images/folder.png");
+}
+
+#addEntity {
+	margin-top: 10px;
+}
+
+.indicator {
+	height: 12px;
+}
+
+.inactive {
+	filter: alpha(opacity=30);
+	-moz-opacity: 0.3;
+	-khtml-opacity: 0.3;
+	opacity: 0.3;
 }

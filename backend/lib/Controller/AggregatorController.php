@@ -44,7 +44,7 @@ class AggregatorController extends EntityController {
 			return $aggregator;
 		}
 		else {
-			throw new \Exception($identifier . ' is not a group uuid');
+			throw new \Exception($identifier . ' is not a group');
 		}
 	}
 

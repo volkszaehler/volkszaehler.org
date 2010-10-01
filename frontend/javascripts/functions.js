@@ -32,9 +32,9 @@
 /**
  * Refresh plot with new data
  */
-function refresh() {
-	if ($('[name=refresh]').attr('checked')) {
-		getData();
+function refreshWindow() {
+	if ($('input[name=refresh]').attr('checked')) {
+		loadData();
 	}
 }
 
@@ -53,24 +53,25 @@ function moveWindow(mode) {
 		myWindowEnd += delta;
 	}
 	
-	getData();
+	loadData();
 }
 
-function getData() {
-	// load json data with given time window
-	$.getJSON(backendUrl + '/data/' + myUUID + '.json', { from: myWindowStart, to: myWindowEnd, tuples: 500 }, function(data){
-		json = data;
-		showChart();
+//load json data with given time window
+function loadData() {
+	eachRecursive(entities, function(entity, parent) {
+		if (entity.active && entity.type != 'group') {
+			$.getJSON(backendUrl + '/data/' + entity.uuid + '.json', { from: myWindowStart, to: myWindowEnd, tuples: tuples }, ajaxWait(function(json) {
+				entity.data = json.data[0]; // TODO filter for correct uuid
+			}, showChart, 'data'));
+		}
 	});
-	
-	return false;
 }
 
 function showChart() {
 	var jqData = new Array();
 	
-	$.each(json.data, function(index, value) {
-		jqData.push(value.tuples);
+	eachRecursive(entities, function(entity, parent) {
+		jqData.push(entity.data.tuples);
 	});
 
 	// TODO read docs
@@ -86,11 +87,13 @@ function showChart() {
  */
 
 /**
- * Get all entity infomration from backend
+ * Get all entity information from backend
  */
-function loadEntities() {
+function loadEntities(uuids) {
 	$.each(uuids, function(index, value) {
-		$.getJSON(backendUrl + '/entity/' + value + '.json', ajaxWait(showEntities, 'enities'));
+		$.getJSON(backendUrl + '/entity/' + value + '.json', ajaxWait(function(json) {
+			entities.push(json.entity);
+		}, showEntities, 'information'));
 	});
 }
 
@@ -98,72 +101,101 @@ function loadEntities() {
  * Create nested entity list
  * @param data
  */
-function showEntities(data) {
+function showEntities() {
 	$('#entities tbody').empty();
 	
-	$.each(data, function(index, value) {
-		var entity = (value.group) ? value.group : value.channel;
+	var i = 0;
+	
+	eachRecursive(entities, function(entity, parent) {
+		entity.active = true;	// TODO active by default or via backend property?
+		entity.color = colors[i++%colors.length];
 		
-		showEntity(entity);
+		$('#entities tbody').append(
+			$('<tr>')
+				.addClass((parent) ? 'child-of-entity-' + parent.uuid : '')
+				.attr('id', 'entity-' + entity.uuid)
+			.append(
+				$('<td>').append(
+					$('<span>')
+						.addClass((entity.type == 'group') ? 'group' : 'channel')
+						.attr('title', entity.uuid)
+						.text(entity.title)
+				)
+			)
+			.append($('<td>').text(entity.type))
+			.append($('<td>')	// operations
+				.append($('<input>')
+					.attr('type', 'image')
+					.attr('src', 'images/delete.png')
+					.attr('alt', 'delete')
+					.bind('click', entity, function(event) { alert('delete: ' + event.data.uuid); })
+				)
+			)
+			.append($('<td>')
+				.append($('<div>')
+					.css('background-color', entity.color)
+					.addClass('indicator')
+					.append($('<input>')
+						.attr('type', 'checkbox')
+						.attr('checked', entity.active)
+						.bind('change', entity, function(event) {
+							event.data.active = $(this).attr('checked');
+							loadData();
+						})
+					)
+				)
+			)
+		);
 	});
 	
-	$('#entities').treeTable();
-}
-
-/**
- * Create nested entity list (recursive)
- * @param entity
- * @param parent
- */
-function showEntity(entity, parent) {
-	$('#entities tbody').append(
-		$('<tr>')
-			.attr('class', (parent) ? 'child-of-entity-' + parent.uuid : '')
-			.attr('id', 'entity-' + entity.uuid)
-		.append($('<td>').text(entity.uuid))
-		.append($('<td>').text(entity.title))
-		.append($('<td>').text(entity.type))
-	);
-
-	var entities = new Array();
-	if (entity.channels) {
-		$.merge(entities, entity.channels);
-	}
-	if (entity.groups) {
-		$.merge(entities, entity.groups);
-	}
+	// http://ludo.cubicphuse.nl/jquery-plugins/treeTable/doc/index.html
+	$('#entities table').treeTable();
 	
-	$.each(entities, function(index, value) {
-		showEntity(value, entity);
-	});
+	// load data and show plot
+	loadData();
 }
 
 /*
  * General helper functions
  */
 
-function ajaxWait(callback, identifier) {
-	if (!identifier) {
-		var identifier = 0;
-	}
-	
-	if (!ajaxWait.counter || !ajaxWait.data) {
-		ajaxWait.counter = new Array();
-		ajaxWait.data = new Array();
-	}
-	
-	if (!ajaxWait.counter[identifier] || !ajaxWait.data[identifier]) {
-		ajaxWait.counter[identifier] = 0;
-		ajaxWait.data[identifier] = new Array;
-	}
+function ajaxWait(callback, finished, identifier) {
+	if (!ajaxWait.counter) { ajaxWait.counter = new Array(); }
+	if (!ajaxWait.counter[identifier]) { ajaxWait.counter[identifier] = 0; }
 	
 	ajaxWait.counter[identifier]++;
 	
 	return function (data, textStatus) {
-		ajaxWait.data[identifier].push(data);
+		callback(data, textStatus);
 		
 		if (!--ajaxWait.counter[identifier]) {
-			callback(ajaxWait.data[identifier]);
+			finished();
 		}
 	};
 }
+
+function eachRecursive(array, callback, parent) {
+	$.each(array, function(index, value) {
+		callback(value, parent);
+		
+		if (value.children) {	// has children?
+			eachRecursive(value.children, callback, value);	// call recursive
+		}
+	});
+}
+
+Array.prototype.contains = function(needle) {
+	for (var i=0; i<this.length; i++) {
+		if (this[i] == needle) {
+			return true;
+		}
+	}
+
+	return false;
+};
+
+Array.prototype.diff = function(compare) {
+	return this.filter(function(elem) {
+		return !compare.contains(elem);
+	});
+};

@@ -23,8 +23,8 @@
 
 namespace Volkszaehler\View;
 
+use Doctrine\ORM\Query\AST\Functions;
 use Volkszaehler\Interpreter;
-
 use Volkszaehler\View\HTTP;
 use Volkszaehler\Util;
 use Volkszaehler\Model;
@@ -67,7 +67,7 @@ class JSON extends View {
 		$json = $this->json->encode((Util\Debug::isActivated()) ? JSON_PRETTY : 0);
 
 		if ($this->padding) {
-			$json = 'if (self.' . $this->padding . ') { ' . $this->padding  . '(' . $json . '); }';
+			$json = 'if (' . $this->padding . ') { ' . $this->padding  . '(' . $json . '); }';
 		}
 
 		$this->response->setHeader('Content-type', 'application/json');
@@ -79,18 +79,13 @@ class JSON extends View {
 	 *
 	 * @param Model\Channel $channel
 	 */
-	protected function addChannel(Model\Channel $channel) {
-		$this->json['channel'] = self::convertEntity($channel);
-	}
-
-	/**
-	 * Add aggregator to output queue
-	 *
-	 * @param Model\Aggregator $aggregator
-	 * @param boolean $recursive
-	 */
-	protected function addAggregator(Model\Aggregator $aggregator, $recursive = FALSE) {
-		$this->json['group'] = self::convertAggregator($aggregator, $recursive);
+	protected function addEntity(Model\Entity $entity) {
+		if ($entity instanceof Model\Aggregator) {
+			$this->json['entity'] = self::convertAggregator($entity);
+		}
+		else {
+			$this->json['entity'] = self::convertEntity($entity);
+		}
 	}
 
 	/**
@@ -198,12 +193,11 @@ class JSON extends View {
 		$jsonAggregator = self::convertEntity($aggregator);
 
 		foreach ($aggregator->getChildren() as $entity) {
-
 			if ($entity instanceof Model\Channel) {
-				$jsonAggregator['channels'][] = self::convertEntity($entity);
+				$jsonAggregator['children'][] = self::convertEntity($entity);
 			}
 			elseif ($entity instanceof Model\Aggregator) {
-				$jsonAggregator['groups'][] = self::convertAggregator($entity);
+				$jsonAggregator['children'][] = self::convertAggregator($entity);
 			}
 		}
 

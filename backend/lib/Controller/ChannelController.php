@@ -44,7 +44,7 @@ class ChannelController extends EntityController {
 			return $channel;
 		}
 		else {
-			throw new \Exception($identifier . ' is not a channel uuid');
+			throw new \Exception($identifier . ' is not a channel');
 		}
 	}
 

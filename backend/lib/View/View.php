@@ -110,11 +110,8 @@ abstract class View {
 			if ($data instanceof Interpreter\InterpreterInterface) {
 				$this->addData($data);
 			}
-			elseif ($data instanceof Model\Channel) {
-				$this->addChannel($data);
-			}
-			elseif ($data instanceof Model\Aggregator) {
-				$this->addAggregator($data);
+			elseif ($data instanceof Model\Entity) {
+				$this->addEntity($data);
 			}
 			elseif ($data instanceof \Exception) {
 				$this->addException($data);
@@ -131,8 +128,7 @@ abstract class View {
 	protected abstract function render();
 
 	protected abstract function addData(Interpreter\InterpreterInterface $data);
-	protected abstract function addChannel(Model\Channel $channel);
-	protected abstract function addAggregator(Model\Aggregator $aggregator);
+	protected abstract function addEntity(Model\Entity $entity);
 	protected abstract function addException(\Exception $exception);
 	protected abstract function addDebug(Util\Debug $debug);
 }
