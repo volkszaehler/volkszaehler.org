@@ -38,19 +38,39 @@ function refreshWindow() {
 	}
 }
 
-function moveWindow(mode) {
-	delta = myWindowEnd - myWindowStart;
+// alter plotting range (for WUI)
+function plot() {
+	delta = vz.to - vz.from;
 	
-	if(mode == 'last')
-		myWindowEnd = (new Date()).getTime();
-		myWindowStart = myWindowEnd - delta;
-	if(mode == 'back') {
-		myWindowStart -= delta;
-		myWindowEnd -= delta;
-	}
-	if(mode == 'forward') {
-		myWindowStart += delta;
-		myWindowEnd += delta;
+	switch(this.value) {
+		case 'move_last':
+			vz.to = (new Date()).getTime();
+			vz.from = vz.to - delta;
+			break;
+			
+		case 'move_back':
+			vz.from -= delta;
+			vz.to -= delta;
+			break;
+		case 'move_forward':
+			vz.from += delta;
+			vz.to += delta;
+			break;
+		
+		case 'zoom_reset':
+			// TODO
+			break;
+			
+		case 'zoom_in':
+			// TODO
+			break;
+			
+		case 'zoom_out':
+			// TODO
+			break;
+			
+		case 'refresh':
+			// do nothing; just loadData()
 	}
 	
 	loadData();
@@ -58,56 +78,28 @@ function moveWindow(mode) {
 
 //load json data with given time window
 function loadData() {
-	eachRecursive(entities, function(entity, parent) {
+	eachRecursive(vz.entities, function(entity, parent) {
 		if (entity.active && entity.type != 'group') {
-			$.getJSON(backendUrl + '/data/' + entity.uuid + '.json', { from: myWindowStart, to: myWindowEnd, tuples: tuples }, ajaxWait(function(json) {
+			$.getJSON(vz.options.backendUrl + '/data/' + entity.uuid + '.json', { from: vz.from, to: vz.to, tuples: vz.options.tuples }, ajaxWait(function(json) {
 				entity.data = json.data[0]; // TODO filter for correct uuid
-			}, showChart, 'data'));
+			}, drawPlot, 'data'));
 		}
 	});
 }
 
-function showChart() {
-	var jqData = new Array();
+function drawPlot() {
+	//vz.plot.axes.xaxis.min = vz.from;
+	//vz.plot.axes.xaxis.min = vz.to;
 	
-	eachRecursive(entities, function(entity, parent) {
-		jqData.push(entity.data.tuples);
+	var i = 0;
+	
+	eachRecursive(vz.entities, function(entity, parent) {
+		vz.plot.series[i++].data = entity.data.tuples;
 	});
-
-	// TODO read docs
-	chart = $.jqplot('plot', jqData, jqOptions);
-	chart.replot({
-		clear: true,
+	
+	vz.plot.replot({
 		resetAxes: true
 	});
-}
-
-/*
- * Cookie & UUID related functions
- */
-function getUUIDs() {
-	if ($.getCookie('uuids')) {
-		return JSON.parse($.getCookie('uuids'));
-	}
-	else {
-		return new Array;
-	}
-}
-
-function addUUID(uuid) {
-	if (!uuids.contains(uuid)) {
-		uuids.push(uuid);
-		$.setCookie('uuids', JSON.stringify(uuids));
-	}
-}
-
-function removeUUID(uuid) {
-	if (uuids.contains(uuid)) {
-		uuids.filter(function(value) {
-			return value != uuid;
-		});
-		$.setCookie('uuids', JSON.stringify(uuids));
-	}
 }
 
 /*
@@ -117,10 +109,10 @@ function removeUUID(uuid) {
 /**
  * Get all entity information from backend
  */
-function loadEntities(uuids) {
-	$.each(uuids, function(index, value) {
-		$.getJSON(backendUrl + '/entity/' + value + '.json', ajaxWait(function(json) {
-			entities.push(json.entity);
+function loadEntities() {
+	$.each(vz.uuids, function(index, value) {
+		$.getJSON(vz.options.backendUrl + '/entity/' + value + '.json', ajaxWait(function(json) {
+			vz.entities.push(json.entity);
 		}, showEntities, 'information'));
 	});
 }
@@ -134,9 +126,9 @@ function showEntities() {
 	
 	var i = 0;
 	
-	eachRecursive(entities, function(entity, parent) {
+	eachRecursive(vz.entities, function(entity, parent) {
 		entity.active = true;	// TODO active by default or via backend property?
-		entity.color = colors[i++%colors.length];
+		entity.color = vz.options.plot.seriesColors[i++ % vz.options.plot.seriesColors.length];
 		
 		$('#entities tbody').append(
 			$('<tr>')
@@ -152,6 +144,12 @@ function showEntities() {
 			)
 			.append($('<td>').text(entity.type))
 			.append($('<td>')	// operations
+				.append($('<input>')
+					.attr('type', 'image')
+					.attr('src', 'images/information.png')
+					.attr('alt', 'details')
+					.bind('click', entity, function(event) { showEntityDetails(event.data); })
+				)
 				.append($('<input>')
 					.attr('type', 'image')
 					.attr('src', 'images/delete.png')
@@ -183,6 +181,59 @@ function showEntities() {
 	loadData();
 }
 
+function showEntityDetails(entity) {
+	var properties = $('<table>');
+	
+	$.each(entity, function(key, value) {
+		properties.append($('<tr>')
+			.append($('<td>')
+				.addClass('key')
+				.text(key)
+			)
+			.append($('<td>')
+				.addClass('value')
+				.text(value)
+			)
+		);
+	});
+	
+	$('<div>')
+	.addClass('details')
+	.append(properties)
+	.dialog({
+		title: 'Entity Details',
+		width: 450
+	});
+}
+
+/*
+ * Cookie & UUID related functions
+ */
+function getUUIDs() {
+	if ($.getCookie('uuids')) {
+		return JSON.parse($.getCookie('uuids'));
+	}
+	else {
+		return new Array();
+	}
+}
+
+function addUUID(uuid) {
+	if (!uuids.contains(uuid)) {
+		uuids.push(uuid);
+		$.setCookie('uuids', JSON.stringify(uuids));
+	}
+}
+
+function removeUUID(uuid) {
+	if (uuids.contains(uuid)) {
+		uuids.filter(function(value) {
+			return value != uuid;
+		});
+		$.setCookie('uuids', JSON.stringify(uuids));
+	}
+}
+
 /*
  * General helper functions
  */
@@ -212,18 +263,48 @@ function eachRecursive(array, callback, parent) {
 	});
 }
 
+/**
+ * Checks if value of part of the array
+ * 
+ * @param needle the value to search for
+ * @return boolean
+ */
 Array.prototype.contains = function(needle) {
-	for (var i=0; i<this.length; i++) {
-		if (this[i] == needle) {
-			return true;
-		}
-	}
-
-	return false;
+	return this.key(needle) ? true : false;
 };
 
+/**
+ * Calculates the diffrence between this and another Array
+ * 
+ * @param compare the Array to compare with
+ * @return array
+ */
 Array.prototype.diff = function(compare) {
 	return this.filter(function(elem) {
 		return !compare.contains(elem);
 	});
+};
+
+/**
+ * Find the key to an given value
+ * 
+ * @param needle the value to search for
+ * @return integer
+ */
+Array.prototype.key = function(needle) {
+	for (var i=0; i<this.length; i++) {
+		if (this[i] == needle) {
+			return i;
+		}
+	}
+};
+
+/**
+ * Remove a value from the array
+ */
+Array.prototype.remove = function(needle) {
+	var key = this.key(needle);
+	if (key) {
+		this.splice(key, 1);
+	}
 };

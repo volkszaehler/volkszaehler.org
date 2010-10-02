@@ -14,9 +14,8 @@
 	<script type="text/javascript" src="javascripts/jqplot/plugins/jqplot.canvasAxisTickRenderer.min.js"></script>
 	<script type="text/javascript" src="javascripts/jqplot/plugins/jqplot.dateAxisRenderer.min.js"></script>
 	<script type="text/javascript" src="javascripts/jqplot/plugins/jqplot.cursor.min.js"></script>
-	<script type="text/javascript" src="javascripts/jqplot/plugins/jqplot.categoryAxisRenderer.min.js"></script>
-	<script type="text/javascript" src="javascripts/jqplot/plugins/jqplot.barRenderer.min.js"></script>
 	<script type="text/javascript" src="javascripts/jqplot/plugins/jqplot.highlighter.min.js"></script>
+	<script type="text/javascript" src="javascripts/jqplot/plugins/jqplot.trendline.min.js"></script>
 	
 	<script type="text/javascript" src="javascripts/json2.js"></script>
 	<script type="text/javascript" src="javascripts/functions.js"></script>
@@ -24,7 +23,7 @@
 	
 	<link rel="stylesheet" type="text/css" href="stylesheets/jquery.jqplot.min.css">
 	<link rel="stylesheet" type="text/css" href="stylesheets/jquery.treeTable.css">
-	<link rel="stylesheet" type="text/css" href="stylesheets/ui-lightness/jquery-ui-1.8.4.css" rel="Stylesheet" />	
+	<link rel="stylesheet" type="text/css" href="stylesheets/ui-lightness/jquery-ui-1.8.5.css" rel="Stylesheet" />	
 	<link rel="stylesheet" type="text/css" href="stylesheets/style.css">
 </head>
 
@@ -35,12 +34,19 @@
 	
 	<table id="move">
 		<tr>
-			<td><input type="image" src="images/control_rewind_blue.png" onclick="moveWindow('back')" value="&laquo;" /></td>
 			<td>
-				<input type="image" src="images/control_end_blue.png" onclick="moveWindow('last')" value="&raquo;&raquo;" />
-				<input type="image" src="images/arrow_refresh.png" onclick="loadData()" alt="refresh" />
+				<input type="image" src="images/control_rewind_blue.png" value="move_back" />
+				<input type="image" onclick="plot" src="images/zoom_in.png" value="zoom_in" />
 			</td>
-			<td><input type="image" src="images/control_fastforward_blue.png" onclick="moveWindow('forward')" value="&raquo;" /></td>
+			<td>
+				<input type="image" src="images/control_end_blue.png" value="move_last" />
+				<input type="image" src="images/arrow_refresh.png" value="refresh" />
+				<input type="image" src="images/zoom.png" value="zoom_reset" />
+			</td>
+			<td>
+				<input type="image" src="images/zoom_out.png" value="zoom_out" />
+				<input type="image" src="images/control_fastforward_blue.png" value="move_forward" />
+			</td>
 		</tr>
 	</table>
 	
@@ -54,6 +60,9 @@
 					<th>Typ</th>
 					<th>Operationen</th>
 					<th>Anzeige</th>
+					<th>Min.</th>
+					<th>Max.</th>
+					<th>Avg.</th>
 				</tr>
 			</thead>
 			<tbody></tbody>

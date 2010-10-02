@@ -85,7 +85,8 @@ $.extend({
 		var path = options.path ? '; path=' + (options.path) : '';
 		var domain = options.domain ? '; domain=' + (options.domain) : '';
 		var secure = options.secure ? '; secure' : '';
-		document.cookie = [ name, '=', encodeURIComponent(value), expires, path, domain, secure ].join('');
+		
+		document.cookie = name + '=' + encodeURIComponent(value) + expires + path + domain + secure;
 	},
 	getCookie: function(name) {
 		var value = null;
