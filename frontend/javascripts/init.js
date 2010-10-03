@@ -94,6 +94,9 @@ var vz = {
 // executed on document loaded complete
 // this is where it all starts...
 $(document).ready(function() {
+	// initialize user interface
+	initInterface();
+	
 	// parse uuids from cookie
 	vz.uuids = getUUIDs();
 
@@ -106,7 +109,7 @@ $(document).ready(function() {
 	window.setInterval(refreshWindow, 5000);
 	
 	// initialize plot
-	vz.plot = $.jqplot('plot', [[]], vz.options.plot);
+	vz.plot = $.jqplot('plot', vz.options.plot);
 	
 	// zoom events
 	vz.plot.target.bind('jqplotZoom', function(event, gridpos, datapos, plot, cursor) {
