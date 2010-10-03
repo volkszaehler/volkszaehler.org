@@ -30,6 +30,61 @@
  */
 
 /**
+ * Initialize the WUI (Web User Interface)
+ */
+function initInterface() {
+	$('#accordion h3').click(function() {
+		$(this).next().toggle('fast');
+		return false;
+	}).next().hide();
+	
+	$('button').button();
+	
+	$('button[name=addUUID]').click(function() {
+		$('#addUUID').dialog({
+			title: 'UUID hinzufügen',
+			width: 400
+		});
+	});
+	
+	$('button[name=newEntity]').click(function() {
+		$('#newEntity').dialog({
+			title: 'Entity erstellen',
+			width: 400
+		});
+	});
+	
+	// bind controls
+	$('#move input').click(panPlot);
+	
+	// options
+	$('input[name=trendline]').attr('checked', vz.options.plot.seriesDefaults.trendline.show).change(function() {
+		vz.options.plot.seriesDefaults.trendline.show = $(this).attr('checked');
+		drawPlot();
+	});
+	
+	$('input[name=backendUrl]').val(vz.options.backendUrl).change(function() {
+		vz.options.backendUrl = $(this).val();
+	});
+	
+	$('#tuples input').val(vz.options.tuples).change(function() {
+		vz.options.tuples = $(this).val();
+	});
+	
+	$('#tuples .slider').slider({
+		min: 1,
+		max: 1000,
+		step: 10
+	});
+	
+	$('#refresh .slider').slider({
+		min: 500,
+		max: 60000,
+		step: 500
+	});
+}
+
+/**
  * Refresh plot with new data
  */
 function refreshWindow() {
@@ -38,8 +93,10 @@ function refreshWindow() {
 	}
 }
 
-// alter plotting range (for WUI)
-function plot() {
+/**
+ * Move & zoom in the plotting area
+ */
+function panPlot() {
 	delta = vz.to - vz.from;
 	
 	switch(this.value) {
@@ -76,7 +133,9 @@ function plot() {
 	loadData();
 }
 
-//load json data with given time window
+/**
+ * Load json data with given time window
+ */
 function loadData() {
 	eachRecursive(vz.entities, function(entity, parent) {
 		if (entity.active && entity.type != 'group') {
@@ -134,33 +193,9 @@ function showEntities() {
 			$('<tr>')
 				.addClass((parent) ? 'child-of-entity-' + parent.uuid : '')
 				.attr('id', 'entity-' + entity.uuid)
-			.append(
-				$('<td>').append(
-					$('<span>')
-						.addClass((entity.type == 'group') ? 'group' : 'channel')
-						.attr('title', entity.uuid)
-						.text(entity.title)
-				)
-			)
-			.append($('<td>').text(entity.type))
-			.append($('<td>')	// operations
-				.append($('<input>')
-					.attr('type', 'image')
-					.attr('src', 'images/information.png')
-					.attr('alt', 'details')
-					.bind('click', entity, function(event) { showEntityDetails(event.data); })
-				)
-				.append($('<input>')
-					.attr('type', 'image')
-					.attr('src', 'images/delete.png')
-					.attr('alt', 'delete')
-					.bind('click', entity, function(event) { removeUUID(event.data.uuid); })
-				)
-			)
-			.append($('<td>')
-				.append($('<div>')
+				.append($('<td>')
 					.css('background-color', entity.color)
-					.addClass('indicator')
+					.css('width', 19)
 					.append($('<input>')
 						.attr('type', 'checkbox')
 						.attr('checked', entity.active)
@@ -170,17 +205,52 @@ function showEntities() {
 						})
 					)
 				)
-			)
+				.append($('<td>')
+					.css('width', 20)
+				)
+				.append($('<td>')
+					.append($('<span>')
+						.text(entity.title)
+						.addClass('indicator')
+						.addClass((entity.type == 'group') ? 'group' : 'channel')
+					)
+				)
+				.append($('<td>').text(entity.type))
+				.append($('<td>'))	// min
+				.append($('<td>'))	// max
+				.append($('<td>'))	// avg
+				.append($('<td>')	// operations
+					.css('text-align', 'right')
+					.append($('<input>')
+						.attr('type', 'image')
+						.attr('src', 'images/information.png')
+						.attr('alt', 'details')
+						.bind('click', entity, function(event) { showEntityDetails(event.data); })
+					)
+					.append($('<input>')
+						.attr('type', 'image')
+						.attr('src', 'images/delete.png')
+						.attr('alt', 'delete')
+						.bind('click', entity, function(event) { removeUUID(event.data.uuid); })
+					)
+				)
 		);
 	});
 	
 	// http://ludo.cubicphuse.nl/jquery-plugins/treeTable/doc/index.html
-	$('#entities table').treeTable();
+	$('#entities table').treeTable({
+		treeColumn: 2,
+		clickableNodeNames: true
+	});
 	
 	// load data and show plot
 	loadData();
 }
 
+/**
+ * Show and edit entity details
+ * @param entity
+ */
 function showEntityDetails(entity) {
 	var properties = $('<table>');
 	
@@ -219,9 +289,9 @@ function getUUIDs() {
 }
 
 function addUUID(uuid) {
-	if (!uuids.contains(uuid)) {
-		uuids.push(uuid);
-		$.setCookie('uuids', JSON.stringify(uuids));
+	if (!vz.uuids.contains(uuid)) {
+		vz.uuids.push(uuid);
+		$.setCookie('uuids', JSON.stringify(vz.uuids));
 	}
 }
 

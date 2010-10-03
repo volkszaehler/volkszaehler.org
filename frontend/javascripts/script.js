@@ -61,7 +61,8 @@ var vz = {
 				},
 				trendline: {
 					show: true,
-					shadow: false
+					shadow: false,
+					color: 'red'
 				}
 			},
 			axes: {
@@ -104,37 +105,17 @@ $(document).ready(function() {
 	// start auto refresh timer
 	window.setInterval(refreshWindow, 5000);
 	
-	$('#accordion h3').click(function() {
-		$(this).next().toggle('fast');
-		return false;
-	}).next().hide();
-	
-	// add new entity to list
-	$('#addEntity button').click(function() {
-		addUUID($(this).prev().val());
-		loadEntities();
-	});
-	
-	// bind controls
-	$('#move input').click(plot);
-	
-	// options
-	$('input[name=trendline]').attr('checked', vz.options.plot.seriesDefaults.trendline.show).change(function() {
-		vz.options.plot.seriesDefaults.trendline.show = $(this).attr('checked');
-		drawPlot();
-	});
-	
-	$('input[name=backendUrl]').val(vz.options.backendUrl).change(function() {
-		vz.options.backendUrl = $(this).val();
-	});
-	
-	$('input[name=tuples]').val(vz.options.tuples).change(function() {
-		vz.options.tuples = $(this).val();
-	});
-	
 	// initialize plot
 	vz.plot = $.jqplot('plot', [[]], vz.options.plot);
 	
-	// load all entity information
+	// zoom events
+	vz.plot.target.bind('jqplotZoom', function(event, gridpos, datapos, plot, cursor) {
+		//alert('zoomed'); // TODO refresh of data
+	});
+	
+	vz.plot.target.bind('jqplotResetZoom', function(event, plot, cursor) {
+		alert('zoom reset'); // TODO refresh of data
+	});
+
 	loadEntities();
 });

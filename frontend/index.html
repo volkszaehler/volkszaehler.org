@@ -56,32 +56,81 @@
 		<table>
 			<thead>
 				<tr>
+					<th title="Anzeige">A</th>
+					<th></th>
 					<th>Titel</th>
 					<th>Typ</th>
-					<th>Operationen</th>
-					<th>Anzeige</th>
 					<th>Min.</th>
 					<th>Max.</th>
 					<th>Avg.</th>
+					<th></th>
 				</tr>
 			</thead>
 			<tbody></tbody>
 		</table>
-		<div id="addEntity"><input type="text" size="36" maxlength="36" name="uuid" value="UUID" /> <button><img src="images/add.png" alt="add" />Kanal hinzuf&uuml;gen</button></div>
+		<div><button name="addUUID"><img src="images/add.png" alt="add" /> UUID hinzuf&uuml;gen</button> <button name="newEntity"><img src="images/star.png" alt="new" /> Entity erstellen</button></div>
 		</div>
 		<h3>Optionen</h3>
 		<div id="options">
 			<table>
-				<tr><td><label for="refresh"><img src="images/arrow_refresh.png" alt="refresh" /> Automatisch aktualisieren</label></td><td><input type="checkbox" name="refresh" /></td></tr>
-				<tr><td><label for="trendline"><img src="images/chart_line.png" alt="trendline" /> Trendline anzeigen</label></td><td><input type="checkbox" name="trendline" /></td></tr>
-				<tr><td><label for="backend"><img src="images/server.png" alt="backendUrl" /> Backend-Adresse</label></td><td><input type="text" name="backendUrl" /></td></tr>
-				<tr><td><label for="tuples"><img src="images/shading.png" alt="tuples" /> Tuples (Auflösung)</label></td><td><input type="text" name="tuples" /></td></tr>
+				<thead>
+					<tr>
+						<th>Option</th>
+						<th colspan="2">Wert</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr id="refresh">
+						<td><label for="refresh"><img src="images/arrow_refresh.png" alt="refresh" /> Automatisch aktualisieren (ms)</label></td>
+						<td><input type="checkbox" name="refresh" /></td>
+						<td><div class="slider"></div></td>
+					</tr>
+					<tr id="trendline">
+						<td><label for="trendline"><img src="images/chart_line.png" alt="trendline" /> Trendline anzeigen</label></td>
+						<td><input type="checkbox" name="trendline" /></td>
+						<td></td>
+					</tr>
+					<tr id="backendUrl">
+						<td><label for="backendUrl"><img src="images/server.png" alt="backendUrl" /> Backend-Adresse</label></td>
+						<td><input type="text" name="backendUrl" /></td>
+						<td></td>
+					</tr>
+					<tr id="tuples">
+						<td><label for="tuples"><img src="images/shading.png" alt="tuples" /> Tuples (Auflösung)</label></td>
+						<td><input type="text" name="tuples" size="5" /></td>
+						<td><div class="slider"></div></td>
+					</tr>
+				</tbody>
 			</table>
 		</div>
 	</div>
 </div>
 <div id="footer">
-&copy; 2010 - <a href="http://volkszaehler.org/">volkszaehler.org</a> - the open smartmeter platform
+	&copy; 2010 - <a href="http://volkszaehler.org/">volkszaehler.org</a> - the open smartmeter platform
+</div>
+
+<!-- dialogs -->
+<div id="addUUID" class="dialog">
+	<p>Hier können Sie einen existierenden Kanal über seine UUID hinzufügen</p>
+	<label>UUID</label><input name="uuid" type="text" size="36" maxlength="36" />
+	<input type="button" value="hinzufügen" />
+</div>
+
+<div id="newEntity" class="dialog">
+	<p>Hier können sie einen neuen Kanal hinzufügen:</p>
+	<fieldset><legend>Allgemeine Eigenschaften</legend>
+		<table>
+			<tr><td><label for="type">Typ:</label></td><td><select name="type"></select></td></tr>
+			<tr><td><label for="port">Port:</label></td><td><input type="text" name="port" /></td></tr>
+		</table>
+	</fieldset>
+			
+	<fieldset>
+		<legend>Spezifische Eigenschaften</legend>
+		<table id="properties"></table>
+		<p>(*) required</p>
+	</fieldset>
+	<input type="button" value="hinzufügen" />
 </div>
 </body>
 </html>

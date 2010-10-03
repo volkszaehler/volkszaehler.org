@@ -5,8 +5,25 @@ body {
 	font-family: sans-serif;
 }
 
+table {
+	border-collapse: collapse;
+	empty-cells: show;
+	width: 100%;
+}
+
+thead tr th {
+	border-bottom: 2px solid grey;
+	
+	text-align: left;
+	font-size: 0.9em;
+}
+
+tbody tr td {
+	border-bottom: 1px solid #A7A7A7;
+}
+
 #content {
-	margin: 20px auto;
+	margin: 100px auto 20px;
 	width: 800px;
 	padding: 10px;
 	-moz-border-radius: 10px;
@@ -25,6 +42,10 @@ body {
 	width: 100%;
 	text-align: center;
 	margin: 5px;
+}
+
+#move td {
+	border: 0;
 }
 
 #accordion {
@@ -47,28 +68,11 @@ body {
 }
 
 /* treeTable for entities */
-#entities table {
-	border-collapse: collapse;
-	width: 100%;
-}
-
-#entities thead tr th {
-	padding: 0.1em 1.67em;
-	border-bottom: 2px solid grey;
-	
-	text-align: left;
-	font-size: 0.9em;
-}
-
-#entities tbody tr td {
-	padding: 0.1em 1.5em;
-	border-bottom: 1px solid #A7A7A7;
-}
-
 #entities tbody span {
 	background-position: left center;
 	background-repeat: no-repeat;
-	padding: 0.2em 0 0.2em 1.5em;
+	padding: 0.2em 0 0.2em 1.7em;
+	margin: 0;
 }
 
 #entities tbody span.channel {
@@ -92,4 +96,13 @@ body {
 	-moz-opacity: 0.3;
 	-khtml-opacity: 0.3;
 	opacity: 0.3;
+}
+
+.slider {
+	width: 170px;
+	height: 4px;
+}
+
+.dialog {
+	display: none;
 }
