@@ -32,6 +32,7 @@
  * Initialize the WUI (Web User Interface)
  */
 function initInterface() {
+	// make the whole frontend resizable
 	/*$('#content').resizable({
 		alsoResize: $('#plot'),
 		//ghost: true,
@@ -39,13 +40,16 @@ function initInterface() {
 		autoHide: true
 	});*/
 	
+	// initialize dropdown accordion
 	$('#accordion h3').click(function() {
 		$(this).next().toggle('fast');
 		return false;
 	}).next().hide();
 	
-	$('button').button();
+	// make buttons fancy
+	$('button, input[type=button]').button();
 	
+	// open UUID dialog
 	$('button[name=addUUID]').click(function() {
 		$('#addUUID').dialog({
 			title: 'UUID hinzufügen',
@@ -53,6 +57,7 @@ function initInterface() {
 		});
 	});
 	
+	// open new entity dialog
 	$('button[name=newEntity]').click(function() {
 		$('#newEntity').dialog({
 			title: 'Entity erstellen',
@@ -60,8 +65,15 @@ function initInterface() {
 		});
 	});
 	
-	// bind controls
-	$('#move input').click(handleControl);
+	// add UUID
+	$('#addUUID input[type=button]').click(function() {
+		addUUID($('#addUUID input[type=text]').val());
+		$('#addUUID').dialog('close');
+		loadEntities();
+	})
+	
+	// bind plot actions
+	$('#move input').click(handleControls);
 	
 	// options
 	/*$('input[name=trendline]').attr('checked', vz.options.plot.seriesDefaults.trendline.show).change(function() {
@@ -105,7 +117,7 @@ function refreshWindow() {
 /**
  * Move & zoom in the plotting area
  */
-function handleControl() {
+function handleControls() {
 	var delta = vz.to - vz.from;
 	var middle = Math.round(vz.from + delta/2);
 	
@@ -153,26 +165,19 @@ function loadData() {
 	eachRecursive(vz.entities, function(entity, parent) {
 		if (entity.active && entity.type != 'group') {
 			$.getJSON(vz.options.backendUrl + '/data/' + entity.uuid + '.json', { from: vz.from, to: vz.to, tuples: vz.options.tuples }, ajaxWait(function(json) {
-				entity.data = json.data[0]; // TODO filter for correct uuid
+				vz.data.push({
+					data: json.data[0].tuples,	// TODO check uuid
+					color: entity.color
+				});
 			}, drawPlot, 'data'));
 		}
 	});
 }
 
 function drawPlot() {
-	var data = new Array;
-	eachRecursive(vz.entities, function(entity, parent) {
-		if (entity.active && entity.type != 'group') {
-			data.push({
-				data: entity.data.tuples,
-				color: entity.color
-			});
-		}
-	});
-	
 	vz.options.plot.xaxis.min = vz.from;
 	vz.options.plot.xaxis.max = vz.to;
 	
-	vz.plot = $.plot($('#plot'), data, vz.options.plot);
+	vz.plot = $.plot($('#plot'), vz.data, vz.options.plot);
 }
 

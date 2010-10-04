@@ -46,53 +46,59 @@ function showEntities() {
 	eachRecursive(vz.entities, function(entity, parent) {
 		entity.active = true;	// TODO active by default or via backend property?
 		entity.color = vz.options.plot.colors[i++ % vz.options.plot.colors.length];
+	
+		var row = $('<tr>')
+			.addClass((parent) ? 'child-of-entity-' + parent.uuid : '')
+			.attr('id', 'entity-' + entity.uuid)
+			.append($('<td>')
+				.css('background-color', entity.color)
+				.css('width', 19)
+				.append($('<input>')
+					.attr('type', 'checkbox')
+					.attr('checked', entity.active)
+					.bind('change', entity, function(event) {
+						event.data.active = $(this).attr('checked');
+						loadData();
+					})
+				)
+			)
+			.append($('<td>')
+				.css('width', 20)
+			)
+			.append($('<td>')
+				.append($('<span>')
+					.text(entity.title)
+					.addClass('indicator')
+					.addClass((entity.type == 'group') ? 'group' : 'channel')
+				)
+			)
+			.append($('<td>').text(entity.type))
+			.append($('<td>'))	// min
+			.append($('<td>'))	// max
+			.append($('<td>'))	// avg
+			.append($('<td>')	// operations
+				.addClass('ops')
+				.append($('<input>')
+					.attr('type', 'image')
+					.attr('src', 'images/information.png')
+					.attr('alt', 'details')
+					.bind('click', entity, function(event) { showEntityDetails(event.data); })
+				)
+			);
+				
+		if (parent == null) {
+			$('td.ops', row).prepend($('<input>')
+				.attr('type', 'image')
+				.attr('src', 'images/delete.png')
+				.attr('alt', 'delete')
+				.bind('click', entity, function(event) {
+					removeUUID(event.data.uuid);
+					loadEntities();
+				})
+			);
+		}
 		
-		$('#entities tbody').append(
-			$('<tr>')
-				.addClass((parent) ? 'child-of-entity-' + parent.uuid : '')
-				.attr('id', 'entity-' + entity.uuid)
-				.append($('<td>')
-					.css('background-color', entity.color)
-					.css('width', 19)
-					.append($('<input>')
-						.attr('type', 'checkbox')
-						.attr('checked', entity.active)
-						.bind('change', entity, function(event) {
-							event.data.active = $(this).attr('checked');
-							loadData();
-						})
-					)
-				)
-				.append($('<td>')
-					.css('width', 20)
-				)
-				.append($('<td>')
-					.append($('<span>')
-						.text(entity.title)
-						.addClass('indicator')
-						.addClass((entity.type == 'group') ? 'group' : 'channel')
-					)
-				)
-				.append($('<td>').text(entity.type))
-				.append($('<td>'))	// min
-				.append($('<td>'))	// max
-				.append($('<td>'))	// avg
-				.append($('<td>')	// operations
-					.css('text-align', 'right')
-					.append($('<input>')
-						.attr('type', 'image')
-						.attr('src', 'images/information.png')
-						.attr('alt', 'details')
-						.bind('click', entity, function(event) { showEntityDetails(event.data); })
-					)
-					.append($('<input>')
-						.attr('type', 'image')
-						.attr('src', 'images/delete.png')
-						.attr('alt', 'delete')
-						.bind('click', entity, function(event) { removeUUID(event.data.uuid); })
-					)
-				)
-		);
+		$('#entities tbody').append(row);
 	});
 	
 	// http://ludo.cubicphuse.nl/jquery-plugins/treeTable/doc/index.html
@@ -134,11 +140,11 @@ function showEntityDetails(entity) {
 	});
 }
 
-function validateEntity(form) {
-	var entity = getDefinition(entities, form.type.value);
+function validateEntity(entity) {
+	var def = getDefinition(vz.definitions.entities, entity.type);
 	
-	$.each(entity.required, function(index, property) {
-		var property = getDefinition(properties, property);
+	$.each(def.required, function(index, property) {
+		var property = getDefinition(vz.definitions.properties, property);
 		if (!validateProperty(property, form.elements[property.name].value)) {
 			alert('Error: invalid property: ' + property.name + ' = ' + form.elements[property.name].value);
 			return false;
@@ -195,17 +201,22 @@ function getEntityDOM(type) {
 		var property = getDefinition(properties, property);
 		
 		if (property) {
-			$('#properties').append('<tr class="required"><td><label for="' + property.name + '">' + property.translation.de + ':</label></td><td>' + getPropertyForm(property) + '</td><td>(*)</td></tr>');
+			$('#properties')
+				.append($('<tr>')
+					.addClass('required')
+					.append($('<td>')
+						.append($('<label>')
+							.attr('for', property.name)
+							.text(property.translation.de + ':')
+						)
+					)
+					.append($('<td>').append(getPropertyDOM(property)))
+					.append($('<td>').text('(*)'))
+				);
 		}
 	});
 	
-	$.each(entity.optional, function(index, property) {
-		var property = getDefinition(properties, property);
-		
-		if (property) {
-			$('#properties').append('<tr class="optional"><td><label for="' + property.name + '">' + property.translation.de + ':</label></td><td>' + getPropertyForm(property) + '</td></tr>');
-		}
-	});
+	// TODO optional properties
 }
 
 function getPropertyDOM(property) {
@@ -213,21 +224,35 @@ function getPropertyDOM(property) {
 		case 'string':
 		case 'float':
 		case 'integer':
-			return '<input type="text" name="' + property.name + '" ' + ((property.type == 'string') ? 'maxlength="' + property.max + '" ' : '') + '/>';
+			return $('<input>')
+				.attr('type', 'text')
+				.attr('name=', property.name)
+				.attr('maxlength', (property.type == 'string') ? property.max : 0);
 			
 		case 'text':
-			return '<textarea name="' + property.name + '"></textarea>';
+			return $('<textarea>')
+				.attr('name', property.name);
 			
 		case 'boolean':
-			return '<input type="checkbox" name="' + property.name + '" value="1" />';
+			return $('<input>')
+				.attr('type', 'checkbox')
+				.attr('name', property.name)
+				.value(1);
 			
 		case 'multiple':
+			var dom = $('<select>').attr('name', property.name)
 			$.each(property.options, function(index, option) {
-				options.push('<option value="' + option + '">' + option + '<\option>');
+				dom.append($('<option>')
+					.value(option)
+					.text(option)
+				);
 			});
-			return '<select name="' + property.name + '">' + options.join() + '</select>';
+			return dom;
 	
 		default:
-			alert('Error: unknown property!');
+			throw {
+				type: 'PropertyException',
+				message: 'Unknown property type'
+			};
 	}
 }

@@ -111,3 +111,7 @@ tbody tr td {
 .dialog {
 	display: none;
 }
+
+.ops {
+	text-align: right;
+}

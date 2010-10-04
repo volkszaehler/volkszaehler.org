@@ -32,7 +32,7 @@ function getUUIDs() {
 		return JSON.parse($.getCookie('uuids'));
 	}
 	else {
-		return new Array();
+		return new Array;
 	}
 }
 
@@ -44,11 +44,9 @@ function addUUID(uuid) {
 }
 
 function removeUUID(uuid) {
-	if (uuids.contains(uuid)) {
-		uuids.filter(function(value) {
-			return value != uuid;
-		});
-		$.setCookie('uuids', JSON.stringify(uuids));
+	if (vz.uuids.contains(uuid)) {
+		vz.uuids.remove(uuid);
+		$.setCookie('uuids', JSON.stringify(vz.uuids));
 	}
 }
 
@@ -57,7 +55,7 @@ function removeUUID(uuid) {
  * 
  * @todo remove after got backend handling working
  */
-function randomUUID() {
+function getRandomUUID() {
 	var s = [], itoh = '0123456789ABCDEF';
 
 	// make array of random hex digits. The UUID only has 32 digits in it, but we

@@ -1,5 +1,5 @@
 /**
- * Main javascript file
+ * Initialization and configuration of frontend
  *
  * @author Florian Ziegler <fz@f10-home.de>
  * @author Justin Otherguy <justin@justinotherguy.org>
@@ -31,14 +31,12 @@ const defaultInterval = 7*24*60*60*1000; // 1 week
 // volkszaehler.org object
 // holds all data and options for the frontend
 var vz = {
-	// storing entities
 	entities: new Array,
 	uuids: new Array,
+	data: new Array,
 
-	// parameter for json server
+	// timeinterval to request
 	to: new Date().getTime(),
-
-	//parameter for json server (last week)
 	from: new Date().getTime() - defaultInterval,
 		
 	options: {
@@ -90,6 +88,7 @@ $(document).ready(function() {
 	
 	// parse uuids from cookie
 	vz.uuids = getUUIDs();
+	console.log(vz.uuids);
 
 	// add optional uuid from url
 	if($.getUrlVar('uuid')) {
@@ -100,22 +99,21 @@ $(document).ready(function() {
 	window.setInterval(refreshWindow, 5000);
 	
 	// handle zooming & panning
-	var plot = $('#plot');
-	plot
+	$('#plot')
 		.bind("plotselected", function (event, ranges) {
 			vz.from = Math.floor(ranges.xaxis.from);
 			vz.to = Math.ceil(ranges.xaxis.to);
 			loadData();
 		})
 		/*.bind('plotpan', function (event, plot) {
-			var axes = plot.getAxes();
+			var axes = vz.plot.getAxes();
 			vz.from = Math.floor(axes.xaxis.min);
 			vz.to = Math.ceil(axes.xaxis.max);
 			vz.options.plot.yaxis.min = axes.yaxis.min;
 			vz.options.plot.yaxis.max = axes.yaxis.max;
 		})*/
 		.bind('plotzoom', function (event, plot) {
-			var axes = plot.getAxes();
+			var axes = vz.plot.getAxes();
 			vz.from = Math.floor(axes.xaxis.min);
 			vz.to = Math.ceil(axes.xaxis.max);
 			//vz.options.plot.yaxis.min = axes.yaxis.min;
@@ -125,7 +123,7 @@ $(document).ready(function() {
 			loadData();
 		})
 		.bind('mouseup', function(event) {
-			loadData();
+			//loadData();
 		});
 	
 	loadEntities();
