@@ -74,10 +74,10 @@ var vz = {
 				timeformat: '%d.%b %h:%M',
 				monthNames: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez']
 			},
-			yaxis: {
-				min: 0,
-				zoomRange: [1, null]	// dont scale yaxis when zooming
-			},
+			//yaxis: {
+				//min: 0,
+				//zoomRange: [1, null]	// dont scale yaxis when zooming
+			//},
 			selection: { mode: 'x' },
 			//crosshair: { mode: 'x' },
 			grid: { hoverable: true, autoHighlight: false },
