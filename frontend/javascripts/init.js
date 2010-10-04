@@ -74,10 +74,7 @@ var vz = {
 				timeformat: '%d.%b %h:%M',
 				monthNames: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez']
 			},
-			//yaxis: {
-				//min: 0,
-				//zoomRange: [1, null]	// dont scale yaxis when zooming
-			//},
+			yaxis: { },
 			selection: { mode: 'x' },
 			//crosshair: { mode: 'x' },
 			grid: { hoverable: true, autoHighlight: false },
@@ -122,6 +119,8 @@ $(document).ready(function() {
 		.bind("plotselected", function (event, ranges) {
 			vz.from = Math.floor(ranges.xaxis.from);
 			vz.to = Math.ceil(ranges.xaxis.to);
+			vz.options.plot.yaxis.min = 0;
+			vz.options.plot.yaxis.max = null;	// autoscaling
 			vz.data.load();
 		})
 		/*.bind('plotpan', function (event, plot) {
@@ -135,10 +134,8 @@ $(document).ready(function() {
 			var axes = vz.plot.getAxes();
 			vz.from = Math.floor(axes.xaxis.min);
 			vz.to = Math.ceil(axes.xaxis.max);
-			//vz.options.plot.yaxis.min = axes.yaxis.min;
-			//vz.options.plot.yaxis.max = axes.yaxis.max;
-			vz.options.plot.yaxis.min = 0;
-			vz.options.plot.yaxis.max = null;	// autoscaling
+			vz.options.plot.yaxis.min = axes.yaxis.min;
+			vz.options.plot.yaxis.max = axes.yaxis.max;
 			vz.data.load();
 		})
 		.bind('mouseup', function(event) {
