@@ -25,7 +25,8 @@
  */
 
 /**
- * Entity
+ * Entity constructor
+ * @todo add validation
  */
 var Entity = function(json) {
 	for (var i in json) {
@@ -48,9 +49,8 @@ var Entity = function(json) {
 
 /**
  * Show and edit entity details
- * @param entity
  */
-Entity.prototype.showDetails = function(entity) {
+Entity.prototype.showDetails = function() {
 	$('<div>')
 	.addClass('details')
 	.append(this.getDOM())
@@ -63,10 +63,9 @@ Entity.prototype.showDetails = function(entity) {
 /**
  * Show from for new Channel
  * 
- * @param type
- * @todo
+ * @todo implement/test
  */
-Entity.prototype.getDOM = function(type) {
+Entity.prototype.getDOM = function() {
 	var properties = $('<table><thead><th>Key</th><th>Value</th></thead></table');
 	
 	$.each(entity, function(key, value) {
@@ -106,7 +105,12 @@ Entity.prototype.getDOM = function(type) {
 	// TODO optional properties
 };
 
-Entity.prototype.validate = function(entity) {
+/**
+ * Validate Entity for required and optional properties and their values
+ * @return boolean
+ * @todo implement/test
+ */
+Entity.prototype.validate = function() {
 	var def = getDefinition(vz.definitions.entities, entity.type);
 	
 	def.required.each(function(index, property) {
@@ -123,6 +127,11 @@ Entity.prototype.validate = function(entity) {
 	return true;
 };
 
+/**
+ * Calls the callback function for the entity and all nested children
+ * 
+ * @param cb callback function
+ */
 Entity.prototype.each = function(cb, parent) {
 	cb(this, parent);
 	

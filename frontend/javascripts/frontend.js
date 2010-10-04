@@ -119,7 +119,7 @@ vz.refresh = function() {
  */
 vz.handleControls = function () {
 	var delta = vz.to - vz.from;
-	var middle = Math.round(vz.from + delta/2);
+	var middle = vz.from + delta/2;
 	
 	switch(this.value) {
 		case 'move_last':
@@ -137,13 +137,13 @@ vz.handleControls = function () {
 			break;
 		
 		case 'zoom_reset':
-			vz.from = middle - Math.floor(defaultInterval/2);
-			vz.to =  middle + Math.ceil(defaultInterval/2);
+			vz.from = middle - efaultInterval/2;
+			vz.to =  middle + defaultInterval/2;
 			break;
 			
 		case 'zoom_in':
-			vz.from += Math.floor(delta/4);
-			vz.to -= Math.ceil(delta/4);
+			vz.from += delta/4;
+			vz.to -= delta/4;
 			break;
 			
 		case 'zoom_out':
@@ -215,12 +215,12 @@ vz.entities.show = function() {
 				.append($('<td>'))	// avg
 				.append($('<td>')	// operations
 					.addClass('ops')
-					.append($('<input>')
+					/*.append($('<input>')
 						.attr('type', 'image')
 						.attr('src', 'images/information.png')
 						.attr('alt', 'details')
 						.bind('click', entity, function(event) { event.data.showDetails(); })
-					)
+					)*/
 				);
 					
 			if (parent == null) {
@@ -250,14 +250,14 @@ vz.entities.show = function() {
 };
 
 /**
- * Load json data with given time window
+ * Load json data from the backend
  */
 vz.data.load = function() {
 	vz.data.clear();
 	vz.entities.each(function(index, entity) {
 		entity.each(function(entity, parent) {
 			if (entity.active && entity.type != 'group') {
-				$.getJSON(vz.options.backendUrl + '/data/' + entity.uuid + '.json', { from: vz.from, to: vz.to, tuples: vz.options.tuples }, ajaxWait(function(json) {
+				$.getJSON(vz.options.backendUrl + '/data/' + entity.uuid + '.json', { from: Math.floor(vz.from), to: Math.ceil(vz.to), tuples: vz.options.tuples }, ajaxWait(function(json) {
 					vz.data.push({
 						data: json.data[0].tuples,	// TODO check uuid
 						color: entity.color
@@ -268,6 +268,9 @@ vz.data.load = function() {
 	});
 };
 
+/**
+ * Draws plot to container
+ */
 vz.drawPlot = function () {
 	vz.options.plot.xaxis.min = vz.from;
 	vz.options.plot.xaxis.max = vz.to;

@@ -24,8 +24,8 @@
  * volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * Cookie & UUID related functions
+/**
+ * Read UUIDs from cookie and add them to the array
  */
 vz.uuids.parseCookie = function() {
 	if ($.getCookie('uuids')) {
@@ -35,6 +35,9 @@ vz.uuids.parseCookie = function() {
 	}
 };
 	
+/**
+ * Add given UUID and update cookie
+ */
 vz.uuids.add = function(uuid) {
 	if (vz.uuids.validate(uuid)) {
 		if (!vz.uuids.contains(uuid)) {
@@ -50,9 +53,13 @@ vz.uuids.add = function(uuid) {
 	}
 };
 	
+/**
+ * Remove UUID and update cookie
+ */
 vz.uuids.remove = function(uuid) {
+	console.log(vz.uuids.contains(uuid));
 	if (vz.uuids.contains(uuid)) {
-		vz.uuids.remove(uuid);
+		vz.uuids.splice(this.indexOf(uuid), 1);	// remove uuid from array
 		$.setCookie('uuids', JSON.stringify(vz.uuids));
 	}
 	else {
@@ -60,6 +67,9 @@ vz.uuids.remove = function(uuid) {
 	}
 };
 	
+/**
+ * Validate UUID
+ */
 vz.uuids.validate = function(uuid) {
 	return new Boolean(uuid.match(/^[0-9a-zA-Z]{8}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{12}$/));
 };

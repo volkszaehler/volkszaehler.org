@@ -107,6 +107,13 @@ $(document).ready(function() {
 		vz.uuids.add($.getUrlVar('uuid'));
 	}
 	
+	if (vz.uuids.length == 0) {
+		$('#addUUID').dialog({
+			title: 'UUID hinzufügen',
+			width: 400
+		});
+	}
+	
 	// start auto refresh timer
 	window.setInterval(vz.refresh, 5000);
 	

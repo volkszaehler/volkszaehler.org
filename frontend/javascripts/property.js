@@ -25,12 +25,18 @@
  */
 
 /**
- * Property
+ * Property constructor
  */
 var Property = function(key, value) {
 	
 };
 
+/**
+ * Validate value
+ * @param value
+ * @return boolean
+ * @todo implement/test
+ */
 Property.prototype.validate = function(value) {
 	switch (property.type) {
 		case 'string':
@@ -60,6 +66,10 @@ Property.prototype.validate = function(value) {
 	}
 };
 
+/**
+ * 
+ * @todo implement/test
+ */
 Property.prototype.getDOM = function() {
 	switch (property.type) {
 		case 'string':
