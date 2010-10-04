@@ -27,50 +27,39 @@
 /*
  * Cookie & UUID related functions
  */
-function getUUIDs() {
+vz.uuids.parseCookie = function() {
 	if ($.getCookie('uuids')) {
-		return JSON.parse($.getCookie('uuids'));
+		$.each(JSON.parse($.getCookie('uuids')), function(index, uuid) {
+			vz.uuids.push(uuid);
+		});
+	}
+};
+	
+vz.uuids.add = function(uuid) {
+	if (vz.uuids.validate(uuid)) {
+		if (!vz.uuids.contains(uuid)) {
+			vz.uuids.push(uuid);
+			$.setCookie('uuids', JSON.stringify(vz.uuids));
+		}
+		else {
+			throw 'UUID already added';
+		}
 	}
 	else {
-		return new Array;
+		throw 'Invalid UUID';
 	}
-}
-
-function addUUID(uuid) {
-	if (!vz.uuids.contains(uuid)) {
-		vz.uuids.push(uuid);
-		$.setCookie('uuids', JSON.stringify(vz.uuids));
-	}
-}
-
-function removeUUID(uuid) {
+};
+	
+vz.uuids.remove = function(uuid) {
 	if (vz.uuids.contains(uuid)) {
 		vz.uuids.remove(uuid);
 		$.setCookie('uuids', JSON.stringify(vz.uuids));
 	}
-}
-
-/**
- * Create and return a "version 4" RFC-4122 UUID string
- * 
- * @todo remove after got backend handling working
- */
-function getRandomUUID() {
-	var s = [], itoh = '0123456789ABCDEF';
-
-	// make array of random hex digits. The UUID only has 32 digits in it, but we
-	// allocate an extra items to make room for the '-'s we'll be inserting.
-	for (var i = 0; i <36; i++) s[i] = Math.floor(Math.random()*0x10);
-
-	// conform to RFC-4122, section 4.4
-	s[14] = 4;  // Set 4 high bits of time_high field to version
-	s[19] = (s[19] & 0x3) | 0x8;  // Specify 2 high bits of clock sequence
-
-	// convert to hex chars
-	for (var i = 0; i <36; i++) s[i] = itoh[s[i]];
-
-	// insert '-'s
-	s[8] = s[13] = s[18] = s[23] = '-';
-
-	return s.join('');
-}
+	else {
+		throw 'UUID unkown: ' + uuid;
+	}
+};
+	
+vz.uuids.validate = function(uuid) {
+	return new Boolean(uuid.match(/^[0-9a-zA-Z]{8}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{12}$/));
+};

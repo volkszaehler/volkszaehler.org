@@ -39,58 +39,24 @@ function ajaxWait(callback, finished, identifier) {
 	};
 }
 
-function eachRecursive(array, callback, parent) {
-	$.each(array, function(index, value) {
-		callback(value, parent);
-		
-		if (value.children) {	// has children?
-			eachRecursive(value.children, callback, value);	// call recursive
-		}
-	});
+Array.prototype.indexOf = function(n) {
+	for (var i = 0, l = this.length; i < l; i++)
+		if (n == this[i]) return i;
+};
+
+Array.prototype.remove = function(n) {
+	this.splice(this.indexOf(n), 1);
+};
+
+Array.prototype.each = function(cb) {
+	for (var i = 0, l = this.length; i < l; i++)
+		cb(i, this[i]);
+};
+
+Array.prototype.contains = function(n) {
+	return this.indexOf(n) !== undefined;
+};
+
+Array.prototype.clear = function() {
+	this.length = 0;
 }
-
-/**
- * Checks if value of part of the array
- * 
- * @param needle the value to search for
- * @return boolean
- */
-Array.prototype.contains = function(needle) {
-	return this.key(needle) ? true : false;
-};
-
-/**
- * Calculates the diffrence between this and another Array
- * 
- * @param compare the Array to compare with
- * @return array
- */
-Array.prototype.diff = function(compare) {
-	return this.filter(function(elem) {
-		return !compare.contains(elem);
-	});
-};
-
-/**
- * Find the key to an given value
- * 
- * @param needle the value to search for
- * @return integer
- */
-Array.prototype.key = function(needle) {
-	for (var i=0; i<this.length; i++) {
-		if (this[i] == needle) {
-			return i;
-		}
-	}
-};
-
-/**
- * Remove a value from the array
- */
-Array.prototype.remove = function(needle) {
-	var key = this.key(needle);
-	if (key) {
-		this.splice(key, 1);
-	}
-};

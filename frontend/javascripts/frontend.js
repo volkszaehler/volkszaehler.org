@@ -31,7 +31,7 @@
 /**
  * Initialize the WUI (Web User Interface)
  */
-function initInterface() {
+vz.initInterface = function() {
 	// make the whole frontend resizable
 	/*$('#content').resizable({
 		alsoResize: $('#plot'),
@@ -67,13 +67,13 @@ function initInterface() {
 	
 	// add UUID
 	$('#addUUID input[type=button]').click(function() {
-		addUUID($('#addUUID input[type=text]').val());
+		vz.uuids.add($('#addUUID input[type=text]').val());
 		$('#addUUID').dialog('close');
-		loadEntities();
+		vz.entities.load();
 	})
 	
 	// bind plot actions
-	$('#move input').click(handleControls);
+	$('#move input').click(vz.handleControls);
 	
 	// options
 	/*$('input[name=trendline]').attr('checked', vz.options.plot.seriesDefaults.trendline.show).change(function() {
@@ -100,24 +100,24 @@ function initInterface() {
 		max: 60000,
 		step: 500
 	});
-}
+};
 
 /**
  * Refresh plot with new data
  */
-function refreshWindow() {
+vz.refresh = function() {
 	if ($('input[name=refresh]').attr('checked')) {
 		var delta = vz.to - vz.from;
 		vz.to = new Date().getTime();	// move plot
 		vz.from = vz.to - delta;		// move plot
 		loadData();
 	}
-}
+};
 
 /**
  * Move & zoom in the plotting area
  */
-function handleControls() {
+vz.handleControls = function () {
 	var delta = vz.to - vz.from;
 	var middle = Math.round(vz.from + delta/2);
 	
@@ -155,29 +155,122 @@ function handleControls() {
 			// do nothing; just loadData()
 	}
 	
-	loadData();
-}
+	vz.data.load();
+};
+
+
+/**
+ * Get all entity information from backend
+ */
+vz.entities.load = function() {
+	vz.entities.clear();
+	vz.uuids.each(function(index, value) {
+		$.getJSON(vz.options.backendUrl + '/entity/' + value + '.json', ajaxWait(function(json) {
+			vz.entities.push(new Entity(json.entity));
+		}, vz.entities.show, 'information'));
+	});
+};
+
+/**
+ * Create nested entity list
+ * @param data
+ */
+vz.entities.show = function() {
+	$('#entities tbody').empty();
+	
+	var i = 0;
+	vz.entities.each(function(index, entity) {	// loop through all entities
+		entity.each(function(entity, parent) {	// loop through all children of entities (recursive)
+			entity.active = true;	// TODO active by default or via backend property?
+			entity.color = vz.options.plot.colors[i++ % vz.options.plot.colors.length];
+		
+			var row = $('<tr>')
+				.addClass((parent) ? 'child-of-entity-' + parent.uuid : '')
+				.attr('id', 'entity-' + entity.uuid)
+				.append($('<td>')
+					.css('background-color', entity.color)
+					.css('width', 19)
+					.append($('<input>')
+						.attr('type', 'checkbox')
+						.attr('checked', entity.active)
+						.bind('change', entity, function(event) {
+							event.data.active = $(this).attr('checked');
+							vz.data.load();
+						})
+					)
+				)
+				.append($('<td>')
+					.css('width', 20)
+				)
+				.append($('<td>')
+					.append($('<span>')
+						.text(entity.title)
+						.addClass('indicator')
+						.addClass((entity.type == 'group') ? 'group' : 'channel')
+					)
+				)
+				.append($('<td>').text(entity.type))
+				.append($('<td>'))	// min
+				.append($('<td>'))	// max
+				.append($('<td>'))	// avg
+				.append($('<td>')	// operations
+					.addClass('ops')
+					.append($('<input>')
+						.attr('type', 'image')
+						.attr('src', 'images/information.png')
+						.attr('alt', 'details')
+						.bind('click', entity, function(event) { event.data.showDetails(); })
+					)
+				);
+					
+			if (parent == null) {
+				$('td.ops', row).prepend($('<input>')
+					.attr('type', 'image')
+					.attr('src', 'images/delete.png')
+					.attr('alt', 'delete')
+					.bind('click', entity, function(event) {
+						vz.uuids.remove(event.data.uuid);
+						vz.entities.load();
+					})
+				);
+			}
+			
+			$('#entities tbody').append(row);
+		});
+	});
+	
+	// http://ludo.cubicphuse.nl/jquery-plugins/treeTable/doc/index.html
+	$('#entities table').treeTable({
+		treeColumn: 2,
+		clickableNodeNames: true
+	});
+	
+	// load data and show plot
+	vz.data.load();
+};
 
 /**
  * Load json data with given time window
  */
-function loadData() {
-	eachRecursive(vz.entities, function(entity, parent) {
-		if (entity.active && entity.type != 'group') {
-			$.getJSON(vz.options.backendUrl + '/data/' + entity.uuid + '.json', { from: vz.from, to: vz.to, tuples: vz.options.tuples }, ajaxWait(function(json) {
-				vz.data.push({
-					data: json.data[0].tuples,	// TODO check uuid
-					color: entity.color
-				});
-			}, drawPlot, 'data'));
-		}
+vz.data.load = function() {
+	vz.data.clear();
+	vz.entities.each(function(index, entity) {
+		entity.each(function(entity, parent) {
+			if (entity.active && entity.type != 'group') {
+				$.getJSON(vz.options.backendUrl + '/data/' + entity.uuid + '.json', { from: vz.from, to: vz.to, tuples: vz.options.tuples }, ajaxWait(function(json) {
+					vz.data.push({
+						data: json.data[0].tuples,	// TODO check uuid
+						color: entity.color
+					});
+				}, vz.drawPlot, 'data'));
+			}
+		});
 	});
-}
+};
 
-function drawPlot() {
+vz.drawPlot = function () {
 	vz.options.plot.xaxis.min = vz.from;
 	vz.options.plot.xaxis.max = vz.to;
 	
 	vz.plot = $.plot($('#plot'), vz.data, vz.options.plot);
-}
-
+};

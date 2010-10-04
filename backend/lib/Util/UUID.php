@@ -116,26 +116,12 @@ class UUID {
 	}
 
 	/**
-	 * Performant validation of UUID's
-	 *
-	 * Replaces preg_match('/[a-f0-9\-]{36}/', $uuid);
+	 * Validation of UUID's
 	 *
 	 * @param string $uuid
-	 * @param boolen $short whether to allow abbreviated form of UUID's or not
 	 */
-	public static function validate($uuid, $short = FALSE) {
-		$len = strlen($uuid);
-
-		for ($i = 0; $i < $len; $i++) {
-			$char = $uuid[$i];
-			$ord = ord($char);
-
-			if (($ord > 57 || $ord < 48) && ($ord > 70 || $ord < 65) && ($ord > 102 || $ord < 97) && $ord != 45) {
-				return FALSE;	// char not allowed
-			}
-		}
-
-		return ($short) ? $len <= 36 : $len == 36;	// check for strlen
+	public static function validate($uuid) {
+		return (boolean) preg_match('/^[0-9a-zA-Z]{8}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{12}$/', $uuid);
 	}
 
 	/**

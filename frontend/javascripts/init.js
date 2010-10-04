@@ -29,11 +29,24 @@
 const defaultInterval = 7*24*60*60*1000; // 1 week
 
 // volkszaehler.org object
-// holds all data and options for the frontend
+// holds all data, options and functions for the frontend
+// acts like a namespace (we dont want to pollute the global one)
 var vz = {
+	// entity information & properties
 	entities: new Array,
+	
+	// known UUIDs in the browser
 	uuids: new Array,
+	
+	// data for plot
 	data: new Array,
+	
+	// definitions of entities & properties
+	// for validation, translation etc..
+	definitions: {
+		properties: {},
+		entities: {}
+	},
 
 	// timeinterval to request
 	to: new Date().getTime(),
@@ -65,8 +78,8 @@ var vz = {
 				min: 0,
 				zoomRange: [1, null]	// dont scale yaxis when zooming
 			},
-			selection: { mode: "x" },
-			//crosshair: { mode: "x" },
+			selection: { mode: 'x' },
+			//crosshair: { mode: 'x' },
 			grid: { hoverable: true, autoHighlight: false },
 			zoom: {
 				interactive: true,
@@ -84,26 +97,25 @@ var vz = {
 // this is where it all starts...
 $(document).ready(function() {
 	// initialize user interface
-	initInterface();
+	vz.initInterface();
 	
 	// parse uuids from cookie
-	vz.uuids = getUUIDs();
-	console.log(vz.uuids);
-
+	vz.uuids.parseCookie();
+	
 	// add optional uuid from url
 	if($.getUrlVar('uuid')) {
-		addUUID($.getUrlVar('uuid'));
+		vz.uuids.add($.getUrlVar('uuid'));
 	}
 	
 	// start auto refresh timer
-	window.setInterval(refreshWindow, 5000);
+	window.setInterval(vz.refresh, 5000);
 	
 	// handle zooming & panning
 	$('#plot')
 		.bind("plotselected", function (event, ranges) {
 			vz.from = Math.floor(ranges.xaxis.from);
 			vz.to = Math.ceil(ranges.xaxis.to);
-			loadData();
+			vz.data.load();
 		})
 		/*.bind('plotpan', function (event, plot) {
 			var axes = vz.plot.getAxes();
@@ -120,11 +132,11 @@ $(document).ready(function() {
 			//vz.options.plot.yaxis.max = axes.yaxis.max;
 			vz.options.plot.yaxis.min = 0;
 			vz.options.plot.yaxis.max = null;	// autoscaling
-			loadData();
+			vz.data.load();
 		})
 		.bind('mouseup', function(event) {
 			//loadData();
 		});
 	
-	loadEntities();
+	vz.entities.load();
 });
