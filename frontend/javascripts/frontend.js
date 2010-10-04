@@ -32,6 +32,13 @@
  * Initialize the WUI (Web User Interface)
  */
 function initInterface() {
+	/*$('#content').resizable({
+		alsoResize: $('#plot'),
+		//ghost: true,
+		//animate: true,
+		autoHide: true
+	});*/
+	
 	$('#accordion h3').click(function() {
 		$(this).next().toggle('fast');
 		return false;
@@ -54,13 +61,13 @@ function initInterface() {
 	});
 	
 	// bind controls
-	$('#move input').click(panPlot);
+	$('#move input').click(handleControl);
 	
 	// options
-	$('input[name=trendline]').attr('checked', vz.options.plot.seriesDefaults.trendline.show).change(function() {
+	/*$('input[name=trendline]').attr('checked', vz.options.plot.seriesDefaults.trendline.show).change(function() {
 		vz.options.plot.seriesDefaults.trendline.show = $(this).attr('checked');
 		drawPlot();
-	});
+	});*/
 	
 	$('input[name=backendUrl]').val(vz.options.backendUrl).change(function() {
 		vz.options.backendUrl = $(this).val();
@@ -88,6 +95,9 @@ function initInterface() {
  */
 function refreshWindow() {
 	if ($('input[name=refresh]').attr('checked')) {
+		var delta = vz.to - vz.from;
+		vz.to = new Date().getTime();	// move plot
+		vz.from = vz.to - delta;		// move plot
 		loadData();
 	}
 }
@@ -95,12 +105,13 @@ function refreshWindow() {
 /**
  * Move & zoom in the plotting area
  */
-function panPlot() {
-	delta = vz.to - vz.from;
+function handleControl() {
+	var delta = vz.to - vz.from;
+	var middle = Math.round(vz.from + delta/2);
 	
 	switch(this.value) {
 		case 'move_last':
-			vz.to = (new Date()).getTime();
+			vz.to = new Date().getTime();
 			vz.from = vz.to - delta;
 			break;
 			
@@ -114,15 +125,18 @@ function panPlot() {
 			break;
 		
 		case 'zoom_reset':
-			// TODO
+			vz.from = middle - Math.floor(defaultInterval/2);
+			vz.to =  middle + Math.ceil(defaultInterval/2);
 			break;
 			
 		case 'zoom_in':
-			// TODO
+			vz.from += Math.floor(delta/4);
+			vz.to -= Math.ceil(delta/4);
 			break;
 			
 		case 'zoom_out':
-			// TODO
+			vz.from -= delta;
+			vz.to += delta;
 			break;
 			
 		case 'refresh':
@@ -146,12 +160,19 @@ function loadData() {
 }
 
 function drawPlot() {
-	vz.plot.axes.xaxis.min = vz.from;
-	vz.plot.axes.xaxis.max = vz.to;
-	
-	vz.plot.replot({
-		resetAxes: 'yaxis',
-		clear: true
+	var data = new Array;
+	eachRecursive(vz.entities, function(entity, parent) {
+		if (entity.active && entity.type != 'group') {
+			data.push({
+				data: entity.data.tuples,
+				color: entity.color
+			});
+		}
 	});
+	
+	vz.options.plot.xaxis.min = vz.from;
+	vz.options.plot.xaxis.max = vz.to;
+	
+	vz.plot = $.plot($('#plot'), data, vz.options.plot);
 }
 

@@ -25,6 +25,9 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
+// default time interval to show
+const defaultInterval = 7*24*60*60*1000; // 1 week
+
 // volkszaehler.org object
 // holds all data and options for the frontend
 var vz = {
@@ -35,57 +38,45 @@ var vz = {
 	// parameter for json server
 	to: new Date().getTime(),
 
-	//parameter for json server (last 24 hours)
-	from: new Date().getTime() - 24*60*60*1000,
+	//parameter for json server (last week)
+	from: new Date().getTime() - defaultInterval,
 		
 	options: {
 		backendUrl: '../backend/index.php',
 		tuples: 300,
 		plot: {
-			series: [],
-			seriesColors: ['#83CAFF', '#7E0021', '#579D1C', '#FFD320', '#FF420E', '#004586', '#0084D1', '#C5000B', '#FF950E', '#4B1F6F', '#AECF00', '#314004'],
-			cursor: {
-				zoom: true,
-				showTooltip: true,
-				constrainZoomTo: 'x',
-				showVerticalLine: true
-			},
-			seriesDefaults: {
-				lineWidth: 1,
-				showMarker: true,
-				showLine: false,
-				markerOptions: {
-					style: 'dash',
-					shadow: false,
-					size: 2
-				},
-				trendline: {
+			colors: ['#83CAFF', '#7E0021', '#579D1C', '#FFD320', '#FF420E', '#004586', '#0084D1', '#C5000B', '#FF950E', '#4B1F6F', '#AECF00', '#314004'],
+			series: {
+				lines: { show: false },
+				points: {
 					show: true,
-					shadow: false,
-					color: 'red'
-				}
-			},
-			axes: {
-				yaxis: {
-					autoscale: true,
-					label: 'Leistung (Watt)',
-					tickOptions: {
-						formatString: '%.3f'
-					},
-					labelRenderer: $.jqplot.CanvasAxisLabelRenderer
-				},
-				xaxis: {
-					autoscale: true,
-					tickOptions: {
-						formatString: '%d.%m.%y %H:%M',
-						angle: -35
-					},
-					pad: 1,
-					renderer: $.jqplot.DateAxisRenderer,
-					rendererOptions: {
-						tickRenderer: $.jqplot.CanvasAxisTickRenderer
+					radius: 1,
+					//symbol: 'square'
+					symbol: function(ctx, x, y, radius, shadow) {
+						ctx.rect(x, y, radius, radius);
 					}
 				}
+			},
+			legend: { show: false },
+			xaxis: {
+				mode: 'time',
+				timeformat: '%d.%b %h:%M',
+				monthNames: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez']
+			},
+			yaxis: {
+				min: 0,
+				zoomRange: [1, null]	// dont scale yaxis when zooming
+			},
+			selection: { mode: "x" },
+			//crosshair: { mode: "x" },
+			grid: { hoverable: true, autoHighlight: false },
+			zoom: {
+				interactive: true,
+				frameRate: null
+			},
+			pan: {
+				interactive: false,
+				frameRate: 20
 			}
 		}
 	}
@@ -108,17 +99,34 @@ $(document).ready(function() {
 	// start auto refresh timer
 	window.setInterval(refreshWindow, 5000);
 	
-	// initialize plot
-	vz.plot = $.jqplot('plot', vz.options.plot);
+	// handle zooming & panning
+	var plot = $('#plot');
+	plot
+		.bind("plotselected", function (event, ranges) {
+			vz.from = Math.floor(ranges.xaxis.from);
+			vz.to = Math.ceil(ranges.xaxis.to);
+			loadData();
+		})
+		/*.bind('plotpan', function (event, plot) {
+			var axes = plot.getAxes();
+			vz.from = Math.floor(axes.xaxis.min);
+			vz.to = Math.ceil(axes.xaxis.max);
+			vz.options.plot.yaxis.min = axes.yaxis.min;
+			vz.options.plot.yaxis.max = axes.yaxis.max;
+		})*/
+		.bind('plotzoom', function (event, plot) {
+			var axes = plot.getAxes();
+			vz.from = Math.floor(axes.xaxis.min);
+			vz.to = Math.ceil(axes.xaxis.max);
+			//vz.options.plot.yaxis.min = axes.yaxis.min;
+			//vz.options.plot.yaxis.max = axes.yaxis.max;
+			vz.options.plot.yaxis.min = 0;
+			vz.options.plot.yaxis.max = null;	// autoscaling
+			loadData();
+		})
+		.bind('mouseup', function(event) {
+			loadData();
+		});
 	
-	// zoom events
-	vz.plot.target.bind('jqplotZoom', function(event, gridpos, datapos, plot, cursor) {
-		//alert('zoomed'); // TODO refresh of data
-	});
-	
-	vz.plot.target.bind('jqplotResetZoom', function(event, plot, cursor) {
-		alert('zoom reset'); // TODO refresh of data
-	});
-
 	loadEntities();
 });

@@ -45,10 +45,7 @@ function showEntities() {
 	var i = 0;
 	eachRecursive(vz.entities, function(entity, parent) {
 		entity.active = true;	// TODO active by default or via backend property?
-		entity.color = vz.options.plot.seriesColors[i++ % vz.options.plot.seriesColors.length];
-		
-		vz.plot.series[vz.plot.series.length] = vz.plot.seriesDefault; 
-		
+		entity.color = vz.options.plot.colors[i++ % vz.options.plot.colors.length];
 		
 		$('#entities tbody').append(
 			$('<tr>')
@@ -137,7 +134,7 @@ function showEntityDetails(entity) {
 	});
 }
 
-function validateChannel(form) {
+function validateEntity(form) {
 	var entity = getDefinition(entities, form.type.value);
 	
 	$.each(entity.required, function(index, property) {
@@ -185,56 +182,12 @@ function validateProperty(property, value) {
 }
 
 /**
- * Get entities from backend
- */
-function fetchEntities() {
-	$.getJSON(backend + '/capabilities/definition/entity.json', function(data) {
-		entities = data.definition.entity;
-		
-		// Add channel types to dropdown
-		$('#new select').empty();
-		$.each(entities, function(index, entity) {
-			if (entity.model == 'Volkszaehler\\Model\\Channel') {
-				$('#new select').append('<option value="' + entity.name + '">' + entity.translation.de + '</option>');
-			}
-		});
-		
-		// show related properties
-		$('#new select').trigger('change');
-	});
-}
-
-/**
- * Get properties from backend
- */
-function fetchProperties() {
-	$.getJSON(backend + '/capabilities/definition/property.json', function(data) {
-		properties = data.definition.property;
-		
-		// show related properties
-		$('#new select').trigger('change');
-	});
-}
-
-/**
- * Get channels from controller
- */
-function fetchChannels() {
-	$.getJSON(controller, function(data) {
-		channels = data;
-		
-		// add fetched channels to table
-		showChannels();
-	});
-}
-
-/**
  * Show from for new Channel
  * 
  * @param type
  * @return
  */
-function showEntityForm(type) {
+function getEntityDOM(type) {
 	$('#properties').empty();
 	var entity = getDefinition(entities, type);
 	
@@ -255,66 +208,7 @@ function showEntityForm(type) {
 	});
 }
 
-/**
- * @param uuid
- * @return
- */
-function deleteChannel(uuid) {
-	$.getJSON(controller, { operation: 'delete', uuid: uuid }, function(data) {
-		channels = data;
-		showChannels();
-	});
-}
-
-function addChannel(form) {
-	var uuid = false;
-	
-	if (validateChannel(form)) {
-		//if (uuid = addChannelBackend(form)) {
-			if (addChannelController(form, randomUUID)) {	//uuid)) {
-				fetchChannels();
-				return true;
-			}
-			else {
-				//removeChannelBackend(uuid);
-				alert('Error: adding channel to controller');
-			}
-		/*}
-		else {
-			alert('Error: adding channel to backend');
-		}*/
-	}
-	else {
-		alert('Please correct your input');
-	}
-}
-
-function addChannelController(form, uuid) {
-	$.getJSON(controller, { operation: 'add', uuid: uuid, port: form.port.value, type: form.type.value }, function(data) {
-		channels = data;
-		showChannels();
-	});
-	
-	return true; // TODO
-}
-
-function addChannelBackend(form) {
-	$.getJSON(backend + '/channel.json', { operation: 'add' }, function(data) {
-		
-	});
-	
-	return true; // TODO
-}
-
-function getDefinition(definition, type) {
-	for (var i in definition) {
-		if (definition[i].name == type) {
-			return definition[i];
-		}
-	}
-}
-
-function getPropertyForm(property) {
+function getPropertyDOM(property) {
 	switch (property.type) {
 		case 'string':
 		case 'float':
