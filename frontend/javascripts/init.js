@@ -38,8 +38,13 @@ var vz = {
 	// known UUIDs in the browser
 	uuids: new Array,
 	
-	// data for plot
-	data: new Array,
+	// plot including data
+	plot: {
+		// data for plot
+		data: new Array,
+		// container for flot instance
+		flot: { }
+	},
 	
 	// definitions of entities & properties
 	// for validation, translation etc..

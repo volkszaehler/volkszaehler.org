@@ -70,7 +70,7 @@ vz.initInterface = function() {
 		vz.uuids.add($('#addUUID input[type=text]').val());
 		$('#addUUID').dialog('close');
 		vz.entities.load();
-	});t
+	});
 	
 	// bind plot actions
 	$('#move input').click(vz.handleControls);
@@ -78,7 +78,7 @@ vz.initInterface = function() {
 	// options
 	/*$('input[name=trendline]').attr('checked', vz.options.plot.seriesDefaults.trendline.show).change(function() {
 		vz.options.plot.seriesDefaults.trendline.show = $(this).attr('checked');
-		drawPlot();
+		vz.plot.draw();
 	});*/
 	
 	$('input[name=backendUrl]').val(vz.options.backendUrl).change(function() {
@@ -102,33 +102,35 @@ vz.initInterface = function() {
 	});
 };
 
+/**
+ * Bind events to handle plot zooming & panning
+ */
 vz.bindEvents = function() {
-	// handle zooming & panning
 	$('#plot')
 		.bind("plotselected", function (event, ranges) {
 			vz.from = ranges.xaxis.from;
 			vz.to = ranges.xaxis.to;
 			vz.options.plot.yaxis.min = 0;
 			vz.options.plot.yaxis.max = null;	// autoscaling
-			vz.data.load();
+			vz.plot.data.load();
 		})
 		/*.bind('plotpan', function (event, plot) {
-			var axes = vz.plot.getAxes();
+			var axes = plot.getAxes();
 			vz.from = axes.xaxis.min;
 			vz.to = axes.xaxis.max;
 			vz.options.plot.yaxis.min = axes.yaxis.min;
 			vz.options.plot.yaxis.max = axes.yaxis.max;
 		})*/
 		/*.bind('mouseup', function(event) {
-			loadData();
+			vz.plot.data.load();
 		})*/
 		.bind('plotzoom', function (event, plot) {
-			var axes = vz.plot.getAxes();
+			var axes = plot.getAxes();
 			vz.from = axes.xaxis.min;
 			vz.to = axes.xaxis.max;
 			vz.options.plot.yaxis.min = axes.yaxis.min;
 			vz.options.plot.yaxis.max = axes.yaxis.max;
-			vz.data.load();
+			vz.plot.data.load();
 		});
 };
 
@@ -140,7 +142,7 @@ vz.refresh = function() {
 		var delta = vz.to - vz.from;
 		vz.to = new Date().getTime();	// move plot
 		vz.from = vz.to - delta;		// move plot
-		loadData();
+		vz.plot.data.load();
 	}
 };
 
@@ -185,7 +187,7 @@ vz.handleControls = function () {
 			// do nothing; just loadData()
 	}
 	
-	vz.data.load();
+	vz.plot.data.load();
 };
 
 
@@ -225,7 +227,7 @@ vz.entities.show = function() {
 						.attr('checked', entity.active)
 						.bind('change', entity, function(event) {
 							event.data.active = $(this).attr('checked');
-							vz.data.load();
+							vz.plot.data.load();
 						})
 					)
 				)
@@ -276,23 +278,23 @@ vz.entities.show = function() {
 	});
 	
 	// load data and show plot
-	vz.data.load();
+	vz.plot.data.load();
 };
 
 /**
  * Load json data from the backend
  */
-vz.data.load = function() {
-	vz.data.clear();
+vz.plot.data.load = function() {
+	vz.plot.data.clear();
 	vz.entities.each(function(index, entity) {
 		entity.each(function(entity, parent) {
 			if (entity.active && entity.type != 'group') {
 				$.getJSON(vz.options.backendUrl + '/data/' + entity.uuid + '.json', { from: Math.floor(vz.from), to: Math.ceil(vz.to), tuples: vz.options.tuples }, ajaxWait(function(json) {
-					vz.data.push({
+					vz.plot.data.push({
 						data: json.data[0].tuples,	// TODO check uuid
 						color: entity.color
 					});
-				}, vz.drawPlot, 'data'));
+				}, vz.plot.draw, 'data'));
 			}
 		});
 	});
@@ -301,9 +303,9 @@ vz.data.load = function() {
 /**
  * Draws plot to container
  */
-vz.drawPlot = function () {
+vz.plot.draw = function () {
 	vz.options.plot.xaxis.min = vz.from;
 	vz.options.plot.xaxis.max = vz.to;
 	
-	vz.plot = $.plot($('#plot'), vz.data, vz.options.plot);
+	vz.plot.flot = $.plot($('#plot'), vz.plot.data, vz.options.plot);
 };
