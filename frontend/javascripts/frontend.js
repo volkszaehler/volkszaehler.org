@@ -70,7 +70,7 @@ vz.initInterface = function() {
 		vz.uuids.add($('#addUUID input[type=text]').val());
 		$('#addUUID').dialog('close');
 		vz.entities.load();
-	})
+	});
 	
 	// bind plot actions
 	$('#move input').click(vz.handleControls);
@@ -100,6 +100,36 @@ vz.initInterface = function() {
 		max: 60000,
 		step: 500
 	});
+};
+
+vz.bindEvents = function() {
+	// handle zooming & panning
+	$('#plot')
+		.bind("plotselected", function (event, ranges) {
+			vz.from = Math.floor(ranges.xaxis.from);
+			vz.to = Math.ceil(ranges.xaxis.to);
+			vz.options.plot.yaxis.min = 0;
+			vz.options.plot.yaxis.max = null;	// autoscaling
+			vz.data.load();
+		})
+		/*.bind('plotpan', function (event, plot) {
+			var axes = vz.plot.getAxes();
+			vz.from = Math.floor(axes.xaxis.min);
+			vz.to = Math.ceil(axes.xaxis.max);
+			vz.options.plot.yaxis.min = axes.yaxis.min;
+			vz.options.plot.yaxis.max = axes.yaxis.max;
+		})*/
+		/*.bind('mouseup', function(event) {
+			loadData();
+		})*/
+		.bind('plotzoom', function (event, plot) {
+			var axes = vz.plot.getAxes();
+			vz.from = Math.floor(axes.xaxis.min);
+			vz.to = Math.ceil(axes.xaxis.max);
+			vz.options.plot.yaxis.min = axes.yaxis.min;
+			vz.options.plot.yaxis.max = axes.yaxis.max;
+			vz.data.load();
+		});
 };
 
 /**

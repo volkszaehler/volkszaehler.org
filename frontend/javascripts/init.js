@@ -114,33 +114,7 @@ $(document).ready(function() {
 	// start auto refresh timer
 	window.setInterval(vz.refresh, 5000);
 	
-	// handle zooming & panning
-	$('#plot')
-		.bind("plotselected", function (event, ranges) {
-			vz.from = Math.floor(ranges.xaxis.from);
-			vz.to = Math.ceil(ranges.xaxis.to);
-			vz.options.plot.yaxis.min = 0;
-			vz.options.plot.yaxis.max = null;	// autoscaling
-			vz.data.load();
-		})
-		/*.bind('plotpan', function (event, plot) {
-			var axes = vz.plot.getAxes();
-			vz.from = Math.floor(axes.xaxis.min);
-			vz.to = Math.ceil(axes.xaxis.max);
-			vz.options.plot.yaxis.min = axes.yaxis.min;
-			vz.options.plot.yaxis.max = axes.yaxis.max;
-		})*/
-		.bind('plotzoom', function (event, plot) {
-			var axes = vz.plot.getAxes();
-			vz.from = Math.floor(axes.xaxis.min);
-			vz.to = Math.ceil(axes.xaxis.max);
-			vz.options.plot.yaxis.min = axes.yaxis.min;
-			vz.options.plot.yaxis.max = axes.yaxis.max;
-			vz.data.load();
-		})
-		.bind('mouseup', function(event) {
-			//loadData();
-		});
+	vz.bindEvents();
 	
 	vz.entities.load();
 });
