@@ -24,6 +24,26 @@
  * volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
+vz.definitions.load = function() {
+	$.ajax({
+		cache: true,
+		dataType: 'json',
+		url: vz.options.backendUrl + '/capabilities/definition/entity.json',
+		success: function(json) {
+			vz.definitions.entity = json.definition.entity;
+		}
+	});
+
+	$.ajax({
+		cache: true,
+		dataType: 'json',
+		url: vz.options.backendUrl + '/capabilities/definition/property.json',
+		success: function(json) {
+			vz.definitions.property = json.definition.property;
+		}
+	});
+};
+
 /**
  * Entity constructor
  * @todo add validation

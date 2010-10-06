@@ -24,21 +24,25 @@
  * volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
-function ajaxWait(callback, finished, identifier) {
-	if (!ajaxWait.counter) { ajaxWait.counter = new Array(); }
-	if (!ajaxWait.counter[identifier]) { ajaxWait.counter[identifier] = 0; }
+function waitAsync(callback, finished, identifier) {
+	if (!waitAsync.counter) { waitAsync.counter = new Array(); }
+	if (!waitAsync.counter[identifier]) { waitAsync.counter[identifier] = 0; }
 	
-	ajaxWait.counter[identifier]++;
+	waitAsync.counter[identifier]++;
 	
 	return function (data, textStatus) {
 		callback(data, textStatus);
 		
-		if (!--ajaxWait.counter[identifier]) {
+		if (!--waitAsync.counter[identifier]) {
 			finished();
 		}
 	};
 }
 
+/*
+ * Array extensions
+ * according to js language specification ECMA 1.6
+ */
 Array.prototype.indexOf = function(n) {
 	for (var i = 0, l = this.length; i < l; i++)
 		if (n == this[i]) return i;

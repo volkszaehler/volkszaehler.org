@@ -49,33 +49,7 @@ vz.initInterface = function() {
 	// make buttons fancy
 	$('button, input[type=button]').button();
 	
-	// open UUID dialog
-	$('button[name=addUUID]').click(function() {
-		$('#addUUID').dialog({
-			title: 'UUID hinzufügen',
-			width: 400
-		});
-	});
-	
-	// open new entity dialog
-	$('button[name=newEntity]').click(function() {
-		$('#newEntity').dialog({
-			title: 'Entity erstellen',
-			width: 400
-		});
-	});
-	
-	// add UUID
-	$('#addUUID input[type=button]').click(function() {
-		vz.uuids.add($('#addUUID input[type=text]').val());
-		$('#addUUID').dialog('close');
-		vz.entities.load();
-	});
-	
-	// bind plot actions
-	$('#move input').click(vz.handleControls);
-	
-	// options
+	// trendline
 	/*$('input[name=trendline]').attr('checked', vz.options.plot.seriesDefaults.trendline.show).change(function() {
 		vz.options.plot.seriesDefaults.trendline.show = $(this).attr('checked');
 		vz.plot.draw();
@@ -85,6 +59,7 @@ vz.initInterface = function() {
 		vz.options.backendUrl = $(this).val();
 	});
 	
+	// tuple resolution
 	$('#tuples input').val(vz.options.tuples).change(function() {
 		vz.options.tuples = $(this).val();
 	});
@@ -95,6 +70,24 @@ vz.initInterface = function() {
 		step: 10
 	});
 	
+	// plot rendering
+	$('#rendering input[type=radio][value=lines]')
+		.attr('checked', vz.options.plot.series.lines.show)
+		.change(function() {
+			vz.options.plot.series.lines.show = $(this).attr('checked');
+			vz.options.plot.series.points.show = !$(this).attr('checked');
+			vz.plot.draw();
+		});
+	
+	$('#rendering input[type=radio][value=points]')
+		.attr('checked', vz.options.plot.series.points.show)
+		.change(function() {
+			vz.options.plot.series.lines.show = !$(this).attr('checked');
+			vz.options.plot.series.points.show = $(this).attr('checked');
+			vz.plot.draw();
+		});
+
+	// refresh interval
 	$('#refresh .slider').slider({
 		min: 500,
 		max: 60000,
@@ -103,9 +96,47 @@ vz.initInterface = function() {
 };
 
 /**
+ * Initialize dialogs
+ */
+vz.initDialogs = function() {
+	// open uuid dialog
+	$('button[name=addUUID]').click(function() {
+		$('#addUUID').dialog({
+			title: 'UUID hinzufügen',
+			width: 400
+		});
+	});
+	
+	// open entity dialog
+	$('button[name=newEntity]').click(function() {
+		$('#newEntity').dialog({
+			title: 'Entity erstellen',
+			width: 400
+		});
+	});
+	
+	// add UUID
+	$('#addUUID input[type=button]').click(function() {
+		try {
+			vz.uuids.add($('#addUUID input[type=text]').val());
+			$('#addUUID input[type=text]').val('');
+			$('#addUUID').dialog('close');
+			vz.entities.load();
+		}
+		catch (e) {
+			alert(e);	// TODO show error
+		}
+	});
+};
+
+/**
  * Bind events to handle plot zooming & panning
  */
 vz.bindEvents = function() {
+	// bind plot actions
+	$('#move input[type=image]').click(vz.handleControls);
+	
+	
 	$('#plot')
 		.bind("plotselected", function (event, ranges) {
 			vz.from = ranges.xaxis.from;
@@ -197,7 +228,7 @@ vz.handleControls = function () {
 vz.entities.load = function() {
 	vz.entities.clear();
 	vz.uuids.each(function(index, value) {
-		$.getJSON(vz.options.backendUrl + '/entity/' + value + '.json', ajaxWait(function(json) {
+		$.getJSON(vz.options.backendUrl + '/entity/' + value + '.json', waitAsync(function(json) {
 			vz.entities.push(new Entity(json.entity));
 		}, vz.entities.show, 'information'));
 	});
@@ -211,64 +242,62 @@ vz.entities.show = function() {
 	$('#entities tbody').empty();
 	
 	var i = 0;
-	vz.entities.each(function(index, entity) {	// loop through all entities
-		entity.each(function(entity, parent) {	// loop through all children of entities (recursive)
-			entity.active = true;	// TODO active by default or via backend property?
-			entity.color = vz.options.plot.colors[i++ % vz.options.plot.colors.length];
+	vz.entities.each(function(entity, parent) {	// loop through all children of entities (recursive)
+		entity.active = true;	// TODO active by default or via backend property?
+		entity.color = vz.options.plot.colors[i++ % vz.options.plot.colors.length];
 		
-			var row = $('<tr>')
-				.addClass((parent) ? 'child-of-entity-' + parent.uuid : '')
-				.attr('id', 'entity-' + entity.uuid)
-				.append($('<td>')
-					.css('background-color', entity.color)
-					.css('width', 19)
-					.append($('<input>')
-						.attr('type', 'checkbox')
-						.attr('checked', entity.active)
-						.bind('change', entity, function(event) {
-							event.data.active = $(this).attr('checked');
-							vz.plot.data.load();
-						})
-					)
-				)
-				.append($('<td>')
-					.css('width', 20)
-				)
-				.append($('<td>')
-					.append($('<span>')
-						.text(entity.title)
-						.addClass('indicator')
-						.addClass((entity.type == 'group') ? 'group' : 'channel')
-					)
-				)
-				.append($('<td>').text(entity.type))
-				.append($('<td>'))	// min
-				.append($('<td>'))	// max
-				.append($('<td>'))	// avg
-				.append($('<td>')	// operations
-					.addClass('ops')
-					/*.append($('<input>')
-						.attr('type', 'image')
-						.attr('src', 'images/information.png')
-						.attr('alt', 'details')
-						.bind('click', entity, function(event) { event.data.showDetails(); })
-					)*/
-				);
-					
-			if (parent == null) {
-				$('td.ops', row).prepend($('<input>')
-					.attr('type', 'image')
-					.attr('src', 'images/delete.png')
-					.attr('alt', 'delete')
-					.bind('click', entity, function(event) {
-						vz.uuids.remove(event.data.uuid);
-						vz.entities.load();
+		var row = $('<tr>')
+			.addClass((parent) ? 'child-of-entity-' + parent.uuid : '')
+			.attr('id', 'entity-' + entity.uuid)
+			.append($('<td>')
+				.css('background-color', entity.color)
+				.css('width', 19)
+				.append($('<input>')
+					.attr('type', 'checkbox')
+					.attr('checked', entity.active)
+					.bind('change', entity, function(event) {
+						event.data.active = $(this).attr('checked');
+						vz.plot.data.load();
 					})
-				);
-			}
+				)
+			)
+			.append($('<td>')
+				.css('width', 20)
+			)
+			.append($('<td>')
+				.append($('<span>')
+					.text(entity.title)
+					.addClass('indicator')
+					.addClass((entity.type == 'group') ? 'group' : 'channel')
+				)
+			)
+			.append($('<td>').text(entity.type))
+			.append($('<td>'))	// min
+			.append($('<td>'))	// max
+			.append($('<td>'))	// avg
+			.append($('<td>')	// operations
+				.addClass('ops')
+				/*.append($('<input>')
+					.attr('type', 'image')
+					.attr('src', 'images/information.png')
+					.attr('alt', 'details')
+					.bind('click', entity, function(event) { event.data.showDetails(); })
+				)*/
+			);
+				
+		if (parent == null) {
+			$('td.ops', row).prepend($('<input>')
+				.attr('type', 'image')
+				.attr('src', 'images/delete.png')
+				.attr('alt', 'delete')
+				.bind('click', entity, function(event) {
+					vz.uuids.remove(event.data.uuid);
+					vz.entities.load();
+				})
+			);
+		}
 			
-			$('#entities tbody').append(row);
-		});
+		$('#entities tbody').append(row);
 	});
 	
 	// http://ludo.cubicphuse.nl/jquery-plugins/treeTable/doc/index.html
@@ -282,21 +311,29 @@ vz.entities.show = function() {
 };
 
 /**
+ * Overwritten each iterator for entity array
+ */
+vz.entities.each = function(cb) {
+	for (var i = 0; i < vz.entities.length; i++) {
+		vz.entities[i].each(cb);
+	}
+}
+
+/**
  * Load json data from the backend
  */
 vz.plot.data.load = function() {
 	vz.plot.data.clear();
-	vz.entities.each(function(index, entity) {
-		entity.each(function(entity, parent) {
-			if (entity.active && entity.type != 'group') {
-				$.getJSON(vz.options.backendUrl + '/data/' + entity.uuid + '.json', { from: Math.floor(vz.from), to: Math.ceil(vz.to), tuples: vz.options.tuples }, ajaxWait(function(json) {
-					vz.plot.data.push({
-						data: json.data[0].tuples,	// TODO check uuid
-						color: entity.color
-					});
-				}, vz.plot.draw, 'data'));
-			}
-		});
+	$('#plot').html('<div id="loading">loading...</div>');	// TODO insert loading animation
+	vz.entities.each(function(entity, parent) {
+		if (entity.active && entity.type != 'group') {
+			$.getJSON(vz.options.backendUrl + '/data/' + entity.uuid + '.json', { from: Math.floor(vz.from), to: Math.ceil(vz.to), tuples: vz.options.tuples }, waitAsync(function(json) {
+				vz.plot.data.push({
+					data: json.data[0].tuples,	// TODO check uuid
+					color: entity.color
+				});
+			}, vz.plot.draw, 'data'));
+		}
 	});
 };
 
@@ -306,6 +343,6 @@ vz.plot.data.load = function() {
 vz.plot.draw = function () {
 	vz.options.plot.xaxis.min = vz.from;
 	vz.options.plot.xaxis.max = vz.to;
-	
+		
 	vz.plot.flot = $.plot($('#plot'), vz.plot.data, vz.options.plot);
 };

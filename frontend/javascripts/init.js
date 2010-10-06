@@ -48,10 +48,7 @@ var vz = {
 	
 	// definitions of entities & properties
 	// for validation, translation etc..
-	definitions: {
-		properties: {},
-		entities: {}
-	},
+	definitions: { },
 
 	// timeinterval to request
 	to: new Date().getTime(),
@@ -63,9 +60,9 @@ var vz = {
 		plot: {
 			colors: ['#83CAFF', '#7E0021', '#579D1C', '#FFD320', '#FF420E', '#004586', '#0084D1', '#C5000B', '#FF950E', '#4B1F6F', '#AECF00', '#314004'],
 			series: {
-				lines: { show: false },
+				lines: { show: true },
 				points: {
-					show: true,
+					show: false,
 					radius: 1,
 					//symbol: 'square'
 					symbol: function(ctx, x, y, radius, shadow) {
@@ -100,6 +97,8 @@ var vz = {
 $(document).ready(function() {
 	// initialize user interface
 	vz.initInterface();
+	vz.initDialogs();
+	vz.bindEvents();
 	
 	// parse uuids from cookie
 	vz.uuids.parseCookie();
@@ -110,16 +109,12 @@ $(document).ready(function() {
 	}
 	
 	if (vz.uuids.length == 0) {
-		$('#addUUID').dialog({
-			title: 'UUID hinzufügen',
-			width: 400
-		});
+		$('#addUUID').dialog('open');
 	}
 	
 	// start auto refresh timer
 	window.setInterval(vz.refresh, 5000);
 	
-	vz.bindEvents();
-	
+	vz.definitions.load();
 	vz.entities.load();
 });
