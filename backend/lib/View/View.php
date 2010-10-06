@@ -102,6 +102,7 @@ abstract class View {
 	}
 
 	/**
+	 * Add object to output
 	 *
 	 * @param mixed $data
 	 */
@@ -122,6 +123,39 @@ abstract class View {
 			else {
 				throw new \Exception('Can\'t show ' . get_class($data));
 			}
+		}
+	}
+
+	/**
+	 * Sets caching mode for the browser
+	 *
+	 * @todo implement remaining caching modes
+	 * @param $mode
+	 * @param integer $value timestamp in seconds or offset in seconds
+	 */
+	public function setCaching($mode, $value) {
+		switch ($mode) {
+			case 'modified':	// Last-modified
+				//$this->response->setHeader('Last-Modified', gmdate('D, d M Y H:i:s', $value) . ' GMT');
+
+			case 'etag':		// Etag
+				throw new Exception('This caching mode is not implemented');
+
+			case 'expires': 	// Expire
+				$this->response->setHeader('Expires', gmdate('D, d M Y H:i:s', $value) . ' GMT');
+				break;
+
+			case 'age':			// Cache-control: max-age=
+				$this->response->setHeader('Cache-control', 'max-age=' . $value);
+				break;
+
+			case 'off':
+			case FALSE:
+				$this->response->setHeader('Cache-control', 'no-cache');
+				$this->response->setHeader('Pragma', 'no-cache');
+
+			default:
+				throw new Exception('Unknown caching mode');
 		}
 	}
 

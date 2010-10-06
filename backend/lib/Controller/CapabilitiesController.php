@@ -40,15 +40,25 @@ class CapabilitiesController extends Controller {
 	 * @param string $sub
 	 */
 	public function get($capabilities, $sub) {
-		if ($capabilities == 'definition' && in_array($sub, array('property', 'entity'))) {
-			$class = 'Volkszaehler\Definition\\' . ucfirst($sub) . 'Definition';
-			$json = $class::getJSON();
-			$this->view->add(array('definition' => array($sub => $json)));
-		}
-		elseif ($capabilities == 'version') {
-		}
-		else {
-			throw new \Exception('Unknown capability information: ' . implode('/', func_get_args()));
+		switch ($capabilities) {
+			case 'definition':
+				if (in_array($sub, array('property', 'entity'))) {
+					$class = 'Volkszaehler\Definition\\' . ucfirst($sub) . 'Definition';
+					$json = $class::getJSON();
+					$this->view->setCaching('expires', time()+2*7*24*60*60);	// cache for 2 weeks
+					$this->view->add(array('definition' => array($sub => $json)));
+				}
+				else {
+					throw new Exception('Unkown definition information');
+				}
+				break;
+
+			case 'version':
+				// TODO implement
+				break;
+
+			default:
+				throw new \Exception('Unknown capability information: ' . implode('/', func_get_args()));
 		}
 	}
 }
