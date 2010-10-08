@@ -97,7 +97,7 @@ vz.initDialogs = function() {
 			vz.uuids.add($('#addUUID input[type=text]').val());
 			$('#addUUID input[type=text]').val('');
 			$('#addUUID').dialog('close');
-			vz.entities.load();
+			vz.entities.loadDetails();
 		}
 		catch (e) {
 			alert(e);	// TODO show error
@@ -278,7 +278,7 @@ vz.entities.show = function() {
 				.attr('alt', 'delete')
 				.bind('click', entity, function(event) {
 					vz.uuids.remove(event.data.uuid);
-					vz.entities.load();
+					vz.entities.loadDetails();
 				})
 			);
 		}
