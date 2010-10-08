@@ -46,14 +46,3 @@ INSERT INTO `properties` (`id`, `entity_id`, `key`, `value`) VALUES
 (12, 9, 'resolution', '2000'),
 (13, 10, 'title', 'test'),
 (14, 10, 'resolution', '2000');
-
---
--- Constraints der exportierten Tabellen
---
-
---
--- Constraints der Tabelle `properties`
---
-ALTER TABLE `properties`
-  ADD CONSTRAINT `properties_ibfk_1` FOREIGN KEY (`entity_id`) REFERENCES `entities` (`id`);
-
