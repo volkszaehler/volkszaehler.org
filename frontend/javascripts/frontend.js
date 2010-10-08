@@ -228,7 +228,11 @@ vz.handleControls = function () {
 vz.entities.load = function() {
 	vz.entities.clear();
 	vz.uuids.each(function(index, value) {
-		$.getJSON(vz.options.backendUrl + '/entity/' + value + '.json', waitAsync(function(json) {
+		vz.load('entity', value, {}, waitAsync(function(json) {
+			if (json.exception) {
+				alert(exception.message);
+				return false;
+			}
 			vz.entities.push(new Entity(json.entity));
 		}, vz.entities.show, 'information'));
 	});
@@ -327,7 +331,7 @@ vz.plot.data.load = function() {
 	$('#plot').html('<div id="loading"><img src="images/loading.gif" alt="loading..." /><p>Loading...</p></div>');	// TODO insert loading animation
 	vz.entities.each(function(entity, parent) {
 		if (entity.active && entity.type != 'group') {
-			$.getJSON(vz.options.backendUrl + '/data/' + entity.uuid + '.json', { from: Math.floor(vz.from), to: Math.ceil(vz.to), tuples: vz.options.tuples }, waitAsync(function(json) {
+			vz.load('data', entity.uuid, { from: Math.floor(vz.from), to: Math.ceil(vz.to), tuples: vz.options.tuples }, waitAsync(function(json) {
 				vz.plot.data.push({
 					data: json.data[0].tuples,	// TODO check uuid
 					color: entity.color
@@ -345,4 +349,17 @@ vz.plot.draw = function () {
 	vz.options.plot.xaxis.max = vz.to;
 		
 	vz.plot.flot = $.plot($('#plot'), vz.plot.data, vz.options.plot);
+};
+
+vz.load = function(context, identifier, data, success) {
+	$.ajax({
+		success: success,
+		url: vz.options.backendUrl + '/' + context + '/' + identifier + '.json',
+		dataType: 'json',
+		data: data,
+		error: function(xhr) {
+			json = JSON.parse(xhr.responseText);
+			alert(xhr.status + ': ' + xhr.statusText + '\n' + json.exception.message);
+		}
+	});
 };
