@@ -64,9 +64,9 @@ $config['db']['dbname']				= 'volkszaehler';
 //$config['db']['path']				= 'volkszaehler';
 
 /** @var boolean disables some optimizations. Only use it when you exactly know what you are doing. */
-$config['devmode']					= TRUE;
+$config['devmode']					= FALSE;
 
 /** @var integer set to > 0 to show debugging messages */
-$config['debug']					= 5;
+$config['debug']					= 0;
 
 ?>

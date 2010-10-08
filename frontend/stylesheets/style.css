@@ -34,7 +34,6 @@ tbody tr td {
 }
 
 #plot {
-	width: 800px;
 	height: 400px;
 }
 
@@ -121,3 +120,7 @@ tbody tr td {
 .ops {
 	text-align: right;
 }
+
+.loading {
+	/* TODO center */
+}	
