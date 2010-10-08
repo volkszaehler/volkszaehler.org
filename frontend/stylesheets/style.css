@@ -121,6 +121,10 @@ tbody tr td {
 	text-align: right;
 }
 
-.loading {
-	/* TODO center */
-}	
+#loading {
+	display: block;
+	margin: auto;
+	padding-top: 150px;
+	text-align: center;
+	color: grey;
+}

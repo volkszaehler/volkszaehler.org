@@ -324,7 +324,7 @@ vz.entities.each = function(cb) {
  */
 vz.plot.data.load = function() {
 	vz.plot.data.clear();
-	$('#plot').html('<div id="loading">loading...</div>');	// TODO insert loading animation
+	$('#plot').html('<div id="loading"><img src="images/loading.gif" alt="loading..." /><p>Loading...</p></div>');	// TODO insert loading animation
 	vz.entities.each(function(entity, parent) {
 		if (entity.active && entity.type != 'group') {
 			$.getJSON(vz.options.backendUrl + '/data/' + entity.uuid + '.json', { from: Math.floor(vz.from), to: Math.ceil(vz.to), tuples: vz.options.tuples }, waitAsync(function(json) {

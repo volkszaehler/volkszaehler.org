@@ -71,5 +71,5 @@ vz.uuids.remove = function(uuid) {
  * Validate UUID
  */
 vz.uuids.validate = function(uuid) {
-	return new uuid.match(/^[0-9a-zA-Z]{8}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{12}$/) > 0;
+	return uuid.match(/^[0-9a-zA-Z]{8}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{12}$/);
 };
