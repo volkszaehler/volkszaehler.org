@@ -49,10 +49,6 @@ var vz = {
 	// definitions of entities & properties
 	// for validation, translation etc..
 	definitions: { },
-
-	// timeinterval to request
-	to: new Date().getTime(),
-	from: new Date().getTime() - defaultInterval,
 		
 	options: {
 		backendUrl: '../backend/index.php',
@@ -61,18 +57,22 @@ var vz = {
 			colors: ['#83CAFF', '#7E0021', '#579D1C', '#FFD320', '#FF420E', '#004586', '#0084D1', '#C5000B', '#FF950E', '#4B1F6F', '#AECF00', '#314004'],
 			series: {
 				lines: { show: true },
+				shadowSize: 0,
 				points: {
 					show: false,
 					radius: 1,
 					//symbol: 'square'
 					symbol: function(ctx, x, y, radius, shadow) {
-						ctx.rect(x, y, radius, radius);
+						ctx.lineWidth = 1;
+						ctx.strokeRect(x-0.5, y-0.5, 1, 1);
 					}
 				}
 			},
 			legend: { show: false },
 			xaxis: {
 				mode: 'time',
+				max: new Date().getTime(),	// timeinterval to request
+				min: new Date().getTime() - defaultInterval,
 				timeformat: '%d.%b %h:%M',
 				monthNames: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez']
 			},
@@ -116,5 +116,5 @@ $(document).ready(function() {
 	window.setInterval(vz.refresh, 5000);
 	
 	vz.definitions.load();
-	vz.entities.load();
+	vz.entities.loadDetails();
 });

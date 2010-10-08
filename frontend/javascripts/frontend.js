@@ -32,14 +32,6 @@
  * Initialize the WUI (Web User Interface)
  */
 vz.initInterface = function() {
-	// make the whole frontend resizable
-	/*$('#content').resizable({
-		alsoResize: $('#plot'),
-		//ghost: true,
-		//animate: true,
-		autoHide: true
-	});*/
-	
 	// initialize dropdown accordion
 	$('#accordion h3').click(function() {
 		$(this).next().toggle('fast');
@@ -49,50 +41,34 @@ vz.initInterface = function() {
 	// make buttons fancy
 	$('button, input[type=button]').button();
 	
-	// trendline
-	/*$('input[name=trendline]').attr('checked', vz.options.plot.seriesDefaults.trendline.show).change(function() {
-		vz.options.plot.seriesDefaults.trendline.show = $(this).attr('checked');
-		vz.plot.draw();
-	});*/
-	
-	$('input[name=backendUrl]').val(vz.options.backendUrl).change(function() {
+	$('#backendUrl').val(vz.options.backendUrl).change(function() {
 		vz.options.backendUrl = $(this).val();
 	});
 	
 	// tuple resolution
-	$('#tuples input').val(vz.options.tuples).change(function() {
+	$('#tuples').val(vz.options.tuples).change(function() {
 		vz.options.tuples = $(this).val();
-	});
-	
-	$('#tuples .slider').slider({
-		min: 1,
-		max: 1000,
-		step: 10
+		vz.entities.loadData();
 	});
 	
 	// plot rendering
-	$('#rendering input[type=radio][value=lines]')
+	$('#rendering_lines')
 		.attr('checked', vz.options.plot.series.lines.show)
 		.change(function() {
 			vz.options.plot.series.lines.show = $(this).attr('checked');
 			vz.options.plot.series.points.show = !$(this).attr('checked');
-			vz.plot.draw();
+			vz.drawPlot();
 		});
 	
-	$('#rendering input[type=radio][value=points]')
+	$('#rendering_points')
 		.attr('checked', vz.options.plot.series.points.show)
 		.change(function() {
 			vz.options.plot.series.lines.show = !$(this).attr('checked');
 			vz.options.plot.series.points.show = $(this).attr('checked');
-			vz.plot.draw();
+			vz.drawPlot();
 		});
-
-	// refresh interval
-	$('#refresh .slider').slider({
-		min: 500,
-		max: 60000,
-		step: 500
-	});
+	
+	$('#timespan input').datepicker();
 };
 
 /**
@@ -139,29 +115,29 @@ vz.bindEvents = function() {
 	
 	$('#plot')
 		.bind("plotselected", function (event, ranges) {
-			vz.from = ranges.xaxis.from;
-			vz.to = ranges.xaxis.to;
+			vz.options.plot.xaxis.min = ranges.xaxis.from;
+			vz.options.plot.xaxis.max = ranges.xaxis.to;
 			vz.options.plot.yaxis.min = 0;
 			vz.options.plot.yaxis.max = null;	// autoscaling
-			vz.plot.data.load();
+			vz.entities.loadData();
 		})
 		/*.bind('plotpan', function (event, plot) {
 			var axes = plot.getAxes();
-			vz.from = axes.xaxis.min;
-			vz.to = axes.xaxis.max;
+			vz.options.plot.xaxis.min = axes.xaxis.min;
+			vz.options.plot.xaxis.max = axes.xaxis.max;
 			vz.options.plot.yaxis.min = axes.yaxis.min;
 			vz.options.plot.yaxis.max = axes.yaxis.max;
 		})*/
 		/*.bind('mouseup', function(event) {
-			vz.plot.data.load();
+			vz.entities.loadData();
 		})*/
 		.bind('plotzoom', function (event, plot) {
 			var axes = plot.getAxes();
-			vz.from = axes.xaxis.min;
-			vz.to = axes.xaxis.max;
+			vz.options.plot.xaxis.min = axes.xaxis.min;
+			vz.options.plot.xaxis.max = axes.xaxis.max;
 			vz.options.plot.yaxis.min = axes.yaxis.min;
 			vz.options.plot.yaxis.max = axes.yaxis.max;
-			vz.plot.data.load();
+			vz.entities.loadData();
 		});
 };
 
@@ -169,11 +145,11 @@ vz.bindEvents = function() {
  * Refresh plot with new data
  */
 vz.refresh = function() {
-	if ($('input[name=refresh]').attr('checked')) {
-		var delta = vz.to - vz.from;
-		vz.to = new Date().getTime();	// move plot
-		vz.from = vz.to - delta;		// move plot
-		vz.plot.data.load();
+	if ($('#refresh').attr('checked')) {
+		var delta = vz.options.plot.xaxis.min - vz.options.plot.xaxis.max;
+		vz.options.plot.xaxis.max = new Date().getTime();	// move plot
+		vz.options.plot.xaxis.min = vz.options.plot.xaxis.max - delta;		// move plot
+		vz.entities.loadData();
 	}
 };
 
@@ -181,51 +157,48 @@ vz.refresh = function() {
  * Move & zoom in the plotting area
  */
 vz.handleControls = function () {
-	var delta = vz.to - vz.from;
-	var middle = vz.from + delta/2;
+	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
+	var middle = vz.options.plot.xaxis.min + delta/2;
 	
 	switch(this.value) {
 		case 'move_last':
-			vz.to = new Date().getTime();
-			vz.from = vz.to - delta;
+			vz.options.plot.xaxis.max = new Date().getTime();
+			vz.options.plot.xaxis.min = new Date().getTime() - delta;
 			break;
 			
 		case 'move_back':
-			vz.from -= delta;
-			vz.to -= delta;
+			vz.options.plot.xaxis.min -= delta;
+			vz.options.plot.xaxis.max -= delta;
 			break;
 		case 'move_forward':
-			vz.from += delta;
-			vz.to += delta;
+			vz.options.plot.xaxis.min += delta;
+			vz.options.plot.xaxis.max += delta;
 			break;
 		
 		case 'zoom_reset':
-			vz.from = middle - efaultInterval/2;
-			vz.to =  middle + defaultInterval/2;
+			vz.options.plot.xaxis.min = middle - defaultInterval/2;
+			vz.options.plot.xaxis.max =  middle + defaultInterval/2;
 			break;
 			
 		case 'zoom_in':
-			vz.from += delta/4;
-			vz.to -= delta/4;
+			vz.options.plot.xaxis.min += delta/4;
+			vz.options.plot.xaxis.max -= delta/4;
 			break;
 			
 		case 'zoom_out':
-			vz.from -= delta;
-			vz.to += delta;
+			vz.options.plot.xaxis.min -= delta;
+			vz.options.plot.xaxis.max += delta;
 			break;
-			
-		case 'refresh':
-			// do nothing; just loadData()
 	}
 	
-	vz.plot.data.load();
+	vz.entities.loadData();
 };
 
 
 /**
  * Get all entity information from backend
  */
-vz.entities.load = function() {
+vz.entities.loadDetails = function() {
 	vz.entities.clear();
 	vz.uuids.each(function(index, value) {
 		vz.load('entity', value, {}, waitAsync(function(json) {
@@ -246,9 +219,9 @@ vz.entities.show = function() {
 	$('#entities tbody').empty();
 	
 	var i = 0;
-	vz.entities.each(function(entity, parent) {	// loop through all children of entities (recursive)
-		entity.active = true;	// TODO active by default or via backend property?
+	vz.entities.each(function(entity, parent) {
 		entity.color = vz.options.plot.colors[i++ % vz.options.plot.colors.length];
+		entity.active = (entity.active) ? entity.active : true;
 		
 		var row = $('<tr>')
 			.addClass((parent) ? 'child-of-entity-' + parent.uuid : '')
@@ -261,7 +234,7 @@ vz.entities.show = function() {
 					.attr('checked', entity.active)
 					.bind('change', entity, function(event) {
 						event.data.active = $(this).attr('checked');
-						vz.plot.data.load();
+						vz.drawPlot();
 					})
 				)
 			)
@@ -311,7 +284,7 @@ vz.entities.show = function() {
 	});
 	
 	// load data and show plot
-	vz.plot.data.load();
+	vz.entities.loadData();
 };
 
 /**
@@ -326,17 +299,13 @@ vz.entities.each = function(cb) {
 /**
  * Load json data from the backend
  */
-vz.plot.data.load = function() {
-	vz.plot.data.clear();
-	$('#plot').html('<div id="loading"><img src="images/loading.gif" alt="loading..." /><p>Loading...</p></div>');	// TODO insert loading animation
+vz.entities.loadData = function() {
+	$('#plot').html('<div class="plotcenter"><img src="images/loading.gif" alt="loading..." /><p>Loading...</p></div>');
 	vz.entities.each(function(entity, parent) {
 		if (entity.active && entity.type != 'group') {
-			vz.load('data', entity.uuid, { from: Math.floor(vz.from), to: Math.ceil(vz.to), tuples: vz.options.tuples }, waitAsync(function(json) {
-				vz.plot.data.push({
-					data: json.data[0].tuples,	// TODO check uuid
-					color: entity.color
-				});
-			}, vz.plot.draw, 'data'));
+			vz.load('data', entity.uuid, { from: Math.floor(vz.options.plot.xaxis.min), to: Math.ceil(vz.options.plot.xaxis.max), tuples: vz.options.tuples }, waitAsync(function(json) {
+				entity.data = json.data[0]; // TODO check uuid
+			}, vz.drawPlot, 'data'));
 		}
 	});
 };
@@ -344,11 +313,23 @@ vz.plot.data.load = function() {
 /**
  * Draws plot to container
  */
-vz.plot.draw = function () {
-	vz.options.plot.xaxis.min = vz.from;
-	vz.options.plot.xaxis.max = vz.to;
-		
-	vz.plot.flot = $.plot($('#plot'), vz.plot.data, vz.options.plot);
+vz.drawPlot = function () {
+	var data = new Array;
+	vz.entities.each(function(entity, parent) {
+		if (entity.active && entity.data && entity.data.count > 0) {
+			data.push({
+				data: entity.data.tuples,
+				color: entity.color
+			});
+		}
+	});
+	
+	if (data.length > 0) {
+		vz.plot = $.plot($('#plot'), data, vz.options.plot);
+	}
+	else {
+		$('#plot').html('<div class="plotcenter"><img src="images/empty.png" alt="no data..." /><p>Nothing to plot...</p></div>');
+	}
 };
 
 vz.load = function(context, identifier, data, success) {

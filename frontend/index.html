@@ -40,7 +40,6 @@
 			</td>
 			<td>
 				<input type="image" src="images/control_end_blue.png" value="move_last" title="Move to now" />
-				<input type="image" src="images/arrow_refresh.png" value="refresh" title="Refresh" />
 				<input type="image" src="images/zoom.png" value="zoom_reset" title="Reset zoom" />
 			</td>
 			<td>
@@ -51,7 +50,7 @@
 	</table>
 	
 	<div id="accordion">
-		<h3>Kanäle</h3>
+		<h3><img src="images/table.png" alt="" /> Kanäle</h3>
 		<div id="entities">
 		<table>
 			<thead>
@@ -70,7 +69,7 @@
 		</table>
 		<div><button name="addUUID"><img src="images/add.png" alt="add" /> UUID hinzuf&uuml;gen</button> <button name="newEntity"><img src="images/star.png" alt="new" /> Entity erstellen</button></div>
 		</div>
-		<h3>Optionen</h3>
+		<h3><img src="images/wrench.png" alt="" /> Optionen</h3>
 		<div id="options">
 			<table>
 				<thead>
@@ -80,32 +79,30 @@
 					</tr>
 				</thead>
 				<tbody>
-					<tr id="refresh">
-						<td><label for="refresh"><img src="images/arrow_refresh.png" alt="refresh" /> Automatisch aktualisieren (ms)</label></td>
-						<td><input type="checkbox" name="refresh" /></td>
-						<td><div class="slider"></div></td>
+					<tr>
+						<td><label for="refresh"><img src="images/arrow_refresh.png" alt="" /> Automatisch aktualisieren (ms)</label></td>
+						<td><input type="checkbox" id="refresh" /></td>
+						<td></td>
 					</tr>
 					<tr id="rendering">
-						<td><label for="rendering">Darstellung</label></td>
-						<td>
-							<input type="radio" name="rendering" value="points" /> Punkte
-							<input type="radio" name="rendering" value="lines" /> Linien
-						</td>
+						<td><img src="images/eye.png" alt="" /> Darstellung</td>
+						<td><label for="rendering_points"><input type="radio" id="rendering_points" name="rendering" value="points" /> Punkte</label></td>
+						<td><label for="rendering_lines"><input type="radio" id="rendering_lines" name="rendering" value="lines" /> Linien</label></td>
 					</tr>
-					<tr id="trendline">
-						<td><label for="trendline"><img src="images/chart_line.png" alt="trendline" /> Trendline anzeigen</label></td>
-						<td><input type="checkbox" name="trendline" /></td>
+					<tr>
+						<td><label for="backendUrl"><img src="images/server.png" alt="" /> Backend-Adresse</label></td>
+						<td><input type="text" id="backendUrl" /></td>
 						<td></td>
 					</tr>
-					<tr id="backendUrl">
-						<td><label for="backendUrl"><img src="images/server.png" alt="backendUrl" /> Backend-Adresse</label></td>
-						<td><input type="text" name="backendUrl" /></td>
+					<tr>
+						<td><label for="tuples"><img src="images/shading.png" alt="" /> Tuples (Auflösung)</label></td>
+						<td><input type="text" id="tuples" size="5" /></td>
 						<td></td>
 					</tr>
-					<tr id="tuples">
-						<td><label for="tuples"><img src="images/shading.png" alt="tuples" /> Tuples (Auflösung)</label></td>
-						<td><input type="text" name="tuples" size="5" /></td>
-						<td><div class="slider"></div></td>
+					<tr id="timespan">
+						<td><img src="images/arrow_right.png" alt="" /> Zeitspanne</td>
+						<td><label for="from">von <input type="text" id="from" /></label></td>
+						<td><label for="to">bis <input type="text" id="to" /></label></td>
 					</tr>
 				</tbody>
 			</table>
