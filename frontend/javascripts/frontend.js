@@ -191,6 +191,15 @@ vz.handleControls = function () {
 			break;
 	}
 	
+	// update delta after zoom
+	delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
+	
+	// we dont want to zoom/pan into the future
+	if (vz.options.plot.xaxis.max + delta > new Date().getTime()) {
+		vz.options.plot.xaxis.max = new Date().getTime();
+		vz.options.plot.xaxis.min = new Date().getTime() - delta;
+	}
+	
 	vz.entities.loadData();
 };
 
