@@ -121,7 +121,7 @@ tbody tr td {
 	text-align: right;
 }
 
-#loading {
+.plotcenter {
 	display: block;
 	margin: auto;
 	padding-top: 150px;
