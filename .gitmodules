@@ -1,0 +1,3 @@
+[submodule "controller/ethersex"]
+	path = controller/ethersex
+	url = git://github.com/volkszaehler/ethersex.git
