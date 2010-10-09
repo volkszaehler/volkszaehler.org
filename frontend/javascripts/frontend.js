@@ -75,20 +75,28 @@ vz.initInterface = function() {
  * Initialize dialogs
  */
 vz.initDialogs = function() {
+	// initialize dialogs
+	$('#addUUID').dialog({
+		autoOpen: false,
+		title: 'UUID hinzufügen',
+		width: 450,
+		resizable: false
+	});
+	
+	$('#newEntity').dialog({
+		autoOpen: false,
+		title: 'Entity erstellen',
+		width: 400
+	});
+	
 	// open uuid dialog
 	$('button[name=addUUID]').click(function() {
-		$('#addUUID').dialog({
-			title: 'UUID hinzufügen',
-			width: 400
-		});
+		$('#addUUID').dialog('open');
 	});
 	
 	// open entity dialog
 	$('button[name=newEntity]').click(function() {
-		$('#newEntity').dialog({
-			title: 'Entity erstellen',
-			width: 400
-		});
+		$('#newEntity').dialog('open');
 	});
 	
 	// add UUID
