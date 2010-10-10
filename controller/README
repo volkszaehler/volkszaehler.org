@@ -1,1 +1,6 @@
-Dieses Verzeichnis enthällt den Sourcecode für die Messcontroller und deren Webfrontend.
+Dieses Verzeichnis enthällt den Sourcecode für die Messcontroller (und deren Webfrontend).
+
+Das ethersex Verzeichnis ist als git Submodule eingebunden und kann mit folgenden Befehlen nachgeladen werden:
+
+git submodule init
+git submodule update
