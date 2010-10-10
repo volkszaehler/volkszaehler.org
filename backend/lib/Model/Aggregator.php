@@ -55,7 +55,6 @@ class Aggregator extends Entity {
 	public function __construct($properties = array()) {
 		parent::__construct($properties);
 
-		$this->channels = new ArrayCollection();
 		$this->children = new ArrayCollection();
 	}
 

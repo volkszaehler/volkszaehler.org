@@ -40,9 +40,6 @@ class Channel extends Entity {
 	 */
 	protected $data = NULL;
 
-	/** @ManyToMany(targetEntity="Aggregator", mappedBy="channels") */
-	protected $aggregators;
-
 	/**
 	 * Constructor
 	 */

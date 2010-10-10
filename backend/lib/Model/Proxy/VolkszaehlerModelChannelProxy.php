@@ -96,6 +96,6 @@ class VolkszaehlerModelChannelProxy extends \Volkszaehler\Model\Channel implemen
 
     public function __sleep()
     {
-        return array('__isInitialized__', 'id', 'uuid', 'type', 'tokens', 'properties', 'parents', 'data', 'aggregators');
+        return array('__isInitialized__', 'id', 'uuid', 'type', 'tokens', 'properties', 'parents', 'data');
     }
 }

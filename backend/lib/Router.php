@@ -144,7 +144,7 @@ class Router {
 	 */
 	public function run() {
 		$pathInfo = substr($this->pathInfo, 1, strrpos($this->pathInfo, '.') -1);	// remove leading slash and format
-		$pathInfo = explode('/', $pathInfo);										// split into path segments
+		$pathInfo = explode('/', $pathInfo);						// split into path segments
 
 		if (array_key_exists($pathInfo[0], self::$controllerMapping)) {
 			$class = self::$controllerMapping[$pathInfo[0]];

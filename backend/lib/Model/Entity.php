@@ -109,7 +109,7 @@ abstract class Entity {
 		}
 
 		if (count($invalidProperties) > 0) {
-			throw new \Exception('Propert' . ((count($invalidProperties) == 1) ? 'y' : 'ies') . ' "' . implode(', ', $unallowedProperties) . '" ' . ((count($unallowedProperties) == 1) ? 'is' : 'are') . ' not allowed for entity "' . $this->getType() . '"');
+			throw new \Exception('Propert' . ((count($invalidProperties) == 1) ? 'y' : 'ies') . ' "' . implode(', ', $invalidProperties) . '" ' . ((count($invalidProperties) == 1) ? 'is' : 'are') . ' not allowed for entity "' . $this->getType() . '"');
 		}
 	}
 
