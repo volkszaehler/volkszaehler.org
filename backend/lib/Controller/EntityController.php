@@ -24,7 +24,6 @@
 namespace Volkszaehler\Controller;
 
 use Volkszaehler\Definition;
-
 use Volkszaehler\Util;
 use Volkszaehler\Model;
 
@@ -46,9 +45,9 @@ class EntityController extends Controller {
 		}
 
 		$dql = 'SELECT a, p
-				FROM Volkszaehler\Model\Entity a
-				LEFT JOIN a.properties p
-				WHERE a.uuid = ?1';
+			FROM Volkszaehler\Model\Entity a
+			LEFT JOIN a.properties p
+			WHERE a.uuid = ?1';
 
 		$q = $this->em->createQuery($dql);
 		$q->setParameter(1, $uuid);
@@ -75,7 +74,7 @@ class EntityController extends Controller {
 	 */
 	public function edit($identifier) {
 		$entity = $this->get($identifier);
-		$this->setProperties($entity);
+		$this->setProperties($entity, $this->view->request->getParameters());
 		$this->em->flush();
 
 		return $entity;
@@ -100,7 +99,7 @@ class EntityController extends Controller {
 		$uuids->exchangeArray(array_unique($uuids->getArrayCopy()));
 
 		// send new cookie to browser
-		setcookie('uuids', $uuids->encode(), 0, '/');	// TODO corrent path
+		setcookie('uuids', $uuids->encode(), 0, '/');	// TODO correct path
 	}
 
 	/**
@@ -124,8 +123,11 @@ class EntityController extends Controller {
 		setcookie('uuids', $uuids->encode(), 0, '/');	// TODO correct path
 	}
 
-	protected function setProperties(Model\Entity $entity) {
-		foreach ($this->view->request->getParameters() as $parameter => $value) {
+	/**
+	 * Update/set/delete properties of properties
+	 */
+	protected function setProperties(Model\Entity $entity, $parameters) {
+		foreach ($parameters as $parameter => $value) {
 			if (Definition\PropertyDefinition::exists($parameter)) {
 				if ($value == '') {
 					$entity->unsetProperty($parameter, $this->em);
@@ -136,6 +138,39 @@ class EntityController extends Controller {
 			}
 		}
 	}
-}
+
+	/**
+	 * Filter entites by properties
+	 */
+	public function filter(array $properties) {
+		$dql = 'SELECT a, p
+			FROM Volkszaehler\Model\Entity a
+			LEFT JOIN a.properties p';
+
+		$sqlWhere = array();
+		$i = 0;
+		foreach ($properties as $property => $value) {
+			switch (Definition\PropertyDefinition::get($property)->getType()) {
+				case 'string':
+				case 'text':
+				case 'multiple':
+					$value = "'" . $value . "'";
+					break;
+
+				case 'boolean':
+					$value = ($value) ? 1 : 0;
+			}
+			$sqlWhere[] = 'EXISTS (SELECT p' . $i . ' FROM \Volkszaehler\Model\Property p' . $i . ' WHERE p' . $i . '.key = \'' . $property . '\' AND p' . $i . '.value = ' . $value . ' AND p' . $i . '.entity = a)';
+			$i++;
+		}
+
+		if (count($sqlWhere) > 0) {
+			$dql .= ' WHERE ' . implode(' AND ', $sqlWhere);
+		}
+
+		$q = $this->em->createQuery($dql);
+		return $q->getSingleResult();
+	}
+}	
 
 ?>

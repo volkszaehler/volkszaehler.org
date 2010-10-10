@@ -53,7 +53,7 @@ class ChannelController extends EntityController {
 	 */
 	public function add() {
 		$channel = new Model\Channel($this->view->request->getParameter('type'));
-		$this->setProperties($channel);
+		$this->setProperties($channel, $this->view->request->getParameters());
 		$this->em->persist($channel);
 		$this->em->flush();
 
