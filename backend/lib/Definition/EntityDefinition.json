@@ -47,7 +47,7 @@
 	{
 		"name"			: "power",
 		"required"		: ["title", "resolution"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "port", "cuuid"],
 		"icon"			: "",					// TODO look for an icon
 		"unit"			: "kW/h",
 		"interpreter"	: "Volkszaehler\\Interpreter\\MeterInterpreter",
@@ -57,7 +57,7 @@
 	{
 		"name"			: "gas",
 		"required"		: ["title", "resolution"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "port", "cuuid"],
 		"icon"			: "",					// TODO look for an icon
 		"unit"			: "m³/h",
 		"interpreter"	: "Volkszaehler\\Interpreter\\MeterInterpreter",
@@ -67,7 +67,7 @@
 	{
 		"name"			: "water",
 		"required"		: ["title", "resolution"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "port", "cuuid"],
 		"icon"			: "",					// TODO look for an icon
 		"unit"			: "m³/h",
 		"interpreter"	: "Volkszaehler\\Interpreter\\MeterInterpreter",
