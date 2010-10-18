@@ -177,7 +177,7 @@ abstract class Entity {
 	public function unsetProperty($key, ORM\EntityManager $em) {
 		$property = $this->findProperty($key);
 		$em->remove($property);
-		$this->properties->remove($index);
+		$this->properties->removeElement($property);
 	}
 
 	/*
