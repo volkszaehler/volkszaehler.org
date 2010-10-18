@@ -29,11 +29,12 @@
 # configuration
 #
 # backend url
-URL="http://localhost/workspace/volkszaehler.org/backend"
+URL="http://localhost/workspace/volkszaehler.org/backend/index.php/"
 
 # 1wire sensor id => volkszaehler.org ucid
 declare -A MAPPING
 MAPPING["1012E6D300080077"]="9eed00f0-ca37-11df-9d39-15423b3b842b"
+MAPPING["10E3D2C400080017"]="875d2cc0-da4b-11df-a67f-e9bb235c3849"
 
 # the digitemp binary, choose the right one for your adaptor
 DIGITEMP="digitemp_DS9097"
@@ -42,12 +43,12 @@ DIGITEMP="digitemp_DS9097"
 DIGITEMP_CONF="/home/steffen/.digitemprc"
 
 # the port of your digitemp adaptor
-DIGITEMP_PORT="/dev/ttyUSB0"
+DIGITEMP_PORT="/dev/ttyUSB1"
 
 # additional options for digitemp
 # specify single or all sensors here for example
-DIGITEMP_OPTS="-t 0"
-#DIGITEMP_OPTS="-a"
+#DIGITEMP_OPTS="-t 0"
+DIGITEMP_OPTS="-a"
 
 # additional options for curl
 # specify credentials, proxy etc here
@@ -80,14 +81,9 @@ do
 	COLUMNS=( $LINE )
 	IFS=${OLD_IFS}
 
-	if [ -z ${MAPPING[${COLUMNS[1]}]} ]; then
-		echo "sensor ${COLUMNS[1]} is not mapped to an UUID" >&2
-		echo "please add it to the script. Example:" >&2
-		echo >&2
-		echo -e "MAPPING[\"${COLUMNS[1]}\"]=\"9aa643b0-9025-11df-9b68-8528e3b655ed\"" >&2
-	elif [ ${COLUMNS[3]:0:2} == "85" ]; then
+	if [ ${COLUMNS[3]:0:2} == "85" ]; then
 		echo "check your wiring; we received an invalid reading!" 1>2&
-	else
+	elif [[ ${MAPPING[${COLUMNS[1]}]} ]]; then
 		UUID=${MAPPING[${COLUMNS[1]}]}
 		REQUEST_URL="${URL}/data/${UUID}.json?value=${COLUMNS[3]}&timestamp=$(( ${COLUMNS[2]} * 1000 ))${URL_PARAMS}${DEBUG:+&debug=1}"
 
@@ -99,7 +95,11 @@ do
 		fi
 
 		curl ${CURL_OPTS} --data "" "${REQUEST_URL}"
+	# prohibit unmapped sensors
+	else
+		echo "sensor ${COLUMNS[1]} is not mapped to an uuid! add the mapping in the script." >&2
 	fi
+
 done
 
 IFS=${OLD_IFS}
