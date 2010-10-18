@@ -35,15 +35,14 @@ URL="http://localhost/workspace/volkszaehler.org/backend/index.php/"
 declare -A MAPPING
 MAPPING["1012E6D300080077"]="9eed00f0-ca37-11df-9d39-15423b3b842b"
 MAPPING["10E3D2C400080017"]="875d2cc0-da4b-11df-a67f-e9bb235c3849"
+MAPPING["10F59F84010800B0"]="4b549c20-da4f-11df-bd60-4b520f9cd4e0"
+MAPPING["1060BB840108000D"]="5fcc9b40-da4f-11df-b981-d55799876663"
 
 # the digitemp binary, choose the right one for your adaptor
 DIGITEMP="digitemp_DS9097"
 
 # the digitemp configuration (holds your sensor ids)
 DIGITEMP_CONF="/home/steffen/.digitemprc"
-
-# the port of your digitemp adaptor
-DIGITEMP_PORT="/dev/ttyUSB1"
 
 # additional options for digitemp
 # specify single or all sensors here for example
@@ -60,7 +59,7 @@ CURL_OPTS=""
 # ========================= do not change anything under this line
 
 # building digitemp options
-DIGITEMP_OPTS="-c ${DIGITEMP_CONF} ${DIGITEMP_OPTS} -s ${DIGITEMP_PORT} -q -o %s;%R;%N;%C"
+DIGITEMP_OPTS="-c ${DIGITEMP_CONF} ${DIGITEMP_OPTS} -q -o %s;%R;%N;%C"
 
 if [ $DEBUG ]; then
 	echo "enabling debugging output"
