@@ -147,9 +147,11 @@ class JSON extends View {
 	protected function addData(Interpreter\InterpreterInterface $interpreter) {
 		$data = $interpreter->getValues($this->request->getParameter('tuples'), $this->request->getParameter('group'));
 
-		$this->json['data'][] = array(
+		$this->json['data'] = array(
 			'uuid' => $interpreter->getUuid(),
 			'count' => count($data),
+			'first' => (isset($data[0][0])) ? $data[0][0] : NULL,
+			'last' => (isset($data[count($data)-1][0])) ? $data[count($data)-1][0] : NULL,
 			'min' => $interpreter->getMin(),
 			'max' => $interpreter->getMax(),
 			'average' => $interpreter->getAverage(),
