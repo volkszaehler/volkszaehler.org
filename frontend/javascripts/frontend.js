@@ -321,7 +321,7 @@ vz.entities.loadData = function() {
 	vz.entities.each(function(entity, parent) {
 		if (entity.active && entity.type != 'group') {
 			vz.load('data', entity.uuid, { from: Math.floor(vz.options.plot.xaxis.min), to: Math.ceil(vz.options.plot.xaxis.max), tuples: vz.options.tuples }, waitAsync(function(json) {
-				entity.data = json.data[0]; // TODO check uuid
+				entity.data = json.data;
 			}, vz.drawPlot, 'data'));
 		}
 	});
