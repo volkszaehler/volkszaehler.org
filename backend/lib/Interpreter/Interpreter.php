@@ -180,11 +180,11 @@ abstract class Interpreter implements InterpreterInterface {
 	 * @return float
 	 */
 	protected static function parseDateTimeString($string, $now) {
-		if ($ts = strtotime($string, $now / 1000)) {
-			return $ts * 1000;
-		}
-		elseif (ctype_digit($string)) {
+		if (ctype_digit($string)) {
 			return (float) $string;
+		}
+		elseif ($ts = strtotime($string, $now / 1000)) {
+			return $ts * 1000;
 		}
 		else {
 			throw new \Exception('Invalid time format: ' . $string);
