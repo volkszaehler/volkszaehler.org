@@ -38,7 +38,7 @@ use Volkszaehler\Model;
  * @Table(
  * 		name="properties",
  * 		uniqueConstraints={
- * 			@UniqueConstraint(name="unique_keys", columns={"entity_id", "name"})
+ * 			@UniqueConstraint(name="unique_keys", columns={"entity_id", "pkey"})
  * 		}
  * )
  * @HasLifecycleCallbacks
@@ -53,7 +53,10 @@ class Property {
 	 */
 	protected $id;
 
-	/** @Column(name="name", type="string", nullable=false) */
+	/**
+	 * @Column(name="pkey", type="string", nullable=false)
+	 * HINT: column name "key" is reserved by mysql
+	 */
 	protected $key;
 
 	/** @Column(type="string", nullable=false) */

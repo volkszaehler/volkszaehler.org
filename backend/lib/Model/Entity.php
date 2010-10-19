@@ -67,7 +67,7 @@ abstract class Entity {
 
 	/**
 	 * @OneToMany(targetEntity="Property", mappedBy="entity", cascade={"remove", "persist"})
-	 * @OrderBy({"name" = "ASC"})
+	 * @OrderBy({"key" = "ASC"})
 	 */
 	protected $properties = NULL;
 

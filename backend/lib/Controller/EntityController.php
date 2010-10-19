@@ -160,7 +160,7 @@ class EntityController extends Controller {
 				case 'boolean':
 					$value = ($value) ? 1 : 0;
 			}
-			$sqlWhere[] = 'EXISTS (SELECT p' . $i . ' FROM \Volkszaehler\Model\Property p' . $i . ' WHERE p' . $i . '.key = \'' . $property . '\' AND p' . $i . '.value = ' . $value . ' AND p' . $i . '.entity = a)';
+			$sqlWhere[] = 'EXISTS (SELECT p' . $i . ' FROM \Volkszaehler\Model\Property p' . $i . ' WHERE p' . $i . '.name = \'' . $property . '\' AND p' . $i . '.value = ' . $value . ' AND p' . $i . '.entity = a)';
 			$i++;
 		}
 
