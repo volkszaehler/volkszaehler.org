@@ -26,7 +26,7 @@
  */
 
 // default time interval to show
-const defaultInterval = 7*24*60*60*1000; // 1 week
+const defaultInterval = 1*24*60*60*1000; // 1 day
 
 // volkszaehler.org object
 // holds all data, options and functions for the frontend
