@@ -59,6 +59,9 @@ abstract class Interpreter implements InterpreterInterface {
 		$this->from = (isset($from)) ? self::parseDateTimeString($from, time() * 1000) : NULL;
 		$this->to = (isset($to)) ? self::parseDateTimeString($to, (isset($this->from)) ? $this->from : time() * 1000) : NULL;
 
+		if (!is_null($this->from) && !is_null($this->from) && $this->from > $this->to) {
+			throw new \Exception('&from is  larger than &to parameter');
+		}
 	}
 
 	/**
