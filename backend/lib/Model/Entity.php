@@ -67,7 +67,7 @@ abstract class Entity {
 
 	/**
 	 * @OneToMany(targetEntity="Property", mappedBy="entity", cascade={"remove", "persist"})
-	 * @OrderBy({"key" = "ASC"})
+	 * @OrderBy({"name" = "ASC"})
 	 */
 	protected $properties = NULL;
 
@@ -162,7 +162,7 @@ abstract class Entity {
 		if ($property = $this->findProperty($key)) {	// property already exists; just change value
 			$property->setValue($value);
 		}
-		else {											// create new property
+		else {						// create new property
 			$property = new Property($this, $key, $value);
 			$this->properties->add($property);
 		}
