@@ -81,7 +81,7 @@ do
 	IFS=${OLD_IFS}
 
 	if [ ${COLUMNS[3]:0:2} == "85" ]; then
-		echo "check your wiring; we received an invalid reading!" 1>2&
+		echo "check your wiring; we received an invalid reading!" >&2
 	elif [[ ${MAPPING[${COLUMNS[1]}]} ]]; then
 		UUID=${MAPPING[${COLUMNS[1]}]}
 		REQUEST_URL="${URL}/data/${UUID}.json?value=${COLUMNS[3]}&timestamp=$(( ${COLUMNS[2]} * 1000 ))${URL_PARAMS}${DEBUG:+&debug=1}"

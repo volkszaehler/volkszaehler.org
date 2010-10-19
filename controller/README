@@ -1,6 +1,14 @@
 Dieses Verzeichnis enthällt den Sourcecode für die Messcontroller (und deren Webfrontend).
 
-Das ethersex Verzeichnis ist als git Submodule eingebunden und kann mit folgenden Befehlen nachgeladen werden:
+PHP
+---------------------------------------
+Die PHP Implementation soll eine Referenz für alle anderen Controllerimplementationen darstellen und ist als Vorbild zu nutzen.
 
+Ethersex
+---------------------------------------
+Informationen zum Comilen und flashen finden sich hier:
+http://wiki.volkszaehler.org/software/ethersex
+
+Das ethersex Verzeichnis ist als git Submodule eingebunden und kann mit folgenden Befehlen nachgeladen werden:
 git submodule init
 git submodule update
