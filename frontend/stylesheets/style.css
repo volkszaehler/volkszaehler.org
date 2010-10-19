@@ -128,3 +128,8 @@ tbody tr td {
 	text-align: center;
 	color: grey;
 }
+
+/* additional theming for user interface */
+.ui-error .ui-widget-header {
+	background-image: url("../images/ui-bg_gloss-wave_35_red_500x100.png");
+}
