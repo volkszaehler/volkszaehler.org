@@ -107,8 +107,8 @@ vz.initDialogs = function() {
 			$('#addUUID').dialog('close');
 			vz.entities.loadDetails();
 		}
-		catch (e) {
-			alert(e);	// TODO show error
+		catch (exception) {
+			vz.exceptionDialog(exception);
 		}
 	});
 };
@@ -320,9 +320,16 @@ vz.entities.loadData = function() {
 	$('#plot').html('<div class="plotcenter"><img src="images/loading.gif" alt="loading..." /><p>Loading...</p></div>');
 	vz.entities.each(function(entity, parent) {
 		if (entity.active && entity.type != 'group') {
-			vz.load('data', entity.uuid, { from: Math.floor(vz.options.plot.xaxis.min), to: Math.ceil(vz.options.plot.xaxis.max), tuples: vz.options.tuples }, waitAsync(function(json) {
-				entity.data = json.data;
-			}, vz.drawPlot, 'data'));
+			vz.load('data', entity.uuid,
+				{
+					from: Math.floor(vz.options.plot.xaxis.min),
+					to: Math.ceil(vz.options.plot.xaxis.max),
+					tuples: vz.options.tuples
+				},
+				waitAsync(function(json) {
+					entity.data = json.data;
+				}, vz.drawPlot, 'data')
+			);
 		}
 	});
 };
@@ -357,7 +364,37 @@ vz.load = function(context, identifier, data, success) {
 		data: data,
 		error: function(xhr) {
 			json = JSON.parse(xhr.responseText);
-			alert(xhr.status + ': ' + xhr.statusText + '\n' + json.exception.message);
+			vz.errorDialog(xhr.statusText, json.exception.message, xhr.status);
 		}
 	});
 };
+
+/*
+ * Error & Exception handling
+ */
+
+vz.errorDialog = function(error, description, code) {
+	if (typeof code != undefined) {
+		error = code + ': ' + error;
+	}
+
+	$('<div>')
+	.addClass('error')
+	.append($('<span>').text(description))
+	.dialog({
+		title: error,
+		width: 450
+	});
+};
+
+vz.exceptionDialog = function(exception) {
+	vz.errorDialog(exception.type, exception.message, exception.code);
+};
+
+var Exception(type, message, code) {
+	return {
+		type: type,
+		message: message,
+		code: code
+	};
+}

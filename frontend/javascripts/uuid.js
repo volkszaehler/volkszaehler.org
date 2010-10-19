@@ -45,11 +45,11 @@ vz.uuids.add = function(uuid) {
 			$.setCookie('vz_uuids', JSON.stringify(vz.uuids));
 		}
 		else {
-			throw 'UUID already added';
+			throw new Exception('UUIDException', 'UUID already added');
 		}
 	}
 	else {
-		throw 'Invalid UUID';
+		throw new Exception('UUIDException', 'Invalid UUID');
 	}
 };
 	
@@ -63,7 +63,7 @@ vz.uuids.remove = function(uuid) {
 		$.setCookie('vz_uuids', JSON.stringify(vz.uuids));
 	}
 	else {
-		throw 'UUID unkown: ' + uuid;
+		throw new Exception('UUIDException', 'UUID unkown: ' + uuid);
 	}
 };
 	

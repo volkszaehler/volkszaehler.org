@@ -24,6 +24,9 @@
  * volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * Helper function to wait for multiple ajax requests to complete
+ */
 function waitAsync(callback, finished, identifier) {
 	if (!waitAsync.counter) { waitAsync.counter = new Array(); }
 	if (!waitAsync.counter[identifier]) { waitAsync.counter[identifier] = 0; }
