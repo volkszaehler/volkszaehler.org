@@ -53,34 +53,33 @@ class SensorInterpreter extends Interpreter {
 	}
 
 	/**
-	 * @todo adapt to doctrine orm
-	 * @todo untested
+	 * Fetch the smallest value from database
+	 * @internal doesn't fits the SQL standard
 	 * @return array (0 => timestamp, 1 => value)
 	 */
 	public function getMin() {
-		//return $this->dbh->query('SELECT value, timestamp FROM data WHERE channel_id = ' . (int) $this->id . self::buildFilterTime($this->from, $this->to) . ' ORDER BY value ASC', 1)->current();
+		return array_map('floatval', $this->conn->fetchAssoc('SELECT value, timestamp FROM data WHERE channel_id = ' . (int) $this->channel->getId() . parent::buildDateTimeFilterSQL($this->from, $this->to) . ' ORDER BY value ASC LIMIT 1'));
 	}
 
 	/**
-	 * @todo adapt to doctrine orm
-	 * @todo untested
+	 * Fetch the greatest value from the database
+	 * @internal doesn't fits the SQL standard
 	 * @return array (0 => timestamp, 1 => value)
 	 */
 	public function getMax() {
-		//return $this->dbh->query('SELECT value, timestamp FROM data WHERE channel_id = ' . (int) $this->id . self::buildFilterTime($this->from, $this->to) . ' ORDER BY value DESC', 1)->current();
+		return array_map('floatval', $this->conn->fetchAssoc('SELECT value, timestamp FROM data WHERE channel_id = ' . (int) $this->channel->getId() . parent::buildDateTimeFilterSQL($this->from, $this->to) . ' ORDER BY value DESC LIMIT 1'));
 	}
 
 	/**
-	 * @todo adapt to doctrine orm
-	 * @todo untested
+	 * Fetch the average value from the database
+	 * @internal doesn't fits the SQL standard
 	 * @return float
 	 */
 	public function getAverage() {
-		//return $this->dbh->query('SELECT AVG(value) AS value FROM data WHERE channel_id = ' . (int) $this->id . self::buildFilterTime($this->from, $this->to))->current();
+		return (float) $this->conn->fetchColumn('SELECT AVG(value) FROM data WHERE channel_id = ' . (int) $this->channel->getId() . parent::buildDateTimeFilterSQL($this->from, $this->to));
 	}
 
 	/**
-	 * @todo to be implemented
 	 * @todo possible and/or required?
 	 * @return float
 	 */

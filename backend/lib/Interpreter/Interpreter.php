@@ -39,7 +39,9 @@ use Doctrine\ORM\Query;
  */
 abstract class Interpreter implements InterpreterInterface {
 	protected $channel;
-	protected $em;
+
+	/** @var Database connection */
+	protected $conn;
 
 	protected $from;
 	protected $to;
@@ -54,7 +56,9 @@ abstract class Interpreter implements InterpreterInterface {
 	 */
 	public function __construct(Model\Channel $channel, ORM\EntityManager $em, $from, $to) {
 		$this->channel = $channel;
-		$this->em = $em;
+
+		// get dbal connection from EntityManager
+		$this->conn = $em->getConnection();
 
 		$this->from = (isset($from)) ? self::parseDateTimeString($from, time() * 1000) : NULL;
 		$this->to = (isset($to)) ? self::parseDateTimeString($to, (isset($this->from)) ? $this->from : time() * 1000) : NULL;
@@ -71,9 +75,6 @@ abstract class Interpreter implements InterpreterInterface {
 	 * @return Volkszaehler\DataIterator
 	 */
 	protected function getData($tuples = NULL, $groupBy = NULL) {
-		// get dbal connection from EntityManager
-		$conn = $this->em->getConnection();
-
 		// prepare sql
 		$parameters = array(':id' => $this->channel->getId());
 
@@ -93,10 +94,10 @@ abstract class Interpreter implements InterpreterInterface {
 		}
 
 		// get total row count for grouping
-		$rowCount = $conn->fetchColumn($sql['rowCount'], $parameters, 0);
+		$rowCount = $this->conn->fetchColumn($sql['rowCount'], $parameters, 0);
 
 		// query for data
-		$stmt = $conn->executeQuery('SELECT ' . $sql['fields'] . $sql['from'] . $sql['where'] . $sql['groupBy'] . $sql['orderBy'], $parameters);
+		$stmt = $this->conn->executeQuery('SELECT ' . $sql['fields'] . $sql['from'] . $sql['where'] . $sql['groupBy'] . $sql['orderBy'], $parameters);
 
 		// return iterators
 		if ($sql['groupBy'] || is_null($tuples) || $rowCount < $tuples) {
