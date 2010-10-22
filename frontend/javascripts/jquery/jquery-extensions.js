@@ -58,11 +58,7 @@ $.extend( {
  */
 $.extend({
 	setCookie: function(name, value, options) {
-		// defaults
-		options = options || {
-			expires: null,
-			
-		};
+		options = options || { };
 		
 		if (value === null) {
 			value = '';

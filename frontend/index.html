@@ -3,10 +3,10 @@
 <head>
 	<title>volkszaehler.org - web frontend</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<script type="text/javascript" src="javascripts/jquery-1.4.2.min.js"></script>
-	<script type="text/javascript" src="javascripts/jquery-ui-1.8.5.min.js"></script>
-	<script type="text/javascript" src="javascripts/jquery-treeTable.min.js"></script>
-	<script type="text/javascript" src="javascripts/jquery-extensions.js"></script>
+	<script type="text/javascript" src="javascripts/jquery/jquery-1.4.2.min.js"></script>
+	<script type="text/javascript" src="javascripts/jquery/jquery-ui-1.8.5.min.js"></script>
+	<script type="text/javascript" src="javascripts/jquery/jquery-treeTable.min.js"></script>
+	<script type="text/javascript" src="javascripts/jquery/jquery-extensions.js"></script>
 	
 	<script type="text/javascript" src="javascripts/json.js"></script>
 	<script type="text/javascript" src="javascripts/helper.js"></script>
@@ -17,8 +17,9 @@
 	<script type="text/javascript" src="javascripts/flot/jquery.flot.navigate.js"></script>
 	<script type="text/javascript" src="javascripts/flot/jquery.flot.crosshair.js"></script>
 	<script type="text/javascript" src="javascripts/flot/jquery.flot.symbol.js"></script>
-	
-	<script type="text/javascript" src="javascripts/init.js"></script>
+
+	<script type="text/javascript" src="javascripts/init.js"></script>	
+	<script type="text/javascript" src="javascripts/options.js"></script>
 	<script type="text/javascript" src="javascripts/uuid.js"></script>
 	<script type="text/javascript" src="javascripts/entity.js"></script>
 	<script type="text/javascript" src="javascripts/frontend.js"></script>
@@ -55,7 +56,7 @@
 		<table>
 			<thead>
 				<tr>
-					<th title="Anzeige">A</th>
+					<th><img src="images/eye.png" alt="Anzeige" title="Anzeige" /></th>
 					<th></th>
 					<th>Titel</th>
 					<th>Typ</th>
@@ -98,11 +99,6 @@
 						<td><label for="tuples"><img src="images/shading.png" alt="" /> Tuples (Auflösung)</label></td>
 						<td><input type="text" id="tuples" size="5" /></td>
 						<td></td>
-					</tr>
-					<tr id="timespan">
-						<td><img src="images/arrow_right.png" alt="" /> Zeitspanne</td>
-						<td><label for="from">von <input type="text" id="from" /></label></td>
-						<td><label for="to">bis <input type="text" id="to" /></label></td>
 					</tr>
 				</tbody>
 			</table>
