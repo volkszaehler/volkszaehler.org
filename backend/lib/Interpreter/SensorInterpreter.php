@@ -58,7 +58,8 @@ class SensorInterpreter extends Interpreter {
 	 * @return array (0 => timestamp, 1 => value)
 	 */
 	public function getMin() {
-		return array_map('floatval', $this->conn->fetchAssoc('SELECT value, timestamp FROM data WHERE channel_id = ' . (int) $this->channel->getId() . parent::buildDateTimeFilterSQL($this->from, $this->to) . ' ORDER BY value ASC LIMIT 1'));
+		$min = $this->conn->fetchAssoc('SELECT value, timestamp FROM data WHERE channel_id = ?' . parent::buildDateTimeFilterSQL($this->from, $this->to) . ' ORDER BY value ASC LIMIT 1',  array($this->channel->getId()));
+		return ($min) ? array_map('floatval', $min) : NULL;
 	}
 
 	/**
@@ -67,7 +68,8 @@ class SensorInterpreter extends Interpreter {
 	 * @return array (0 => timestamp, 1 => value)
 	 */
 	public function getMax() {
-		return array_map('floatval', $this->conn->fetchAssoc('SELECT value, timestamp FROM data WHERE channel_id = ' . (int) $this->channel->getId() . parent::buildDateTimeFilterSQL($this->from, $this->to) . ' ORDER BY value DESC LIMIT 1'));
+		$max = $this->conn->fetchAssoc('SELECT value, timestamp FROM data WHERE channel_id = ?' . parent::buildDateTimeFilterSQL($this->from, $this->to) . ' ORDER BY value DESC LIMIT 1', array($this->channel->getId()));
+		return ($max) ? array_map('floatval', $max) : NULL;
 	}
 
 	/**
@@ -76,7 +78,7 @@ class SensorInterpreter extends Interpreter {
 	 * @return float
 	 */
 	public function getAverage() {
-		return (float) $this->conn->fetchColumn('SELECT AVG(value) FROM data WHERE channel_id = ' . (int) $this->channel->getId() . parent::buildDateTimeFilterSQL($this->from, $this->to));
+		return (float) $this->conn->fetchColumn('SELECT AVG(value) FROM data WHERE channel_id = ?' . parent::buildDateTimeFilterSQL($this->from, $this->to), array($this->channel->getId()), 0);
 	}
 
 	/**

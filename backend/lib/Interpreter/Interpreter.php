@@ -76,10 +76,8 @@ abstract class Interpreter implements InterpreterInterface {
 	 */
 	protected function getData($tuples = NULL, $groupBy = NULL) {
 		// prepare sql
-		$parameters = array(':id' => $this->channel->getId());
-
 		$sql['from']	= ' FROM data';
-		$sql['where']	= ' WHERE channel_id = :id' . self::buildDateTimeFilterSQL($this->from, $this->to);
+		$sql['where']	= ' WHERE channel_id = ?' . self::buildDateTimeFilterSQL($this->from, $this->to);
 		$sql['orderBy']	= ' ORDER BY timestamp ASC';
 
 		if ($groupBy && $sql['groupFields'] = self::buildGroupBySQL($groupBy)) {
@@ -94,10 +92,10 @@ abstract class Interpreter implements InterpreterInterface {
 		}
 
 		// get total row count for grouping
-		$rowCount = $this->conn->fetchColumn($sql['rowCount'], $parameters, 0);
+		$rowCount = $this->conn->fetchColumn($sql['rowCount'], array($this->channel->getId()), 0);
 
 		// query for data
-		$stmt = $this->conn->executeQuery('SELECT ' . $sql['fields'] . $sql['from'] . $sql['where'] . $sql['groupBy'] . $sql['orderBy'], $parameters);
+		$stmt = $this->conn->executeQuery('SELECT ' . $sql['fields'] . $sql['from'] . $sql['where'] . $sql['groupBy'] . $sql['orderBy'], array($this->channel->getId()));
 
 		// return iterators
 		if ($sql['groupBy'] || is_null($tuples) || $rowCount < $tuples) {
