@@ -41,10 +41,6 @@ vz.initInterface = function() {
 	// make buttons fancy
 	$('button, input[type=button]').button();
 	
-	$('#backendUrl').val(vz.options.backendUrl).change(function() {
-		vz.options.backendUrl = $(this).val();
-	});
-	
 	// tuple resolution
 	$('#tuples').val(vz.options.tuples).change(function() {
 		vz.options.tuples = $(this).val();
@@ -67,8 +63,18 @@ vz.initInterface = function() {
 			vz.options.plot.series.points.show = $(this).attr('checked');
 			vz.drawPlot();
 		});
-	
-	$('#timespan input').datepicker();
+
+	$('#backendUrl')
+		.val(vz.options.backendUrl)
+		.change(function() {
+			vz.options.backendUrl = $(this).val();
+		});
+
+	$('#refresh')
+		.attr('checked', vz.options.refresh)
+		.change(function() {
+			vz.options.refresh = $(this).val();
+		});
 };
 
 /**
@@ -153,10 +159,10 @@ vz.bindEvents = function() {
  * Refresh plot with new data
  */
 vz.refresh = function() {
-	if ($('#refresh').attr('checked')) {
-		var delta = vz.options.plot.xaxis.min - vz.options.plot.xaxis.max;
-		vz.options.plot.xaxis.max = new Date().getTime();	// move plot
-		vz.options.plot.xaxis.min = vz.options.plot.xaxis.max - delta;		// move plot
+	if (vz.options.refresh) {
+		var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
+		vz.options.plot.xaxis.max = new Date().getTime();		// move plot
+		vz.options.plot.xaxis.min = vz.options.plot.xaxis.max - delta;	// move plot
 		vz.entities.loadData();
 	}
 };
@@ -184,8 +190,8 @@ vz.handleControls = function () {
 			break;
 		
 		case 'zoom_reset':
-			vz.options.plot.xaxis.min = middle - defaultInterval/2;
-			vz.options.plot.xaxis.max =  middle + defaultInterval/2;
+			vz.options.plot.xaxis.min = middle - vz.options.defaultInterval/2;
+			vz.options.plot.xaxis.max =  middle + vz.options.defaultInterval/2;
 			break;
 			
 		case 'zoom_in':
@@ -216,13 +222,9 @@ vz.handleControls = function () {
  * Get all entity information from backend
  */
 vz.entities.loadDetails = function() {
-	vz.entities.clear();
+	this.clear();
 	vz.uuids.each(function(index, value) {
 		vz.load('entity', value, {}, waitAsync(function(json) {
-			if (json.exception) {
-				alert(exception.message);
-				return false;
-			}
 			vz.entities.push(new Entity(json.entity));
 		}, vz.entities.show, 'information'));
 	});
@@ -234,30 +236,37 @@ vz.entities.loadDetails = function() {
  */
 vz.entities.show = function() {
 	$('#entities tbody').empty();
-	
 	var i = 0;
+
 	vz.entities.each(function(entity, parent) {
 		entity.color = vz.options.plot.colors[i++ % vz.options.plot.colors.length];
 		entity.active = (entity.active) ? entity.active : true;
-		
+
 		var row = $('<tr>')
 			.addClass((parent) ? 'child-of-entity-' + parent.uuid : '')
 			.attr('id', 'entity-' + entity.uuid)
 			.append($('<td>')
+				.addClass('visibility')
 				.css('background-color', entity.color)
-				.css('width', 19)
 				.append($('<input>')
 					.attr('type', 'checkbox')
 					.attr('checked', entity.active)
 					.bind('change', entity, function(event) {
-						event.data.active = $(this).attr('checked');
+						var state = $(this).attr('checked');
+						event.data.active = state;
+
+						if (entity.type == 'group') {
+							entity.children.each(function(entity) {
+								$('#entity-' + entity.uuid + ' input[type=checkbox]').attr('checked', state);
+								entity.active = state;
+							});
+						}
+
 						vz.drawPlot();
 					})
 				)
 			)
-			.append($('<td>')
-				.css('width', 20)
-			)
+			.append($('<td>').addClass('expander'))
 			.append($('<td>')
 				.append($('<span>')
 					.text(entity.title)
@@ -265,18 +274,18 @@ vz.entities.show = function() {
 					.addClass((entity.type == 'group') ? 'group' : 'channel')
 				)
 			)
-			.append($('<td>').text(entity.type))
-			.append($('<td>'))	// min
-			.append($('<td>'))	// max
-			.append($('<td>'))	// avg
-			.append($('<td>')	// operations
+			.append($('<td>').text(entity.type))	// channel type
+			.append($('<td>').addClass('min'))	// min
+			.append($('<td>').addClass('max'))	// max
+			.append($('<td>').addClass('average'))	// avg
+			.append($('<td>')			// operations
 				.addClass('ops')
-				/*.append($('<input>')
+				.append($('<input>')
 					.attr('type', 'image')
 					.attr('src', 'images/information.png')
 					.attr('alt', 'details')
 					.bind('click', entity, function(event) { event.data.showDetails(); })
-				)*/
+				)
 			);
 				
 		if (parent == null) {
@@ -308,8 +317,8 @@ vz.entities.show = function() {
  * Overwritten each iterator for entity array
  */
 vz.entities.each = function(cb) {
-	for (var i = 0; i < vz.entities.length; i++) {
-		vz.entities[i].each(cb);
+	for (var i = 0; i < this.length; i++) {
+		this[i].each(cb);
 	}
 }
 
@@ -317,9 +326,9 @@ vz.entities.each = function(cb) {
  * Load json data from the backend
  */
 vz.entities.loadData = function() {
-	$('#plot').html('<div class="plotcenter"><img src="images/loading.gif" alt="loading..." /><p>Loading...</p></div>');
-	vz.entities.each(function(entity, parent) {
-		if (entity.active && entity.type != 'group') {
+	//$('#plot').html('<div class="plotcenter"><img src="images/loading.gif" alt="loading..." /><p>Loading...</p></div>');
+	this.each(function(entity, parent) {
+		if (entity.active && entity.type != 'group') { // TODO add group data aggregation
 			vz.load('data', entity.uuid,
 				{
 					from: Math.floor(vz.options.plot.xaxis.min),
@@ -328,6 +337,18 @@ vz.entities.loadData = function() {
 				},
 				waitAsync(function(json) {
 					entity.data = json.data;
+					
+					// update entity table
+					// TODO add units
+					if (entity.data.min && entity.data.max && entity.data.min) {
+						$('#entity-' + entity.uuid + ' .min')
+							.text(entity.data.min.value)
+							.attr('title', $.plot.formatDate(new Date(entity.data.min.timestamp), vz.options.plot.xaxis.timeformat, vz.options.plot.xaxis.monthNames));	
+						$('#entity-' + entity.uuid + ' .max')
+							.text(entity.data.max.value)
+							.attr('title', $.plot.formatDate(new Date(entity.data.max.timestamp), vz.options.plot.xaxis.timeformat, vz.options.plot.xaxis.monthNames));
+						$('#entity-' + entity.uuid + ' .average').text(entity.data.average);
+					}
 				}, vz.drawPlot, 'data')
 			);
 		}
@@ -356,7 +377,14 @@ vz.drawPlot = function () {
 	}
 };
 
+/**
+ * Universal helper for backend ajax requests with error handling
+ */
 vz.load = function(context, identifier, data, success) {
+	$.getUrlVars().each(function (key, value) { // TODO parse only once
+		data[key] = value;
+	});
+
 	$.ajax({
 		success: success,
 		url: vz.options.backendUrl + '/' + context + '/' + identifier + '.json',
@@ -364,10 +392,42 @@ vz.load = function(context, identifier, data, success) {
 		data: data,
 		error: function(xhr) {
 			json = JSON.parse(xhr.responseText);
-			vz.errorDialog(xhr.statusText, json.exception.message, xhr.status);
+			vz.errorDialog(xhr.statusText, json.exception.message, xhr.status); // TODO error vs. exception
 		}
 	});
 };
+
+/**
+ * Load definitions from backend
+ */
+vz.definitions.load = function() {
+	$.ajax({
+		cache: true,
+		dataType: 'json',
+		url: vz.options.backendUrl + '/capabilities/definition/entity.json',
+		success: function(json) {
+			vz.definitions.entity = json.definition.entity
+		}
+	});
+
+	$.ajax({
+		cache: true,
+		dataType: 'json',
+		url: vz.options.backendUrl + '/capabilities/definition/property.json',
+		success: function(json) {
+			vz.definitions.property = json.definition.property
+		}
+	});
+};
+
+vz.definitions.get = function(section, iname) {
+	for (var i in vz.definitions[section]) {
+		alert(vz.definitions[section][i].name);
+		if (vz.definitions[section][i].name == iname) {
+			return definition;
+		}
+	}
+}
 
 /*
  * Error & Exception handling
@@ -379,11 +439,18 @@ vz.errorDialog = function(error, description, code) {
 	}
 
 	$('<div>')
-	.addClass('error')
 	.append($('<span>').text(description))
 	.dialog({
 		title: error,
-		width: 450
+		width: 450,
+		dialogClass: 'ui-error',
+		resizable: false,
+		modal: true,
+		buttons: {
+			Ok: function() {
+				$( this ).dialog( "close" );
+			}
+		}
 	});
 };
 
@@ -391,7 +458,7 @@ vz.exceptionDialog = function(exception) {
 	vz.errorDialog(exception.type, exception.message, exception.code);
 };
 
-var Exception(type, message, code) {
+var Exception = function(type, message, code) {
 	return {
 		type: type,
 		message: message,

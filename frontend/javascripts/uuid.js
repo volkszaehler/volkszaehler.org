@@ -25,24 +25,12 @@
  */
 
 /**
- * Read UUIDs from cookie and add them to the array
- */
-vz.uuids.parseCookie = function() {
-	if ($.getCookie('vz_uuids')) {
-		$.each(JSON.parse($.getCookie('vz_uuids')), function(index, uuid) {
-			vz.uuids.push(uuid);
-		});
-	}
-};
-	
-/**
  * Add given UUID and update cookie
  */
 vz.uuids.add = function(uuid) {
 	if (vz.uuids.validate(uuid)) {
 		if (!vz.uuids.contains(uuid)) {
 			vz.uuids.push(uuid);
-			$.setCookie('vz_uuids', JSON.stringify(vz.uuids));
 		}
 		else {
 			throw new Exception('UUIDException', 'UUID already added');
@@ -57,10 +45,8 @@ vz.uuids.add = function(uuid) {
  * Remove UUID and update cookie
  */
 vz.uuids.remove = function(uuid) {
-	console.log(vz.uuids.contains(uuid));
 	if (vz.uuids.contains(uuid)) {
-		vz.uuids.splice(this.indexOf(uuid), 1);	// remove uuid from array
-		$.setCookie('vz_uuids', JSON.stringify(vz.uuids));
+		vz.uuids.remove(uuid);	// remove uuid from array
 	}
 	else {
 		throw new Exception('UUIDException', 'UUID unkown: ' + uuid);
@@ -72,4 +58,23 @@ vz.uuids.remove = function(uuid) {
  */
 vz.uuids.validate = function(uuid) {
 	return uuid.match(/^[0-9a-zA-Z]{8}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{12}$/);
+};
+
+/**
+ * Save uuids as cookie
+ */
+vz.uuids.save = function() {
+	$.setCookie('vz_uuids', vz.uuids.join(';'));
+};
+
+/**
+ * Load uuids from cookie
+ */
+vz.uuids.load = function() {
+	var cookie = $.getCookie('vz_uuids');
+	if (cookie) {
+		cookie.split(';').each(function(index, uuid) {
+			vz.uuids.add(uuid);
+		});
+	}
 };

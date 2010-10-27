@@ -121,6 +121,14 @@ tbody tr td {
 	text-align: right;
 }
 
+.visibility {
+	width: 18px;
+}
+
+.expander {
+	width: 20px;
+}
+
 .plotcenter {
 	display: block;
 	margin: auto;

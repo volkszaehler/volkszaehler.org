@@ -24,26 +24,6 @@
  * volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
-vz.definitions.load = function() {
-	$.ajax({
-		cache: true,
-		dataType: 'json',
-		url: vz.options.backendUrl + '/capabilities/definition/entity.json',
-		success: function(json) {
-			vz.definitions.entity = json.definition.entity;
-		}
-	});
-
-	$.ajax({
-		cache: true,
-		dataType: 'json',
-		url: vz.options.backendUrl + '/capabilities/definition/property.json',
-		success: function(json) {
-			vz.definitions.property = json.definition.property;
-		}
-	});
-};
-
 /**
  * Entity constructor
  * @todo add validation
@@ -53,6 +33,7 @@ var Entity = function(json) {
 		switch(i) {
 			case 'children':
 				this.children = new Array;
+				this.children.each = vz.entities.each;
 				for (var j = 0; j < json.children.length; j++) {
 					var child = new Entity(json.children[j]);
 					this.children.push(child);
@@ -65,6 +46,8 @@ var Entity = function(json) {
 				this[i] = json[i];
 		}	
 	}
+
+	//this.definition = vz.definitions.get('entity', this.type);
 };
 
 /**

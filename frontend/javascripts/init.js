@@ -25,12 +25,8 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
-// default time interval to show
-const defaultInterval = 1*24*60*60*1000; // 1 day
-
-// volkszaehler.org object
-// holds all data, options and functions for the frontend
-// acts like a namespace (we dont want to pollute the global one)
+// volkszaehler.org namespace (holds all data, options and functions for the frontend)
+// we dont want to pollute the global namespace
 var vz = {
 	// entity information & properties
 	entities: new Array,
@@ -38,70 +34,33 @@ var vz = {
 	// known UUIDs in the browser
 	uuids: new Array,
 	
-	// plot including data
-	plot: {
-		// data for plot
-		data: new Array,
-		// container for flot instance
-		flot: { }
-	},
+	// flot instance
+	plot: { },
 	
 	// definitions of entities & properties
 	// for validation, translation etc..
 	definitions: { },
-		
-	options: {
-		backendUrl: '../backend/index.php',
-		tuples: 300,
-		plot: {
-			colors: ['#83CAFF', '#7E0021', '#579D1C', '#FFD320', '#FF420E', '#004586', '#0084D1', '#C5000B', '#FF950E', '#4B1F6F', '#AECF00', '#314004'],
-			series: {
-				lines: { show: true },
-				shadowSize: 0,
-				points: {
-					show: false,
-					radius: 1,
-					//symbol: 'square'
-					symbol: function(ctx, x, y, radius, shadow) {
-						ctx.lineWidth = 1;
-						ctx.strokeRect(x-0.5, y-0.5, 1, 1);
-					}
-				}
-			},
-			legend: { show: false },
-			xaxis: {
-				mode: 'time',
-				max: new Date().getTime(),	// timeinterval to request
-				min: new Date().getTime() - defaultInterval,
-				timeformat: '%d.%b %h:%M',
-				monthNames: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez']
-			},
-			yaxis: { },
-			selection: { mode: 'x' },
-			//crosshair: { mode: 'x' },
-			grid: { hoverable: true, autoHighlight: false },
-			zoom: {
-				interactive: true,
-				frameRate: null
-			},
-			pan: {
-				interactive: false,
-				frameRate: 20
-			}
-		}
-	}
+
+	// options loaded from cookies in options.js
+	options: { }
 };
+
+// check for debugging & load firebug
+if ($.getUrlVar('debug')) {
+	$.getScript('javascripts/firebug-lite.js');
+}
 
 // executed on document loaded complete
 // this is where it all starts...
 $(document).ready(function() {
+	// parse uuids & options from cookie
+	vz.uuids.load();
+	vz.options.load();
+
 	// initialize user interface
 	vz.initInterface();
 	vz.initDialogs();
 	vz.bindEvents();
-	
-	// parse uuids from cookie
-	vz.uuids.parseCookie();
 	
 	// add optional uuid from url
 	if($.getUrlVar('uuid')) {
@@ -117,4 +76,9 @@ $(document).ready(function() {
 	
 	vz.definitions.load();
 	vz.entities.loadDetails();
+});
+
+$(window).unload(function() {
+	vz.uuids.save();
+	vz.options.save();
 });

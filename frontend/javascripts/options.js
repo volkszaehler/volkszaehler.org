@@ -84,6 +84,7 @@ vz.options.load = function() {
 	for (var key in this) {
 		if (typeof this[key] == 'string' || typeof this[key] == 'number') {
 			this[key] = $.getCookie('vz_' + key);
+			//console.log('loaded option', key, this[key]);
 		}
 	}
 };
