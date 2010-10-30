@@ -69,43 +69,24 @@ Entity.prototype.showDetails = function() {
  * @todo implement/test
  */
 Entity.prototype.getDOM = function() {
-	var properties = $('<table><thead><th>Key</th><th>Value</th></thead></table');
-	
-	$.each(entity, function(key, value) {
-		properties.append($('<tr>')
-			.append($('<td>')
-				.addClass('key')
-				.text(key)
-			)
-			.append($('<td>')
-				.addClass('value')
-				.text(value)
-			)
-		);
-	});
-	
-	var entity = getDefinition(entities, type);
-	
-	entity.required.each(function(index, property) {
-		var property = getDefinition(properties, property);
-		
-		if (property) {
-			$('#properties')
-				.append($('<tr>')
-					.addClass('required')
-					.append($('<td>')
-						.append($('<label>')
-							.attr('for', property.name)
-							.text(property.translation.de + ':')
-						)
-					)
-					.append($('<td>').append(getPropertyDOM(property)))
-					.append($('<td>').text('(*)'))
-				);
+	var table = $('<table><thead><tr><th>Key</th><th>Value</th></tr></thead></table>');
+	var data = $('<tbody>');
+
+	for (var property in this) {
+		if (this.hasOwnProperty(property) && property != 'data' && property != 'children') {
+			data.append($('<tr>')
+				.append($('<td>')
+					.addClass('key')
+					.text(property)
+				)
+				.append($('<td>')
+					.addClass('value')
+					.text(this[property])
+				)
+			);
 		}
-	});
-	
-	// TODO optional properties
+	}
+	return table.append(data);
 };
 
 /**

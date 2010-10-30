@@ -43,7 +43,7 @@ vz.options.plot = {
 			//symbol: 'square'
 			symbol: function(ctx, x, y, radius, shadow) { // just draw simple pixels
 				ctx.lineWidth = 1;
-				ctx.strokeRect(x-0.5, y-0.5, 1, 1);
+				ctx.strokeRect(x-1, y-1, 2, 2);
 			}
 		}
 	},

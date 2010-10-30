@@ -33,7 +33,7 @@
  */
 vz.wui.init = function() {
 	// start auto refresh timer
-	window.setInterval(this.refresh, 5000);
+	window.setInterval(this.refresh, 3000);
 
 	// initialize dropdown accordion
 	$('#accordion h3').click(function() {
