@@ -28,8 +28,13 @@
 // volkszaehler.org namespace (holds all data, options and functions for the frontend)
 // we dont want to pollute the global namespace
 var vz = {
-	// entity information & properties
+	// entity properties + data
 	entities: new Array,
+
+	// web user interface
+	wui: {
+		dialogs: { }
+	},
 	
 	// known UUIDs in the browser
 	uuids: new Array,
@@ -55,12 +60,12 @@ if ($.getUrlVar('debug')) {
 $(document).ready(function() {
 	// parse uuids & options from cookie
 	vz.uuids.load();
-	vz.options.load();
+	//vz.options.load();
 
 	// initialize user interface
-	vz.initInterface();
-	vz.initDialogs();
-	vz.bindEvents();
+	vz.wui.init();
+	vz.wui.initEvents();
+	vz.wui.dialogs.init();
 	
 	// add optional uuid from url
 	if($.getUrlVar('uuid')) {
@@ -70,9 +75,6 @@ $(document).ready(function() {
 	if (vz.uuids.length == 0) {
 		$('#addUUID').dialog('open');
 	}
-	
-	// start auto refresh timer
-	window.setInterval(vz.refresh, 5000);
 	
 	vz.definitions.load();
 	vz.entities.loadDetails();

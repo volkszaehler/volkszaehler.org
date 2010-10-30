@@ -42,6 +42,14 @@ function waitAsync(callback, finished, identifier) {
 	};
 }
 
+var Exception = function(type, message, code) {
+	return {
+		type: type,
+		message: message,
+		code: code
+	};
+}
+
 /*
  * Array extensions
  * according to js language specification ECMA 1.6

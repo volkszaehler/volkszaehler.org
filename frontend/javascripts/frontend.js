@@ -31,7 +31,10 @@
 /**
  * Initialize the WUI (Web User Interface)
  */
-vz.initInterface = function() {
+vz.wui.init = function() {
+	// start auto refresh timer
+	window.setInterval(this.refresh, 5000);
+
 	// initialize dropdown accordion
 	$('#accordion h3').click(function() {
 		$(this).next().toggle('fast');
@@ -42,10 +45,23 @@ vz.initInterface = function() {
 	$('button, input[type=button]').button();
 	
 	// tuple resolution
-	$('#tuples').val(vz.options.tuples).change(function() {
+	var tup = $('#tuples');
+	tup.val(vz.options.tuples).change(function() {
 		vz.options.tuples = $(this).val();
 		vz.entities.loadData();
 	});
+
+	$('#backendUrl')
+		.val(vz.options.backendUrl)
+		.change(function() {
+			vz.options.backendUrl = $(this).val();
+		});
+
+	$('#refresh')
+		.attr('checked', vz.options.refresh)
+		.change(function() {
+			vz.options.refresh = $(this).val();
+		});
 	
 	// plot rendering
 	$('#rendering_lines')
@@ -63,24 +79,12 @@ vz.initInterface = function() {
 			vz.options.plot.series.points.show = $(this).attr('checked');
 			vz.drawPlot();
 		});
-
-	$('#backendUrl')
-		.val(vz.options.backendUrl)
-		.change(function() {
-			vz.options.backendUrl = $(this).val();
-		});
-
-	$('#refresh')
-		.attr('checked', vz.options.refresh)
-		.change(function() {
-			vz.options.refresh = $(this).val();
-		});
 };
 
 /**
  * Initialize dialogs
  */
-vz.initDialogs = function() {
+vz.wui.dialogs.init = function() {
 	// initialize dialogs
 	$('#addUUID').dialog({
 		autoOpen: false,
@@ -122,9 +126,9 @@ vz.initDialogs = function() {
 /**
  * Bind events to handle plot zooming & panning
  */
-vz.bindEvents = function() {
+vz.wui.initEvents = function() {
 	// bind plot actions
-	$('#move input[type=image]').click(vz.handleControls);
+	$('#move input[type=image]').click(vz.wui.handleControls);
 	
 	
 	$('#plot')
@@ -158,7 +162,7 @@ vz.bindEvents = function() {
 /**
  * Refresh plot with new data
  */
-vz.refresh = function() {
+vz.wui.refresh = function() {
 	if (vz.options.refresh) {
 		var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
 		vz.options.plot.xaxis.max = new Date().getTime();		// move plot
@@ -170,7 +174,7 @@ vz.refresh = function() {
 /**
  * Move & zoom in the plotting area
  */
-vz.handleControls = function () {
+vz.wui.handleControls = function () {
 	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
 	var middle = vz.options.plot.xaxis.min + delta/2;
 	
@@ -433,7 +437,7 @@ vz.definitions.get = function(section, iname) {
  * Error & Exception handling
  */
 
-vz.errorDialog = function(error, description, code) {
+vz.wui.dialogs.error = function(error, description, code) {
 	if (typeof code != undefined) {
 		error = code + ': ' + error;
 	}
@@ -454,14 +458,6 @@ vz.errorDialog = function(error, description, code) {
 	});
 };
 
-vz.exceptionDialog = function(exception) {
-	vz.errorDialog(exception.type, exception.message, exception.code);
+vz.wui.dialogs.exception = function(exception) {
+	this.error(exception.type, exception.message, exception.code);
 };
-
-var Exception = function(type, message, code) {
-	return {
-		type: type,
-		message: message,
-		code: code
-	};
-}
