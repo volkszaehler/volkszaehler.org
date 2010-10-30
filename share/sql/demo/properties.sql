@@ -22,10 +22,10 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 CREATE TABLE IF NOT EXISTS `properties` (
   `id` smallint(6) NOT NULL AUTO_INCREMENT,
   `entity_id` smallint(6) DEFAULT NULL,
-  `key` varchar(255) NOT NULL,
+  `pkey` varchar(255) NOT NULL,
   `value` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_properties` (`id`,`key`),
+  UNIQUE KEY `unique_properties` (`id`,`pkey`),
   KEY `entity_id` (`entity_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=15 ;
 
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS `properties` (
 -- Daten für Tabelle `properties`
 --
 
-INSERT INTO `properties` (`id`, `entity_id`, `key`, `value`) VALUES
+INSERT INTO `properties` (`id`, `entity_id`, `pkey`, `value`) VALUES
 (1, 1, 'title', 'S0-Zaehler'),
 (2, 1, 'description', 'Nummer 1'),
 (4, 1, 'resolution', '2000'),
