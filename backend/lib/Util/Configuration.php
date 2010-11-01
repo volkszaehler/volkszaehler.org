@@ -45,10 +45,10 @@ class Configuration {
 		$values =& self::$values;
 		$tree = explode('.', $var);
 		foreach ($tree as $part) {
-			$values =& $values[$part];	// TODO use array_merge_recursive()
+			$values =& $values[$part];
 		}
 
-		$values = $value;
+		$values = array_merge_recursive($values, $value);
 	}
 
 	/**
