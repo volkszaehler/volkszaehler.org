@@ -47,11 +47,10 @@ tbody tr td {
 #controls {
 	width: 100%;
 	text-align: center;
-	margin: 5px;
 }
 
-#move td {
-	border: 0;
+#controls button {
+	font-size: 1em;
 }
 
 #accordion {
