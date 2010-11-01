@@ -52,10 +52,18 @@ $config['db']['user']				= 'vz';
 $config['db']['password']			= 'demo';
 
 /**
- * @var string name of the database the backend should use
+ * @var string backend database
  * @link http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
  */
 $config['db']['dbname']				= 'volkszaehler';
+
+/*
+ * For administration tasks (doctrine cli)
+ * the following $['db']['admin'] settings will be merged with $config['db']
+ */
+//$config['db']['admin']['user']		= 'vz_admin';
+//$config['db']['admin']['password']		= 'admin_demo';
+
 
 /**
  * @var string path of the sqlite database

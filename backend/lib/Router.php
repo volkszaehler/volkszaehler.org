@@ -206,7 +206,7 @@ class Router {
 	 * @todo add other caching drivers (memcache, xcache)
 	 * @todo put into static class? singleton? function or state class?
 	 */
-	public static function createEntityManager() {
+	public static function createEntityManager($admin = FALSE) {
 		$config = new \Doctrine\ORM\Configuration;
 
 		if (extension_loaded('apc') && Util\Configuration::read('devmode') == FALSE) {
@@ -222,7 +222,12 @@ class Router {
 		$config->setProxyNamespace('Volkszaehler\Model\Proxy');
 		$config->setAutoGenerateProxyClasses(Util\Configuration::read('devmode'));
 
-		return \Doctrine\ORM\EntityManager::create(Util\Configuration::read('db'), $config);
+		$dbConfig = Util\Configuration::read('db');
+		if ($admin) {
+			$dbConfig = array_merge($dbConfig, $dbConfig['admin']);
+		}
+
+		return \Doctrine\ORM\EntityManager::create($dbConfig, $config);
 	}
 }
 

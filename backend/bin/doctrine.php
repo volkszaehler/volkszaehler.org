@@ -32,7 +32,7 @@ define('VZ_DIR', realpath(__DIR__ . '/../..'));
 define('VZ_BACKEND_DIR', VZ_DIR . '/backend');
 
 // class autoloading
-require VZ_BACKEND_DIR . '/lib/Util/ClassLoader.php';
+require_once VZ_BACKEND_DIR . '/lib/Util/ClassLoader.php';
 
 $classLoaders = array();
 $classLoaders[] = new Volkszaehler\Util\ClassLoader('Doctrine', VZ_BACKEND_DIR . '/lib/vendor/Doctrine');
@@ -46,7 +46,7 @@ foreach ($classLoaders as $loader) {
 // load configuration
 Util\Configuration::load(VZ_BACKEND_DIR . '/volkszaehler.conf');
 
-$em = Volkszaehler\Router::createEntityManager();
+$em = Volkszaehler\Router::createEntityManager(TRUE); // get admin credentials
 
 $helperSet = new \Symfony\Component\Console\Helper\HelperSet(array(
 	'db' => new \Doctrine\DBAL\Tools\Console\Helper\ConnectionHelper($em->getConnection()),
