@@ -128,7 +128,8 @@ vz.wui.dialogs.init = function() {
  */
 vz.wui.initEvents = function() {
 	// bind plot actions
-	$('#move input[type=image]').click(vz.wui.handleControls);
+	$('#controls input[type=image]').button().click(vz.wui.handleControls);
+	$('#controls').buttonset();
 	
 	
 	$('#plot')
