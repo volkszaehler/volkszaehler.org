@@ -74,6 +74,19 @@ Entity.prototype.getDOM = function() {
 
 	for (var property in this) {
 		if (this.hasOwnProperty(property) && property != 'data' && property != 'children') {
+			switch(property) {
+				case 'color':
+					var value = '<span style="background-color: ' + this[property] + '">' + this[property] + '</span>';
+					break;
+			
+				case 'active':
+					var value = (this[property]) ? 'yes' : 'no';
+					break;
+
+				default:
+					var value = this[property];
+			}
+
 			data.append($('<tr>')
 				.append($('<td>')
 					.addClass('key')
@@ -81,7 +94,7 @@ Entity.prototype.getDOM = function() {
 				)
 				.append($('<td>')
 					.addClass('value')
-					.text(this[property])
+					.append(value)
 				)
 			);
 		}

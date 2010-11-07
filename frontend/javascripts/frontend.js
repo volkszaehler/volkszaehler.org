@@ -367,7 +367,7 @@ vz.entities.loadData = function() {
 		if (entity.active && entity.type != 'group') { // TODO add group data aggregation
 			vz.load('data', entity.uuid,
 				{
-					from: Math.floor(vz.options.plot.xaxis.min),
+					from: Math.floor(vz.options.plot.xaxis.min),  // TODO fetch enough data to fill the holes on the beginning and the end of the plot
 					to: Math.ceil(vz.options.plot.xaxis.max),
 					tuples: vz.options.tuples
 				},
@@ -431,7 +431,7 @@ vz.load = function(context, identifier, data, success) {
 		data: data,
 		error: function(xhr) {
 			json = JSON.parse(xhr.responseText);
-			vz.wui.dialogs.error(xhr.statusText, json.exception.message, xhr.status); // TODO error vs. exception
+			vz.wui.dialogs.error(xhr.statusText, json.exception.message, xhr.status); // TODO throw exception?
 		}
 	});
 };
