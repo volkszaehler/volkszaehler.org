@@ -44,19 +44,6 @@ tbody tr td {
 	margin: 10px;
 }
 
-#controls button {
-	width: 10%;
-}
-
-#controls span.ui-button-text {
-	font-size: 0.85em;
-	height: 16px;
-}
-
-#controls {
-	padding: 0 !important;
-}
-
 #accordion {
 	margin-top: 10px;
 	background-color: lightgrey;
@@ -79,6 +66,15 @@ tbody tr td {
 
 #accordion div {
 	padding: 4px;
+}
+
+#controls {
+	margin: 0;
+}
+
+#controls button {
+	width: 10%;
+	height: 28px;
 }
 
 /* treeTable for entities */
