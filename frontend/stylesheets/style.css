@@ -34,7 +34,24 @@ tbody tr td {
 }
 
 #plot {
+	position: relative;
+}
+
+#flot {
 	height: 400px;
+}
+
+#overlay {
+	position: absolute;
+	width: 800px;
+	top: 0;
+	z-index: 1;
+
+	display: block;
+	margin: auto;
+	padding-top: 150px;
+	text-align: center;
+	color: grey;
 }
 
 #footer {
@@ -127,14 +144,6 @@ tbody tr td {
 
 .expander {
 	width: 20px;
-}
-
-.plotcenter {
-	display: block;
-	margin: auto;
-	padding-top: 150px;
-	text-align: center;
-	color: grey;
 }
 
 /* additional theming for user interface */
