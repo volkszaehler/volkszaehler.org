@@ -238,12 +238,14 @@ vz.wui.handleControls = function () {
 			vz.options.plot.xaxis.max =  middle + year/2;
 			break;
 	}
-	
-	// update delta after zoom
-	delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
+
+	// reenable autoscaling for yaxis
+	vz.options.plot.yaxis.min = 0;
+	vz.options.plot.yaxis.max = null;
 	
 	// we dont want to zoom/pan into the future
-	if (vz.options.plot.xaxis.max + delta > new Date().getTime()) {
+	if (vz.options.plot.xaxis.max > new Date().getTime()) {
+		delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
 		vz.options.plot.xaxis.max = new Date().getTime();
 		vz.options.plot.xaxis.min = new Date().getTime() - delta;
 	}
