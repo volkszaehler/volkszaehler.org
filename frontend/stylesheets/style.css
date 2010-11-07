@@ -24,7 +24,7 @@ tbody tr td {
 
 #content {
 	margin: 50px auto 20px;
-	width: 800px;
+	width: 93%;
 	padding: 10px;
 	background-color: white;
 	border: 1px solid black;
@@ -38,18 +38,18 @@ tbody tr td {
 }
 
 #flot {
-	height: 400px;
+	height: 500px;
 }
 
 #overlay {
 	position: absolute;
-	width: 800px;
+	width: 100%;
 	top: 0;
 	z-index: 1;
 
 	display: block;
 	margin: auto;
-	padding-top: 150px;
+	padding-top: 200px;
 	text-align: center;
 	color: grey;
 }
