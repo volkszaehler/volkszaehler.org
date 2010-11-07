@@ -42,7 +42,11 @@ vz.wui.init = function() {
 	}).next().hide();
 	
 	// make buttons fancy
-	$('button, input[type=button]').button();
+	$('button, input[type=button],[type=image]').button();
+	
+	// bind plot actions
+	$('#controls button').click(this.handleControls);
+	$('#controls').buttonset();
 	
 	// tuple resolution
 	var tup = $('#tuples');
@@ -127,11 +131,6 @@ vz.wui.dialogs.init = function() {
  * Bind events to handle plot zooming & panning
  */
 vz.wui.initEvents = function() {
-	// bind plot actions
-	$('#controls button').button().click(vz.wui.handleControls);
-	$('#controls').buttonset();
-	
-	
 	$('#plot')
 		.bind("plotselected", function (event, ranges) {
 			vz.options.plot.xaxis.min = ranges.xaxis.from;
@@ -361,7 +360,7 @@ vz.entities.each = function(cb) {
  * Load json data from the backend
  */
 vz.entities.loadData = function() {
-	//$('#plot').html('<div class="plotcenter"><img src="images/loading.gif" alt="loading..." /><p>Loading...</p></div>');
+	$('#overlay').html('<img src="images/loading.gif" alt="loading..." /><p>Loading...</p>');
 	this.each(function(entity, parent) {
 		if (entity.active && entity.type != 'group') { // TODO add group data aggregation
 			vz.load('data', entity.uuid,
@@ -404,12 +403,15 @@ vz.drawPlot = function () {
 		}
 	});
 	
-	if (data.length > 0) {
-		vz.plot = $.plot($('#plot'), data, vz.options.plot);
+	if (data.length == 0) {
+		$('#overlay').html('<img src="images/empty.png" alt="no data..." /><p>Nothing to plot...</p>');
+		data.push({});  // add empty dataset to show axis
 	}
 	else {
-		$('#plot').html('<div class="plotcenter"><img src="images/empty.png" alt="no data..." /><p>Nothing to plot...</p></div>');
+		$('#overlay').empty();
 	}
+
+	vz.plot = $.plot($('#flot'), data, vz.options.plot);
 };
 
 /**
