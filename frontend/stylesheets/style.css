@@ -44,17 +44,8 @@ tbody tr td {
 	margin: 10px;
 }
 
-#move {
-	width: 100%;
-	text-align: center;
-	margin: 5px;
-}
-
-#move td {
-	border: 0;
-}
-
 #accordion {
+	margin-top: 10px;
 	background-color: lightgrey;
 	-moz-border-radius: 4px;
 	-webkit-border-radius: 4px;
@@ -64,7 +55,7 @@ tbody tr td {
 #accordion h3 {
 	background-color: grey;
 	padding: 4px;
-	margin: 2px 0px;
+	margin: 2px 0;
 	color: white;
 	cursor: pointer;
 	font-size: 0.9em;
@@ -74,7 +65,16 @@ tbody tr td {
 }
 
 #accordion div {
-	padding: 5px;
+	padding: 4px;
+}
+
+#controls {
+	margin: 0;
+}
+
+#controls button {
+	width: 10%;
+	height: 28px;
 }
 
 /* treeTable for entities */

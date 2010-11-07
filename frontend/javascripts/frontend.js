@@ -128,7 +128,8 @@ vz.wui.dialogs.init = function() {
  */
 vz.wui.initEvents = function() {
 	// bind plot actions
-	$('#move input[type=image]').click(vz.wui.handleControls);
+	$('#controls button').button().click(vz.wui.handleControls);
+	$('#controls').buttonset();
 	
 	
 	$('#plot')
@@ -177,8 +178,8 @@ vz.wui.refresh = function() {
 vz.wui.handleControls = function () {
 	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
 	var middle = vz.options.plot.xaxis.min + delta/2;
-	
-	switch(this.value) {
+
+	switch($(this).val()) {
 		case 'move_last':
 			vz.options.plot.xaxis.max = new Date().getTime();
 			vz.options.plot.xaxis.min = new Date().getTime() - delta;
@@ -206,6 +207,36 @@ vz.wui.handleControls = function () {
 		case 'zoom_out':
 			vz.options.plot.xaxis.min -= delta;
 			vz.options.plot.xaxis.max += delta;
+			break;
+
+		case 'zoom_hour':
+			hour = 60*60*1000;
+			vz.options.plot.xaxis.min = middle - hour/2;
+			vz.options.plot.xaxis.max =  middle + hour/2;
+			break;
+
+		case 'zoom_day':
+			var day = 24*60*60*1000;
+			vz.options.plot.xaxis.min = middle - day/2;
+			vz.options.plot.xaxis.max =  middle + day/2;
+			break;
+
+		case 'zoom_week':
+			var week = 7*24*60*60*1000;
+			vz.options.plot.xaxis.min = middle - week/2;
+			vz.options.plot.xaxis.max =  middle + week/2;
+			break;
+
+		case 'zoom_month':
+			var month = 30*24*60*60*1000;
+			vz.options.plot.xaxis.min = middle - month/2;
+			vz.options.plot.xaxis.max =  middle + month/2;
+			break;
+
+		case 'zoom_year':
+			var year = 30*24*60*60*1000;
+			vz.options.plot.xaxis.min = middle - year/2;
+			vz.options.plot.xaxis.max =  middle + year/2;
 			break;
 	}
 	

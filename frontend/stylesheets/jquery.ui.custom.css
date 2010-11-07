@@ -1,0 +1,9 @@
+/* jQuery UI */
+
+input.ui-button {
+	padding: 0.1em 0.5em;
+}
+
+.ui-button-text-only .ui-button-text {
+	padding:0.1em 0.5em;
+}
