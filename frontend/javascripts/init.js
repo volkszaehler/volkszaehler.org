@@ -63,7 +63,11 @@ $(document).ready(function() {
 		vz.options.save();
 	});
 
-	$(window).resize(vz.drawPlot);
+	$(window).resize(function() {
+		vz.options.tuples = Math.round($('#flot').width() / 3);
+		$('#tuples').val(vz.options.tuples);
+		vz.drawPlot();
+	});
 
 	// parse uuids & options from cookie
 	vz.uuids.load();

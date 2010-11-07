@@ -49,8 +49,8 @@ vz.wui.init = function() {
 	$('#controls').buttonset();
 	
 	// tuple resolution
-	var tup = $('#tuples');
-	tup.val(vz.options.tuples).change(function() {
+	vz.options.tuples = Math.round($('#flot').width() / 3);
+	$('#tuples').val(vz.options.tuples).change(function() {
 		vz.options.tuples = $(this).val();
 		vz.entities.loadData();
 	});
@@ -429,7 +429,7 @@ vz.load = function(context, identifier, data, success) {
 		data: data,
 		error: function(xhr) {
 			json = JSON.parse(xhr.responseText);
-			vz.errorDialog(xhr.statusText, json.exception.message, xhr.status); // TODO error vs. exception
+			vz.wui.dialogs.error(xhr.statusText, json.exception.message, xhr.status); // TODO error vs. exception
 		}
 	});
 };
