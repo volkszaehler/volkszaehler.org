@@ -58,6 +58,13 @@ if ($.getUrlVar('debug')) {
 // executed on document loaded complete
 // this is where it all starts...
 $(document).ready(function() {
+	$(window).unload(function() {
+		vz.uuids.save();
+		vz.options.save();
+	});
+
+	$(window).resize(vz.drawPlot);
+
 	// parse uuids & options from cookie
 	vz.uuids.load();
 	//vz.options.load();
@@ -78,9 +85,4 @@ $(document).ready(function() {
 	
 	vz.definitions.load();
 	vz.entities.loadDetails();
-});
-
-$(window).unload(function() {
-	vz.uuids.save();
-	vz.options.save();
 });
