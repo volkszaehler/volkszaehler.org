@@ -1,0 +1,14 @@
+# Add these to your /etc/crontab. This is just an example. Change it to fit your needs
+# make 15 minute graphs every minute
+* * * * * root (touch /root/currentcost/15m.do)
+# make hour graphs every 10 minutes
+*/10 * * * * root (touch /root/currentcost/1h.do)
+# make 12h graphs every half hour
+*/30 * * * * root (touch /root/currentcost/12h.do)
+# make day and week graph every full hour
+0 * * * * root (touch /root/currentcost/1d.do)
+0 * * * * root (touch /root/currentcost/1w.do)
+# make month, quarter and year graphs once a day
+0 0 * * * root (touch /root/currentcost/1m.do)
+0 0 * * * root (touch /root/currentcost/3m.do)
+0 0 * * * root (touch /root/currentcost/1y.do)
