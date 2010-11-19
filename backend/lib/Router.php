@@ -223,7 +223,7 @@ class Router {
 		$config->setAutoGenerateProxyClasses(Util\Configuration::read('devmode'));
 
 		$dbConfig = Util\Configuration::read('db');
-		if ($admin) {
+		if ($admin && isset($dbConfig['admin'])) {
 			$dbConfig = array_merge($dbConfig, $dbConfig['admin']);
 		}
 
