@@ -58,7 +58,7 @@ $config['db']['password']			= 'demo';
 $config['db']['dbname']				= 'volkszaehler';
 
 /*
- * For administration tasks (doctrine cli)
+ * For administration tasks (used by doctrine cli and the setup script)
  * the following $['db']['admin'] settings will be merged with $config['db']
  */
 //$config['db']['admin']['user']		= 'vz_admin';
