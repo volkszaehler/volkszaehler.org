@@ -61,18 +61,22 @@ abstract class Definition {
 	 * Factory method for creating new instances
 	 *
 	 * @param string $name
-	 * @return Util\Definition
+	 * @return Util\Definition|array
 	 */
-	public static function get($name) {
+	public static function get($name = NULL) {
 		if (is_null(static::$definitions)) {
 			static::load();
 		}
 
-		if (!static::exists($name)) {
+		if (is_null($name)) {
+			return static::$definitions;
+		}
+		elseif (static::exists($name)) {
+			return static::$definitions[$name];
+		}
+		else
 			throw new \Exception('Unknown definition');
 		}
-
-		return static::$definitions[$name];
 	}
 
 	/**
@@ -89,6 +93,8 @@ abstract class Definition {
 
 	/**
 	 * Load JSON definitions from file (via lazy loading from get())
+	 *
+	 * @todo add caching
 	 */
 	protected static function load() {
 		static::$definitions = array();
@@ -101,6 +107,12 @@ abstract class Definition {
 	public static function getJSON() {
 		return Util\JSON::decode(file_get_contents(VZ_BACKEND_DIR . static::FILE));
 	}
+
+	/*
+	 * Setter & Getter
+	 */
+	public function getName() { return $this->name; }
+	public function getTranslation($language) { return $this->translation[$language]; }
 }
 
 ?>

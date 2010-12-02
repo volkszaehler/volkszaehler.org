@@ -87,6 +87,7 @@ class EntityDefinition extends Definition {
 	 * Setter & Getter
 	 */
 	public function getInterpreter() { return $this->interpreter; }
+	public function getModel() { return $this->model; }
 	public function getUnit() { return $this->unit; }
 	public function getRequiredProperties() { return $this->required; }
 	public function getValidProperties() { return array_merge($this->required, $this->optional); }
