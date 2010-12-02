@@ -29,7 +29,7 @@
 	{
 		"name"			: "group",
 		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "tolerance"],
+		"optional"		: ["description", "details:", "owner:", "tolerance", "public", "active"],
 		"icon"			: "",					// TODO look for an icon
 		"interpreter"	: "Volkszaehler\\Interpreter\\AggregatorInterpreter",
 		"model"			: "Volkszaehler\\Model\\Aggregator",
@@ -38,7 +38,7 @@
 	{
 		"name"			: "user",
 		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "tolerance"],
+		"optional"		: ["description", "details:", "owner:", "tolerance", "active"],
 		"icon"			: "",				// TODO look for an icon
 		"interpreter"	: "Volkszaehler\\Interpreter\\AggregatorInterpreter",
 		"model"			: "Volkszaehler\\Model\\Aggregator",
@@ -47,7 +47,7 @@
 	{
 		"name"			: "power",
 		"required"		: ["title", "resolution"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "port", "cuuid"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "port", "cuuid", "public", "active"],
 		"icon"			: "",					// TODO look for an icon
 		"unit"			: "kW/h",
 		"interpreter"	: "Volkszaehler\\Interpreter\\MeterInterpreter",
@@ -57,7 +57,7 @@
 	{
 		"name"			: "gas",
 		"required"		: ["title", "resolution"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "port", "cuuid"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "port", "cuuid", "public", "active"],
 		"icon"			: "",					// TODO look for an icon
 		"unit"			: "m³/h",
 		"interpreter"	: "Volkszaehler\\Interpreter\\MeterInterpreter",
@@ -67,7 +67,7 @@
 	{
 		"name"			: "water",
 		"required"		: ["title", "resolution"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "port", "cuuid"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "port", "cuuid", "public", "active"],
 		"icon"			: "",					// TODO look for an icon
 		"unit"			: "m³/h",
 		"interpreter"	: "Volkszaehler\\Interpreter\\MeterInterpreter",
@@ -77,7 +77,7 @@
 	{
 		"name"			: "temperature",
 		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "active"],
 		"icon"			: "",					// TODO look for an icon
 		"unit"			: "°C",
 		"interpreter"	: "Volkszaehler\\Interpreter\\SensorInterpreter",
@@ -87,7 +87,7 @@
 	{
 		"name"			: "pressure",
 		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "active"],
 		"icon"			: "",					// TODO look for an icon
 		"unit"			: "hPa",
 		"interpreter"	: "Volkszaehler\\Interpreter\\SensorInterpreter",
@@ -97,7 +97,7 @@
 	{
 		"name"			: "humidity",
 		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "active"],
 		"icon"			: "",					// TODO look for an icon
 		"unit"			: "%",
 		"interpreter"	: "Volkszaehler\\Interpreter\\SensorInterpreter",
@@ -107,7 +107,7 @@
 	{
 		"name"			: "windspeed",
 		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "active"],
 		"icon"			: "",					// TODO look for an icon
 		"unit"			: "km/h",
 		"interpreter"	: "Volkszaehler\\Interpreter\\SensorInterpreter",
@@ -117,7 +117,7 @@
 	{
 		"name"			: "radition",
 		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "active"],
 		"icon"			: "",					// TODO look for an icon
 		"unit"			: "",					// TODO add unit
 		"interpreter"	: "Volkszaehler\\Interpreter\\SensorInterpreter",
@@ -127,7 +127,7 @@
 	{
 		"name"			: "luminosity",
 		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "active"],
 		"icon"			: "",					// TODO look for an icon
 		"unit"			: "",					// TODO add unit
 		"interpreter"	: "Volkszaehler\\Interpreter\\SensorInterpreter",

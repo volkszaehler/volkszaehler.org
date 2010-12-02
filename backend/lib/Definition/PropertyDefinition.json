@@ -38,8 +38,18 @@
 		"name"			: "description",
 		"type"			: "text",
 		"pattern"		: "/[a-z0-9 ]/",	// TODO add whitespaces as \t \n \r
-		"max"			: 255,				// TODO allowed column size in database?
+		"max"			: 255,			// TODO allowed column size in database?
 		"translation"	: { "de" : "Beschreibung" }
+	},
+	{
+		"name"			: "public",
+		"type"			: "boolean",
+		"translation"	: { "de" : "Öffentlich" }
+	},
+	{
+		"name"			: "active",
+		"type"			: "boolean",
+		"translation"	: { "de" : "Aktiv?" }
 	},
 	{
 		"name"			: "cost",
@@ -309,10 +319,5 @@
 		"type"			: "string",
 		"max"			: 6,
 		"translation"	: { "de" : "Controller Pin" }
-	},
-	{
-		"name"			: "active",
-		"type"			: "boolean",
-		"translation"	: { "de" : "Aktiv?" }
 	}
 ]
