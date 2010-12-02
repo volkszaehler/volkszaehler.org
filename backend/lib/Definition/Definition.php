@@ -74,7 +74,7 @@ abstract class Definition {
 		elseif (static::exists($name)) {
 			return static::$definitions[$name];
 		}
-		else
+		else {
 			throw new \Exception('Unknown definition');
 		}
 	}
