@@ -1,4 +1,4 @@
-volkzaehler.org uses doctrine [1] as database abstraction and object relation model.
+volkszaehler.org uses doctrine [1] as database abstraction and object relation model.
 
 To setup your database follow these steps:
 
