@@ -58,9 +58,9 @@ $cli = new \Symfony\Component\Console\Application('Doctrine Command Line Interfa
 $cli->setCatchExceptions(true);
 $cli->setHelperSet($helperSet);
 $cli->addCommands(array(
-	// DBAL Commands
+	/* DBAL Commands disabled due to http://www.doctrine-project.org/jira/browse/DDC-910
 	new \Doctrine\DBAL\Tools\Console\Command\RunSqlCommand(),
-	new \Doctrine\DBAL\Tools\Console\Command\ImportCommand(),
+	new \Doctrine\DBAL\Tools\Console\Command\ImportCommand(),*/
 
 	// ORM Commands
 	new \Doctrine\ORM\Tools\Console\Command\ClearCache\MetadataCommand(),
