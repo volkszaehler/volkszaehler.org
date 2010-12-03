@@ -7,4 +7,7 @@ To setup your database follow these steps:
 3. Call backend/bin/doctrine orm:schema-tool:create --dump-sql > share/sql/mysql.sql
 4. import the resulting file using your favorite sql tool
 
+Alternatively you can directly import a existing mysql.sql file or
+force the script to do it for you by leaving the "--dump-sql" option.
+
 [1] http://www.doctrine-project.org
