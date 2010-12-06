@@ -55,7 +55,7 @@ class EntityController extends Controller {
 		try {
 			return $q->getSingleResult();
 		} catch (\Doctrine\ORM\NoResultException $e) {
-			throw new \Exception('No entity found with UUID: ' . $uuid);
+			throw new \Exception('No entity found with UUID: ' . $uuid, 404);
 		}
 	}
 

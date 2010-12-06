@@ -82,10 +82,15 @@ abstract class View {
 		$this->exceptionHandler(new \ErrorException($errstr, 0, $errno, $errfile, $errline));
 	}
 
+	/**
+	 * Handles exceptions and sets HTTP return code
+	 *
+	 * @param \Exception $exception
+	 */
 	final public function exceptionHandler(\Exception $exception) {
 		$this->addException($exception, Util\Debug::isActivated());
 
-		$code = ($exception->getCode() == 0 && HTTP\Response::getCodeDescription($exception->getCode())) ? 400 : $exception->getCode();
+		$code = ($exception->getCode() == 0 || !HTTP\Response::getCodeDescription($exception->getCode())) ? 400 : $exception->getCode();
 		$this->response->setCode($code);
 		$this->send();
 

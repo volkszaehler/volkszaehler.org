@@ -123,9 +123,7 @@ class Response {
 	public function getHeader($header) { return $this->headers[$header]; }
 	public function getCode() { return $this->code; }
 	public function setCode($code) { $this->code = $code; }
-	static public function getCodeDescription($code) {
-		return (isset(self::$codes[$code])) ? self::$codes[$code] : FALSE;
-	}
+	static public function getCodeDescription($code) { return (isset(self::$codes[$code])) ? self::$codes[$code] : FALSE; }
 }
 
 ?>
