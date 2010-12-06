@@ -233,7 +233,7 @@ vz.wui.handleControls = function () {
 			break;
 
 		case 'zoom_year':
-			var year = 30*24*60*60*1000;
+			var year = 365*24*60*60*1000;
 			vz.options.plot.xaxis.min = middle - year/2;
 			vz.options.plot.xaxis.max =  middle + year/2;
 			break;
