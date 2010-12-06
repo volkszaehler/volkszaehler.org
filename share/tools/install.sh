@@ -44,13 +44,14 @@ if [ "$REPLY" == 'y' ]; then
 	echo "installing doctrine into $dtdir"
 	mkdir -p $dtdir
 	git clone git://github.com/doctrine/doctrine2.git $dtdir
-	cd $dtdir
+	pushd $dtdir
 	git submodule init
 	git submodule update
 
 	cd lib/Doctrine
 	ln -s ../vendor/doctrine-dbal/lib/Doctrine/DBAL/ .
 	ln -s ../vendor/doctrine-common/lib/Doctrine/Common/ .
+	popd
 fi
 
 ############
@@ -68,12 +69,12 @@ if [ "$REPLY" == 'y' ]; then
 	mkdir -p $vzdir
 	git clone git://github.com/volkszaehler/volkszaehler.org.git $vzdir
 
-	cd $vzdir/backend/lib/vendor
+	pushd $vzdir/backend/lib/vendor
 	ln -s $dtdir/lib/Doctrine/ .
 	ln -s $dtdir/lib/vendor/Symfony/ .
+	popd
 fi
 
-cd $vzdir
 config=$vzdir/backend/volkszaehler.conf.php
 
 ############
@@ -103,9 +104,10 @@ if [ "$REPLY" == "y" ]; then
 
 	echo creating tables...
 	mysql -h$db_host -u$db_admin_user -p$db_admin_pass -e 'CREATE DATABASE `volkszaehler`'
-	cd $vzdir
+	pushd $vzdir
 	php backend/bin/doctrine orm:schema-tool:create
-
+	popd
+	
 	echo "creating db user $db_user with proper rights..."
 	mysql -h$db_host -u$db_admin_user -p$db_admin_pass <<-EOF
 		CREATE USER '$db_user'@'$db_host' IDENTIFIED BY '$db_pass';
