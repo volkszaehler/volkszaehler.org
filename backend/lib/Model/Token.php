@@ -38,7 +38,7 @@ use Volkszaehler\Util;
 class Token {
 	/**
 	 * @Id
-	 * @Column(type="smallint", nullable=false)
+	 * @Column(type="integer", nullable=false)
 	 * @GeneratedValue(strategy="AUTO")
 	 *
 	 * @todo wait until DDC-117 is fixed (PKs on FKs)
