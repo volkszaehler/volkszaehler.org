@@ -49,7 +49,7 @@ use Volkszaehler\Util;
 abstract class Entity {
 	/**
 	 * @Id
-	 * @Column(type="smallint", nullable=false)
+	 * @Column(type="integer", nullable=false)
 	 * @GeneratedValue(strategy="AUTO")
 	 */
 	protected $id;
