@@ -30,6 +30,7 @@ vz.options = {
 	tuples: 300,
 	refresh: false,
 	defaultInterval: 1*24*60*60*1000, // 1 day
+	timezoneOffset: -(new Date().getTimezoneOffset() * 60*1000)
 };
 
 vz.options.plot = {
@@ -52,8 +53,29 @@ vz.options.plot = {
 		mode: 'time',
 		max: new Date().getTime(), // timeinterval to request
 		min: new Date().getTime() - vz.options.defaultInterval,
-		timeformat: '%d.%b %h:%M',
-		monthNames: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez']
+		timeformat: '%d. %b %h:%M',
+		monthNames: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
+		tickFormatter: function(val, axis) {
+			var date = new Date(val + vz.options.timezoneOffset); /* add timezone offset */
+			
+			/* TODO add period dependend timeformat 
+			var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
+
+			if (delta > 3*365*24*60*60*1000)	// > 3 years
+				vz.options.plot.xaxis.timeformat = '%b %y';
+			else if (delta > 31*24*60*60*1000)	// > 1 month
+				vz.options.plot.xaxis.timeformat = '%d. %b';
+			else if (delta > 14*24*60*60*1000)	// > 2 weeks
+				vz.options.plot.xaxis.timeformat = '%d.%m';
+			else if (delta > 24*60*60*1000)		// > 1 day
+				vz.options.plot.xaxis.timeformat = '%d.%m %h:%M';
+			else if (delta > 60*60*1000)		// > 1 hour
+				vz.options.plot.xaxis.timeformat = '%h:%M';
+			else 					// < 1 hour
+				format = '%h:%M:%S';*/
+
+			return $.plot.formatDate(date, vz.options.plot.xaxis.timeformat, vz.options.plot.xaxis.monthNames);			
+		}
 	},
 	yaxis: { },
 	selection: { mode: 'x' },
