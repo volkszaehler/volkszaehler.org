@@ -59,20 +59,21 @@ $(document).ready(function() {
 		vz.drawPlot();
 	});
 
-	// initialize user interface
-	vz.wui.init();
-	vz.wui.initEvents();
-	vz.wui.dialogs.init();
-
 	// parse uuids & options from cookie
 	vz.definitions.load();
 	vz.uuids.load();
 	vz.options.load();
 	vz.parseUrlVars();
 
+	// initialize user interface
+	vz.wui.init();
+	vz.wui.initEvents();
+	vz.wui.dialogs.init();
+
 	if (vz.uuids.length == 0) {
 		$('#entity-add').dialog('open');
 	}
 	
+	// load entity details & properties
 	vz.entities.loadDetails();
 });

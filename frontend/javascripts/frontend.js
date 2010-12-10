@@ -78,18 +78,20 @@ vz.wui.init = function() {
 		});
 
 	// auto refresh
-	$('#refresh')
-		.attr('checked', vz.options.refresh)
-		.change(function() {
-			if ($(this).attr('checked')) {
-				vz.options.refresh = true;
-				vz.wui.refreshTimeout = window.setTimeout(vz.wui.refresh, vz.options.refreshInterval);
-			}
-			else {
-				vz.options.refresh = false;
-				window.clearTimeout(vz.wui.refreshTimeout);
-			}
-		});
+	if (vz.options.refresh) {
+		$('#refresh').attr('checked', true);
+		vz.wui.interval = window.setInterval(vz.wui.refresh, vz.options.refreshInterval);
+	}
+	$('#refresh').change(function() {
+		if ($(this).attr('checked')) {
+			vz.options.refresh = true;
+			vz.wui.interval = window.setInterval(vz.wui.refresh, vz.options.refreshInterval);
+		}
+		else {
+			vz.options.refresh = false;
+			window.clearInterval(vz.wui.interval);
+		}
+	});
 	
 	// plot rendering
 	$('#render-lines').attr('checked', (vz.options.render == 'lines'));
@@ -156,9 +158,6 @@ vz.wui.refresh = function() {
 	vz.options.plot.xaxis.max = new Date().getTime();		// move plot
 	vz.options.plot.xaxis.min = vz.options.plot.xaxis.max - delta;	// move plot
 	vz.entities.loadData();
-
-	// schedule next refresh
-	this.refreshTimeout = window.setTimeout(vz.wui.refresh, vz.options.refreshInterval);
 };
 
 /**
@@ -325,7 +324,7 @@ vz.entities.show = function() {
 		treeColumn: 2,
 		clickableNodeNames: true
 	});
-	
+
 	// load data and show plot
 	vz.entities.loadData();
 };
@@ -360,10 +359,10 @@ vz.entities.loadData = function() {
 					if (entity.data.min && entity.data.max && entity.data.min) {
 						$('#entity-' + entity.uuid + ' .min')
 							.text(entity.data.min.value)
-							.attr('title', $.plot.formatDate(new Date(entity.data.min.timestamp), vz.options.plot.xaxis.timeformat, vz.options.plot.xaxis.monthNames));	
+							.attr('title', $.plot.formatDate(new Date(entity.data.min.timestamp), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames));	
 						$('#entity-' + entity.uuid + ' .max')
 							.text(entity.data.max.value)
-							.attr('title', $.plot.formatDate(new Date(entity.data.max.timestamp), vz.options.plot.xaxis.timeformat, vz.options.plot.xaxis.monthNames));
+							.attr('title', $.plot.formatDate(new Date(entity.data.max.timestamp), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames));
 						$('#entity-' + entity.uuid + ' .average').text(entity.data.average);
 					}
 				}, vz.drawPlot, 'data')
@@ -373,8 +372,8 @@ vz.entities.loadData = function() {
 };
 
 vz.wui.updateHeadline = function() {
-	var from = $.plot.formatDate(new Date(vz.options.plot.xaxis.min + vz.options.timezoneOffset), vz.options.plot.xaxis.timeformat, vz.options.plot.xaxis.monthNames);
-	var to = $.plot.formatDate(new Date(vz.options.plot.xaxis.max + vz.options.timezoneOffset), vz.options.plot.xaxis.timeformat, vz.options.plot.xaxis.monthNames);
+	var from = $.plot.formatDate(new Date(vz.options.plot.xaxis.min + vz.options.timezoneOffset), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames);
+	var to = $.plot.formatDate(new Date(vz.options.plot.xaxis.max + vz.options.timezoneOffset), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames);
 	$('#title').text(from + ' - ' + to);
 }
 
