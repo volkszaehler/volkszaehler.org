@@ -61,11 +61,6 @@ abstract class Entity {
 	protected $type;
 
 	/**
-	 * @OneToMany(targetEntity="Token", mappedBy="entity", cascade={"remove", "persist"})
-	 */
-	protected $tokens = NULL;
-
-	/**
 	 * @OneToMany(targetEntity="Property", mappedBy="entity", cascade={"remove", "persist"})
 	 * @OrderBy({"key" = "ASC"})
 	 */
@@ -89,7 +84,6 @@ abstract class Entity {
 		$this->type = $type;
 		$this->uuid = (string) Util\UUID::mint();
 
-		$this->tokens = new Collections\ArrayCollection();
 		$this->properties = new Collections\ArrayCollection();
 		$this->parents = new Collections\ArrayCollection();
 	}

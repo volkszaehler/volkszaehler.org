@@ -90,6 +90,6 @@ class VolkszaehlerModelEntityProxy extends \Volkszaehler\Model\Entity implements
 
     public function __sleep()
     {
-        return array('__isInitialized__', 'id', 'uuid', 'type', 'tokens', 'properties', 'parents');
+        return array('__isInitialized__', 'id', 'uuid', 'type', 'properties', 'parents');
     }
 }

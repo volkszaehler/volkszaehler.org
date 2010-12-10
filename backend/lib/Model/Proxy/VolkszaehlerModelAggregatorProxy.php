@@ -108,6 +108,6 @@ class VolkszaehlerModelAggregatorProxy extends \Volkszaehler\Model\Aggregator im
 
     public function __sleep()
     {
-        return array('__isInitialized__', 'id', 'uuid', 'type', 'tokens', 'properties', 'parents', 'children');
+        return array('__isInitialized__', 'id', 'uuid', 'type', 'properties', 'parents', 'children');
     }
 }
