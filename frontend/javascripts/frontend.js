@@ -233,7 +233,7 @@ vz.wui.handleControls = function () {
 			break;
 
 		case 'zoom_year':
-			var year = 30*24*60*60*1000;
+			var year = 365*24*60*60*1000;
 			vz.options.plot.xaxis.min = middle - year/2;
 			vz.options.plot.xaxis.max =  middle + year/2;
 			break;
@@ -407,7 +407,7 @@ vz.drawPlot = function () {
 	
 	if (data.length == 0) {
 		$('#overlay').html('<img src="images/empty.png" alt="no data..." /><p>Nothing to plot...</p>');
-		data.push({});  // add empty dataset to show axis
+		data.push({});  // add empty dataset to show axes
 	}
 	else {
 		$('#overlay').empty();
