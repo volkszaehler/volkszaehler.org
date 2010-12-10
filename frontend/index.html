@@ -45,20 +45,20 @@
 
 <div id="accordion">
 	<div id="controls">
-		<button value="move_back"><img src="images/control_rewind_blue.png" title="move back" /></button>
-		<button value="zoom_in"><img src="images/zoom_in.png" title="zoom in" /></button>
-		<button value="zoom_out"><img src="images/zoom_out.png" title="zoom out" /></button>
-		<button value="zoom_hour">Stunde</button>
-		<button value="zoom_day">Tag</button>
-		<button value="zoom_week">Woche</button>
-		<button value="zoom_month">Monat</button>
-		<button value="zoom_year">Jahr</button>
-		<button value="move_last"><img src="images/control_end_blue.png" title="move to present" /></button>
-		<button value="move_forward"><img src="images/control_fastforward_blue.png" title="move forward" /></button>
+		<button value="move-back"><img src="images/control_rewind_blue.png" title="move back" /></button>
+		<button value="zoom-in"><img src="images/zoom_in.png" title="zoom in" /></button>
+		<button value="zoom-out"><img src="images/zoom_out.png" title="zoom out" /></button>
+		<button value="zoom-hour">Stunde</button>
+		<button value="zoom-day">Tag</button>
+		<button value="zoom-week">Woche</button>
+		<button value="zoom-month">Monat</button>
+		<button value="zoom-year">Jahr</button>
+		<button value="move-last"><img src="images/control_end_blue.png" title="move to present" /></button>
+		<button value="move-forward"><img src="images/control_fastforward_blue.png" title="move forward" /></button>
 	</div>
 	
 		<h3><img src="images/table.png" alt="" /> Kanäle</h3>
-		<div id="entities">
+		<div id="entity-list">
 		<table>
 			<thead>
 				<tr>
@@ -74,7 +74,7 @@
 			</thead>
 			<tbody></tbody>
 		</table>
-		<div><button name="addUUID"><img src="images/add.png" alt="add" /> UUID abonnieren</button> <button name="newEntity"><img src="images/star.png" alt="new" /> Entity erstellen</button></div>
+		<div><button name="entity-add"><img src="images/add.png" alt="add" /> Kanal hinzuf&uuml;gen</button></div>
 		</div>
 		<h3><img src="images/wrench.png" alt="" /> Optionen</h3>
 		<div id="options">
@@ -82,29 +82,25 @@
 				<thead>
 					<tr>
 						<th>Option</th>
-						<th colspan="2">Wert</th>
+						<th>Wert</th>
 					</tr>
 				</thead>
 				<tbody>
 					<tr>
 						<td><label for="refresh"><img src="images/arrow_refresh.png" alt="" /> Automatisch aktualisieren</label></td>
 						<td><input type="checkbox" id="refresh" /></td>
-						<td></td>
-					</tr>
-					<tr id="rendering">
-						<td><img src="images/eye.png" alt="" /> Darstellung</td>
-						<td><label for="rendering_points"><input type="radio" id="rendering_points" name="rendering" value="points" /> Punkte</label></td>
-						<td><label for="rendering_lines"><input type="radio" id="rendering_lines" name="rendering" value="lines" /> Linien</label></td>
 					</tr>
 					<tr>
-						<td><label for="backendUrl"><img src="images/server.png" alt="" /> Backend-Adresse</label></td>
-						<td><input type="text" id="backendUrl" /></td>
-						<td></td>
+						<td><img src="images/eye.png" alt="" /> Darstellung</td>
+						<td><label for="render-points"><input type="radio" id="render-points" name="render" value="points" /> Punkte</label> <label for="render-lines"><input type="radio" id="render-lines" name="render" value="lines" /> Linien</label></td>
+					</tr>
+					<tr>
+						<td><label for="backend-url"><img src="images/server.png" alt="" /> Backend-Adresse</label></td>
+						<td><input type="text" id="backend-url" /></td>
 					</tr>
 					<tr>
 						<td><label for="tuples"><img src="images/shading.png" alt="" /> Tuples (Auflösung)</label></td>
 						<td><input type="text" id="tuples" size="5" /></td>
-						<td></td>
 					</tr>
 				</tbody>
 			</table>
@@ -116,27 +112,27 @@
 </div>
 
 <!-- dialogs -->
-<div id="addUUID" class="dialog">
-	<p>Hier können Sie einen existierenden Kanal über seine UUID hinzufügen</p>
-	<p><label for="uuid">UUID: </label><input id="uuid" type="text" size="36" maxlength="36" /></p>
-	<input type="button" value="hinzufügen" />
-</div>
+<div id="entity-add" class="dialog">
+	<div class="tabs">
+		<ul>
+			<li><a href="#entity-subscribe">Kanal abonnieren</a></li>
+			<li><a href="#entity-create">Kanal erstellen</a></li>
+			<li><a href="#public-entities">&ouml;ffentliche Kan&auml;le</a></li>
+		</ul>
+		<div id="entity-subscribe">
+			<p>Hier k&ouml;nnen Sie einen existierenden Kanal über seine UUID hinzuf&uuml;gen</p>
+			<p><label for="uuid">UUID: </label><input id="uuid" type="text" size="36" maxlength="36" /></p>
+			<input type="button" value="hinzufügen" />
+		</div>
+		<div id="entity-create">
+			<p>Hier können Sie einen neuen Kanal erstellen</p>
 
-<div id="newEntity" class="dialog">
-	<p>Hier können sie einen neuen Kanal hinzufügen:</p>
-	<fieldset><legend>Allgemeine Eigenschaften</legend>
-		<table>
-			<tr><td><label for="type">Typ:</label></td><td><select name="type"></select></td></tr>
-			<tr><td><label for="port">Port:</label></td><td><input type="text" name="port" /></td></tr>
-		</table>
-	</fieldset>
-			
-	<fieldset>
-		<legend>Spezifische Eigenschaften</legend>
-		<table id="properties"></table>
-		<p>(*) required</p>
-	</fieldset>
-	<input type="button" value="hinzufügen" />
+			<input type="button" value="erstellen" />
+		</div>
+		<div id="public-entities">
+			<p>Hier k&ouml;nnen Sie demn&auml;chst &ouml;ffentliche Kan&auml;le abonnieren.</p>
+		</div>
+	</div>
 </div>
 </body>
 </html>

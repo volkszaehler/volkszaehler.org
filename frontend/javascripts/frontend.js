@@ -55,7 +55,7 @@ vz.wui.init = function() {
 		vz.entities.loadData();
 	});
 
-	$('#backendUrl')
+	$('#backend-url')
 		.val(vz.options.backendUrl)
 		.change(function() {
 			vz.options.backendUrl = $(this).val();
@@ -68,7 +68,7 @@ vz.wui.init = function() {
 		});
 	
 	// plot rendering
-	$('#rendering_lines')
+	$('#render-lines')
 		.attr('checked', vz.options.plot.series.lines.show)
 		.change(function() {
 			vz.options.plot.series.lines.show = $(this).attr('checked');
@@ -76,7 +76,7 @@ vz.wui.init = function() {
 			vz.drawPlot();
 		});
 	
-	$('#rendering_points')
+	$('#render-points')
 		.attr('checked', vz.options.plot.series.points.show)
 		.change(function() {
 			vz.options.plot.series.lines.show = !$(this).attr('checked');
@@ -90,35 +90,25 @@ vz.wui.init = function() {
  */
 vz.wui.dialogs.init = function() {
 	// initialize dialogs
-	$('#addUUID').dialog({
+	$('#entity-add.dialog').dialog({
 		autoOpen: false,
-		title: 'UUID hinzufügen',
-		width: 450,
+		title: 'Kanal hinzuf&uuml;gen',
+		width: 600,
 		resizable: false
 	});
+	$('#entity-add.dialog > div').tabs();
 	
-	$('#newEntity').dialog({
-		autoOpen: false,
-		title: 'Entity erstellen',
-		width: 400
+	// open entity dialogs
+	$('button[name=entity-add]').click(function() {
+		$('#entity-add').dialog('open');
 	});
 	
-	// open uuid dialog
-	$('button[name=addUUID]').click(function() {
-		$('#addUUID').dialog('open');
-	});
-	
-	// open entity dialog
-	$('button[name=newEntity]').click(function() {
-		$('#newEntity').dialog('open');
-	});
-	
-	// add UUID
-	$('#addUUID input[type=button]').click(function() {
+	// subscribe UUID
+	$('#entity-subscribe input[type=button]').click(function() {
 		try {
-			vz.uuids.add($('#addUUID input[type=text]').val());
-			$('#addUUID input[type=text]').val('');
-			$('#addUUID').dialog('close');
+			vz.uuids.add($('#entity-subscribe input[type=text]').val());
+			$('#entity-subscribe input[type=text]').val('');
+			$('#entity-add').dialog('close');
 			vz.entities.loadDetails();
 		}
 		catch (exception) {
@@ -179,60 +169,60 @@ vz.wui.handleControls = function () {
 	var middle = vz.options.plot.xaxis.min + delta/2;
 
 	switch($(this).val()) {
-		case 'move_last':
+		case 'move-last':
 			vz.options.plot.xaxis.max = new Date().getTime();
 			vz.options.plot.xaxis.min = new Date().getTime() - delta;
 			break;
 			
-		case 'move_back':
+		case 'move-back':
 			vz.options.plot.xaxis.min -= delta;
 			vz.options.plot.xaxis.max -= delta;
 			break;
-		case 'move_forward':
+		case 'move-forward':
 			vz.options.plot.xaxis.min += delta;
 			vz.options.plot.xaxis.max += delta;
 			break;
 		
-		case 'zoom_reset':
+		case 'zoom-reset':
 			vz.options.plot.xaxis.min = middle - vz.options.defaultInterval/2;
 			vz.options.plot.xaxis.max =  middle + vz.options.defaultInterval/2;
 			break;
 			
-		case 'zoom_in':
+		case 'zoom-in':
 			vz.options.plot.xaxis.min += delta/4;
 			vz.options.plot.xaxis.max -= delta/4;
 			break;
 			
-		case 'zoom_out':
+		case 'zoom-out':
 			vz.options.plot.xaxis.min -= delta;
 			vz.options.plot.xaxis.max += delta;
 			break;
 
-		case 'zoom_hour':
+		case 'zoom-hour':
 			hour = 60*60*1000;
 			vz.options.plot.xaxis.min = middle - hour/2;
 			vz.options.plot.xaxis.max =  middle + hour/2;
 			break;
 
-		case 'zoom_day':
+		case 'zoom-day':
 			var day = 24*60*60*1000;
 			vz.options.plot.xaxis.min = middle - day/2;
 			vz.options.plot.xaxis.max =  middle + day/2;
 			break;
 
-		case 'zoom_week':
+		case 'zoom-week':
 			var week = 7*24*60*60*1000;
 			vz.options.plot.xaxis.min = middle - week/2;
 			vz.options.plot.xaxis.max =  middle + week/2;
 			break;
 
-		case 'zoom_month':
+		case 'zoom-month':
 			var month = 30*24*60*60*1000;
 			vz.options.plot.xaxis.min = middle - month/2;
 			vz.options.plot.xaxis.max =  middle + month/2;
 			break;
 
-		case 'zoom_year':
+		case 'zoom-year':
 			var year = 365*24*60*60*1000;
 			vz.options.plot.xaxis.min = middle - year/2;
 			vz.options.plot.xaxis.max =  middle + year/2;
@@ -259,6 +249,8 @@ vz.wui.handleControls = function () {
  */
 vz.entities.loadDetails = function() {
 	this.clear();
+	$('#entity-list tbody').empty();
+
 	vz.uuids.each(function(index, value) {
 		vz.load('entity', value, {}, waitAsync(function(json) {
 			vz.entities.push(new Entity(json.entity));
@@ -271,7 +263,6 @@ vz.entities.loadDetails = function() {
  * @param data
  */
 vz.entities.show = function() {
-	$('#entities tbody').empty();
 	var i = 0;
 
 	vz.entities.each(function(entity, parent) {
@@ -336,11 +327,11 @@ vz.entities.show = function() {
 			);
 		}
 			
-		$('#entities tbody').append(row);
+		$('#entity-list tbody').append(row);
 	});
 	
 	// http://ludo.cubicphuse.nl/jquery-plugins/treeTable/doc/index.html
-	$('#entities table').treeTable({
+	$('#entity-list table').treeTable({
 		treeColumn: 2,
 		clickableNodeNames: true
 	});
@@ -362,7 +353,7 @@ vz.entities.each = function(cb) {
  * Load json data from the backend
  */
 vz.entities.loadData = function() {
-	$('#overlay').html('<img src="images/loading.gif" alt="loading..." /><p>Loading...</p>');
+	$('#overlay').html('<img src="images/loading.gif" alt="loading..." /><p>loading...</p>');
 	this.each(function(entity, parent) {
 		if (entity.active && entity.type != 'group') { // TODO add group data aggregation
 			vz.load('data', entity.uuid,
@@ -406,7 +397,7 @@ vz.drawPlot = function () {
 	});
 	
 	if (data.length == 0) {
-		$('#overlay').html('<img src="images/empty.png" alt="no data..." /><p>Nothing to plot...</p>');
+		$('#overlay').html('<img src="images/empty.png" alt="no data..." /><p>nothing to plot...</p>');
 		data.push({});  // add empty dataset to show axes
 	}
 	else {

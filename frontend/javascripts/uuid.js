@@ -28,9 +28,9 @@
  * Add given UUID and update cookie
  */
 vz.uuids.add = function(uuid) {
-	if (vz.uuids.validate(uuid)) {
-		if (!vz.uuids.contains(uuid)) {
-			vz.uuids.push(uuid);
+	if (this.validate(uuid)) {
+		if (!this.contains(uuid)) {
+			this.push(uuid);
 		}
 		else {
 			throw new Exception('UUIDException', 'UUID already added');
@@ -45,8 +45,8 @@ vz.uuids.add = function(uuid) {
  * Remove UUID and update cookie
  */
 vz.uuids.remove = function(uuid) {
-	if (vz.uuids.contains(uuid)) {
-		vz.uuids.remove(uuid);	// remove uuid from array
+	if (this.contains(uuid)) {
+		this.splice(this.indexOf(uuid), 1);	// remove uuid from array
 	}
 	else {
 		throw new Exception('UUIDException', 'UUID unkown: ' + uuid);
@@ -64,7 +64,7 @@ vz.uuids.validate = function(uuid) {
  * Save uuids as cookie
  */
 vz.uuids.save = function() {
-	$.setCookie('vz_uuids', vz.uuids.join(';'));
+	$.setCookie('vz_uuids', this.join(';'));
 };
 
 /**

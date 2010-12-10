@@ -30,7 +30,7 @@ vz.options = {
 	tuples: 300,
 	refresh: false,
 	defaultInterval: 1*24*60*60*1000, // 1 day
-	timezoneOffset: -(new Date().getTimezoneOffset() * 60*1000)
+	timezoneOffset: -(new Date().getTimezoneOffset() * 60*1000) // TODO add option with timezone dropdown
 };
 
 vz.options.plot = {
@@ -57,27 +57,13 @@ vz.options.plot = {
 		monthNames: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
 		tickFormatter: function(val, axis) {
 			var date = new Date(val + vz.options.timezoneOffset); /* add timezone offset */
-			
-			/* TODO add period dependend timeformat 
-			var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
-
-			if (delta > 3*365*24*60*60*1000)	// > 3 years
-				vz.options.plot.xaxis.timeformat = '%b %y';
-			else if (delta > 31*24*60*60*1000)	// > 1 month
-				vz.options.plot.xaxis.timeformat = '%d. %b';
-			else if (delta > 14*24*60*60*1000)	// > 2 weeks
-				vz.options.plot.xaxis.timeformat = '%d.%m';
-			else if (delta > 24*60*60*1000)		// > 1 day
-				vz.options.plot.xaxis.timeformat = '%d.%m %h:%M';
-			else if (delta > 60*60*1000)		// > 1 hour
-				vz.options.plot.xaxis.timeformat = '%h:%M';
-			else 					// < 1 hour
-				format = '%h:%M:%S';*/
-
-			return $.plot.formatDate(date, vz.options.plot.xaxis.timeformat, vz.options.plot.xaxis.monthNames);			
+			return $.plot.formatDate(date, this.timeformat, this.monthNames);			
 		}
 	},
-	yaxis: { },
+	yaxis: {
+		min: 0,
+		max: null
+	},
 	selection: { mode: 'x' },
 	crosshair: { mode: 'x' },
 	grid: {
@@ -105,8 +91,10 @@ vz.options.save = function() {
 vz.options.load = function() {
 	for (var key in this) {
 		if (typeof this[key] == 'string' || typeof this[key] == 'number') {
-			this[key] = $.getCookie('vz_' + key);
-			//console.log('loaded option', key, this[key]);
+			var value = $.getCookie('vz_' + key);
+			if (typeof value != undefined) {
+				this[key] = (typeof this[key] == 'number') ? parseFloat(value) : value;
+			}
 		}
 	}
 };

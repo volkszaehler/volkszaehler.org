@@ -95,23 +95,19 @@ tbody tr td {
 }
 
 /* treeTable for entities */
-#entities tbody span {
+#entity-list tbody span {
 	background-position: left center;
 	background-repeat: no-repeat;
 	padding: 0.2em 0 0.2em 1.7em;
 	margin: 0;
 }
 
-#entities tbody span.channel {
+#entity-list tbody span.channel {
 	background-image: url("../images/chart_curve.png");
 }
 
-#entities tbody span.group {
+#entity-list tbody span.group {
 	background-image: url("../images/folder.png");
-}
-
-#addEntity {
-	margin-top: 10px;
 }
 
 .indicator {
@@ -123,11 +119,6 @@ tbody tr td {
 	-moz-opacity: 0.3;
 	-khtml-opacity: 0.3;
 	opacity: 0.3;
-}
-
-.slider {
-	width: 170px;
-	height: 4px;
 }
 
 .dialog {

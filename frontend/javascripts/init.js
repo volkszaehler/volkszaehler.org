@@ -71,7 +71,7 @@ $(document).ready(function() {
 
 	// parse uuids & options from cookie
 	vz.uuids.load();
-	//vz.options.load();
+	vz.options.load();
 
 	// initialize user interface
 	vz.wui.init();

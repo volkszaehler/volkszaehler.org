@@ -58,8 +58,9 @@ Entity.prototype.showDetails = function() {
 	.addClass('details')
 	.append(this.getDOM())
 	.dialog({
-		title: 'Entity Details',
-		width: 450
+		title: 'Details f&uuml;r ' + this.title,
+		width: 450,
+		resizable: false
 	});
 };
 
