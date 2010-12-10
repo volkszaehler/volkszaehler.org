@@ -8,6 +8,9 @@ db_host=localhost
 set -e
 shopt -s nocasematch
 
+doctrine_git=git://github.com/doctrine/doctrine2.git
+vz_git=git://github.com/volkszaehler/volkszaehler.org.git
+
 ask() {
 	question=$1
 	default=$2
@@ -43,14 +46,15 @@ test -e "$dtdir" && ask "$dtdir already exists. overwrite?" n
 if [ "$REPLY" == 'y' ]; then
 	echo "installing doctrine into $dtdir"
 	mkdir -p $dtdir
-	git clone git://github.com/doctrine/doctrine2.git $dtdir
-	cd $dtdir
+	git clone $doctrine_git $dtdir
+	pushd $dtdir
 	git submodule init
 	git submodule update
 
 	cd lib/Doctrine
 	ln -s ../vendor/doctrine-dbal/lib/Doctrine/DBAL/ .
 	ln -s ../vendor/doctrine-common/lib/Doctrine/Common/ .
+	popd
 fi
 
 ############
@@ -62,18 +66,18 @@ ask "volkszaehler path?" /var/www/vz
 vzdir=$REPLY
 
 REPLY=y
-test -e "$vzdir	" && ask "$vzdir already exists. overwrite?" n
+test -e "$vzdir" && ask "$vzdir already exists. overwrite?" n
 if [ "$REPLY" == 'y' ]; then
 	echo "installing volkszaehler.org into $vzdir"
 	mkdir -p $vzdir
-	git clone git://github.com/volkszaehler/volkszaehler.org.git $vzdir
+	git clone $vz_git $vzdir
 
-	cd $vzdir/backend/lib/vendor
+	pushd $vzdir/backend/lib/vendor
 	ln -s $dtdir/lib/Doctrine/ .
 	ln -s $dtdir/lib/vendor/Symfony/ .
+	popd
 fi
 
-cd $vzdir
 config=$vzdir/backend/volkszaehler.conf.php
 
 ############
@@ -101,11 +105,12 @@ ask "create database?" y
 if [ "$REPLY" == "y" ]; then
 	get_admin
 
-	echo creating tables...
-	mysql -h$db_host -u$db_admin_user -p$db_admin_pass -e 'CREATE DATABASE `volkszaehler`'
-	cd $vzdir
+	echo creating database $db_name...
+	mysql -h$db_host -u$db_admin_user -p$db_admin_pass -e 'CREATE DATABASE `'$db_name'`'
+	pushd $vzdir
 	php backend/bin/doctrine orm:schema-tool:create
-
+	popd
+	
 	echo "creating db user $db_user with proper rights..."
 	mysql -h$db_host -u$db_admin_user -p$db_admin_pass <<-EOF
 		CREATE USER '$db_user'@'$db_host' IDENTIFIED BY '$db_pass';
