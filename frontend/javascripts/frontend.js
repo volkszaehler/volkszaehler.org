@@ -24,65 +24,82 @@
  * volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * Frontend related functions
- */
-
 /**
  * Initialize the WUI (Web User Interface)
  */
 vz.wui.init = function() {
-	// start auto refresh timer
-	window.setInterval(this.refresh, 3000);
-
 	// initialize dropdown accordion
 	$('#accordion h3').click(function() {
 		$(this).next().toggle('fast');
 		return false;
 	}).next().hide();
 	
-	// make buttons fancy
+	// buttons
 	$('button, input[type=button],[type=image]').button();
+	$('button[name=options-save]').click(function() { vz.options.save(); });
+	$('#permalink').click(function() { // TODO add uuids
+		var u = window.location.protocol + '//' +
+			window.location.host +
+			window.location.pathname +
+			'?from=' + vz.options.plot.xaxis.min +
+			'&to=' + vz.options.plot.xaxis.max;
+
+		window.location = u;
+	});
+	$('button[name=entity-add]').click(function() { $('#entity-add').dialog('open'); });
+	$('#entity-subscribe input[type=button]').click(function() {
+		try {
+			vz.uuids.add($('#entity-subscribe input[type=text]').val());
+			$('#entity-subscribe input[type=text]').val('');
+			$('#entity-add').dialog('close');
+			vz.entities.loadDetails();
+		}
+		catch (exception) {
+			vz.wui.dialogs.exception(exception);
+		}
+	});
 	
 	// bind plot actions
 	$('#controls button').click(this.handleControls);
 	$('#controls').buttonset();
 	
 	// tuple resolution
-	vz.options.tuples = Math.round($('#flot').width() / 3);
+	vz.options.tuples = Math.round($('#flot').width() / 4);
 	$('#tuples').val(vz.options.tuples).change(function() {
 		vz.options.tuples = $(this).val();
 		vz.entities.loadData();
 	});
 
+	// backend address
 	$('#backend-url')
 		.val(vz.options.backendUrl)
 		.change(function() {
 			vz.options.backendUrl = $(this).val();
 		});
 
+	// auto refresh
 	$('#refresh')
 		.attr('checked', vz.options.refresh)
 		.change(function() {
-			vz.options.refresh = $(this).val();
+			if ($(this).attr('checked')) {
+				vz.options.refresh = true;
+				vz.wui.refreshTimeout = window.setTimeout(vz.wui.refresh, vz.options.refreshInterval);
+			}
+			else {
+				vz.options.refresh = false;
+				window.clearTimeout(vz.wui.refreshTimeout);
+			}
 		});
 	
 	// plot rendering
-	$('#render-lines')
-		.attr('checked', vz.options.plot.series.lines.show)
-		.change(function() {
-			vz.options.plot.series.lines.show = $(this).attr('checked');
-			vz.options.plot.series.points.show = !$(this).attr('checked');
+	$('#render-lines').attr('checked', (vz.options.render == 'lines'));
+	$('#render-points').attr('checked', (vz.options.render == 'points'));
+	$('input[name=render][type=radio]').change(function() {
+		if ($(this).attr('checked')) {
+			vz.options.render = $(this).val();
 			vz.drawPlot();
-		});
-	
-	$('#render-points')
-		.attr('checked', vz.options.plot.series.points.show)
-		.change(function() {
-			vz.options.plot.series.lines.show = !$(this).attr('checked');
-			vz.options.plot.series.points.show = $(this).attr('checked');
-			vz.drawPlot();
-		});
+		}
+	});
 };
 
 /**
@@ -93,28 +110,10 @@ vz.wui.dialogs.init = function() {
 	$('#entity-add.dialog').dialog({
 		autoOpen: false,
 		title: 'Kanal hinzuf&uuml;gen',
-		width: 600,
+		width: 530,
 		resizable: false
 	});
 	$('#entity-add.dialog > div').tabs();
-	
-	// open entity dialogs
-	$('button[name=entity-add]').click(function() {
-		$('#entity-add').dialog('open');
-	});
-	
-	// subscribe UUID
-	$('#entity-subscribe input[type=button]').click(function() {
-		try {
-			vz.uuids.add($('#entity-subscribe input[type=text]').val());
-			$('#entity-subscribe input[type=text]').val('');
-			$('#entity-add').dialog('close');
-			vz.entities.loadDetails();
-		}
-		catch (exception) {
-			vz.exceptionDialog(exception);
-		}
-	});
 };
 
 /**
@@ -153,12 +152,13 @@ vz.wui.initEvents = function() {
  * Refresh plot with new data
  */
 vz.wui.refresh = function() {
-	if (vz.options.refresh) {
-		var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
-		vz.options.plot.xaxis.max = new Date().getTime();		// move plot
-		vz.options.plot.xaxis.min = vz.options.plot.xaxis.max - delta;	// move plot
-		vz.entities.loadData();
-	}
+	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
+	vz.options.plot.xaxis.max = new Date().getTime();		// move plot
+	vz.options.plot.xaxis.min = vz.options.plot.xaxis.max - delta;	// move plot
+	vz.entities.loadData();
+
+	// schedule next refresh
+	this.refreshTimeout = window.setTimeout(vz.wui.refresh, vz.options.refreshInterval);
 };
 
 /**
@@ -251,7 +251,6 @@ vz.entities.loadDetails = function() {
 
 /**
  * Create nested entity list
- * @param data
  */
 vz.entities.show = function() {
 	var i = 0;
@@ -373,10 +372,18 @@ vz.entities.loadData = function() {
 	});
 };
 
+vz.wui.updateHeadline = function() {
+	var from = $.plot.formatDate(new Date(vz.options.plot.xaxis.min + vz.options.timezoneOffset), vz.options.plot.xaxis.timeformat, vz.options.plot.xaxis.monthNames);
+	var to = $.plot.formatDate(new Date(vz.options.plot.xaxis.max + vz.options.timezoneOffset), vz.options.plot.xaxis.timeformat, vz.options.plot.xaxis.monthNames);
+	$('#title').text(from + ' - ' + to);
+}
+
 /**
  * Draws plot to container
  */
 vz.drawPlot = function () {
+	vz.wui.updateHeadline();
+	
 	var data = new Array;
 	vz.entities.each(function(entity, parent) {
 		if (entity.active && entity.data && entity.data.count > 0) {
@@ -395,6 +402,9 @@ vz.drawPlot = function () {
 		$('#overlay').empty();
 	}
 
+	vz.options.plot.series.lines.show = (vz.options.render == 'lines');
+	vz.options.plot.series.points.show = (vz.options.render == 'points');
+
 	vz.plot = $.plot($('#flot'), data, vz.options.plot);
 };
 
@@ -402,20 +412,45 @@ vz.drawPlot = function () {
  * Universal helper for backend ajax requests with error handling
  */
 vz.load = function(context, identifier, data, success) {
-	$.getUrlVars().each(function (key, value) { // TODO parse only once
-		data[key] = value;
-	});
-
 	$.ajax({
 		success: success,
-		url: vz.options.backendUrl + '/' + context + '/' + identifier + '.json',
+		url: this.options.backendUrl + '/' + context + '/' + identifier + '.json',
 		dataType: 'json',
 		data: data,
 		error: function(xhr) {
 			json = JSON.parse(xhr.responseText);
-			vz.wui.dialogs.error(xhr.statusText, json.exception.message, xhr.status); // TODO throw exception?
+			vz.wui.dialogs.error(xhr.statusText, json.exception.message, xhr.status); // TODO or throw exception?
 		}
 	});
+};
+
+/**
+ * Parse URL GET parameters
+ */
+vz.parseUrlVars = function() {
+	var vars = $.getUrlVars();
+	for (var key in vars) {
+		if (vars.hasOwnProperty(key)) {
+			switch (key) {
+				case 'uuid': // add optional uuid from url
+					try {
+						vz.uuids.add(vars[key]);
+					} catch (exception) {
+						vz.wui.dialogs.exception(exception);
+					}
+					break;
+				case 'from':
+					vz.options.plot.xaxis.min = parseInt(vars[key]);
+					break;
+				case 'to':
+					vz.options.plot.xaxis.max = parseInt(vars[key]);
+					break;
+				case 'debug':
+					$.getScript('javascripts/firebug-lite.js');
+					break;
+			}
+		}
+	}
 };
 
 /**

@@ -26,10 +26,13 @@
 
 // default time interval to show
 vz.options = {
+	language: 'de',
 	backendUrl: '../backend/index.php',
 	tuples: 300,
+	render: 'lines',
 	refresh: false,
-	defaultInterval: 1*24*60*60*1000, // 1 day
+	refreshInterval: 5*1000, // 5 secs
+	defaultInterval: 24*60*60*1000, // 1 day
 	timezoneOffset: -(new Date().getTimezoneOffset() * 60*1000) // TODO add option with timezone dropdown
 };
 
@@ -69,20 +72,12 @@ vz.options.plot = {
 	grid: {
 		hoverable: true,
 		autoHighlight: false
-	},
-	zoom: {
-		interactive: true,
-		frameRate: null
-	},
-	pan: {
-		interactive: false,
-		frameRate: 20
 	}
 }
 
 vz.options.save = function() {
 	for (var key in this) {
-		if (typeof this[key] == 'string' || typeof this[key] == 'number') {
+		if (this.hasOwnProperty(key) && typeof this[key] != 'function' && typeof this[key] != 'object' && typeof this[key] != 'undefined') {
 			$.setCookie('vz_' + key, this[key]);
 		}
 	}
@@ -90,10 +85,18 @@ vz.options.save = function() {
 
 vz.options.load = function() {
 	for (var key in this) {
-		if (typeof this[key] == 'string' || typeof this[key] == 'number') {
-			var value = $.getCookie('vz_' + key);
-			if (typeof value != undefined) {
-				this[key] = (typeof this[key] == 'number') ? parseFloat(value) : value;
+		var value = $.getCookie('vz_' + key);
+		if (typeof value != 'undefined') {
+			switch(typeof this[key]) {
+				case 'string':
+					this[key] = value;
+					break;
+				case 'number':
+					this[key] = Number(value);
+					break;
+				case 'boolean':
+				 	this[key] = (value == 'true');
+					break;
 			}
 		}
 	}

@@ -50,43 +50,29 @@ var vz = {
 	options: { }
 };
 
-// check for debugging & load firebug
-if ($.getUrlVar('debug')) {
-	$.getScript('javascripts/firebug-lite.js');
-}
-
 // executed on document loaded complete
 // this is where it all starts...
 $(document).ready(function() {
-	$(window).unload(function() {
-		vz.uuids.save();
-		vz.options.save();
-	});
-
 	$(window).resize(function() {
 		vz.options.tuples = Math.round($('#flot').width() / 3);
 		$('#tuples').val(vz.options.tuples);
 		vz.drawPlot();
 	});
 
-	// parse uuids & options from cookie
-	vz.uuids.load();
-	vz.options.load();
-
 	// initialize user interface
 	vz.wui.init();
 	vz.wui.initEvents();
 	vz.wui.dialogs.init();
-	
-	// add optional uuid from url
-	if($.getUrlVar('uuid')) {
-		vz.uuids.add($.getUrlVar('uuid'));
-	}
-	
-	if (vz.uuids.length == 0) {
-		$('#addUUID').dialog('open');
-	}
-	
+
+	// parse uuids & options from cookie
 	vz.definitions.load();
+	vz.uuids.load();
+	vz.options.load();
+	vz.parseUrlVars();
+
+	if (vz.uuids.length == 0) {
+		$('#entity-add').dialog('open');
+	}
+	
 	vz.entities.loadDetails();
 });

@@ -17,10 +17,8 @@
 	
 	<!--[if IE]><script language="javascript" type="text/javascript" src="javascripts/excanvas.min.js"></script><![endif]-->
 	<script type="text/javascript" src="javascripts/flot/jquery.flot.js"></script>
-	<script type="text/javascript" src="javascripts/flot/jquery.flot.selection.js"></script>
-	<script type="text/javascript" src="javascripts/flot/jquery.flot.navigate.js"></script>
 	<script type="text/javascript" src="javascripts/flot/jquery.flot.crosshair.js"></script>
-	<script type="text/javascript" src="javascripts/flot/jquery.flot.symbol.js"></script>
+	<script type="text/javascript" src="javascripts/flot/jquery.flot.selection.js"></script>
 
 	<!-- volkszaehler.org code -->
 	<script type="text/javascript" src="javascripts/init.js"></script>	
@@ -37,7 +35,13 @@
 
 <body>
 
+<div id="header"></div>
 <div id="content">
+	<div id="headline">
+		<h2 id="title"></h2>
+		<button id="permalink"><img src="images/link.png" alt="permalink" /> Permalink</button>
+		<br style="clear: both" />
+	</div>
 	<div id="plot">
 		<div id="flot"></div>
 		<div id="overlay"></div>
@@ -92,7 +96,10 @@
 					</tr>
 					<tr>
 						<td><img src="images/eye.png" alt="" /> Darstellung</td>
-						<td><label for="render-points"><input type="radio" id="render-points" name="render" value="points" /> Punkte</label> <label for="render-lines"><input type="radio" id="render-lines" name="render" value="lines" /> Linien</label></td>
+						<td>
+							<label for="render-points"><input type="radio" id="render-points" name="render" value="points" /> Punkte</label>&nbsp;
+							<label for="render-lines"><input type="radio" id="render-lines" name="render" value="lines" /> Linien</label>
+						</td>
 					</tr>
 					<tr>
 						<td><label for="backend-url"><img src="images/server.png" alt="" /> Backend-Adresse</label></td>
@@ -104,6 +111,7 @@
 					</tr>
 				</tbody>
 			</table>
+			<div><button name="options-save"><img src="images/save.png" alt="save" /> Einstellungen speichern</button></div>
 		</div>
 	</div>
 </div>
@@ -122,15 +130,17 @@
 		<div id="entity-subscribe">
 			<p>Hier k&ouml;nnen Sie einen existierenden Kanal über seine UUID hinzuf&uuml;gen</p>
 			<p><label for="uuid">UUID: </label><input id="uuid" type="text" size="36" maxlength="36" /></p>
-			<input type="button" value="hinzufügen" />
+			<input type="button" value="abonnieren" />
 		</div>
 		<div id="entity-create">
 			<p>Hier können Sie einen neuen Kanal erstellen</p>
-
+			<p><label for="type">Typ: </label><select id="type" size="1"><option>Strom (das funktioniert noch nicht)</option></select></p>
 			<input type="button" value="erstellen" />
 		</div>
 		<div id="public-entities">
 			<p>Hier k&ouml;nnen Sie demn&auml;chst &ouml;ffentliche Kan&auml;le abonnieren.</p>
+			<p><label for="uuid">Kanal: </label><select id="public-uuids" size="1"><option>Demo (das funktioniert noch nicht)</option></select></p>
+			<input type="button" value="abonnieren" />
 		</div>
 	</div>
 </div>

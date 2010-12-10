@@ -31,9 +31,10 @@ vz.uuids.add = function(uuid) {
 	if (this.validate(uuid)) {
 		if (!this.contains(uuid)) {
 			this.push(uuid);
+			this.save();
 		}
 		else {
-			throw new Exception('UUIDException', 'UUID already added');
+			throw new Exception('UUIDException', 'UUID already added: ' + uuid);
 		}
 	}
 	else {
@@ -47,6 +48,7 @@ vz.uuids.add = function(uuid) {
 vz.uuids.remove = function(uuid) {
 	if (this.contains(uuid)) {
 		this.splice(this.indexOf(uuid), 1);	// remove uuid from array
+		this.save();
 	}
 	else {
 		throw new Exception('UUIDException', 'UUID unkown: ' + uuid);
