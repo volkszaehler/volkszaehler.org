@@ -173,7 +173,6 @@ vz.wui.handleControls = function () {
 			vz.options.plot.xaxis.max = new Date().getTime();
 			vz.options.plot.xaxis.min = new Date().getTime() - delta;
 			break;
-			
 		case 'move-back':
 			vz.options.plot.xaxis.min -= delta;
 			vz.options.plot.xaxis.max -= delta;
@@ -182,46 +181,38 @@ vz.wui.handleControls = function () {
 			vz.options.plot.xaxis.min += delta;
 			vz.options.plot.xaxis.max += delta;
 			break;
-		
 		case 'zoom-reset':
 			vz.options.plot.xaxis.min = middle - vz.options.defaultInterval/2;
 			vz.options.plot.xaxis.max =  middle + vz.options.defaultInterval/2;
 			break;
-			
 		case 'zoom-in':
 			vz.options.plot.xaxis.min += delta/4;
 			vz.options.plot.xaxis.max -= delta/4;
 			break;
-			
 		case 'zoom-out':
 			vz.options.plot.xaxis.min -= delta;
 			vz.options.plot.xaxis.max += delta;
 			break;
-
 		case 'zoom-hour':
 			hour = 60*60*1000;
 			vz.options.plot.xaxis.min = middle - hour/2;
 			vz.options.plot.xaxis.max =  middle + hour/2;
 			break;
-
 		case 'zoom-day':
 			var day = 24*60*60*1000;
 			vz.options.plot.xaxis.min = middle - day/2;
 			vz.options.plot.xaxis.max =  middle + day/2;
 			break;
-
 		case 'zoom-week':
 			var week = 7*24*60*60*1000;
 			vz.options.plot.xaxis.min = middle - week/2;
 			vz.options.plot.xaxis.max =  middle + week/2;
 			break;
-
 		case 'zoom-month':
 			var month = 30*24*60*60*1000;
 			vz.options.plot.xaxis.min = middle - month/2;
 			vz.options.plot.xaxis.max =  middle + month/2;
 			break;
-
 		case 'zoom-year':
 			var year = 365*24*60*60*1000;
 			vz.options.plot.xaxis.min = middle - year/2;
