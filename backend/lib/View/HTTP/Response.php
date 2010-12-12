@@ -38,7 +38,7 @@ class Response {
 	protected static $codes = array(
 		100 => 'Continue',
 		101 => 'Switching Protocols',
-		200 => 'OK',						// success
+		200 => 'OK',				// success
 		201 => 'Created',
 		202 => 'Accepted',
 		203 => 'Non-Authoritative Information',
@@ -46,13 +46,13 @@ class Response {
 		205 => 'Reset Content',
 		206 => 'Partial Content',
 		300 => 'Multiple Choicesv',
-		301 => 'Moved Permanently',			// redirection
+		301 => 'Moved Permanently',		// redirection
 		302 => 'Found',
 		303 => 'See Other',
 		304 => 'Not Modified',
 		305 => 'Use Proxy',
 		307 => 'Temporary Redirect',
-		400 => 'Bad Request',				// client error
+		400 => 'Bad Request',			// client error
 		401 => 'Unauthorized',
 		402 => 'Payment Required',
 		403 => 'Forbidden',
@@ -79,12 +79,12 @@ class Response {
 	);
 
 	/**
-	 * constructor
+	 * Constructor
 	 */
 	public function __construct() {
 		$this->headers = self::getHeaders();
 
-		ob_start(array($this, 'obCallback'));
+		ob_start();
 	}
 
 	protected static function getHeaders() {
@@ -101,10 +101,6 @@ class Response {
 		}
 	}
 
-	public function obCallback($output) {
-		return $output;	// simple passthrough
-	}
-
 	public function send() {
 		// change returncode
 		header('HTTP/1.1 ' . $this->code . ' ' . self::getCodeDescription($this->code));
@@ -117,7 +113,7 @@ class Response {
 	}
 
 	/**
-	 * setter & getter
+	 * Setter & getter
 	 */
 	public function setHeader($header, $value) { $this->headers[$header] = $value; }
 	public function getHeader($header) { return $this->headers[$header]; }
