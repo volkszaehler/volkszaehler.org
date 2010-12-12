@@ -77,7 +77,7 @@ class Router {
 		'group'			=> 'Volkszaehler\Controller\AggregatorController',
 		'entity'		=> 'Volkszaehler\Controller\EntityController',
 		'data'			=> 'Volkszaehler\Controller\DataController',
-		'capabilities'	=> 'Volkszaehler\Controller\CapabilitiesController'
+		'capabilities'		=> 'Volkszaehler\Controller\CapabilitiesController'
 	);
 
 	/**
@@ -101,9 +101,6 @@ class Router {
 		// initialize HTTP request & response (required to initialize view & controllers)
 		$request = new HTTP\Request();
 		$response = new HTTP\Response();
-
-		// early default format
-		$this->view = new View\JSON($request, $response);
 
 		// initialize entity manager
 		$this->em = self::createEntityManager();
@@ -140,7 +137,7 @@ class Router {
 	/**
 	 * Processes the request
 	 *
-	 * Request Example: http://sub.domain.local/vz/backend/channel/550e8400-e29b-11d4-a716-446655440000/data.json?operation=edit&title=New Title
+	 * Example: http://sub.domain.local/vz/backend/channel/550e8400-e29b-11d4-a716-446655440000/data.json?operation=edit&title=New Title
 	 */
 	public function run() {
 		$pathInfo = substr($this->pathInfo, 1, strrpos($this->pathInfo, '.') -1);	// remove leading slash and format
