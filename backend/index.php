@@ -40,9 +40,10 @@ define('VZ_BACKEND_DIR', VZ_DIR . '/backend');
 // class autoloading
 require VZ_BACKEND_DIR . '/lib/Util/ClassLoader.php';
 
-$classLoaders = array();
-$classLoaders[] = new Util\ClassLoader('Volkszaehler', VZ_BACKEND_DIR . '/lib');
-$classLoaders[] = new Util\ClassLoader('Doctrine', VZ_BACKEND_DIR . '/lib/vendor/Doctrine');
+$classLoaders = array(
+	new Util\ClassLoader('Volkszaehler', VZ_BACKEND_DIR . '/lib'),
+	new Util\ClassLoader('Doctrine', VZ_BACKEND_DIR . '/lib/vendor/Doctrine')
+);
 
 foreach ($classLoaders as $loader) {
 	$loader->register(); // register on SPL autoload stack
