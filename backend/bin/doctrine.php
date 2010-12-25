@@ -34,10 +34,11 @@ define('VZ_BACKEND_DIR', VZ_DIR . '/backend');
 // class autoloading
 require_once VZ_BACKEND_DIR . '/lib/Util/ClassLoader.php';
 
-$classLoaders = array();
-$classLoaders[] = new Volkszaehler\Util\ClassLoader('Doctrine', VZ_BACKEND_DIR . '/lib/vendor/Doctrine');
-$classLoaders[] = new Volkszaehler\Util\ClassLoader('Symfony', VZ_BACKEND_DIR . '/lib/vendor/Symfony');
-$classLoaders[] = new Volkszaehler\Util\ClassLoader('Volkszaehler', VZ_BACKEND_DIR . '/lib');
+$classLoaders = array(
+	new Volkszaehler\Util\ClassLoader('Doctrine', VZ_BACKEND_DIR . '/lib/vendor/Doctrine'),
+	new Volkszaehler\Util\ClassLoader('Symfony', VZ_BACKEND_DIR . '/lib/vendor/Symfony'),
+	new Volkszaehler\Util\ClassLoader('Volkszaehler', VZ_BACKEND_DIR . '/lib')
+);
 
 foreach ($classLoaders as $loader) {
 	$loader->register(); // register on SPL autoload stack
