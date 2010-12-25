@@ -34,12 +34,7 @@ use Volkszaehler\Model;
  * @todo rename? Bsp: DataSample, Sample, Reading
  *
  * @Entity
- * @Table(
- * 		name="data",
- * 		uniqueConstraints={
- * 			@UniqueConstraint(name="unique_timestamp", columns={"timestamp", "channel_id"})
- * 		}
- * )
+ * @Table(name="data")
  */
 class Data {
 	/**
@@ -59,8 +54,7 @@ class Data {
 	protected $timestamp;
 
 	/**
-	 * @Column(type="decimal", precision="5", scale="2")
-	 * @todo change to float after DCC-67 has been closed
+	 * @Column(type="float")
 	 */
 	protected $value;
 
