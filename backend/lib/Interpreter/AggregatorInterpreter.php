@@ -25,6 +25,7 @@ namespace Volkszaehler\Interpreter;
 
 use Doctrine\ORM;
 use Volkszaehler\Model;
+use Volkszaehler\Util;
 
 /**
  * Interpreter too aggregate several other Channels or Aggregators
@@ -34,7 +35,6 @@ use Volkszaehler\Model;
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
- *
  */
 class AggregatorInterpreter implements InterpreterInterface {
 	/**
@@ -57,15 +57,17 @@ class AggregatorInterpreter implements InterpreterInterface {
 		$indicator = NULL;
 		$this->aggregator = $aggregator;
 
-		foreach ($aggregator->getChannels() as $channel) {
-			if (isset($indicator) && $indicator != $channel->getType()) {
-				throw new \Exception('Can\'t aggregate entities of mixed types!');
-			}
-			else {
-				$indicator = $channel->getType();
-			}
+		foreach ($aggregator->getChildren() as $child) {
+			if ($child instanceof Model\Channel) {
+				if (isset($indicator) && $indicator != $child->getType()) {
+					throw new \Exception('Can\'t aggregate channels of mixed types!');
+				}
+				else {
+					$indicator = $child->getType();
+				}
 
-			$this->channelInterpreter[] = $channel->getInterpreter($em, $from, $to);
+				$this->channelInterpreter[] = $child->getInterpreter($em, $from, $to);
+			}
 		}
 	}
 
@@ -76,11 +78,13 @@ class AggregatorInterpreter implements InterpreterInterface {
 	 * @todo to be implemented
 	 * @return array of values
 	 */
-	public function getValues($groupBy = NULL) {
+	public function getValues($tuples = NULL, $groupBy = NULL) {
 
 	}
 
 	/**
+	 * Get total consumption of all channels
+	 *
 	 * @todo to be implemented
 	 */
 	public function getConsumption() {
@@ -93,9 +97,9 @@ class AggregatorInterpreter implements InterpreterInterface {
 	 * @return array with the smallest value
 	 */
 	public function getMin() {
-		$min = current($this->channelInterpreter)->getMax();
-		foreach ($this->channelInterpreter as $channel) {
-			$arr = $channel->getMax();
+		$min = current($this->channelInterpreter)->getMin();
+		foreach ($this->channelInterpreter as $interpreter) {
+			$arr = $interpreter->getMax();
 			if ($arr['value '] < $min['value']) {
 				$min = $arr;
 			}
@@ -110,8 +114,8 @@ class AggregatorInterpreter implements InterpreterInterface {
 	 */
 	public function getMax() {
 		$max = current($this->channelInterpreter)->getMax();
-		foreach ($this->channelInterpreter as $channel) {
-			$arr = $channel->getMax();
+		foreach ($this->channelInterpreter as $interpreter) {
+			$arr = $interpreter->getMax();
 			if ($arr['value '] > $max['value']) {
 				$max = $arr;
 			}
@@ -127,8 +131,8 @@ class AggregatorInterpreter implements InterpreterInterface {
 	public function getAverage() {
 		$sum = 0;
 
-		foreach ($this->channels as $channel) {
-			$sum += $channel->getAverage();
+		foreach ($this->channelInterpreter as $interpreter) {
+			$sum += $interpreter->getAverage();
 		}
 		return ($sum / count($this->channelInterpreter));
 	}
@@ -136,5 +140,6 @@ class AggregatorInterpreter implements InterpreterInterface {
 	/*
 	 * Getter & setter
 	 */
-	public function getUuid() { return $this->aggregator->getUuid(); }
+
+	public function getEntity() { return $this->aggregator; }
 }

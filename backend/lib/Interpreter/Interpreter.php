@@ -196,7 +196,8 @@ abstract class Interpreter implements InterpreterInterface {
 	/*
 	 * Getter & setter
 	 */
-	public function getUuid() { return $this->channel->getUuid(); }
+
+	public function getEntity() { return $this->channel; }
 }
 
 ?>

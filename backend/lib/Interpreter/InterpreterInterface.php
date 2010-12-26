@@ -30,8 +30,9 @@ namespace Volkszaehler\Interpreter;
  */
 interface InterpreterInterface {
 	function getConsumption();
-	function getValues();
+	function getValues($tuples = NULL, $groupBy = NULL);
 	function getMin();
 	function getMax();
 	function getAverage();
+	function getEntity();
 }
