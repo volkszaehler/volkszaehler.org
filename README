@@ -1,13 +1,18 @@
 Hier finden sich alle Skripte, die auf volkszaehler.org laufen:
 
 volkszaehler.org/
- |_ frontend/			Web Frontend
- |_ backend/			PHP Backend
- |_ controller/			Controller Code für verschiedene Plattformen/Programmiersprachen
- |   |_ php/			Einfach Referenzimplementation des Controller-Codes in PHP
- |   \_ ethersex		Portierung auf ethersex
+ |_ htdocs/			öffentliche Dateien
+ |   |_ backend.php		Backend Bootstrapping
+ |   \_ frontend		Web Frontend
  |
- \_ share/			Gemeinsam genutze Codebestandteile
+ |_ etc/			Konfigurationsdateien
+ |_ var/	(optional)	Datenbanken
+ |_ lib/			Backend-Bibliotheken
+ |_ misc/
+     |_ controller/		Controller Code für verschiedene Plattformen/Programmiersprachen
+     |   |_ php/		Einfach Referenzimplementation des Controller-Codes in PHP
+     |   \_ ethersex		Portierung auf ethersex
+     |
      |_ docs/			Dokumentation
      |_ sql/			SQL-Schema Dumps für verschieden Datenbanksysteme
      |   \_ demo/		Demo Daten zum Import in die Datenbank
