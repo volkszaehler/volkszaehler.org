@@ -50,10 +50,10 @@ class Request {
 		$this->method = $_SERVER['REQUEST_METHOD'];
 
 		$this->parameters= array(
-								'get' => $_GET,
-								'post' => $_POST,
-								'cookies' => $_COOKIE,
-								'files' => $_FILES
+			'get'		=> $_GET,
+			'post'		=> $_POST,
+			'cookies'	=> $_COOKIE,
+			'files'		=> $_FILES
 		);
 
 		unset($_GET, $_POST, $_COOKIE, $_FILES);
@@ -75,8 +75,9 @@ class Request {
 	}
 
 	/**
-	 * setter & getter
+	 * Setter & getter
 	 */
+	 
 	public function getHeader($header) { return $this->headers[$header]; }
 	public function getMethod() { return $this->method; }
 	public function getParameter($name, $method = 'get') { return (isset($this->parameters[$method][$name])) ? $this->parameters[$method][$name] : NULL; }

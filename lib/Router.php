@@ -114,13 +114,17 @@ class Router {
 
 		// initialize view
 		$this->pathInfo = self::getPathInfo();
-		$this->format = self::getFormat($this->pathInfo);
-		$this->operation = self::getOperation($request);
+		$this->format = pathinfo($this->pathInfo, PATHINFO_EXTENSION);
+		
+		Util\Debug::log('env vars', $_SERVER);
 
-		if (empty(self::$viewMapping[$this->format])) {
+		if (!array_key_exists($this->format, self::$viewMapping)) {
 			$this->view = new View\JSON($request, $response); // fallback view
 			
-			if (empty($this->format)) {
+			if (empty($this->pathInfo)) {
+				throw new \Exception('Missing or invalid PATH_INFO');
+			}
+			elseif (empty($this->format)) {
 				throw new \Exception('Missing format');
 			}
 			else {
@@ -138,22 +142,27 @@ class Router {
 	 * Example: http://sub.domain.local/vz/backend/channel/550e8400-e29b-11d4-a716-446655440000/data.json?operation=edit&title=New Title
 	 */
 	public function run() {
-		$pathInfo = substr($this->pathInfo, 1, strrpos($this->pathInfo, '.') -1);	// remove leading slash and format
-		$pathInfo = explode('/', $pathInfo);						// split into path segments
-
-		if (array_key_exists($pathInfo[0], self::$controllerMapping)) {
-			$class = self::$controllerMapping[$pathInfo[0]];
-			$controller = new $class($this->view, $this->em);
-
-			if (isset($pathInfo[1])) {
-				$result = $controller->run($this->operation, array_slice($pathInfo, 1));
+		$operation = self::getOperation($this->view->request);
+		$context = substr($this->pathInfo, 1, strrpos($this->pathInfo, '.') -1);	// remove leading slash and format
+		$context = explode('/', $context);						// split into path segments
+		
+		if (!array_key_exists($context[0], self::$controllerMapping)) {
+			if (empty($context[0])) {
+				throw new \Exception('Missing context');
 			}
 			else {
-				$result = $controller->run($this->operation);
+				throw new \Exception('Unknown context: ' . $context[0]);
 			}
 		}
+		
+		$class = self::$controllerMapping[$context[0]];
+		$controller = new $class($this->view, $this->em);
+		
+		if (isset($pathInfo[1])) {
+			$result = $controller->run($operation, array_slice($context, 1));
+		}
 		else {
-			throw new \Exception('Unknown context: ' . $pathInfo[0]);
+			$result = $controller->run($operation);
 		}
 
 		$this->view->add($result);
@@ -163,16 +172,9 @@ class Router {
 		if ($operation = $request->getParameter('operation')) {
 			return $operation;
 		}
-		elseif (isset(self::$operationMapping[strtolower($request->getMethod())])) {
+		else {
 			return self::$operationMapping[strtolower($request->getMethod())];
 		}
-		else {
-			throw new \Exception('Can\'t determine operation');
-		}
-	}
-
-	protected static function getFormat($pathInfo) {
-		return pathinfo($pathInfo, PATHINFO_EXTENSION);
 	}
 
 	/**
@@ -189,9 +191,6 @@ class Router {
 		}
 		elseif (strlen($_SERVER['PHP_SELF']) > strlen($_SERVER['SCRIPT_NAME'])) {
 			return substr($_SERVER['PHP_SELF'], strlen($_SERVER['SCRIPT_NAME']));
-		}
-		else {
-			throw new \Exception('Can\'t get PATH_INFO');
 		}
 	}
 
@@ -210,10 +209,10 @@ class Router {
 			$config->setQueryCacheImpl($cache);
 		}
 
-		$driverImpl = $config->newDefaultAnnotationDriver(VZ_BACKEND_DIR . '/lib/Model');
+		$driverImpl = $config->newDefaultAnnotationDriver(VZ_DIR . '/lib/Model');
 		$config->setMetadataDriverImpl($driverImpl);
 
-		$config->setProxyDir(VZ_BACKEND_DIR . '/lib/Model/Proxy');
+		$config->setProxyDir(VZ_DIR . '/lib/Model/Proxy');
 		$config->setProxyNamespace('Volkszaehler\Model\Proxy');
 		$config->setAutoGenerateProxyClasses(Util\Configuration::read('devmode'));
 

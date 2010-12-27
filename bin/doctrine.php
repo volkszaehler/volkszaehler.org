@@ -1,10 +1,10 @@
 <?php
 /**
- * Backend bootstrap entrypoint
+ * Doctrine cli configuration
  *
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @package doctrine
  * @copyright Copyright (c) 2010, The volkszaehler.org project
- * @package default
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
 /*
@@ -24,35 +24,36 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace Volkszaehler;
-
 use Volkszaehler\Util;
-use Volkszaehler\Controller;
-
-// enable strict error reporting
-error_reporting(E_ALL | E_STRICT);
 
 // TODO replace by state class
 define('VZ_VERSION', 0.2);
-define('VZ_DIR', realpath(__DIR__ . '/..'));
-define('VZ_BACKEND_DIR', VZ_DIR . '/backend');
+define('VZ_DIR', realpath(__DIR__ . '/../..'));
 
 // class autoloading
-require VZ_BACKEND_DIR . '/lib/Util/ClassLoader.php';
+require_once VZ_DIR . '/lib/Util/ClassLoader.php';
 
 $classLoaders = array(
-	new Util\ClassLoader('Volkszaehler', VZ_BACKEND_DIR . '/lib'),
-	new Util\ClassLoader('Doctrine', VZ_BACKEND_DIR . '/lib/vendor/Doctrine')
+	new Volkszaehler\Util\ClassLoader('Doctrine', VZ_DIR . '/lib/vendor/Doctrine'),
+	new Volkszaehler\Util\ClassLoader('Symfony', VZ_DIR . '/lib/vendor/Symfony'),
+	new Volkszaehler\Util\ClassLoader('Volkszaehler', VZ_DIR . '/lib')
 );
 
 foreach ($classLoaders as $loader) {
 	$loader->register(); // register on SPL autoload stack
 }
 
-Util\Configuration::load(VZ_BACKEND_DIR . '/volkszaehler.conf');
+// load configuration
+Util\Configuration::load(VZ_DIR . '/etc/volkszaehler.conf');
 
-$r = new Router();
-$r->run();
-$r->view->send();
+$em = Volkszaehler\Router::createEntityManager(TRUE); // get admin credentials
+
+$helperSet = new \Symfony\Component\Console\Helper\HelperSet(array(
+	'db' => new \Doctrine\DBAL\Tools\Console\Helper\ConnectionHelper($em->getConnection()),
+	'em' => new \Doctrine\ORM\Tools\Console\Helper\EntityManagerHelper($em)
+));
+
+
+\Doctrine\ORM\Tools\Console\ConsoleRunner::run($helperSet);
 
 ?>

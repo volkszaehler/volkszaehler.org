@@ -1,6 +1,6 @@
-backend/volkszaehler.conf.php
-share/sql/demo/pulses.dummy.copy
+etc/volkszaehler.conf.php
+misc/sql/demo/pulses.dummy.copy
 .project
 .buildpath
 .settings/
-backend/lib/vendor/*
+lib/vendor/*

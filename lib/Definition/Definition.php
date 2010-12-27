@@ -105,7 +105,7 @@ abstract class Definition {
 	}
 
 	public static function getJSON() {
-		return Util\JSON::decode(file_get_contents(VZ_BACKEND_DIR . static::FILE));
+		return Util\JSON::decode(file_get_contents(VZ_DIR . static::FILE));
 	}
 
 	/*

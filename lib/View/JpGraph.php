@@ -27,9 +27,9 @@ use Volkszaehler\Interpreter;
 use Volkszaehler\Model;
 use Volkszaehler\Util;
 
-require_once VZ_BACKEND_DIR . '/lib/vendor/JpGraph/jpgraph.php';
-require_once VZ_BACKEND_DIR . '/lib/vendor/JpGraph/jpgraph_scatter.php';
-require_once VZ_BACKEND_DIR . '/lib/vendor/JpGraph/jpgraph_date.php';
+require_once VZ_DIR . '/lib/vendor/JpGraph/jpgraph.php';
+require_once VZ_DIR . '/lib/vendor/JpGraph/jpgraph_scatter.php';
+require_once VZ_DIR . '/lib/vendor/JpGraph/jpgraph_date.php';
 
 /**
  * Plotting and graphing of data on the server side
