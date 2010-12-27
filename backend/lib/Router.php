@@ -118,6 +118,8 @@ class Router {
 		$this->operation = self::getOperation($request);
 
 		if (empty(self::$viewMapping[$this->format])) {
+			$this->view = new View\JSON($request, $response); // fallback view
+			
 			if (empty($this->format)) {
 				throw new \Exception('Missing format');
 			}
@@ -128,10 +130,6 @@ class Router {
 
 		$class = self::$viewMapping[$this->format];
 		$this->view = new $class($request, $response, $this->format);
-
-		// some general debugging information
-		//Util\Debug::log('_SERVER', $_SERVER);
-		//Util\Debug::log('PATH_INFO', $this->pathInfo);
 	}
 
 	/**

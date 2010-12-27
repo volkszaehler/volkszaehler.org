@@ -99,7 +99,7 @@ abstract class Entity {
 		$invalidProperties = array_diff(array_keys($this->getProperties()), $this->getDefinition()->getValidProperties());
 
 		if (count($missingProperties) > 0) {
-			throw new \Exception('Entity "' . $this->getType() . '" requires propert' . ((count($missingProperties) == 1) ? 'y' : 'ies') . ': "' . implode(', ', $missingProperties) . '"');
+			throw new \Exception('Entity \'' . $this->getType() . '\' requires propert' . ((count($missingProperties) == 1) ? 'y' : 'ies') . ": '" . implode(', ', $missingProperties) . "'");
 		}
 
 		if (count($invalidProperties) > 0) {
