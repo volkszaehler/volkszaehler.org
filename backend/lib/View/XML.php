@@ -63,6 +63,32 @@ class XML extends View {
 	}
 
 	/**
+	 * Add object to output
+	 *
+	 * @param mixed $data
+	 */
+	public function add($data) {
+		if ($data instanceof Interpreter\InterpreterInterface) {
+			$this->addData($data);
+		}
+		elseif ($data instanceof Model\Entity) {
+			$this->addEntity($data);
+		}
+		elseif ($data instanceof \Exception) {
+			//$this->addException($data);
+		}
+		elseif ($data instanceof Util\Debug) {
+			//$this->addDebug($data);
+		}
+		elseif (is_array($data)) {
+			$this->xmlRoot->appendChild($this->convertArray($data));
+		}
+		else {
+			throw new \Exception('Can\'t show ' . get_class($data));
+		}
+	}
+
+	/**
 	 * Process, encode and print output
 	 *
 	 * @return string the output
@@ -155,12 +181,16 @@ class XML extends View {
 	 */
 	protected function addException(\Exception $exception) {
 		$xmlException = $this->xmlDoc->createElement('exception');
-
 		$xmlException->setAttribute('code', $exception->getCode());
+		$xmlException->setAttribute('type', get_class($exception));
+
 		$xmlException->appendChild($this->xmlDoc->createElement('message', $exception->getMessage()));
-		$xmlException->appendChild($this->xmlDoc->createElement('line', $exception->getLine()));
-		$xmlException->appendChild($this->xmlDoc->createElement('file', $exception->getFile()));
-		$xmlException->appendChild($this->convertTrace($exception->getTrace()));
+
+		if (Util\Debug::isActivated()) {
+			$xmlException->appendChild($this->xmlDoc->createElement('file', $exception->getFile()));
+			$xmlException->appendChild($this->xmlDoc->createElement('line', $exception->getLine()));
+			$xmlException->appendChild($this->convertTrace($exception->getTrace()));
+		}
 
 		$this->xmlRoot->appendChild($xmlException);
 	}
@@ -182,7 +212,7 @@ class XML extends View {
 			$xmlTuples->appendChild($xmlTuple);
 		}
 
-		$xmlData->appendChild($this->xmlDoc->createElement('uuid', $interpreter->getUuid()));
+		$xmlData->appendChild($this->xmlDoc->createElement('uuid', $interpreter->getEntity()->getUuid()));
 		$xmlData->appendChild($this->xmlDoc->createElement('count', count($data)));
 		$xmlData->appendChild($this->xmlDoc->createElement('first', (isset($data[0][0])) ? $data[0][0] : NULL));
 		$xmlData->appendChild($this->xmlDoc->createElement('last', (isset($data[count($data)-1][0])) ? $data[count($data)-1][0] : NULL));
@@ -264,18 +294,6 @@ class XML extends View {
 		}
 
 		return $xmlTraces;
-	}
-
-	/**
-	 * Overloaded to support arrays
-	 */
-	public function add($data) {
-		if (is_array($data)) {
-			$this->xmlRoot->appendChild($this->convertArray($data));
-		}
-		else {
-			parent::add($data);
-		}
 	}
 }
 

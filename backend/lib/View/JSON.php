@@ -61,6 +61,32 @@ class JSON extends View {
 	}
 
 	/**
+	 * Add object to output
+	 *
+	 * @param mixed $data
+	 */
+	public function add($data) {
+		if ($data instanceof Interpreter\InterpreterInterface) {
+			$this->addData($data);
+		}
+		elseif ($data instanceof Model\Entity) {
+			$this->addEntity($data);
+		}
+		elseif ($data instanceof \Exception) {
+			$this->addException($data);
+		}
+		elseif ($data instanceof Util\Debug) {
+			$this->addDebug($data);
+		}
+		elseif ($data instanceof Util\JSON || is_array($data)) {
+			$this->addArray($data);
+		}
+		else {
+			throw new \Exception('Can\'t show ' . get_class($data));
+		}
+	}
+
+	/**
 	 * Process, encode and print output
 	 *
 	 * @return string the output
@@ -161,17 +187,18 @@ class JSON extends View {
 	 * @param \Exception $exception
 	 * @param boolean $debug
 	 */
-	protected function addException(\Exception $exception, $debug = FALSE) {
+	protected function addException(\Exception $exception) {
 		$exceptionInfo = array(
-			'type' => get_class($exception),
 			'message' => $exception->getMessage(),
+			'type' => get_class($exception),
 			'code' => $exception->getCode()
 		);
 
-		if ($debug) {
-			$debugInfo = array('file' => $exception->getFile(),
+		if (Util\Debug::isActivated()) {
+			$debugInfo = array(
+				'file' => $exception->getFile(),
 				'line' => $exception->getLine(),
-				'trace' => $exception->getTrace()
+				'backtrace' => $exception->getTrace()
 			);
 
 			$this->json['exception'] = array_merge($exceptionInfo, $debugInfo);
@@ -190,7 +217,7 @@ class JSON extends View {
 		$data = $interpreter->getValues($this->request->getParameter('tuples'), $this->request->getParameter('group'));
 
 		$this->json['data'] = array(
-			'uuid'		=> $interpreter->getUuid(),
+			'uuid'		=> $interpreter->getEntity()->getUuid(),
 			'count'		=> count($data),
 			'first'		=> (isset($data[0][0])) ? $data[0][0] : NULL,
 			'last'		=> (isset($data[count($data)-1][0])) ? $data[count($data)-1][0] : NULL,
@@ -209,18 +236,6 @@ class JSON extends View {
 	protected function addArray($data) {
 		foreach ($data as $index => $value) {
 			$this->json[$index] = $value;
-		}
-	}
-
-	/**
-	 * Overloaded to support arrays
-	 */
-	public function add($data) {
-		if ($data instanceof Util\JSON || is_array($data)) {
-			$this->addArray($data);
-		}
-		else {
-			parent::add($data);
 		}
 	}
 

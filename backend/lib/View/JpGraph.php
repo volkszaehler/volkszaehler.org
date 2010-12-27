@@ -24,7 +24,6 @@
 namespace Volkszaehler\View;
 
 use Volkszaehler\Interpreter;
-
 use Volkszaehler\Model;
 use Volkszaehler\Util;
 
@@ -45,20 +44,35 @@ require_once VZ_BACKEND_DIR . '/lib/vendor/JpGraph/jpgraph_date.php';
  */
 class JpGraph extends View {
 	/**
-	 * indicator => ynaxis[n] mapping
+	 * @var indicator => ynaxis[n] mapping
 	 */
 	protected $axes = array();
 
 	protected $channels = array();
 
-	const WIDTH = 800;
-	const HEIGHT = 400;
+	/**
+	 * @var default width
+	 */
+	protected $width = 800;
 
-	protected static $colors = array('chartreuse', 'chocolate1', 'cyan', 'blue', 'lightcyan4', 'gold');
+	/**
+	 * @var default height
+	 */
+	protected $height = 400;
 
+	/**
+	 * @var color palette for the scatter plots
+	 * This are the same colors as in the webfronted
+	 */
+	protected static $colors = array('#83CAFF', '#7E0021', '#579D1C', '#FFD320', '#FF420E', '#004586', '#0084D1', '#C5000B', '#FF950E', '#4B1F6F', '#AECF00', '#314004');
+
+	/**
+	 * @var JPGrpah handle
+	 */
 	protected $graph;
 
 	/**
+	 * Constructor
 	 *
 	 * @param HTTP\Request $request
 	 * @param HTTP\Response $response
@@ -67,10 +81,18 @@ class JpGraph extends View {
 	public function __construct(HTTP\Request $request, HTTP\Response $response, $format = 'png') {
 		parent::__construct($request, $response);
 
-		$width = $this->request->getParameter('width') ? $this->request->getParameter('width') : self::WIDTH;
-		$height = $this->request->getParameter('height') ? $this->request->getParameter('height') : self::HEIGHT;
+		// to enabled jpgraphs graphical exception handler
+		restore_exception_handler();
 
-		$this->graph = new \Graph($width, $height);
+		if ($this->request->getParameter('width')) {
+			$this->width = $this->request->getParameter('width');
+		}
+
+		if ($this->request->getParameter('height')) {
+			$this->height = $this->request->getParameter('height');
+		}
+
+		$this->graph = new \Graph($this->width, $this->height);
 
 		$this->graph->img->SetImgFormat($format);
 
@@ -90,7 +112,29 @@ class JpGraph extends View {
 		$this->graph->xaxis->SetLabelAngle(45);
 		$this->graph->xaxis->SetLabelFormatCallback(function($label) { return date('j.n.y G:i', $label); });
 
-		//$this->graph->img->SetAntiAliasing();
+		if (function_exists('imageantialias')) {
+			$this->graph->img->SetAntiAliasing();
+		}
+	}
+
+	/**
+	 * Add object to output
+	 *
+	 * @param mixed $data
+	 */
+	public function add($data) {
+		if ($data instanceof Interpreter\Interpreter) {
+			$this->addData($data);
+		}
+		elseif($data instanceof Interpreter\AggregatorInterpreter) {
+			foreach ($data->getEntity()->getChildren() as $child) {
+				$this->add($child);
+			}
+		}
+		else {
+			// suppress other classes
+			//throw new \Exception('Can\'t show ' . get_class($data));
+		}
 	}
 
 	/**
@@ -99,8 +143,8 @@ class JpGraph extends View {
 	 * @param $obj
 	 * @param $data
 	 */
-	public function addData(Interpreter\Interpreter $interpreter){
-		$data = $interpreter->getValues(800);
+	public function addData(Interpreter\InterpreterInterface $interpreter){
+		$data = $interpreter->getValues($this->width/4);
 
 		if (count($data) > 0) {
 			$count = count($this->channels);
@@ -114,7 +158,7 @@ class JpGraph extends View {
 			// Create the scatter plot
 			$plot = new \ScatterPlot($yData, $xData);
 
-			$plot->setLegend($interpreter->getChannel()->getProperty('title') . ':  [' . $interpreter->getChannel()->getDefinition()->getUnit() . ']');
+			$plot->setLegend($interpreter->getEntity()->getProperty('title') . ':  [' . $interpreter->getEntity()->getDefinition()->getUnit() . ']');
 			$plot->SetLinkPoints(TRUE, self::$colors[$count]);
 
 			$plot->mark->SetColor(self::$colors[$count]);
@@ -122,7 +166,7 @@ class JpGraph extends View {
 			$plot->mark->SetType(MARK_DIAMOND);
 			$plot->mark->SetWidth(1);
 
-			$axis = $this->getAxisIndex($interpreter->getChannel());
+			$axis = $this->getAxisIndex($interpreter->getEntity());
 			if ($axis >= 0) {
 				$this->graph->AddY($axis, $plot);
 			}
@@ -130,20 +174,8 @@ class JpGraph extends View {
 				$this->graph->Add($plot);
 			}
 
-			$this->channels[] = $interpreter->getChannel();
+			$this->channels[] = $interpreter->getEntity();
 		}
-	}
-
-	public function addChannel(Model\Channel $channel) {
-		throw new \Exception(get_class($this) . ' cant show ' . get_class($channel));
-	}
-
-	public function addAggregator(Model\Aggregator $aggregator) {
-		throw new \Exception(get_class($this) . ' cant show ' . get_class($aggregator));
-	}
-
-	public function addDebug(Util\Debug $debug) {
-		throw new \Exception(get_class($this) . ' cant show ' . get_class($debug));
 	}
 
 	/**
@@ -197,8 +229,8 @@ class JpGraph extends View {
 	protected function render() {
 		$this->graph->SetMargin(75, (count($this->axes) - 1) * 65 + 10, 20, 90);
 
-		// Display the graph
-		//$this->graph->Stroke();
+		// display the graph
+		$this->graph->Stroke();
 	}
 }
 

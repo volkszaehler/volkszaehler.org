@@ -24,9 +24,6 @@
 namespace Volkszaehler\View;
 
 use Volkszaehler\Interpreter;
-
-use Volkszaehler\Iterator;
-
 use Volkszaehler\Model;
 use Volkszaehler\View\HTTP;
 use Volkszaehler\Util;
@@ -36,7 +33,6 @@ use Volkszaehler\Util;
  *
  * @package default
  * @author Steffen Vogel <info@steffenvogel.de>
- *
  */
 abstract class View {
 	/**
@@ -88,7 +84,8 @@ abstract class View {
 	 * @param \Exception $exception
 	 */
 	final public function exceptionHandler(\Exception $exception) {
-		$this->addException($exception, Util\Debug::isActivated());
+		$this->add($exception);
+		echo $exception;
 
 		$code = ($exception->getCode() == 0 || !HTTP\Response::getCodeDescription($exception->getCode())) ? 400 : $exception->getCode();
 		$this->response->setCode($code);
@@ -97,38 +94,16 @@ abstract class View {
 		die();
 	}
 
+	/**
+	 * Render response and send it to the client
+	 */
 	public function send() {
 		if (Util\Debug::isActivated()) {
-			$this->addDebug(Util\Debug::getInstance());
+			$this->add(Util\Debug::getInstance());
 		}
 
 		$this->render();
 		$this->response->send();
-	}
-
-	/**
-	 * Add object to output
-	 *
-	 * @param mixed $data
-	 */
-	public function add($data) {
-		if (isset($data)) {
-			if ($data instanceof Interpreter\InterpreterInterface) {
-				$this->addData($data);
-			}
-			elseif ($data instanceof Model\Entity) {
-				$this->addEntity($data);
-			}
-			elseif ($data instanceof \Exception) {
-				$this->addException($data);
-			}
-			elseif ($data instanceof Util\Debug) {
-				$this->addDebug($data);
-			}
-			else {
-				throw new \Exception('Can\'t show ' . get_class($data));
-			}
-		}
 	}
 
 	/**
@@ -141,7 +116,7 @@ abstract class View {
 	public function setCaching($mode, $value) {
 		switch ($mode) {
 			case 'modified':	// Last-modified
-				//$this->response->setHeader('Last-Modified', gmdate('D, d M Y H:i:s', $value) . ' GMT');
+				$this->response->setHeader('Last-Modified', gmdate('D, d M Y H:i:s', $value) . ' GMT');
 
 			case 'etag':		// Etag
 				throw new Exception('This caching mode is not implemented');
@@ -150,7 +125,7 @@ abstract class View {
 				$this->response->setHeader('Expires', gmdate('D, d M Y H:i:s', $value) . ' GMT');
 				break;
 
-			case 'age':			// Cache-control: max-age=
+			case 'age':		// Cache-control: max-age=
 				$this->response->setHeader('Cache-control', 'max-age=' . $value);
 				break;
 
@@ -160,16 +135,12 @@ abstract class View {
 				$this->response->setHeader('Pragma', 'no-cache');
 
 			default:
-				throw new Exception('Unknown caching mode');
+				throw new Exception('Unknown caching mode: ' . $mode);
 		}
 	}
 
+	public abstract function add($object);
 	protected abstract function render();
-
-	protected abstract function addData(Interpreter\InterpreterInterface $data);
-	protected abstract function addEntity(Model\Entity $entity);
-	protected abstract function addException(\Exception $exception);
-	protected abstract function addDebug(Util\Debug $debug);
 }
 
 ?>
