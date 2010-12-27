@@ -29,7 +29,7 @@
 ##
 
 # cannot handle other hosts right now
-db_host=localhost 
+db_host=localhost
 
 set -e
 shopt -s nocasematch
@@ -136,7 +136,7 @@ if [ "$REPLY" == "y" ]; then
 	pushd $vzdir
 	php misc/tools/doctrine orm:schema-tool:create
 	popd
-	
+
 	echo "creating db user $db_user with proper rights..."
 	mysql -h$db_host -u$db_admin_user -p$db_admin_pass <<-EOF
 		CREATE USER '$db_user'@'$db_host' IDENTIFIED BY '$db_pass';
