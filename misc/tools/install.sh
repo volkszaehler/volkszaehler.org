@@ -72,13 +72,13 @@ if [ "$REPLY" == 'y' ]; then
 	mkdir -p $vzdir
 	git clone $vz_git $vzdir
 
-	pushd $vzdir/backend/lib/vendor
+	pushd $vzdir/lib/vendor
 	ln -s $dtdir/lib/Doctrine/ .
 	ln -s $dtdir/lib/vendor/Symfony/ .
 	popd
 fi
 
-config=$vzdir/backend/volkszaehler.conf.php
+config=$vzdir/etc/volkszaehler.conf.php
 
 ############
 echo
@@ -95,7 +95,7 @@ if [ "$REPLY" == "y" ]; then
 	sed -e "s/^\(\$config\['db'\]\['user'\]\).*/\1 = '$db_user';/" \
 		-e "s/^\(\$config\['db'\]\['password'\]\).*/\1 = '$db_pass';/" \
 		-e "s/^\(\$config\['db'\]\['dbname'\]\).*/\1 = '$db_name';/" \
-	< $vzdir/backend/volkszaehler.conf.template.php \
+	< $vzdir/etc/volkszaehler.conf.template.php \
 	> $config
 fi
 
@@ -108,7 +108,7 @@ if [ "$REPLY" == "y" ]; then
 	echo creating database $db_name...
 	mysql -h$db_host -u$db_admin_user -p$db_admin_pass -e 'CREATE DATABASE `'$db_name'`'
 	pushd $vzdir
-	php backend/bin/doctrine orm:schema-tool:create
+	php $dtdir/doctrine orm:schema-tool:create
 	popd
 	
 	echo "creating db user $db_user with proper rights..."
