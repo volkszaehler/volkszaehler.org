@@ -23,6 +23,8 @@
 
 namespace Volkszaehler\Controller;
 
+use Volkszaehler\View;
+
 /**
  * Controller superclass for all controllers
  *
@@ -39,7 +41,7 @@ abstract class Controller {
 	 * @param View $view
 	 * @param EntityManager $em
 	 */
-	public function __construct(\Volkszaehler\View\View $view, \Doctrine\ORM\EntityManager $em) {
+	public function __construct(View\View $view, \Doctrine\ORM\EntityManager $em) {
 		$this->view = $view;
 		$this->em = $em;
 	}
@@ -49,12 +51,18 @@ abstract class Controller {
 	 *
 	 * @param string $operation runs the operation if class method is available
 	 */
-	public function run($operation, array $identifiers = array()) {
-		if (!is_callable(array($this, $operation))) {
-			throw new \Exception('Invalid context operation: ' . $operation);
+	public function run($op, array $arg = array()) {
+		if (!method_exists($this, $op)) {
+			throw new \Exception('Invalid context operation: ' . $op);
 		}
-
-		return call_user_func_array(array($this, $operation), $identifiers);
+		
+		switch(count($arg)) { // improved performence
+			case 0: return $this->{$op}();
+			case 1: return $this->{$op}($arg[0]);
+			case 2: return $this->{$op}($arg[0], $arg[1]);
+			case 3: return $this->{$op}($arg[0], $arg[1], $arg[2]);
+			default: return call_user_func_array(array($this, $op), $arg);
+		}
 	}
 }
 

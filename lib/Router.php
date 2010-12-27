@@ -116,8 +116,6 @@ class Router {
 		$this->pathInfo = self::getPathInfo();
 		$this->format = pathinfo($this->pathInfo, PATHINFO_EXTENSION);
 		
-		Util\Debug::log('env vars', $_SERVER);
-
 		if (!array_key_exists($this->format, self::$viewMapping)) {
 			$this->view = new View\JSON($request, $response); // fallback view
 			
@@ -143,8 +141,7 @@ class Router {
 	 */
 	public function run() {
 		$operation = self::getOperation($this->view->request);
-		$context = substr($this->pathInfo, 1, strrpos($this->pathInfo, '.') -1);	// remove leading slash and format
-		$context = explode('/', $context);						// split into path segments
+		$context = explode('/', substr($this->pathInfo, 1, strrpos($this->pathInfo, '.')-1)); // parse pathinfo
 		
 		if (!array_key_exists($context[0], self::$controllerMapping)) {
 			if (empty($context[0])) {
@@ -158,13 +155,7 @@ class Router {
 		$class = self::$controllerMapping[$context[0]];
 		$controller = new $class($this->view, $this->em);
 		
-		if (isset($pathInfo[1])) {
-			$result = $controller->run($operation, array_slice($context, 1));
-		}
-		else {
-			$result = $controller->run($operation);
-		}
-
+		$result = $controller->run($operation, array_slice($context, 1));
 		$this->view->add($result);
 	}
 
