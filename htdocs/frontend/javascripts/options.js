@@ -27,7 +27,7 @@
 // default time interval to show
 vz.options = {
 	language: 'de',
-	backendUrl: '../backend/index.php',
+	backendUrl: '../backend.php',
 	tuples: 300,
 	render: 'lines',
 	refresh: false,
