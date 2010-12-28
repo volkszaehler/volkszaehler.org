@@ -134,7 +134,7 @@ if [ "$REPLY" == "y" ]; then
 	echo creating database $db_name...
 	mysql -h$db_host -u$db_admin_user -p$db_admin_pass -e 'CREATE DATABASE `'$db_name'`'
 	pushd $vzdir
-	php misc/tools/doctrine orm:schema-tool:create
+	php $dtdir orm:schema-tool:create
 	popd
 
 	echo "creating db user $db_user with proper rights..."
@@ -150,7 +150,7 @@ ask "insert demo data in to database?" n
 if [ "$REPLY" == "y" ]; then
 	get_admin
 	get_db_name
-	cat $vzdir/misc/sql/demo/entities.sql $vzdir/misc/sql/demo/properties.sql $vzdir/share/sql/demo/data-demoset1.sql |
+	cat $vzdir/misc/sql/demo/entities.sql $vzdir/misc/sql/demo/properties.sql $vzdir/misc/sql/demo/data-demoset1.sql |
 	mysql -h$db_host -u$db_admin_user -p$db_admin_pass $db_name
 fi
 
