@@ -41,7 +41,7 @@
 
 <?php
 
-$vzDir = '/var/www/vz';
+$vzDir = '/var/www/volkszaehler.org';
 $output = array();
 $rc = 0;
 
@@ -55,8 +55,8 @@ exec($cmd, $output, $rc);
 
 if ($rc == 0) {
 	# update documentation
-	$cmd = $vzDir . '/phpdoc/phpdoc -c ' . $vzDir . '/github/share/tools/phpdoc.ini';
-	//$cmd = 'php5 ' . $vzDir . '/phpdoctor/phpdoc.php ' . $vzDir . '/github/share/tools/phpdoctor.ini';
+	$cmd = $vzDir . '/phpdoc/phpdoc -c ' . $vzDir . '/github/misc/tools/phpdoc.ini';
+	//$cmd = 'php5 ' . $vzDir . '/phpdoctor/phpdoc.php ' . $vzDir . '/github/misc/tools/phpdoctor.ini';
 	$output[] = PHP_EOL . $cmd . PHP_EOL;
 	exec($cmd, $output, $rc);
 }

@@ -87,8 +87,7 @@ fi
 echo
 echo volkszaehler setup...
 
-#/var/www/volkszaehler.org
-ask "volkszaehler path?" /var/www/vz
+ask "volkszaehler path?" /var/www/volkszaehler.org
 vzdir=$REPLY
 
 REPLY=y
