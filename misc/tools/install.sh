@@ -133,7 +133,7 @@ if [ "$REPLY" == "y" ]; then
 	echo creating database $db_name...
 	mysql -h$db_host -u$db_admin_user -p$db_admin_pass -e 'CREATE DATABASE `'$db_name'`'
 	pushd $vzdir
-	php $dtdir orm:schema-tool:create
+	php misc/tools/doctrine orm:schema-tool:create
 	popd
 
 	echo "creating db user $db_user with proper rights..."
