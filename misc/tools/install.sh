@@ -64,7 +64,7 @@ get_db_name() {
 echo
 echo doctrine setup...
 
-ask "doctrine path?" /usr/local/lib/volkszaehler.org/doctrine
+ask "doctrine path?" /usr/local/lib/doctrine
 dtdir=$REPLY
 
 REPLY=y
