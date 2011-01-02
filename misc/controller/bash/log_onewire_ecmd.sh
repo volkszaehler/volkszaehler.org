@@ -38,11 +38,11 @@ URL="http://volkszaehler.org/neu/backend/index.php"
 
 # sensor settings
 #  id of the sensor
-SENSORID=10a5d600020800b7
+SENSORID=<put your onewire sensor's hw id here>
 #  ip address of the controller board running ethersex
-ESEXIP=192.168.111.56
+ESEXIP=<put the ip address of your controller board here>
 #  uuid of the sensor in the volkszaehler database
-UUID=0f2636b4-12cf-c086-50da-348fab30ece6
+UUID=<put the uuid of your temperature sensor here>
 
 ## 
 # paths to binaries - you should not need to change these
