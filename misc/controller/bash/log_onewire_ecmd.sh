@@ -6,7 +6,7 @@
 #
 # call it with a cronjob similiar to this one:
 #
-# */5 * * * *   ~/bin/log1wire_ecmd.sh
+# */5 * * * *   ~/bin/log_onewire_ecmd.sh
 #
 # @copyright Copyright (c) 2010, The volkszaehler.org project
 # @package controller
