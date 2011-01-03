@@ -81,7 +81,7 @@ class JSON extends View {
 		elseif ($data instanceof Util\JSON || is_array($data)) {
 			$this->addArray($data);
 		}
-		else {
+		elseif (isset($data)) { // ignores NULL data
 			throw new \Exception('Can\'t show ' . get_class($data));
 		}
 	}
@@ -223,19 +223,24 @@ class JSON extends View {
 			'last'		=> (isset($data[count($data)-1][0])) ? $data[count($data)-1][0] : NULL,
 			'min'		=> $interpreter->getMin(),
 			'max'		=> $interpreter->getMax(),
-			'average' 	=> $interpreter->getAverage(),
-			'tuples' 	=> $data
+			'average'	=> $interpreter->getAverage(),
+			'tuples'	=> $data
 		);
 	}
 
 	/**
 	 * Insert array in output
 	 *
-	 * @todo required?
+	 * @todo fix workaround for public entities
 	 */
 	protected function addArray($data) {
 		foreach ($data as $index => $value) {
-			$this->json[$index] = $value;
+			if ($value instanceof Model\Entity) {
+				$this->json['entities'][] = self::convertEntity($value);
+			}
+			else {
+				$this->json[$index] = $value;
+			}
 		}
 	}
 
