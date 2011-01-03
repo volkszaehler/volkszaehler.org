@@ -64,7 +64,7 @@ get_db_name() {
 echo
 echo doctrine setup...
 
-ask "doctrine path?" /usr/local/lib/volkszaehler.org/doctrine
+ask "doctrine path?" /usr/local/lib/doctrine
 dtdir=$REPLY
 
 REPLY=y
@@ -87,8 +87,7 @@ fi
 echo
 echo volkszaehler setup...
 
-#/var/www/volkszaehler.org
-ask "volkszaehler path?" /var/www/vz
+ask "volkszaehler path?" /var/www/volkszaehler.org
 vzdir=$REPLY
 
 REPLY=y
@@ -150,7 +149,7 @@ ask "insert demo data in to database?" n
 if [ "$REPLY" == "y" ]; then
 	get_admin
 	get_db_name
-	cat $vzdir/misc/sql/demo/entities.sql $vzdir/misc/sql/demo/properties.sql $vzdir/share/sql/demo/data-demoset1.sql |
+	cat $vzdir/misc/sql/demo/entities.sql $vzdir/misc/sql/demo/properties.sql $vzdir/misc/sql/demo/data-demoset1.sql |
 	mysql -h$db_host -u$db_admin_user -p$db_admin_pass $db_name
 fi
 

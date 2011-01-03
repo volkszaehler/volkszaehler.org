@@ -5,7 +5,7 @@
 #
 # call it with a cronjob similiar to this one:
 #
-# */5 * * * *   ~/bin/log1wire.sh
+# */5 * * * *   ~/bin/log_onewire.sh
 #
 # @copyright Copyright (c) 2010, The volkszaehler.org project
 # @package controller
