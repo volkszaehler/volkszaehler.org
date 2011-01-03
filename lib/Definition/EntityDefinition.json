@@ -49,10 +49,20 @@
 		"required"		: ["title", "resolution"],
 		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "port", "cuuid", "public", "active"],
 		"icon"			: "",					// TODO look for an icon
-		"unit"			: "kW/h",
+		"unit"			: "kW",
 		"interpreter"	: "Volkszaehler\\Interpreter\\MeterInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
-		"translation"	: { "de" : "Strom" }
+		"translation"	: { "de" : "Stromzähler" }
+	},
+	{
+		"name"			: "powersensor",
+		"required"		: ["title"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "port", "cuuid", "public", "active"],
+		"icon"			: "",					// TODO look for an icon
+		"unit"			: "kW",
+		"interpreter"	: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"	: { "de" : "Stromsensor" }
 	},
 	{
 		"name"			: "gas",
