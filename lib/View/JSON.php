@@ -224,7 +224,7 @@ class JSON extends View {
 			'min'		=> $interpreter->getMin(),
 			'max'		=> $interpreter->getMax(),
 			'average'	=> $interpreter->getAverage(),
-			'current'	=> $interpreter->getCurrent(),
+			'last'		=> $interpreter->getLast(),
 			'tuples'	=> $data
 		);
 	}

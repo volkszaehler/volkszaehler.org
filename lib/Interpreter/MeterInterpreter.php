@@ -97,7 +97,7 @@ class MeterInterpreter extends Interpreter {
 	 * @return float
 	 * @todo reimplement according to new env
 	 */
-	public function getCurrent() {
+	public function getLast() {
 		//return $this->getConsumption() / ($this->to - $this->from) / 1000;	// return W
 	}
 

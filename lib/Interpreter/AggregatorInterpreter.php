@@ -140,15 +140,15 @@ class AggregatorInterpreter implements InterpreterInterface {
 	/**
 	 * Just a passthrough to the channel interpreters
 	 *
-	 * @return float current value
+	 * @return float last value
 	 */
-	public function getCurrent() {
-		$current = 0;
+	public function getLast() {
+		$last = 0;
 
 		foreach ($this->channelInterpreter as $interpreter) {
-			$current = $interpreter->getCurrent();
+			$last = $interpreter->getLast();
 		}
-		return ($current($this->channelInterpreter));
+		return ($last($this->channelInterpreter));
 	}
 
 	/*

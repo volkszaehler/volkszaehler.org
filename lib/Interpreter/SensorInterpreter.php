@@ -86,7 +86,7 @@ class SensorInterpreter extends Interpreter {
 	 * @internal doesn't fits the SQL standard
 	 * @return float
 	 */
-	public function getCurrent() {
+	public function getLast() {
 		return (float) $this->conn->fetchColumn('SELECT value FROM data WHERE channel_id = ?' . parent::buildDateTimeFilterSQL($this->from, $this->to). ' ORDER BY timestamp DESC', array($this->channel->getId()), 0);
 	}
 

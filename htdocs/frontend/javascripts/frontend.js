@@ -294,7 +294,7 @@ vz.entities.show = function() {
 			.append($('<td>').addClass('min'))	// min
 			.append($('<td>').addClass('max'))	// max
 			.append($('<td>').addClass('average'))	// avg
-			.append($('<td>').addClass('current'))	// curr
+			.append($('<td>').addClass('last'))	// last
 			.append($('<td>')			// operations
 				.addClass('ops')
 				.append($('<input>')
@@ -365,7 +365,7 @@ vz.entities.loadData = function() {
 							.text(entity.data.max.value)
 							.attr('title', $.plot.formatDate(new Date(entity.data.max.timestamp), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames));
 						$('#entity-' + entity.uuid + ' .average').text(entity.data.average);
-						$('#entity-' + entity.uuid + ' .current').text(entity.data.current);
+						$('#entity-' + entity.uuid + ' .last').text(entity.data.last);
 					}
 				}, vz.drawPlot, 'data')
 			);

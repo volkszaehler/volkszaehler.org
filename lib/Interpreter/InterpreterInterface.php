@@ -34,6 +34,6 @@ interface InterpreterInterface {
 	function getMin();
 	function getMax();
 	function getAverage();
-	function getCurrent();
+	function getLast();
 	function getEntity();
 }
