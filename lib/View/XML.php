@@ -219,6 +219,7 @@ class XML extends View {
 		$xmlData->appendChild($this->xmlDoc->createElement('min', $interpreter->getMin()));
 		$xmlData->appendChild($this->xmlDoc->createElement('max', $interpreter->getMax()));
 		$xmlData->appendChild($this->xmlDoc->createElement('average', $interpreter->getAverage()));
+		$xmlData->appendChild($this->xmlDoc->createElement('current', $interpreter->getCurrent()));
 		$xmlData->appendChild($xmlTuples);
 	
 		$this->xmlRoot->appendChild($xmlData);

@@ -94,6 +94,14 @@ class MeterInterpreter extends Interpreter {
 	}
 
 	/**
+	 * @return float
+	 * @todo reimplement according to new env
+	 */
+	public function getCurrent() {
+		//return $this->getConsumption() / ($this->to - $this->from) / 1000;	// return W
+	}
+
+	/**
 	 * Raw pulses to power conversion
 	 *
 	 * @todo untested

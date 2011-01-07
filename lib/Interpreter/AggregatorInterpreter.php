@@ -137,6 +137,20 @@ class AggregatorInterpreter implements InterpreterInterface {
 		return ($sum / count($this->channelInterpreter));
 	}
 
+	/**
+	 * Just a passthrough to the channel interpreters
+	 *
+	 * @return float current value
+	 */
+	public function getCurrent() {
+		$current = 0;
+
+		foreach ($this->channelInterpreter as $interpreter) {
+			$current = $interpreter->getCurrent();
+		}
+		return ($current($this->channelInterpreter));
+	}
+
 	/*
 	 * Getter & setter
 	 */
