@@ -357,15 +357,21 @@ vz.entities.loadData = function() {
 					
 					// update entity table
 					// TODO add units
-					if (entity.data.min && entity.data.max && entity.data.min) {
+					if (entity.data.min) {
 						$('#entity-' + entity.uuid + ' .min')
 							.text(entity.data.min.value)
 							.attr('title', $.plot.formatDate(new Date(entity.data.min.timestamp), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames));	
+					}
+					if (entity.data.max) {
 						$('#entity-' + entity.uuid + ' .max')
 							.text(entity.data.max.value)
-							.attr('title', $.plot.formatDate(new Date(entity.data.max.timestamp), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames));
+							.attr('title', $.plot.formatDate(new Date(entity.data.max.timestamp), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames));	
+					}
+					if (entity.data.average) {
 						$('#entity-' + entity.uuid + ' .average').text(entity.data.average);
-						$('#entity-' + entity.uuid + ' .last').text(entity.data.last);
+					}
+					if (entity.data.last) {
+						$('#entity-' + entity.uuid + ' .last').text(entity.data.last)
 					}
 				}, vz.drawPlot, 'data')
 			);

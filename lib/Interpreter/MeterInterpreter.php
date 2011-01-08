@@ -41,16 +41,9 @@ class MeterInterpreter extends Interpreter {
 	 * @todo reimplement according to new env
 	 */
 	public function getConsumption() {
-		/*$sql = 'SELECT SUM(value) AS count
-				FROM data
-				WHERE
-					channel_id = ' . (int) $this->id . ' &&
-					' . self::buildTimeFilterSQL($this->from, $this->to) . '
-				GROUP BY channel_id';
+		$sql = 'SELECT COUNT(*) FROM `data` WHERE `channel_id` = ' . $this->channel->getId() . parent::buildDateTimeFilterSQL($this->from, $this->to);
 
-		$result = $this->dbh->query($sql)->rewind();
-
-		return $result['count'] / $this->resolution / 1000;	// returns Wh*/
+		return $this->conn->fetchColumn($sql, array($this->channel->getId()), 0)*$this->channel->getProperty('resolution');     // return Wh
 	}
 
 	/**
@@ -90,7 +83,7 @@ class MeterInterpreter extends Interpreter {
 	 * @todo reimplement according to new env
 	 */
 	public function getAverage() {
-		//return $this->getConsumption() / ($this->to - $this->from) / 1000;	// return W
+		return $this->getConsumption() / ($this->to - $this->from) * 1000;	// return W
 	}
 
 	/**
