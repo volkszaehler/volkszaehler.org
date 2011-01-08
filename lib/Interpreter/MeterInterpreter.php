@@ -83,7 +83,7 @@ class MeterInterpreter extends Interpreter {
 	 * @todo reimplement according to new env
 	 */
 	public function getAverage() {
-		return $this->getConsumption() / ($this->to - $this->from) * 1000;	// return W
+		return round($this->getConsumption() / ($this->to - $this->from) * 1000, 1);	// return W
 	}
 
 	/**

@@ -87,7 +87,7 @@ class SensorInterpreter extends Interpreter {
 	 * @return float
 	 */
 	public function getLast() {
-		return (float) $this->conn->fetchColumn('SELECT value FROM data WHERE channel_id = ?' . parent::buildDateTimeFilterSQL($this->from, $this->to). ' ORDER BY timestamp DESC', array($this->channel->getId()), 0);
+		return round((float) $this->conn->fetchColumn('SELECT value FROM data WHERE channel_id = ?' . parent::buildDateTimeFilterSQL($this->from, $this->to). ' ORDER BY timestamp DESC', array($this->channel->getId()), 0), 1);
 	}
 
 	/**
