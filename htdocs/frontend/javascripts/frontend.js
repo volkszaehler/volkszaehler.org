@@ -368,10 +368,11 @@ vz.entities.loadData = function() {
 							.attr('title', $.plot.formatDate(new Date(entity.data.max.timestamp), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames));	
 					}
 					if (entity.data.average) {
-						$('#entity-' + entity.uuid + ' .average').text(entity.data.average);
+						$('#entity-' + entity.uuid + ' .average').text(Math.round(entity.data.average/vz.options.rounding)*vz.options.rounding);
+						// rounding: Math.round rounds to whole numbers; to round to one decimal (e.g. 15.2) we multiply by 10 (resp. divide through 0.1), round and reverse the multiplication again; therefore "vz.options.rounding" needs to be set to 0.1 in that case
 					}
 					if (entity.data.last) {
-						$('#entity-' + entity.uuid + ' .last').text(entity.data.last)
+						$('#entity-' + entity.uuid + ' .last').text(Math.round(entity.data.last/vz.options.rounding)*vz.options.rounding);
 					}
 				}, vz.drawPlot, 'data')
 			);

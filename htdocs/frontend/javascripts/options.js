@@ -29,6 +29,7 @@ vz.options = {
 	language: 'de',
 	backendUrl: '../backend.php',
 	tuples: 300,
+	rounding: 0.1,
 	render: 'lines',
 	refresh: false,
 	refreshInterval: 5*1000, // 5 secs
