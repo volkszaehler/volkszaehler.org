@@ -43,7 +43,7 @@ class MeterInterpreter extends Interpreter {
 	public function getConsumption() {
 		$sql = 'SELECT COUNT(*) FROM `data` WHERE `channel_id` = ' . $this->channel->getId() . parent::buildDateTimeFilterSQL($this->from, $this->to);
 
-		return $this->conn->fetchColumn($sql, array($this->channel->getId()), 0)*$this->channel->getProperty('resolution');     // return Wh
+		return $this->conn->fetchColumn($sql, array($this->channel->getId()), 0)*$this->channel->getProperty('resolution');     // return KWh
 	}
 
 	/**
@@ -83,7 +83,8 @@ class MeterInterpreter extends Interpreter {
 	 * @todo reimplement according to new env
 	 */
 	public function getAverage() {
-		return round(3600*1000*$this->getConsumption() / ($this->to - $this->from), 10);  // return W
+		return round(3600*1000*1000*$this->getConsumption() / ($this->to - $this->from), 10);  // return W
+			// 3600: 3600 s/h; 1000: ms -> s; 1000: KW -> W
 	}
 
 	/**
