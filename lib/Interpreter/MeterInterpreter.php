@@ -43,7 +43,7 @@ class MeterInterpreter extends Interpreter {
 	public function getConsumption() {
 		$sql = 'SELECT COUNT(*) FROM `data` WHERE `channel_id` = ' . $this->channel->getId() . parent::buildDateTimeFilterSQL($this->from, $this->to);
 
-		return $this->conn->fetchColumn($sql, array($this->channel->getId()), 0)*$this->channel->getProperty('resolution');     // return KWh
+		return $this->conn->fetchColumn($sql, array($this->channel->getId()), 0)/$this->channel->getProperty('resolution');     // return KWh
 	}
 
 	/**
