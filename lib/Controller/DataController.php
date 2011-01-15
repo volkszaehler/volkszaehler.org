@@ -70,18 +70,9 @@ class DataController extends Controller {
 
 	public function run($operation, array $identifiers = array()) {
 		$ec = new EntityController($this->view, $this->em);
+		$entity = $ec->get($identifiers[0]);
 		
-		if (count($identifiers) == 2) {		// prototype: backend/data/uuid/port.json
-			$identifiers[0] = $ec->filter(array(
-				'cuuid' => $identifiers[0],
-				'port' => $identifiers[1]
-			));
-		}
-		elseif (count($identifiers) == 1) {	// assume UUID
-			$identifiers[0] = $ec->get($identifiers[0]);
-		}
-
-		return parent::run($operation, $identifiers);
+		$this->{$operation}($entity);
 	}
 }
 

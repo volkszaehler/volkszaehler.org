@@ -37,7 +37,7 @@ class AggregatorController extends EntityController {
 	/**
 	 * Get aggregator
 	 */
-	public function get($identifier) {
+	public function get($identifier = NULL) {
 		$aggregator = parent::get($identifier);
 
 		if ($aggregator instanceof Model\Aggregator) {
