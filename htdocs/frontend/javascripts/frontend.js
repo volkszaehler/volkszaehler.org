@@ -37,14 +37,20 @@ vz.wui.init = function() {
 	// buttons
 	$('button, input[type=button],[type=image]').button();
 	$('button[name=options-save]').click(function() { vz.options.save(); });
-	$('#permalink').click(function() { // TODO add uuids
-		var u = window.location.protocol + '//' +
+	$('#permalink').click(function() {
+		var url = window.location.protocol + '//' +
 			window.location.host +
 			window.location.pathname +
 			'?from=' + vz.options.plot.xaxis.min +
 			'&to=' + vz.options.plot.xaxis.max;
+		
+		vz.entities.each(function(entity, parent) {
+			if (entity.active) {
+				url += '&uuid=' + entity.uuid;
+			}
+		});
 
-		window.location = u;
+		window.location = url;
 	});
 	$('button[name=entity-add]').click(function() { $('#entity-add').dialog('open'); });
 	$('#entity-subscribe input[type=button]').click(function() {
