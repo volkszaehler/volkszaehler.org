@@ -50,6 +50,7 @@ vz.wui.init = function() {
 	$('#entity-subscribe input[type=button]').click(function() {
 		try {
 			vz.uuids.add($('#entity-subscribe input[type=text]').val());
+			vz.uuids.save();
 			$('#entity-subscribe input[type=text]').val('');
 			$('#entity-add').dialog('close');
 			vz.entities.loadDetails();
@@ -312,6 +313,7 @@ vz.entities.show = function() {
 				.attr('alt', 'delete')
 				.bind('click', entity, function(event) {
 					vz.uuids.remove(event.data.uuid);
+					vz.uuids.save();
 					vz.entities.loadDetails();
 				})
 			);
@@ -435,24 +437,26 @@ vz.load = function(context, identifier, data, success) {
 /**
  * Parse URL GET parameters
  */
-vz.parseUrlVars = function() {
-	var vars = $.getUrlVars();
+vz.parseUrlParams = function() {
+	var vars = $.getUrlParams();
 	for (var key in vars) {
 		if (vars.hasOwnProperty(key)) {
 			switch (key) {
 				case 'uuid': // add optional uuid from url
-					try {
-						vz.uuids.add(vars[key]);
-					} catch (exception) {
-						vz.wui.dialogs.exception(exception);
-					}
+					var uuids = (typeof vars[key] == 'string') ? [vars[key]] : vars[key]; // handle multiple uuids
+					uuids.each(function(index, uuid) {
+						try { vz.uuids.add(uuid); } catch (exception) { /* ignore exception */ }
+					});
 					break;
+					
 				case 'from':
 					vz.options.plot.xaxis.min = parseInt(vars[key]);
 					break;
+					
 				case 'to':
 					vz.options.plot.xaxis.max = parseInt(vars[key]);
 					break;
+					
 				case 'debug':
 					$.getScript('javascripts/firebug-lite.js');
 					break;

@@ -31,7 +31,6 @@ vz.uuids.add = function(uuid) {
 	if (this.validate(uuid)) {
 		if (!this.contains(uuid)) {
 			this.push(uuid);
-			this.save();
 		}
 		else {
 			throw new Exception('UUIDException', 'UUID already added: ' + uuid);
@@ -48,7 +47,6 @@ vz.uuids.add = function(uuid) {
 vz.uuids.remove = function(uuid) {
 	if (this.contains(uuid)) {
 		this.splice(this.indexOf(uuid), 1);	// remove uuid from array
-		this.save();
 	}
 	else {
 		throw new Exception('UUIDException', 'UUID unkown: ' + uuid);
@@ -66,7 +64,8 @@ vz.uuids.validate = function(uuid) {
  * Save uuids as cookie
  */
 vz.uuids.save = function() {
-	$.setCookie('vz_uuids', this.join(';'));
+	var expires = new Date(new Date().getTime() + 31536e6); // expires in a year
+	$.setCookie('vz_uuids', this.join(';'), {expires: expires});
 };
 
 /**

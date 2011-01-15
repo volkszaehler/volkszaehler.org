@@ -29,18 +29,28 @@
  * Get URL parameters
  */
 $.extend( {
-	getUrlVars : function() {
-		var vars = [], hash;
+	getUrlParams : function() {
+		var vars = {}, hash;
 		var hashes = window.location.href.slice(
 				window.location.href.indexOf('?') + 1).split('&');
 		for (var i = 0; i < hashes.length; i++) {
 			hash = hashes[i].split('=');
-			vars[hash[0]] = hash[1];
+			switch (typeof vars[hash[0]]) {
+				case 'undefined':
+					vars[hash[0]] = hash[1];
+					break;
+					
+				case 'string':
+					vars[hash[0]] = Array(vars[hash[0]]);
+					
+				case 'object':
+					vars[hash[0]].push(hash[1]);
+			}
 		}
 		return vars;
 	},
-	getUrlVar : function(name) {
-		return $.getUrlVars()[name];
+	getUrlParam : function(name) {
+		return $.getUrlParams()[name];
 	}
 });
 
