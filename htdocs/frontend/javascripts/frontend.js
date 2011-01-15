@@ -38,16 +38,21 @@ vz.wui.init = function() {
 	$('button, input[type=button],[type=image]').button();
 	$('button[name=options-save]').click(function() { vz.options.save(); });
 	$('#permalink').click(function() {
+		var uuids = [];
 		var url = window.location.protocol + '//' +
 			window.location.host +
 			window.location.pathname +
 			'?from=' + vz.options.plot.xaxis.min +
 			'&to=' + vz.options.plot.xaxis.max;
-		
+
 		vz.entities.each(function(entity, parent) {
 			if (entity.active) {
-				url += '&uuid=' + entity.uuid;
+				uuids.push(entity.uuid);
 			}
+		});
+		
+		uuids.unique().each(function(key, value) {
+			url += '&uuid=' + value;
 		});
 
 		window.location = url;

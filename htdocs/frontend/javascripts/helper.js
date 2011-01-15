@@ -55,8 +55,9 @@ var Exception = function(type, message, code) {
  * according to js language specification ECMA 1.6
  */
 Array.prototype.indexOf = function(n) {
-	for (var i = 0, l = this.length; i < l; i++)
+	for (var i = 0, l = this.length; i < l; i++) {
 		if (n == this[i]) return i;
+	}
 };
 
 Array.prototype.remove = function(n) {
@@ -64,8 +65,9 @@ Array.prototype.remove = function(n) {
 };
 
 Array.prototype.each = function(cb) {
-	for (var i = 0, l = this.length; i < l; i++)
+	for (var i = 0, l = this.length; i < l; i++) {
 		cb(i, this[i]);
+	}
 };
 
 Array.prototype.contains = function(n) {
@@ -74,4 +76,16 @@ Array.prototype.contains = function(n) {
 
 Array.prototype.clear = function() {
 	this.length = 0;
+}
+
+Array.prototype.unique = function () {
+	var r = new Array();
+	
+	this.each(function(key, value) {
+		if (!r.contains(value)) {
+			r.push(value);
+		}
+	});
+	
+	return r;
 }
