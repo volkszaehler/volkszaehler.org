@@ -92,16 +92,16 @@ vz.wui.init = function() {
 	// auto refresh
 	if (vz.options.refresh) {
 		$('#refresh').attr('checked', true);
-		vz.wui.interval = window.setInterval(vz.wui.refresh, vz.options.refreshInterval);
+		vz.wui.timeout = window.setTimeout(vz.wui.refresh, 3000);
 	}
 	$('#refresh').change(function() {
 		if ($(this).attr('checked')) {
 			vz.options.refresh = true;
-			vz.wui.interval = window.setInterval(vz.wui.refresh, vz.options.refreshInterval);
+			vz.wui.timeout = window.setTimeout(vz.wui.refresh, 3000);
 		}
 		else {
 			vz.options.refresh = false;
-			window.clearInterval(vz.wui.interval);
+			window.clearTimeout(vz.wui.timeout);
 		}
 	});
 	
@@ -167,9 +167,12 @@ vz.wui.initEvents = function() {
  */
 vz.wui.refresh = function() {
 	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
+	
 	vz.options.plot.xaxis.max = new Date().getTime();		// move plot
 	vz.options.plot.xaxis.min = vz.options.plot.xaxis.max - delta;	// move plot
 	vz.entities.loadData();
+	
+	vz.wui.timeout = window.setTimeout(vz.wui.refresh, (delta / 100 < 3000) ? 3000 : delta / 100); // TODO update timeout after zooming
 };
 
 /**
@@ -527,7 +530,7 @@ vz.wui.dialogs.error = function(error, description, code) {
 		modal: true,
 		buttons: {
 			Ok: function() {
-				$( this ).dialog( "close" );
+				$(this).dialog('close');
 			}
 		}
 	});

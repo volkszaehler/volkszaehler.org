@@ -80,12 +80,10 @@ Array.prototype.clear = function() {
 
 Array.prototype.unique = function () {
 	var r = new Array();
-	
 	this.each(function(key, value) {
 		if (!r.contains(value)) {
 			r.push(value);
 		}
 	});
-	
 	return r;
 }
