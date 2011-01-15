@@ -279,9 +279,9 @@ vz.entities.show = function() {
 						event.data.active = state;
 
 						if (entity.type == 'group') {
-							entity.children.each(function(entity) {
-								$('#entity-' + entity.uuid + ' input[type=checkbox]').attr('checked', state);
-								entity.active = state;
+							entity.children.each(function(child) {
+								$('#entity-' + child.uuid + '.child-of-entity-' + entity.uuid + ' input[type=checkbox]').attr('checked', state);
+								child.active = state;
 							});
 						}
 
