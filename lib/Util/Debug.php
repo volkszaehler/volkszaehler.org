@@ -85,8 +85,8 @@ class Debug {
 
 			self::$instance->messages[] = array(
 				'message' => $message,
-				//'file' => $info['file'],
-				//'line' => $info['line'],
+				'file' => $info['file'],
+				'line' => $info['line'],
 				//'time' => date('r'),
 				'args' => array_slice($info['args'], 1),
 				//'trace' => array_slice($trace, 1)
