@@ -72,7 +72,7 @@ class DataController extends Controller {
 		$ec = new EntityController($this->view, $this->em);
 		$entity = $ec->get($identifiers[0]);
 		
-		$this->{$operation}($entity);
+		return $this->{$operation}($entity);
 	}
 }
 

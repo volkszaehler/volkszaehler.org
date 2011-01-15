@@ -56,7 +56,7 @@ abstract class Interpreter implements InterpreterInterface {
 	 */
 	public function __construct(Model\Channel $channel, ORM\EntityManager $em, $from, $to) {
 		$this->channel = $channel;
-
+		
 		// get dbal connection from EntityManager
 		$this->conn = $em->getConnection();
 
