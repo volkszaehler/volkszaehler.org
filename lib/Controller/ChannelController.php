@@ -37,7 +37,7 @@ class ChannelController extends EntityController {
 	/**
 	 * Get channel
 	 */
-	public function get($identifier) {
+	public function get($identifier = NULL) {
 		$channel = parent::get($identifier);
 
 		if ($channel instanceof Model\Channel) {

@@ -37,19 +37,31 @@ vz.wui.init = function() {
 	// buttons
 	$('button, input[type=button],[type=image]').button();
 	$('button[name=options-save]').click(function() { vz.options.save(); });
-	$('#permalink').click(function() { // TODO add uuids
-		var u = window.location.protocol + '//' +
+	$('#permalink').click(function() {
+		var uuids = [];
+		var url = window.location.protocol + '//' +
 			window.location.host +
 			window.location.pathname +
 			'?from=' + vz.options.plot.xaxis.min +
 			'&to=' + vz.options.plot.xaxis.max;
 
-		window.location = u;
+		vz.entities.each(function(entity, parent) {
+			if (entity.active) {
+				uuids.push(entity.uuid);
+			}
+		});
+		
+		uuids.unique().each(function(key, value) {
+			url += '&uuid=' + value;
+		});
+
+		window.location = url;
 	});
 	$('button[name=entity-add]').click(function() { $('#entity-add').dialog('open'); });
 	$('#entity-subscribe input[type=button]').click(function() {
 		try {
 			vz.uuids.add($('#entity-subscribe input[type=text]').val());
+			vz.uuids.save();
 			$('#entity-subscribe input[type=text]').val('');
 			$('#entity-add').dialog('close');
 			vz.entities.loadDetails();
@@ -80,16 +92,16 @@ vz.wui.init = function() {
 	// auto refresh
 	if (vz.options.refresh) {
 		$('#refresh').attr('checked', true);
-		vz.wui.interval = window.setInterval(vz.wui.refresh, vz.options.refreshInterval);
+		vz.wui.timeout = window.setTimeout(vz.wui.refresh, 3000);
 	}
 	$('#refresh').change(function() {
 		if ($(this).attr('checked')) {
 			vz.options.refresh = true;
-			vz.wui.interval = window.setInterval(vz.wui.refresh, vz.options.refreshInterval);
+			vz.wui.timeout = window.setTimeout(vz.wui.refresh, 3000);
 		}
 		else {
 			vz.options.refresh = false;
-			window.clearInterval(vz.wui.interval);
+			window.clearTimeout(vz.wui.timeout);
 		}
 	});
 	
@@ -155,9 +167,12 @@ vz.wui.initEvents = function() {
  */
 vz.wui.refresh = function() {
 	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
+	
 	vz.options.plot.xaxis.max = new Date().getTime();		// move plot
 	vz.options.plot.xaxis.min = vz.options.plot.xaxis.max - delta;	// move plot
 	vz.entities.loadData();
+	
+	vz.wui.timeout = window.setTimeout(vz.wui.refresh, (delta / 100 < 3000) ? 3000 : delta / 100); // TODO update timeout after zooming
 };
 
 /**
@@ -272,9 +287,9 @@ vz.entities.show = function() {
 						event.data.active = state;
 
 						if (entity.type == 'group') {
-							entity.children.each(function(entity) {
-								$('#entity-' + entity.uuid + ' input[type=checkbox]').attr('checked', state);
-								entity.active = state;
+							entity.children.each(function(child) {
+								$('#entity-' + child.uuid + '.child-of-entity-' + entity.uuid + ' input[type=checkbox]').attr('checked', state);
+								child.active = state;
 							});
 						}
 
@@ -312,6 +327,7 @@ vz.entities.show = function() {
 				.attr('alt', 'delete')
 				.bind('click', entity, function(event) {
 					vz.uuids.remove(event.data.uuid);
+					vz.uuids.save();
 					vz.entities.loadDetails();
 				})
 			);
@@ -435,24 +451,26 @@ vz.load = function(context, identifier, data, success) {
 /**
  * Parse URL GET parameters
  */
-vz.parseUrlVars = function() {
-	var vars = $.getUrlVars();
+vz.parseUrlParams = function() {
+	var vars = $.getUrlParams();
 	for (var key in vars) {
 		if (vars.hasOwnProperty(key)) {
 			switch (key) {
 				case 'uuid': // add optional uuid from url
-					try {
-						vz.uuids.add(vars[key]);
-					} catch (exception) {
-						vz.wui.dialogs.exception(exception);
-					}
+					var uuids = (typeof vars[key] == 'string') ? [vars[key]] : vars[key]; // handle multiple uuids
+					uuids.each(function(index, uuid) {
+						try { vz.uuids.add(uuid); } catch (exception) { /* ignore exception */ }
+					});
 					break;
+					
 				case 'from':
 					vz.options.plot.xaxis.min = parseInt(vars[key]);
 					break;
+					
 				case 'to':
 					vz.options.plot.xaxis.max = parseInt(vars[key]);
 					break;
+					
 				case 'debug':
 					$.getScript('javascripts/firebug-lite.js');
 					break;
@@ -512,7 +530,7 @@ vz.wui.dialogs.error = function(error, description, code) {
 		modal: true,
 		buttons: {
 			Ok: function() {
-				$( this ).dialog( "close" );
+				$(this).dialog('close');
 			}
 		}
 	});

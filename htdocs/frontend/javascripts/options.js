@@ -32,9 +32,8 @@ vz.options = {
 	rounding: 1,
 	render: 'lines',
 	refresh: false,
-	refreshInterval: 5*1000, // 5 secs
 	defaultInterval: 24*60*60*1000, // 1 day
-	timezoneOffset: -(new Date().getTimezoneOffset() * 60*1000) // TODO add option with timezone dropdown
+	timezoneOffset: -(new Date().getTimezoneOffset() * 60000) // TODO add option with timezone dropdown
 };
 
 vz.options.plot = {

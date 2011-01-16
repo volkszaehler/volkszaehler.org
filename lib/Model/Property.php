@@ -24,7 +24,6 @@
 namespace Volkszaehler\Model;
 
 use Volkszaehler\Definition;
-
 use Volkszaehler\Util;
 use Volkszaehler\Model;
 
@@ -73,7 +72,6 @@ class Property {
 	 */
 	public function __construct(Model\Entity $entity, $key, $value) {
 		$this->entity = $entity;
-
 		$this->key = $key;
 		$this->value = $value;
 	}
@@ -118,6 +116,7 @@ class Property {
 
 	/**
 	 * @PreRemove
+	 * @todo blocks removal of entity
 	 */
 	public function checkRemove() {
 		if (in_array($this->key, $this->entity->getDefinition()->getRequiredProperties())) {
@@ -135,8 +134,9 @@ class Property {
 	}
 
 	/*
-	 * Setter & Getter
+	 * Setter & getter
 	 */
+	 
 	public function getKey() { return $this->key; }
 	public function getValue() { return $this->value; }
 	public function getDefinition() { return Definition\PropertyDefinition::get($this->key); }

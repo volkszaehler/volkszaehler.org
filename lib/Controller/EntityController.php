@@ -34,28 +34,34 @@ use Volkszaehler\Model;
  * @package default
  */
 class EntityController extends Controller {
+
 	/**
 	 * Get entity
 	 *
 	 * @param string $identifier
 	 */
-	public function get($uuid) {
-		if (!Util\UUID::validate($uuid)) {
-			throw new \Exception('Invalid UUID: ' . $uuid);
+	public function get($uuid = NULL) {
+		if (isset($uuid)) {		
+			if (!Util\UUID::validate($uuid)) {
+				throw new \Exception('Invalid UUID: ' . $uuid);
+			}
+
+			$dql = 'SELECT a, p
+				FROM Volkszaehler\Model\Entity a
+				LEFT JOIN a.properties p
+				WHERE a.uuid = :uuid';
+
+			$q = $this->em->createQuery($dql);
+			$q->setParameter('uuid', $uuid);
+
+			try {
+				return $q->getSingleResult();
+			} catch (\Doctrine\ORM\NoResultException $e) {
+				throw new \Exception('No entity found with UUID: ' . $uuid, 404);
+			}
 		}
-
-		$dql = 'SELECT a, p
-			FROM Volkszaehler\Model\Entity a
-			LEFT JOIN a.properties p
-			WHERE a.uuid = ?1';
-
-		$q = $this->em->createQuery($dql);
-		$q->setParameter(1, $uuid);
-
-		try {
-			return $q->getSingleResult();
-		} catch (\Doctrine\ORM\NoResultException $e) {
-			throw new \Exception('No entity found with UUID: ' . $uuid, 404);
+		else { // get public entities
+			return $this->filter(array('public' => TRUE));
 		}
 	}
 
@@ -82,49 +88,40 @@ class EntityController extends Controller {
 
 	/**
 	 * Adds an entity to the uuids cookie
+	 *
+	 * @todo add to Model\Entity?
 	 * @param Model\Entity $entity
 	 */
 	protected function setCookie(Model\Entity $entity) {
-		if ($uuids = $this->view->request->getParameter('uuids', 'cookies')) {
-			$uuids = Util\JSON::decode($uuids);
-		}
-		else {
-			$uuids = new Util\JSON();
-		}
+		$uuids = ($uuids = $this->view->request->getParameter('vz_uuids', 'cookies')) ? explode(';', $uuids) : array();
 
 		// add new UUID
-		$uuids->append($entity->getUuid());
-
-		// remove duplicates
-		$uuids->exchangeArray(array_unique($uuids->getArrayCopy()));
+		$uuids[] = $entity->getUuid();
 
 		// send new cookie to browser
-		setcookie('uuids', $uuids->encode(), 0, '/');	// TODO correct path
+		setcookie('vz_uuids', implode(';', array_unique($uuids)), 0, '/');	// TODO correct path
 	}
 
 	/**
 	 * Removes an entity from the uuids cookie
+	 *
 	 * @param Model\Entity $entity
+	 * @todo add to Model\Entity?
 	 */
 	protected function unsetCookie(Model\Entity $entity) {
-		if ($uuids = $this->view->request->getParameter('uuids', 'cookies')) {
-			$uuids = Util\JSON::decode($uuids);
-		}
-		else {
-			$uuids = new Util\JSON();
-		}
+		$uuids = ($uuids = $this->view->request->getParameter('vz_uuids', 'cookies')) ? explode(';', $uuids) : array();
 
 		// remove old UUID
-		$uuids->exchangeArray(array_filter($uuids->getArrayCopy, function($uuid) use ($entity) {
+		$uuids = array_filter($uuids, function($uuid) use ($entity) {
 			return $uuid != $entity->getUuid();
-		}));
+		});
 
 		// send new cookie to browser
-		setcookie('uuids', $uuids->encode(), 0, '/');	// TODO correct path
+		setcookie('vz_uuids', implode(';', array_unique($uuids)), 0, '/');	// TODO correct path
 	}
 
 	/**
-	 * Update/set/delete properties of properties
+	 * Update/set/delete properties of entities
 	 */
 	protected function setProperties(Model\Entity $entity, $parameters) {
 		foreach ($parameters as $parameter => $value) {
@@ -141,14 +138,19 @@ class EntityController extends Controller {
 
 	/**
 	 * Filter entites by properties
+	 *
+	 * @todo improve performance
+	 * @param array of property => value filters
+	 * @return array of entities
 	 */
 	public function filter(array $properties) {
 		$dql = 'SELECT a, p
 			FROM Volkszaehler\Model\Entity a
 			LEFT JOIN a.properties p';
 
-		$sqlWhere = array();
 		$i = 0;
+		$sqlWhere = array();
+		$sqlParams = array();
 		foreach ($properties as $property => $value) {
 			switch (Definition\PropertyDefinition::get($property)->getType()) {
 				case 'string':
@@ -158,9 +160,13 @@ class EntityController extends Controller {
 					break;
 
 				case 'boolean':
-					$value = ($value) ? 1 : 0;
+					$value = (int) $value;
 			}
-			$sqlWhere[] = 'EXISTS (SELECT p' . $i . ' FROM \Volkszaehler\Model\Property p' . $i . ' WHERE p' . $i . '.name = \'' . $property . '\' AND p' . $i . '.value = ' . $value . ' AND p' . $i . '.entity = a)';
+			$sqlWhere[] = 'EXISTS (SELECT p' . $i . ' FROM \Volkszaehler\Model\Property p' . $i . ' WHERE p' . $i . '.key = :key' . $i . ' AND p' . $i . '.value = :value' . $i . ' AND p' . $i . '.entity = a)';
+			$sqlParams += array(
+				'key' . $i => $property,
+				'value' . $i => $value
+			);
 			$i++;
 		}
 
@@ -169,7 +175,7 @@ class EntityController extends Controller {
 		}
 
 		$q = $this->em->createQuery($dql);
-		return $q->getSingleResult();
+		return $q->execute($sqlParams);
 	}
 }	
 

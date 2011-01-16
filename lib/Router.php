@@ -137,7 +137,7 @@ class Router {
 	/**
 	 * Processes the request
 	 *
-	 * Example: http://sub.domain.local/vz/backend/channel/550e8400-e29b-11d4-a716-446655440000/data.json?operation=edit&title=New Title
+	 * Example: http://sub.domain.local/backend.php/channel/550e8400-e29b-11d4-a716-446655440000/data.json?operation=edit&title=New Title
 	 */
 	public function run() {
 		$operation = self::getOperation($this->view->request);

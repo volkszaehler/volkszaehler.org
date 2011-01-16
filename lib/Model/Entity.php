@@ -23,12 +23,10 @@
 
 namespace Volkszaehler\Model;
 
-use Volkszaehler\Definition;
-
 use Doctrine\ORM;
-
 use Doctrine\Common\Collections;
 use Volkszaehler\Util;
+use Volkszaehler\Definition;
 
 /**
  * Entity superclass for all objects referenced by a UUID
@@ -124,12 +122,17 @@ abstract class Entity {
 	 * @return array
 	 */
 	public function getProperties($prefix = NULL) {
+		/*$this->properties->filter(function($property) {
+			return substr($property->getKey(), 0, strlen($prefix)) == $prefix;
+		})->toArray();*/
+
 		$properties = array();
 		foreach ($this->properties as $property) {
 			if (substr($property->getKey(), 0, strlen($prefix)) == $prefix) {
 				$properties[$property->getKey()] = $property->getValue();
 			}
 		}
+
 		return $properties;
 	}
 
@@ -175,8 +178,9 @@ abstract class Entity {
 	}
 
 	/*
-	 * Setter & Getter
+	 * Setter & getter
 	 */
+	 
 	public function getId() { return $this->id; }		// read only
 	public function getUuid() { return $this->uuid; }	// read only
 	public function getType() { return $this->type; }	// read only

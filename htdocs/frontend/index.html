@@ -3,6 +3,9 @@
 <head>
 	<title>volkszaehler.org - web frontend</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	
+	<link rel="shortcut icon" type="image/x-icon" href="../favicon.ico">
+	<link rel="apple-touch-icon" href="../favicon.ico">
 
 	<!-- jQuery -->
 	<script type="text/javascript" src="javascripts/jquery/jquery-1.4.2.min.js"></script>
@@ -130,7 +133,10 @@
 		<!--</ul>-->
 		<div id="entity-subscribe">
 			<p>Hier k&ouml;nnen Sie einen existierenden Kanal über seine UUID hinzuf&uuml;gen</p>
-			<p><label for="uuid">UUID: </label><input id="uuid" type="text" size="36" maxlength="36" /></p>
+			<table>
+				<tr><td><label for="uuid">UUID:</label></td><td><input id="uuid" type="text" size="36" maxlength="36" /></td></tr>
+				<tr><td><label for="remember">Cookie:</label></td><td><input id="remember" type="checkbox" /></td></tr>
+			</table>
 			<input type="button" value="abonnieren" />
 		</div>
 		<!--div id="entity-create"> -->

@@ -18,7 +18,8 @@ volkszaehler.org/
      |   \_ demo/		Demo Daten zum Import in die Datenbank
      |
      |_ tools/			Verschiedene Scripts zum Importieren von Daten, Installation, Helper etc.
-     \_ tests/			Einfache Testcases für einige Klasses des Backends
+     |_ tests/			Einfache Testcases für einige Klasses des Backends
+     \_ website/		Die Website unter http://volkszaehler.org
 
 Wiki: http://wiki.volkszaehler.org
 Other: http://volkszaehler.org

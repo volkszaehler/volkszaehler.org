@@ -63,7 +63,7 @@ $(document).ready(function() {
 	vz.definitions.load();
 	vz.uuids.load();
 	vz.options.load();
-	vz.parseUrlVars();
+	vz.parseUrlParams();
 
 	// initialize user interface
 	vz.wui.init();
