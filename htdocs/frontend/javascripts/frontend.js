@@ -138,7 +138,7 @@ vz.wui.initEvents = function() {
 		.bind("plotselected", function (event, ranges) {
 			vz.options.plot.xaxis.min = ranges.xaxis.from;
 			vz.options.plot.xaxis.max = ranges.xaxis.to;
-			vz.options.plot.yaxis.min = 0;
+			vz.options.plot.yaxis.min = null;   // autoscaling for neg. values as well
 			vz.options.plot.yaxis.max = null;	// autoscaling
 			vz.entities.loadData();
 		})
@@ -235,7 +235,7 @@ vz.wui.handleControls = function () {
 	}
 
 	// reenable autoscaling for yaxis
-	vz.options.plot.yaxis.min = 0;
+	vz.options.plot.yaxis.min = null;
 	vz.options.plot.yaxis.max = null;
 	
 	// we dont want to zoom/pan into the future
