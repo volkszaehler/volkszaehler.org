@@ -1,6 +1,6 @@
 [submodule "misc/controller/ethersex"]
 	path = misc/controller/ethersex
-	url = git://github.com/ethersex/ethersex.git
+	url = git://github.com/volkszaehler/ethersex.git
 [submodule "misc/website"]
 	path = misc/website
-	url = git@github.com:volkszaehler/website.git
+	url = git://github.com/volkszaehler/website.git
