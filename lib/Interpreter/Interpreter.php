@@ -24,11 +24,10 @@
 namespace Volkszaehler\Interpreter;
 
 use Volkszaehler\Util;
-
 use Volkszaehler\Interpreter\Iterator;
-use Doctrine\ORM;
 use Volkszaehler\Model;
 use Doctrine\ORM\Query;
+use Doctrine\ORM;
 
 /**
  * Interpreter superclass for all interpreters
