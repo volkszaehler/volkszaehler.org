@@ -1,0 +1,375 @@
+#LyX 1.6.7 created this file. For more info see http://www.lyx.org/
+\lyxformat 345
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\language english
+\inputencoding auto
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\paperfontsize default
+\spacing single
+\use_hyperref true
+\pdf_bookmarks true
+\pdf_bookmarksnumbered true
+\pdf_bookmarksopen true
+\pdf_bookmarksopenlevel 1
+\pdf_breaklinks false
+\pdf_pdfborder true
+\pdf_colorlinks true
+\pdf_backref false
+\pdf_pdfusetitle true
+\papersize a4paper
+\use_geometry false
+\use_amsmath 1
+\use_esint 1
+\cite_engine basic
+\use_bibtopic false
+\paperorientation portrait
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\author "" 
+\author "" 
+\end_header
+
+\begin_body
+
+\begin_layout Title
+volkszaehler.org
+\end_layout
+
+\begin_layout Author
+Steffen Vogel
+\end_layout
+
+\begin_layout Date
+Januar 2011
+\end_layout
+
+\begin_layout Abstract
+volkszaehler.org ist ein freier Smart Meter im Selbstbau.
+ Die anfallenden Stromprofile bleiben dabei unter der Kontrolle des Nutzers.
+\end_layout
+
+\begin_layout Abstract
+Seit dem 1.1.2010 müssen Stromversorger ihren Kunden für Neubauten so genannte
+ "intelligente Stromzähler" (Smart Meter) anbieten.
+ Der Kunde soll dadurch seinen Stromverbrauch analysieren und optimieren
+ können.
+\end_layout
+
+\begin_layout Abstract
+Das dabei anfallende Stromverbrauchsprofil erlaubt einen sehr detallierten
+ Einblick in den Tagesablauf des Nutzers (wann steht er auf? wann geht er
+ in's Bett? wann kocht er? wie oft verwendet er seine Spülmaschine? verändert
+ sich sein Verhalten? ...).
+\end_layout
+
+\begin_layout Abstract
+Darum sollten diese Daten ausschließlich für den Nutzer selbst zur Verfügung
+ stehen - und das geht nur, wenn man sich den Smart Meter selbst baut.
+ Mit einem Materialeinsatz von ca.
+ 100 €, etwas Geschick und Zeit lässt sich das mit Hilfe eines Standard-µC-Modul
+s aufbauen.
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset toc
+LatexCommand tableofcontents
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage pagebreak
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Einführung
+\end_layout
+
+\begin_layout Standard
+In diesem Artikel werden wir das Projekt vorstellen, einen generellen Überblick
+ über die einzellnen Kompontenten geben und auf die Implementierung eingehen.
+ Ich möchte damit den Einstieg in das Projekt erleichtern und neue Entwickler
+ motivieren sich zu beteiligen.
+\end_layout
+
+\begin_layout Standard
+Einzellheiten zur Installation/Konfiguration eines eigenen volkszaehler.org
+ Setups finden Sie unsere Mailingliste
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+volkszaehler-dev@lists.volkszaehler.org
+\end_layout
+
+\end_inset
+
+ und im Wiki
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://wiki.volkszaehler.org
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+Neben dem 
+\series bold
+Schutz der Privatsphäre
+\series default
+, hat das Projekt auch noch einige andere Ziele:
+\end_layout
+
+\begin_layout Itemize
+eine kostenlose Alternative anbieten
+\end_layout
+
+\begin_layout Itemize
+dem Nutzer ein Bewusstsein über seinen Verbrauch/Nutzungsverhalten aufzeigen
+\end_layout
+
+\begin_layout Itemize
+Energie intelligenter zu nutzen
+\end_layout
+
+\begin_layout Itemize
+die Breite Masse erreichen
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+Daher stammt auch der Name 
+\series bold
+volks
+\series default
+zaehler.org
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+offene Protokolle und Standards zu vorrantreiben
+\end_layout
+
+\begin_layout Standard
+Wir haben es uns zur Aufgabe gemacht diese Ziele durch eine lückenlose Kette
+ von quelloffener Soft- und Hardware zu erreichen.
+ Der Nutzer soll die Möglichkeit haben jeden einzellnen Schritt nachvollziehen
+ zu können.
+ Daraus folgt nicht, dass wir jede Zeile Code selbst geschrieben haben.
+ Wir nutzen eine Reihe anderer Software, die aber wiederum selbst quelloffen
+ ist.
+\end_layout
+
+\begin_layout Section
+Aufbau
+\end_layout
+
+\begin_layout Standard
+Das Projekt lässt sich in drei Module aufteilen, die untereinander über
+ eine spezifizierte API kommunizieren.
+ Diese drei Module grenzen sich lokal, durch die verwendeten Technologien
+ und ihre jeweilige Aufgabe voneinder ab.
+\end_layout
+
+\begin_layout Subsection
+Controller
+\end_layout
+
+\begin_layout Standard
+Die Aufgabe der Controller ist es Sensoren auszulesen und diese Daten direkt
+ an das Backend zu senden.
+ Meist sind sie direkt mit den Zählern/Sensoren verbunden.
+ Ein typischer Ort wäre also der Zählerschrank.
+\end_layout
+
+\begin_layout Subsection
+Frontend(s)
+\end_layout
+
+\begin_layout Standard
+Die Frontends visualisieren Messwerte und können zur Verwaltung genutzt
+ werden.
+ Durch ein zentrales Backend haben wir die Möglichkeit die Messwerte an
+ mehrere Frontends gleichzeitig zu verteilen.
+ Verschiedene Frontends, können die Daten dann unterschiedlich darzustellen.
+\end_layout
+
+\begin_layout Subsubsection
+Browser
+\end_layout
+
+\begin_layout Standard
+Das Web-basierte Frontend für den Browser ist das bisher einzige Frontend
+ und kann quasi als Referenz Implementierung angesehen werden.
+ Es unterstützt die volle Funktionalität des Backend und kann auch zur Verwaltun
+g von Zählern genutzt werden.
+ Es nutzt AJAX um Daten dynamisch nachzuladen.
+\end_layout
+
+\begin_layout Subsubsection
+fnordlicht
+\end_layout
+
+\begin_layout Standard
+Inspiriert vom Wattson
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://www.diykyoto.com/uk/wattson/about
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+ haben wir uns entschieden eine ähnliche interaktive Variante dieses Moodlights
+ zu entwickeln.
+ Derzeit experimentieren wir mit fnordlichtern
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://wiki.lochraster.org/wiki/Fnordlichtmini
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Backend
+\end_layout
+
+\begin_layout Standard
+Im Backend werden die Messwerte der Sensoren gespeichert und ausgewertet.
+ Es handelt sich hierbei um ein PHP Skript welches auf einem Webserver läuft
+ und somit die Schnittstelle zwischen Controller und Frontend ist.
+ Daraus folgend muss es von den Controllern sowie von den Frontends via
+ HTTP erreichbar sein.
+\end_layout
+
+\begin_layout Section
+API
+\end_layout
+
+\begin_layout Standard
+Eine Referenz unserer API befindet sich im Wiki.
+ Die API orientiert sich am REST Entwurfsmuster.
+ Dabei kann jeder Zähler/Sensor/Gruppe (im folgenden als 
+\begin_inset Quotes eld
+\end_inset
+
+Entity
+\begin_inset Quotes erd
+\end_inset
+
+ bezeichnet) durch eine weltweit eindeutige UUID referenziert werden.
+ Diese UUID werden entsprechend RFC 4122 von Backend generiert und vergeben.
+ Dieser 128 Bit lange Identifier sichert uns auch gleichzeitig die Privatsphäre.
+ Die UUID ist praktisch eine Zugangskennung und sollte immer vertraulich
+ behandelt werden.
+ Da wir keinerlei nutzerbezogene Daten speichern kann diese UUID nur durch
+ den Zugriff eines Nutzers zugeordnet werden.
+ Daher empfiehlt sich der Einsatz von verschlüsseltem HTTPS.
+\end_layout
+
+\begin_layout Standard
+Zähler und Sensoren können zusammengefasst werden.
+ Diese Aggregatoren besitzen selbst wieder eine UUID und können dadurch
+ beliebig tief verschachtelt werden.
+\end_layout
+
+\begin_layout Standard
+Welche EntiAggregatoren 
+\end_layout
+
+\begin_layout Section
+Implementierung
+\end_layout
+
+\begin_layout Standard
+Dieser Abschnitt konzentriert sich auf die Implementierung des Backends.
+ Das Backend ist in PHP programmiert und kann auf jedem LAMP-ähnlichen System
+ betrieben werden.
+ Zur Datenbankabstraktion setzen wir Doctrine 2 ein.
+\end_layout
+
+\begin_layout Standard
+Sowohl Doctrine als auch unser eigender Quelltext sind stark Objekt orientiert.
+ Wir bauen setzen viele neue Funktionen von PHP 5 ein.
+ 
+\end_layout
+
+\begin_layout Subsection
+MVC
+\end_layout
+
+\end_body
+\end_document
