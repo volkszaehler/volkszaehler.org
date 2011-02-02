@@ -4,3 +4,6 @@
 [submodule "misc/website"]
 	path = misc/website
 	url = git://github.com/volkszaehler/website.git
+[submodule "misc/frontend/fnordlicht"]
+	path = misc/frontend/fnordlicht
+	url = git://github.com/steffenvogel/libfn.git
