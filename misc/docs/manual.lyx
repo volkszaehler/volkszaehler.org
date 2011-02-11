@@ -2,9 +2,9 @@
 \lyxformat 345
 \begin_document
 \begin_header
-\textclass article
+\textclass paper
 \use_default_options true
-\language english
+\language ngerman
 \inputencoding auto
 \font_roman default
 \font_sans default
@@ -37,7 +37,7 @@
 \paperorientation portrait
 \secnumdepth 3
 \tocdepth 3
-\paragraph_separation indent
+\paragraph_separation skip
 \defskip medskip
 \quotes_language english
 \papercolumns 1
@@ -55,12 +55,24 @@
 volkszaehler.org
 \end_layout
 
-\begin_layout Author
-Steffen Vogel
+\begin_layout SubTitle
+the open smartmetering platform
 \end_layout
 
-\begin_layout Date
-Januar 2011
+\begin_layout Standard
+\align right
+\begin_inset Graphics
+	filename /home/stv0g/workspace/volkszaehler.org/misc/graphics/logo.png
+	lyxscale 50
+	scale 20
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Author
+Steffen Vogel
 \end_layout
 
 \begin_layout Abstract
@@ -91,15 +103,19 @@ s aufbauen.
 \end_layout
 
 \begin_layout Standard
-\begin_inset CommandInset toc
-LatexCommand tableofcontents
-
+\begin_inset Newpage pagebreak
 \end_inset
 
 
 \end_layout
 
 \begin_layout Standard
+\begin_inset CommandInset toc
+LatexCommand tableofcontents
+
+\end_inset
+
+
 \begin_inset Newpage pagebreak
 \end_inset
 
@@ -164,7 +180,8 @@ Schutz der Privatsphäre
 \end_layout
 
 \begin_layout Itemize
-eine kostenlose Alternative anbieten
+eine kostenfreie Alternative gegenüber den kommerziellen Messstellenbetreibern
+ anbieten
 \end_layout
 
 \begin_layout Itemize
@@ -212,10 +229,14 @@ Aufbau
 \end_layout
 
 \begin_layout Standard
-Das Projekt lässt sich in drei Module aufteilen, die untereinander über
+Das Projekt lässt sich in drei Bereiche aufteilen, die untereinander über
  eine spezifizierte API kommunizieren.
  Diese drei Module grenzen sich lokal, durch die verwendeten Technologien
- und ihre jeweilige Aufgabe voneinder ab.
+ und ihre Aufgabe voneinder ab.
+ Alle Module sollen untereinander austauschbar sein und sind in mehreren
+ Varianten verfügbar.
+ So kann den individuellen Bedürfnissen nach ein angepasstes Setup aufgebaut
+ werden.
 \end_layout
 
 \begin_layout Subsection
@@ -226,7 +247,51 @@ Controller
 Die Aufgabe der Controller ist es Sensoren auszulesen und diese Daten direkt
  an das Backend zu senden.
  Meist sind sie direkt mit den Zählern/Sensoren verbunden.
- Ein typischer Ort wäre also der Zählerschrank.
+ Ein typischer Ort wäre also der Sicherungskasten.
+ Diese Controller sind dann meist in das lokale IP Netzwerk eingebunden
+ und senden ihre Daten an ein Backend.
+ Ausgehend von Prototyp sind im volkszaehler.org Projekt bisher die Atmel
+ AVR/Ethersex basierenden Controller am meisten verbreitet.
+\end_layout
+
+\begin_layout Standard
+Als Sensoren werden hier für das Erfassen des Verbrauchs Impulszähler eingesetzt.
+ Diese signalisieren dem Controller durch einen elektrischen Impuls, das
+ eine bestimmte Menge an elektrischer Energie, Wasser oder Gas verbraucht
+ wurde.
+ Auch skalare Messgrößen wie z.B.
+ Temperatur, Luftdruck oder Luftfeuchtigkeit sind möglich, werden dann aber
+ nicht mehr durch Impulse erfasst.
+\end_layout
+
+\begin_layout Standard
+Ein typisches Setup für ein Einfamilienhaus könnte folgendermaßen aussehen:
+\end_layout
+
+\begin_layout Itemize
+3x 1-phasige S0-Stromzähler für den Hausanschluss
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+jede Phase erhällt einen Zähler
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+1x S0-Wasserzähler
+\end_layout
+
+\begin_layout Itemize
+1x S0-Gaszähler
+\end_layout
+
+\begin_layout Itemize
+1x Sensor für die Außentemperatur
 \end_layout
 
 \begin_layout Subsection
@@ -241,20 +306,12 @@ Die Frontends visualisieren Messwerte und können zur Verwaltung genutzt
  Verschiedene Frontends, können die Daten dann unterschiedlich darzustellen.
 \end_layout
 
-\begin_layout Subsubsection
-Browser
-\end_layout
-
 \begin_layout Standard
 Das Web-basierte Frontend für den Browser ist das bisher einzige Frontend
- und kann quasi als Referenz Implementierung angesehen werden.
+ und ist quasi eine Referenzimplementierung der API.
  Es unterstützt die volle Funktionalität des Backend und kann auch zur Verwaltun
 g von Zählern genutzt werden.
  Es nutzt AJAX um Daten dynamisch nachzuladen.
-\end_layout
-
-\begin_layout Subsubsection
-fnordlicht
 \end_layout
 
 \begin_layout Standard
@@ -303,6 +360,14 @@ http://wiki.lochraster.org/wiki/Fnordlichtmini
 .
 \end_layout
 
+\begin_layout Standard
+Die möglichen Visualisierungsmethoden sind praktisch endlos.
+ Damit auch die Anzahl der möglichen Frontends.
+ Frontends dürfen nicht nur als abgeschlossenes System betrachtet werden.
+ Denkbar sind auch Plugins in bestehende Systeme (Social Networks, iGoogle,
+ Twitter).
+\end_layout
+
 \begin_layout Subsection
 Backend
 \end_layout
@@ -313,6 +378,11 @@ Im Backend werden die Messwerte der Sensoren gespeichert und ausgewertet.
  und somit die Schnittstelle zwischen Controller und Frontend ist.
  Daraus folgend muss es von den Controllern sowie von den Frontends via
  HTTP erreichbar sein.
+ Ob der Backendserver nur über das lokale Netzwerk oder auch über das Internet
+ erreichbar ist, wirkt sich nur auf die Erreichbarkeit durch die Frontends
+ und die Controller aus.
+ So kann es durchaus erwünscht sein die Daten nur im lokalen Netzwerk vorzuhalte
+n um sie gegen Zugriff über das Internet zu schützen.
 \end_layout
 
 \begin_layout Section
@@ -320,7 +390,8 @@ API
 \end_layout
 
 \begin_layout Standard
-Eine Referenz unserer API befindet sich im Wiki.
+Die API definiert eine Schnittstelle zwischen Controllern und Backend, sowie
+ zwischen Backend und Frontends.
  Die API orientiert sich am REST Entwurfsmuster.
  Dabei kann jeder Zähler/Sensor/Gruppe (im folgenden als 
 \begin_inset Quotes eld
@@ -341,13 +412,24 @@ Entity
 \end_layout
 
 \begin_layout Standard
-Zähler und Sensoren können zusammengefasst werden.
- Diese Aggregatoren besitzen selbst wieder eine UUID und können dadurch
- beliebig tief verschachtelt werden.
+Als Ausgabeformat nutzen wir das leichtgewichtige und menschenlesbare JSON.
 \end_layout
 
 \begin_layout Standard
-Welche EntiAggregatoren 
+Eine Referenz unserer API befindet sich im Wiki.
+\end_layout
+
+\begin_layout Subsection
+Gruppierung
+\end_layout
+
+\begin_layout Standard
+Zähler und Sensoren können zusammengefasst werden.
+ Diese Aggregatoren besitzen selbst wieder eine UUID und können dadurch
+ beliebig tief verschachtelt werden.
+ Hirachische Strukturen wie z.B.
+ Mehrfamilienhäuser, Wohngemeinschaften, Hotels, Gemeinden & Städte können
+ dadurch nachgebildet und gemeinsam ausgwertet werden.
 \end_layout
 
 \begin_layout Section
@@ -358,17 +440,217 @@ Implementierung
 Dieser Abschnitt konzentriert sich auf die Implementierung des Backends.
  Das Backend ist in PHP programmiert und kann auf jedem LAMP-ähnlichen System
  betrieben werden.
- Zur Datenbankabstraktion setzen wir Doctrine 2 ein.
+ 
 \end_layout
 
 \begin_layout Standard
-Sowohl Doctrine als auch unser eigender Quelltext sind stark Objekt orientiert.
- Wir bauen setzen viele neue Funktionen von PHP 5 ein.
- 
+Der Code ist stark Objekt orientiert.
+ Daher müssen wir PHP 5.3 vorraussetzen.
+ Diese Objekt orientierte Programmierung erlaubt es uns den Code übersichtlicher
+ und modularer aufzubauen.
+ Zukünftige Erweiterungen, neue Zählertypen können dadurch leichter in das
+ System integriert werden.
 \end_layout
 
 \begin_layout Subsection
 MVC
+\end_layout
+
+\begin_layout Standard
+Das Backend wurde nach dem 
+\series bold
+M
+\series default
+odel 
+\series bold
+V
+\series default
+iew 
+\series bold
+C
+\series default
+ontroller Entwurfsmuster aufgebaut.
+ Jeder Request an das Backend muss über die Datei 
+\family typewriter
+/htdocs/backend.php
+\family default
+ erfolgen.
+ Sie ist quasi der 
+\begin_inset Quotes eld
+\end_inset
+
+Haupteingang
+\begin_inset Quotes erd
+\end_inset
+
+
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+Dadurch ist sie auch das einzige PHP Skript, das über das öffentliche 
+\begin_inset Quotes eld
+\end_inset
+
+htdocs
+\begin_inset Quotes erd
+\end_inset
+
+ Verzeichnis zugänglich sein muss
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Dort wird zunächst der PHP Interpreter konfiguriert (automatisches Laden
+ von Klassen, der Konfiguration, Fehlerbehandlung, Aufbau der Datenbankverbindun
+g).
+ Danach wird direkt der Router initialisiert.
+\end_layout
+
+\begin_layout Subsubsection
+Router
+\end_layout
+
+\begin_layout Standard
+Der Router ist das Herz der MVC Struktur.
+ Er leitet den Request an den zuständigen Kontext
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+Wir nutzen hier den Begriff 
+\begin_inset Quotes eld
+\end_inset
+
+Kontext
+\begin_inset Quotes erd
+\end_inset
+
+ um eine Verwechslung mit dem Hardware-Controllern zu vermeiden.
+ Entsprechend des MVC-Patterns ist hier der 
+\begin_inset Quotes eld
+\end_inset
+
+Controller
+\begin_inset Quotes erd
+\end_inset
+
+ gemeint.
+\end_layout
+
+\end_inset
+
+ weiter und antwortet mit dem korrekten Ausgabeformat.
+\end_layout
+
+\begin_layout Standard
+Alle Anfragen an das Backend müssen einem bestimmten Schema entsprechen.
+ Hier wird auch der zuvor angesprochene Einsatz von REST deutlich.
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+http://server:port/path/to/volkszaehler/backend.php/kontext/uuid.format?paramters=
+values
+\end_layout
+
+\begin_layout Subsubsection
+Kontext (Controller)
+\end_layout
+
+\begin_layout Standard
+Das Backend hat verschiedene Aufgaben zu bewältigen.
+ Für jede dieser Aufgaben gibt es einen eigenen Kontext, der praktisch die
+ ganze Logik enthällt:
+\end_layout
+
+\begin_layout Itemize
+Daten erfassen/ausgeben
+\end_layout
+
+\begin_layout Itemize
+Entities erstellen/bearbeiten/abfragen
+\end_layout
+
+\begin_layout Itemize
+Eigenschaften des Backends abfragen
+\end_layout
+
+\begin_layout Subsubsection
+Datenabstraktion (Model)
+\end_layout
+
+\begin_layout Standard
+Zur Datenbankabstraktion setzen wir Doctrine 2 ein.
+ Dieses Database Abstraction Layer (DAL) erlaubt es uns datenbankspezifische
+ Eigenheiten, SQL-Dialekte ähnliches zu ignorieren.
+ Doctrine unterstützt verschiede Datenbanken:
+\end_layout
+
+\begin_layout Itemize
+MySQL
+\end_layout
+
+\begin_layout Itemize
+SQLite
+\end_layout
+
+\begin_layout Itemize
+PostgreSQL
+\end_layout
+
+\begin_layout Itemize
+Oracle
+\end_layout
+
+\begin_layout Standard
+Aufbauend auf das DAL kommt der Object Relational Mapper (ORM) von Doctrine
+ zum Einsatz.
+ Wir können mit den Daten nun als Instanzen von PHP-Objekten arbeiten.
+ SQL Queries sind nicht mehr nötig.
+ Für weitere Infos empfehle ich die Dokumentation des Doctrine Projekts.
+\end_layout
+
+\begin_layout Subsubsection
+Ausgabe (View)
+\end_layout
+
+\begin_layout Standard
+Das Backend kann in verschiedenen Formaten antworten:
+\end_layout
+
+\begin_layout Itemize
+JSON (Standard)
+\end_layout
+
+\begin_layout Itemize
+XML
+\end_layout
+
+\begin_layout Itemize
+CSV
+\end_layout
+
+\begin_layout Itemize
+Klartext
+\end_layout
+
+\begin_layout Itemize
+Jpeg, PNG, Gif
+\end_layout
+
+\begin_layout Standard
+Dabei ist JSON das bevorzugte Format, das auch von dem Webinterface genutzt
+ wird.
+ Die anderen Formate sind als Alternativ für Endgeräte ohne JSON Unterstützung
+ gedacht.
+ Wir können nicht garantieren, dass diese Formate den gleichen Funktionsumfang
+ wie das JSON Format besitzen.
 \end_layout
 
 \end_body
