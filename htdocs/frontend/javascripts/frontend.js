@@ -305,12 +305,13 @@ vz.entities.show = function() {
 					.addClass((entity.type == 'group') ? 'group' : 'channel')
 				)
 			)
-			.append($('<td>').text(entity.type))	// channel type
-			.append($('<td>').addClass('min'))	// min
-			.append($('<td>').addClass('max'))	// max
-			.append($('<td>').addClass('average'))	// avg
-			.append($('<td>').addClass('last'))	// last
-			.append($('<td>')			// operations
+			.append($('<td>').text(entity.type))		// channel type
+			.append($('<td>').addClass('min'))		// min
+			.append($('<td>').addClass('max'))		// max
+			.append($('<td>').addClass('average'))		// avg
+			.append($('<td>').addClass('consumption'))	// consumption
+			.append($('<td>').addClass('last'))		// last
+			.append($('<td>')				// operations
 				.addClass('ops')
 				.append($('<input>')
 					.attr('type', 'image')
@@ -384,9 +385,12 @@ vz.entities.loadData = function() {
 							.text(entity.data.max.value)
 							.attr('title', $.plot.formatDate(new Date(entity.data.max.timestamp), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames));	
 					}
+					// rounding: Math.round rounds to whole numbers; to round to one decimal (e.g. 15.2) we multiply by 10, round and reverse the multiplication again; therefore "vz.options.rounding" needs to be set to 1 (for 1 decimal) in that case
 					if (entity.data.average) {
 						$('#entity-' + entity.uuid + ' .average').text(Math.round(entity.data.average*Math.pow(10, vz.options.rounding))/Math.pow(10, vz.options.rounding));
-						// rounding: Math.round rounds to whole numbers; to round to one decimal (e.g. 15.2) we multiply by 10, round and reverse the multiplication again; therefore "vz.options.rounding" needs to be set to 1 (for 1 decimal) in that case
+					}
+					if (entity.data.consumption) {
+						$('#entity-' + entity.uuid + ' .consumption').text(Math.round(entity.data.consumption*Math.pow(10, vz.options.rounding))/Math.pow(10, vz.options.rounding));
 					}
 					if (entity.data.tuples) {
 						$('#entity-' + entity.uuid + ' .last').text(Math.round(entity.data.tuples.last()[1]*Math.pow(10, vz.options.rounding))/Math.pow(10, vz.options.rounding));
