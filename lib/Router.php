@@ -91,7 +91,6 @@ class Router {
 		'xml'			=> 'Volkszaehler\View\XML',
 		'csv'			=> 'Volkszaehler\View\CSV',
 		'json'			=> 'Volkszaehler\View\JSON',
-		'txt'			=> 'Volkszaehler\View\PlainText'
 	);
 
 	/**
