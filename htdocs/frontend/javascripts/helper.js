@@ -78,7 +78,7 @@ Array.prototype.clear = function() {
 	this.length = 0;
 }
 
-Array.prototype.unique = function () {
+Array.prototype.unique = function() {
 	var r = new Array();
 	this.each(function(key, value) {
 		if (!r.contains(value)) {
@@ -86,4 +86,8 @@ Array.prototype.unique = function () {
 		}
 	});
 	return r;
+}
+
+Array.prototype.last = function() {
+	return (this.length > 0) ? this[this.length-1] : null;
 }

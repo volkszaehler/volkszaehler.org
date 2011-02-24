@@ -359,6 +359,7 @@ vz.entities.each = function(cb) {
  * Load json data from the backend
  */
 vz.entities.loadData = function() {
+	vz.wui.updateHeadline();
 	$('#overlay').html('<img src="images/loading.gif" alt="loading..." /><p>loading...</p>');
 	this.each(function(entity, parent) {
 		if (entity.active && entity.type != 'group') { // TODO add group data aggregation
@@ -387,8 +388,8 @@ vz.entities.loadData = function() {
 						$('#entity-' + entity.uuid + ' .average').text(Math.round(entity.data.average*Math.pow(10, vz.options.rounding))/Math.pow(10, vz.options.rounding));
 						// rounding: Math.round rounds to whole numbers; to round to one decimal (e.g. 15.2) we multiply by 10, round and reverse the multiplication again; therefore "vz.options.rounding" needs to be set to 1 (for 1 decimal) in that case
 					}
-					if (entity.data.last) {
-						$('#entity-' + entity.uuid + ' .last').text(Math.round(entity.data.last*Math.pow(10, vz.options.rounding))/Math.pow(10, vz.options.rounding));
+					if (entity.data.tuples) {
+						$('#entity-' + entity.uuid + ' .last').text(Math.round(entity.data.tuples.last()[1]*Math.pow(10, vz.options.rounding))/Math.pow(10, vz.options.rounding));
 					}
 				}, vz.drawPlot, 'data')
 			);
@@ -406,11 +407,9 @@ vz.wui.updateHeadline = function() {
  * Draws plot to container
  */
 vz.drawPlot = function () {
-	vz.wui.updateHeadline();
-	
 	var data = new Array;
 	vz.entities.each(function(entity, parent) {
-		if (entity.active && entity.data && entity.data.count > 0) {
+		if (entity.active && entity.data && entity.data.tuples && entity.data.tuples.length > 0) {
 			data.push({
 				data: entity.data.tuples,
 				color: entity.color
