@@ -1,4 +1,5 @@
 This are the scripts running on volkszaehler.org
+Feel free to setup your own installation and protect your privacy!
 
 volkszaehler.org/
  |_ htdocs/			static files accessible through the web
