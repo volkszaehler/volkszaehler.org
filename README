@@ -1,25 +1,27 @@
 Hier finden sich alle Skripte, die auf volkszaehler.org laufen:
 
 volkszaehler.org/
- |_ htdocs/			öffentliche Dateien
- |   |_ backend.php		Backend Bootstrapping
- |   \_ frontend		Web Frontend
+ |_ htdocs/			static files accessible through the web
+ |   |_ backend.php		backend bootstrapping
+ |   \_ frontend		web frontend
  |
- |_ etc/			Konfigurationsdateien
- |_ var/	(optional)	Datenbanken
- |_ lib/			Backend-Bibliotheken
+ |_ etc/			configuration files
+ |_ var/			SQLite database (optional)
+ |_ lib/			backend libraries
  |_ misc/
-     |_ controller/		Controller Code für verschiedene Plattformen/Programmiersprachen
-     |   |_ php/		Einfach Referenzimplementation des Controller-Codes in PHP
-     |   \_ ethersex		Portierung auf ethersex
+     |_ controller/
+     |   |_ php/		simple reference implemenation of controllers
+     |   \_ ethersex		ethersex fork optimized for volkszaehler.org
      |
-     |_ docs/			Dokumentation
-     |_ sql/			SQL-Schema Dumps für verschieden Datenbanksysteme
-     |   \_ demo/		Demo Daten zum Import in die Datenbank
+     |_ docs/			documentation
+     |_ frontend/		
+     |_ graphics/		several graphics for docs, etc..
+     |_ sql/			database schema dumps
+     |   \_ demo/		demo data
      |
-     |_ tools/			Verschiedene Scripts zum Importieren von Daten, Installation, Helper etc.
-     |_ tests/			Einfache Testcases für einige Klasses des Backends
-     \_ website/		Die Website unter http://volkszaehler.org
+     |_ tools/			scripts for imports, installation etc.
+     |_ tests/			simple tests for backend classes
+     \_ website/		our main webpage on http://volkszaehler.org
 
 Wiki: http://wiki.volkszaehler.org
 Other: http://volkszaehler.org
