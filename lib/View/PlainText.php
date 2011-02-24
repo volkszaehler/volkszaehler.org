@@ -26,6 +26,7 @@ namespace Volkszaehler\View;
 use Volkszaehler\View\HTTP;
 use Volkszaehler\Util;
 use Volkszaehler\Model;
+use Volkszaehler\Interpreter;
 
 /**
  * Plain text view
@@ -45,25 +46,30 @@ class PlainText extends View {
 
 		$this->response->setHeader('Content-type', 'text/plain');
 	}
-
-	public function addChannel(Model\Channel $channel, array $data = NULL) {
-		var_dump($channel);
-		var_dump($data);
+	
+	/**
+	 * Add object to output
+	 *
+	 * @param mixed $data
+	 */
+	public function add($data) {
+		if ($data instanceof Interpreter\Interpreter ||
+			$data instanceof Interpreter\AggregatorInterpreter ||
+			$data instanceof Model\Entity ||
+			$data instanceof Util\Debug ||
+			$data instanceof \Exception ||
+			is_array($data)) {
+			\Doctrine\Common\Util\Debug::dump($data);
+		}
+		elseif (isset($data)) { // ignores NULL data
+			//throw new \Exception('Can\'t show ' . get_class($data));
+		}
 	}
 
-	public function addAggregator(Model\Aggregator $aggregator) {
-		var_dump($aggregator);
-	}
-
-	public function addDebug(Util\Debug $debug) {
-		var_dump($debug);
-	}
-
-	protected function addException(\Exception $exception) {
-		var_dump($exception);
-	}
-
-	public function renderResponse() {}
+	/**
+	 * Process, encode and print output to stdout
+	 */
+	protected function render() { }
 }
 
 ?>

@@ -25,6 +25,7 @@ namespace Volkszaehler\View;
 
 use Volkszaehler\View\HTTP;
 use Volkszaehler\Util;
+use Volkszaehler\Interpreter;
 
 /**
  * CSV view
@@ -51,33 +52,33 @@ class CSV extends View {
 		$this->response->setHeader('Content-type', 'text/csv');
 		$this->response->setHeader('Content-Disposition', 'attachment; filename="data.csv"');
 	}
-
-	public function addChannel(Model\Channel $channel, array $data = NULL) {
-		$this->csv = array_merge($this->csv, $data);
-	}
-
-	public function addAggregator(Model\Aggregator $aggregator) {
-
-	}
-
-	public function addDebug(Util\Debug $debug) {
-
-	}
-
-	protected function addException(\Exception $e) {
-
-	}
-
-	public function renderResponse() {
-		// channel data
-		foreach ($this->csv as $row) {
-			$array = array_map(array($this, 'escape'), $row);
-			echo implode($this->delimiter, $row) . PHP_EOL;
+	
+	/**
+	 * Add object to output
+	 *
+	 * @param mixed $data
+	 */
+	public function add($data) {
+		if ($data instanceof Interpreter\Interpreter || $data instanceof Interpreter\AggregatorInterpreter) {
+			$this->addData($data);
 		}
-
-		echo PHP_EOL;
-
-		// debug
+		elseif ($data instanceof \Exception) {
+			$this->addException($data);
+		}
+		elseif ($data instanceof Util\Debug) {
+			$this->addDebug($data);
+		}
+		elseif (isset($data)) { // ignores NULL data
+			throw new \Exception('Can\'t show ' . get_class($data));
+		}
+	}
+	
+	/**
+	 * Add debugging information include queries and messages to output queue
+	 *
+	 * @param Util\Debug $debug
+	 */
+	protected function addDebug(Util\Debug $debug) {
 		echo 'time: ' . $debug->getExecutionTime() . PHP_EOL;
 		echo 'database: ' . Util\Configuration::read('db.driver') . PHP_EOL;
 
@@ -87,10 +88,54 @@ class CSV extends View {
 
 		foreach ($debug->getQueries() as $query) {
 			echo 'query: ' . $query['sql'] . PHP_EOL;
-			echo '  parameters: ' . implode(', ', $query['parameters']) . PHP_EOL;
+			if (isset($query['parameters'])) {
+				echo "\tparameters: " . implode(', ', $query['parameters']) . PHP_EOL;
+			}
+		}
+	}
+	
+	/**
+	 * Add exception to output queue
+	 *
+	 * @param \Exception $exception
+	 * @param boolean $debug
+	 */
+	protected function addException(\Exception $exception) {
+		echo get_class($exception) . '[' . $exception->getCode() . ']' . ':' . $exception->getMessage() . PHP_EOL;
+
+		if (Util\Debug::isActivated()) {
+			echo "\tfile: " . $exception->getFile() . PHP_EOL;
+			echo "\tline: " . $exception->getLine() . PHP_EOL;
+		}
+	}
+	
+	/**
+	 * Add data to output queue
+	 *
+	 * @param Interpreter\InterpreterInterface $interpreter
+	 */
+	protected function addData(Interpreter\Interpreter $interpreter) {
+		$tuples = $interpreter->getValues($this->request->getParameter('tuples'), $this->request->getParameter('group'));
+		
+		//$this->response->setHeader('Content-Disposition', 'attachment; filename="' . strtolower($interpreter->getEntity()->getProperty('title')) . '.csv"'); // TODO add time?
+	
+		foreach ($tuples as $row) {
+			$array = array_map(array($this, 'escape'), $row);
+			echo implode($this->delimiter, $row) . PHP_EOL;
 		}
 	}
 
+	/**
+	 * Process, encode and print output to stdout
+	 */
+	protected function render() { }
+
+	/**
+	 * Escape data according to CSV format
+	 *
+	 * @param $value to be escaped
+	 * @return string escaped data
+	 */
 	protected function escape($value) {
 		if (is_string($value)) {
 			return $this->enclosure . $value . $this->enclosure;
@@ -103,5 +148,6 @@ class CSV extends View {
 		}
 	}
 }
+
 
 ?>
