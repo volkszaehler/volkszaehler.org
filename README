@@ -1,4 +1,4 @@
-Hier finden sich alle Skripte, die auf volkszaehler.org laufen:
+Directory structure:
 
 volkszaehler.org/
  |_ htdocs/			static files accessible through the web
