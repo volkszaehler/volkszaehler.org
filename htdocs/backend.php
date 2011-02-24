@@ -32,8 +32,6 @@ use Volkszaehler\Controller;
 // enable strict error reporting
 error_reporting(E_ALL | E_STRICT);
 
-// TODO replace by state class
-define('VZ_VERSION', 0.2);
 define('VZ_DIR', realpath(__DIR__ . '/..'));
 
 // class autoloading
@@ -46,6 +44,14 @@ $classLoaders = array(
 
 foreach ($classLoaders as $loader) {
 	$loader->register(); // register on SPL autoload stack
+}
+
+if ($hash = Util\Debug::getCurrentCommit()) { // append git sha1 hash to version
+	define('VZ_COMMIT', $hash);
+	define('VZ_VERSION', '0.2.git-' . substr(VZ_COMMIT, -8));
+}
+else {
+	define('VZ_VERSION', '0.2');
 }
 
 Util\Configuration::load(VZ_DIR . '/etc/volkszaehler.conf');
