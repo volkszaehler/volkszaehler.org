@@ -1,4 +1,4 @@
-This are all scripts running on volkszaehler.org
+This are the scripts running on volkszaehler.org
 
 volkszaehler.org/
  |_ htdocs/			static files accessible through the web
