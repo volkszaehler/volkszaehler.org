@@ -1,1 +1,6 @@
-Dieses Verzeichnis enhällt Datenbankdumps mit Daten, die für Demonstrationszwecke genutzt werden könne.
+This directory contains a set MySQL data dumps demonstration purposes.
+
+Note: Import them in the following order to follow foreign key constraints:
+1. entities.sql
+2. properties.sql
+3. data-demoset1.sql
