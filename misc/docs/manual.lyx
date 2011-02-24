@@ -93,7 +93,9 @@ s aufbauen.
 \begin_layout Title
 \begin_inset Graphics
 	filename /home/stv0g/workspace/volkszaehler.org/misc/graphics/logo.png
+	lyxscale 40
 	scale 40
+	draft
 
 \end_inset
 
@@ -559,7 +561,7 @@ Das Projekt lässt sich in drei Bereiche aufteilen, die untereinander über
  werden.
 \end_layout
 
-\begin_layout Subsubsection
+\begin_layout Subsection
 Messen
 \end_layout
 
@@ -583,37 +585,8 @@ Auf dem Foto sieht man unten die Stromanschlüße und oben - die etwas dünnere
 kurz die Funktionsweise der Wattmeter erklären
 \end_layout
 
-\begin_layout Subsubsection
-Verarbeiten
-\end_layout
-
-\begin_layout Standard
-hier das AVR-Net-IO beschreiben
-\end_layout
-
-\begin_layout Subsubsection
-Speichern
-\end_layout
-
-\begin_layout Standard
-hier den Webserver beschreiben
-\end_layout
-
-\begin_layout Subsubsection
-Auswerten
-\end_layout
-
-\begin_layout Standard
-hier das Frontend beschreiben
-\end_layout
-
-\begin_layout Standard
-Wer bis hierher gekommen ist und nun Lust auf mehr hat, kann sich gerne
- in dem Wiki umsehen … 
-\end_layout
-
 \begin_layout Subsection
-Controller
+Verarbeiten
 \end_layout
 
 \begin_layout Standard
@@ -668,7 +641,24 @@ jede Phase erhällt einen Zähler
 \end_layout
 
 \begin_layout Subsection
-Frontend(s)
+Protokollieren/Speichern
+\end_layout
+
+\begin_layout Standard
+Im Backend werden die Messwerte der Sensoren gespeichert und ausgewertet.
+ Es handelt sich hierbei um ein PHP Skript welches auf einem Webserver läuft
+ und somit die Schnittstelle zwischen Controller und Frontend ist.
+ Daraus folgend muss es von den Controllern sowie von den Frontends via
+ HTTP erreichbar sein.
+ Ob der Backendserver nur über das lokale Netzwerk oder auch über das Internet
+ erreichbar ist, wirkt sich nur auf die Erreichbarkeit durch die Frontends
+ und die Controller aus.
+ So kann es durchaus erwünscht sein die Daten nur im lokalen Netzwerk vorzuhalte
+n um sie gegen Zugriff über das Internet zu schützen.
+\end_layout
+
+\begin_layout Subsection
+Auswerten
 \end_layout
 
 \begin_layout Standard
@@ -739,23 +729,6 @@ Die möglichen Visualisierungsmethoden sind praktisch endlos.
  Frontends dürfen nicht nur als abgeschlossenes System betrachtet werden.
  Denkbar sind auch Plugins in bestehende Systeme (Social Networks, iGoogle,
  Twitter).
-\end_layout
-
-\begin_layout Subsection
-Backend
-\end_layout
-
-\begin_layout Standard
-Im Backend werden die Messwerte der Sensoren gespeichert und ausgewertet.
- Es handelt sich hierbei um ein PHP Skript welches auf einem Webserver läuft
- und somit die Schnittstelle zwischen Controller und Frontend ist.
- Daraus folgend muss es von den Controllern sowie von den Frontends via
- HTTP erreichbar sein.
- Ob der Backendserver nur über das lokale Netzwerk oder auch über das Internet
- erreichbar ist, wirkt sich nur auf die Erreichbarkeit durch die Frontends
- und die Controller aus.
- So kann es durchaus erwünscht sein die Daten nur im lokalen Netzwerk vorzuhalte
-n um sie gegen Zugriff über das Internet zu schützen.
 \end_layout
 
 \begin_layout Section
