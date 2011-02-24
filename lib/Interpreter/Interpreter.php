@@ -34,9 +34,8 @@ use Doctrine\ORM;
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
- *
  */
-abstract class Interpreter implements InterpreterInterface {
+abstract class Interpreter {
 	protected $channel;
 
 	/** @var Database connection */

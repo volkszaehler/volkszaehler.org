@@ -80,19 +80,10 @@ class MeterInterpreter extends Interpreter {
 
 	/**
 	 * @return float
-	 * @todo reimplement according to new env
 	 */
 	public function getAverage() {
-		return round(3600*1000*1000*$this->getConsumption() / ($this->to - $this->from), 10);  // return W
-			// 3600: 3600 s/h; 1000: ms -> s; 1000: KW -> W
-	}
-
-	/**
-	 * @return float
-	 * @todo reimplement according to new env
-	 */
-	public function getLast() {
-		//return $this->getConsumption() / ($this->to - $this->from) / 1000;	// return W
+		// 3600: 3600 s/h; 1000: ms -> s; 1000: KW -> W
+		return (3600 * 1000 * 1000 * $this->getConsumption()) / ($this->to - $this->from);
 	}
 
 	/**

@@ -57,6 +57,7 @@ class JSON extends View {
 		$this->json = new Util\JSON();
 		$this->json['version'] = VZ_VERSION;
 
+		$this->response->setHeader('Content-type', 'application/json');
 		$this->setPadding($request->getParameter('padding'));
 	}
 
@@ -66,7 +67,7 @@ class JSON extends View {
 	 * @param mixed $data
 	 */
 	public function add($data) {
-		if ($data instanceof Interpreter\InterpreterInterface) {
+		if ($data instanceof Interpreter\Interpreter || $data instanceof Interpreter\AggregatorInterpreter) {
 			$this->addData($data);
 		}
 		elseif ($data instanceof Model\Entity) {
@@ -87,9 +88,7 @@ class JSON extends View {
 	}
 
 	/**
-	 * Process, encode and print output
-	 *
-	 * @return string the output
+	 * Process, encode and print output to stdout
 	 */
 	protected function render() {
 		$json = $this->json->encode((Util\Debug::isActivated()) ? JSON_PRETTY : 0);
@@ -97,8 +96,6 @@ class JSON extends View {
 		if ($this->padding) {
 			$json = 'if (' . $this->padding . ') { ' . $this->padding  . '(' . $json . '); }';
 		}
-
-		$this->response->setHeader('Content-type', 'application/json');
 		echo $json;
 	}
 
@@ -213,20 +210,18 @@ class JSON extends View {
 	 *
 	 * @param Interpreter\InterpreterInterface $interpreter
 	 */
-	protected function addData(Interpreter\InterpreterInterface $interpreter) {
-		$data = $interpreter->getValues($this->request->getParameter('tuples'), $this->request->getParameter('group'));
+	protected function addData(Interpreter\Interpreter $interpreter) {
+		$this->json['data']['uuid'] = $interpreter->getEntity()->getUuid();
 
-		$this->json['data'] = array(
-			'uuid'		=> $interpreter->getEntity()->getUuid(),
-			'count'		=> count($data),
-			'first'		=> (isset($data[0][0])) ? $data[0][0] : NULL,
-			'last'		=> (isset($data[count($data)-1][0])) ? $data[count($data)-1][0] : NULL,
-			'min'		=> $interpreter->getMin(),
-			'max'		=> $interpreter->getMax(),
-			'average'	=> $interpreter->getAverage(),
-			'last'		=> $interpreter->getLast(),
-			'tuples'	=> $data
-		);
+		$data = $interpreter->getValues($this->request->getParameter('tuples'), $this->request->getParameter('group'));
+		$min = $interpreter->getMin();
+		$max = $interpreter->getMax();
+		$average = $interpreter->getAverage();
+		
+		if (isset($min)) $this->json['data']['min'] = $min;
+		if (isset($max)) $this->json['data']['max'] = $max;
+		if (isset($average)) $this->json['data']['average'] = $average;
+		if (count($data) > 0) $this->json['data']['tuples'] = $data;
 	}
 
 	/**

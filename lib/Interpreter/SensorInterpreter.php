@@ -82,15 +82,6 @@ class SensorInterpreter extends Interpreter {
 	}
 
 	/**
-	 * Fetch the average value from the database
-	 * @internal doesn't fits the SQL standard
-	 * @return float
-	 */
-	public function getLast() {
-		return (float) $this->conn->fetchColumn('SELECT value FROM data WHERE channel_id = ?' . parent::buildDateTimeFilterSQL($this->from, $this->to). ' ORDER BY timestamp DESC', array($this->channel->getId()), 0);
-	}
-
-	/**
 	 * @todo possible and/or required?
 	 * @return float
 	 */

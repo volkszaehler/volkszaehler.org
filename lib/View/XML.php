@@ -68,7 +68,7 @@ class XML extends View {
 	 * @param mixed $data
 	 */
 	public function add($data) {
-		if ($data instanceof Interpreter\InterpreterInterface) {
+		if ($data instanceof Interpreter\Interpreter || $data instanceof Interpreter\AggregatorInterpreter) {
 			$this->addData($data);
 		}
 		elseif ($data instanceof Model\Entity) {
