@@ -59,20 +59,8 @@ volkszaehler.org
 the open smartmetering platform
 \end_layout
 
-\begin_layout Standard
-\align right
-\begin_inset Graphics
-	filename /home/stv0g/workspace/volkszaehler.org/misc/graphics/logo.png
-	lyxscale 50
-	scale 20
-
-\end_inset
-
-
-\end_layout
-
 \begin_layout Author
-Steffen Vogel
+volkszaehler.org community, Steffen Vogel
 \end_layout
 
 \begin_layout Abstract
@@ -100,6 +88,16 @@ Darum sollten diese Daten ausschließlich für den Nutzer selbst zur Verfügung
  Mit einem Materialeinsatz von ca.
  100 €, etwas Geschick und Zeit lässt sich das mit Hilfe eines Standard-µC-Modul
 s aufbauen.
+\end_layout
+
+\begin_layout Title
+\begin_inset Graphics
+	filename /home/stv0g/workspace/volkszaehler.org/misc/graphics/logo.png
+	scale 40
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -225,7 +223,329 @@ Wir haben es uns zur Aufgabe gemacht diese Ziele durch eine lückenlose Kette
 \end_layout
 
 \begin_layout Section
-Aufbau
+Was ist ein intelligenter Zähler, Smart Meter oder elektronischer Heimzähler
+\end_layout
+
+\begin_layout Standard
+Ein intelligenter Zähler ist ein elektronischer Strom-, Gas-, Wasser- oder
+ Wärmemengenzähler.
+ Er soll dem Nutzer seinen Energieverbrauch transparent machen.
+ Durch eine zeitnahe Rückmeldung soll ein sparsamer Umgang mit Energie gefördert
+ werden.
+ Detaillierte Lastprofile erlauben dem Verbraucher eine gezielte Optimierung
+ seines Energieverbrauchs.
+ Sein Lastprofil gibt ihm Antworten auf die folgenden Fragen:
+\end_layout
+
+\begin_layout Itemize
+Wie hoch ist die eigene Grundlast?
+\end_layout
+
+\begin_layout Itemize
+Lohnt sich (aus ökonomischer oder ökologischer Sicht) der Ersatz eines Altgeräte
+s durch ein effizienteres Neugerät?
+\end_layout
+
+\begin_layout Itemize
+Wie hoch ist der Anteil von Geräten mit hoher Leistung, die nur für kurze
+ Zeit eingesetzt werden (bei Stromverbrauchern z.B.
+ Fön, Staubsauger, Mikrowelle), am Gesamtverbrauch?
+\end_layout
+
+\begin_layout Itemize
+Gibt es hier Optimierungspotenzial?
+\end_layout
+
+\begin_layout Itemize
+Lassen sich Lastspitzen in Zeiten günstigerer, tageszeitabhängiger Tarife
+ verschieben?
+\end_layout
+
+\begin_layout Standard
+Dem Energieversorger dienen die genaueren Verbrauchszahlen im Falle eines
+ intelligenten Stromzählers dazu, die Bereitstellung von Strom im Netz zu
+ optimieren und so den risikobehafteten kurzfristigen Zukaufbedarf an der
+ Strombörse zu minimieren und die Kraftwerkeinsatzplanung so zu optimieren,
+ dass die bereitgestellte Strommenge die Nachfrage nur minimal übersteigt.
+ Um dies zu erreichen sind die intelligenten Zähler in der Regel aus der
+ Ferne vom Versorger auslesbar.
+ 
+\end_layout
+
+\begin_layout Standard
+Wikipedia schreibt zum Thema intelligente Zähler:
+\end_layout
+
+\begin_layout Quotation
+Ein intelligenter Zähler (auch Smart Meter genannt) ist ein elektronischer
+ Stromzähler, der dem Energieversorgungsunternehmen über eingebaute Zusatzfunkti
+onen oder nachträgliche Module ermöglicht, die erfassten Zählerstände über
+ die Ferne auszulesen.
+\end_layout
+
+\begin_layout Quotation
+[…] Neben dem reinen Einsatz von intelligenten Zählern zur Messung des Stromverb
+rauchs ist es auch möglich, in einem Haushalt den Wasser-, Gas-, und Wärmeverbra
+uch intelligent zu überwachen.
+\end_layout
+
+\begin_layout Quotation
+[…] Der Zweck intelligenter Zähler ist vornehmlich, variable Leistungsentgelte
+ in Abhängigkeit von der Gesamtnachfrage und Netzauslastung erheben zu können.
+ Damit erhoffen die Energieversorger, das Netz und die vorhandene Kraftwerkinfra
+struktur besser auszunutzen sowie Investitionen für Spitzenlastausbau zu
+ vermeiden oder zumindest zurückzustellen.
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+Quelle: 
+\begin_inset Flex URL
+status open
+
+\begin_layout Plain Layout
+
+http://de.wikipedia.org/wiki/Intelligenter_Zähler
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Bei den konventionellen Ferrariszählern wird in der Regel einmal im Jahr
+ der Zählerstand abgelesen.
+ Dadurch hat weder der Versorger noch der Kunde einen Überblick darüber,
+ wann genau er wieviel Strom verbraucht.
+ Bei den intelligenten Stromzählern wird der Verbrauch in deutlich kürzeren
+ Intervallen erfasst.
+\end_layout
+
+\begin_layout Standard
+Anhand der gemessenen Werte lassen sich Verbrauchsdiagramme erstellen.
+ Hier seht Ihr als Beispiel ein paar Diagramme typischer Verbraucher eines
+ Haushaltes:
+\end_layout
+
+\begin_layout Standard
+\noindent
+\align center
+\begin_inset Graphics
+	filename /home/stv0g/workspace/volkszaehler.org/misc/graphics/backofen.jpg
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename /home/stv0g/workspace/volkszaehler.org/misc/graphics/kuehlschrank.jpg
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename /home/stv0g/workspace/volkszaehler.org/misc/graphics/spuelmaschine.jpg
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Tatsächlich birgt die verbraucherfreundliche Lösung einer automatischen
+ und feingranularen Verbrauchserfassung durch den Stromzähler die Möglichkeit
+ zur Erstellung eines präzisen Lastprofiles.
+ Der Lastgang eines Haushalts verrät viel über die Gewohnheiten der Personen,
+ die in diesem Haushalt leben.
+ Anhand der gemessenen Daten lassen sich Nutzungsprofile erstellen.
+ Es sind im Prinzip Rückschlüsse auf die Lebensgewohnheiten des Haushaltes
+ möglich:
+\end_layout
+
+\begin_layout Itemize
+Wann stehen die Bewohner auf?
+\end_layout
+
+\begin_layout Itemize
+Wann gehen Sie ins Bett?
+\end_layout
+
+\begin_layout Itemize
+Wird jeden Tag gekocht? mit einer oder mit mehreren Herdplatten? oder gibts
+ häufig Pizza? :-)
+\end_layout
+
+\begin_layout Itemize
+Ändern sich die Gewohnheiten (Besuch oder Nachwuchs)?
+\end_layout
+
+\begin_layout Itemize
+Muss ein Bewohner Nachts häufiger auf Toilette?
+\end_layout
+
+\begin_layout Standard
+Im Prinzip hat man mit diesen Daten eine bessere Überwachung als mit einer
+ Kamera!
+\end_layout
+
+\begin_layout Standard
+Das Energiewirtschaftsgesetz (EnWG) schreibt den Versorgern nur vor, das
+ auch der Kunde auf diese Daten zugreifen können muss.
+ Die Nutzung, Weitergabe, Anonymisierung der Daten ist in dem Gesetz nicht
+ explizit geregelt.
+ 
+\end_layout
+
+\begin_layout Section
+Was ist der Volkszaehler?
+\end_layout
+
+\begin_layout Standard
+volkszaehler.org ist ein freier intelligenter Stromzähler im Selbstbau, bei
+ dem die anfallenden Stromprofile unter der Kontrolle des Nutzers verbleiben.
+ Die Daten des Volkszaehlers sind nicht duch den Versorger auslesbar.
+ Mit einem Materialeinsatz von ca.
+ EUR 100, etwas Geschick und Zeit lässt sich ein solcher Volkszaehler auf
+ Basis eines Standard-µC-Moduls aufbauen.
+\end_layout
+
+\begin_layout Standard
+Der Volkszaehler kann nicht als fertiges Gerät gekauft werden.
+ Es ist ein Selfmade-Projekt.
+ Der Volkszaehler besteht nicht aus einem einzigen Element sondern aus insgesamm
+t 4 Modulen (Messung, Verarbeitung, Speicherung & Auswertung).
+ Das Modul zur Messung muss in der Regel von einem Elektriker im Schaltschrank
+ der Hausinstallation eingebaut werden.
+ Es gibt auch Varianten die keinen Eingriff in die Hausinstallation benötigen.
+ Alle anderen Module lassen sich von interessierten Tüftlern selber nachbauen.
+\end_layout
+
+\begin_layout Standard
+Die einzelnen Module und deren Zusammenspiel wird etwas weiter unten genauer
+ erklärt.
+ 
+\end_layout
+
+\begin_layout Section
+Warum brauche ich einen Volkszaehler?
+\end_layout
+
+\begin_layout Standard
+Wer seinen Energiebedarf analysieren möchte, braucht dazu genaue Messwerte.
+ Bei heutigen Hausinstallationen mit konventionellen Drehstromzählern sind
+ für den Stromverbrauch diese Messwerte nicht vorhanden.
+ Es wird also ein intelligenter Zähler benötigt, der in der Lage ist den
+ Energiebedarf über sehr kurze Zeiträume zu messen und zu speichern.
+\end_layout
+
+\begin_layout Standard
+Diese Geräte werden heute schon von vielen Versorgern angeboten.
+ Die einfachen Lösungen ermöglichen die Anzeige der aktuellen Leistung,
+ der Verbrauchswerte des aktuellen Tages, der aktuellen Woche, des aktuellen
+ Monats und der jeweils vorhergehenden Zeiträume.
+ Bei den meisten Lösungen, bei denen darüber hinaus eine komfortable Auswertung
+ möglich ist, werden die Verbrauchsdaten jedoch zum Versorger übertragen.
+ Der Nutzer kann dann i.d.R.
+ über eine Weboberfäche eine komfortable Analyse vornehmen.
+\end_layout
+
+\begin_layout Standard
+Wie schon weiter oben geschildert besteht nun die Möglichkeit für den Versorger
+ auf Grundlage der Daten Nutzerprofile anzulegen und diese auszuwerten.
+\end_layout
+
+\begin_layout Standard
+So Lustig diese Gedankenspiele auch sind - mit einem intelligenten Zähler
+ eines Versorgers gibt man seine Daten aus der Hand und weiß nicht was mit
+ diesen Daten gemacht wird.
+\end_layout
+
+\begin_layout Standard
+Wer dies nicht möchte, hat mit dem Volkszaehler die Möglichkeit sich einen
+ intelligenten Zähler selbst zu bauen und die Verbrauchsdaten selbst auszuwerten.
+ Die Daten bleiben beim Kunden und der Versorger hat keinen Zugriff auf
+ diese Daten.
+ 
+\end_layout
+
+\begin_layout Section
+Wie funktioniert der Volkszaehler?
+\end_layout
+
+\begin_layout Standard
+Der Volkszaehler besteht aus mehreren Modulen.
+ Für jedes Modul gibt es unterschiedliche Ideen der Umsetzung.
+ Es gibt also nicht den einen Volkszaehler, sondern in der technischen Ausführun
+g verschiedene Varianten.
+ Grundsätzlich funktionieren aber alle diese Varanten nach dem gleichen
+ Prinzip.
+\end_layout
+
+\begin_layout Standard
+Die Sensoren - in der Regel je einer pro Phase - werden im Schaltschrank
+ der Hausinstallation zwischen den Vorsicherrungen und den normalen Sicherungsau
+tomaten installiert.
+ Diese Sensoren geben ihre Signale an ein µController-Board weiter, welches
+ die Daten über eine Netzwerkverbindung an einen Datenbankserver zur speicherung
+ weitergibt.
+ Möchte der User nun die Daten abrufen und auswerten nutzt er dazu einen
+ Webbrowser, mit dem er die Daten aus der Datenbank abrufen - und diese
+ grafisch aufbereiten lassen kann.
+\end_layout
+
+\begin_layout Standard
+Die folgende Zeichnung zeigt die Position der Sensoren im Schaltschrank.
+ Das µController-Board kann, muss aber nicht, im Schaltschrank installiert
+ werden.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename /home/stv0g/workspace/volkszaehler.org/misc/graphics/schematischer_schaltkasten.jpeg
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Woraus besteht ein Volkszaehler?
+\end_layout
+
+\begin_layout Standard
+Der Volkszaehler besteht aus 4 Modulen:
+\end_layout
+
+\begin_layout Itemize
+Messen
+\end_layout
+
+\begin_layout Itemize
+Verarbeiten
+\end_layout
+
+\begin_layout Itemize
+Protokollieren/Speichern
+\end_layout
+
+\begin_layout Itemize
+Auswerten
+\end_layout
+
+\begin_layout Standard
+Für jedes dieser Module gibt es verschiedene Ideen diese zu realisieren.
+ Mehr dazu findet Ihr im Wiki unter Morphologischer Kasten.
+\end_layout
+
+\begin_layout Standard
+Hier möchte ich für jedes Modul eine Beispielkonfiguration vorstellen und
+ kurz ein paar Infos dazu schreiben: 
 \end_layout
 
 \begin_layout Standard
@@ -237,6 +557,59 @@ Das Projekt lässt sich in drei Bereiche aufteilen, die untereinander über
  Varianten verfügbar.
  So kann den individuellen Bedürfnissen nach ein angepasstes Setup aufgebaut
  werden.
+\end_layout
+
+\begin_layout Subsubsection
+Messen
+\end_layout
+
+\begin_layout Standard
+Ein möglicher Messsensor ist ein Wattmeter, welches auf der Hutschiene des
+ Schaltschrankes montiert wird und zwischen den Vorsicherungen und den Sicherung
+sautomaten eingeschleift wird.
+ In der Regel wird pro Phase ein Wattmeter benötigt.
+\end_layout
+
+\begin_layout Standard
+hier ein Foto der Wattmeter im Schaltschrank einfügen!
+\end_layout
+
+\begin_layout Standard
+Auf dem Foto sieht man unten die Stromanschlüße und oben - die etwas dünnere
+ Kabel - die Signalleitungen die dann zum µController-Board gehen.
+\end_layout
+
+\begin_layout Standard
+kurz die Funktionsweise der Wattmeter erklären
+\end_layout
+
+\begin_layout Subsubsection
+Verarbeiten
+\end_layout
+
+\begin_layout Standard
+hier das AVR-Net-IO beschreiben
+\end_layout
+
+\begin_layout Subsubsection
+Speichern
+\end_layout
+
+\begin_layout Standard
+hier den Webserver beschreiben
+\end_layout
+
+\begin_layout Subsubsection
+Auswerten
+\end_layout
+
+\begin_layout Standard
+hier das Frontend beschreiben
+\end_layout
+
+\begin_layout Standard
+Wer bis hierher gekommen ist und nun Lust auf mehr hat, kann sich gerne
+ in dem Wiki umsehen … 
 \end_layout
 
 \begin_layout Subsection
@@ -271,7 +644,7 @@ Ein typisches Setup für ein Einfamilienhaus könnte folgendermaßen aussehen:
 \begin_layout Itemize
 3x 1-phasige S0-Stromzähler für den Hausanschluss
 \begin_inset Foot
-status open
+status collapsed
 
 \begin_layout Plain Layout
 jede Phase erhällt einen Zähler
