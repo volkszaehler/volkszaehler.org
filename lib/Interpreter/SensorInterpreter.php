@@ -37,16 +37,16 @@ class SensorInterpreter extends Interpreter {
 	 * @todo untested
 	 * @param string|integer $groupBy
 	 */
-	public function getValues($tuples = NULL, $groupBy = NULL) {
+	public function getValues($tuples, $groupBy, $callback) {
 		$data = parent::getData($tuples, $groupBy);
 
 		$values = array();
 		foreach ($data as $reading) {
-			$values[] = array(
+			$values[] = $callback(array(
 				(float) $reading[0],
 				(float) $reading[1] / $reading[2],
 				(int) $reading[2]
-			);
+			));
 		}
 
 		return $values;
@@ -79,14 +79,6 @@ class SensorInterpreter extends Interpreter {
 	 */
 	public function getAverage() {
 		return (float) $this->conn->fetchColumn('SELECT AVG(value) FROM data WHERE channel_id = ?' . parent::buildDateTimeFilterSQL($this->from, $this->to), array($this->channel->getId()), 0);
-	}
-
-	/**
-	 * @todo possible and/or required?
-	 * @return float
-	 */
-	public function getConsumption() {
-
 	}
 }
 

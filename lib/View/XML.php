@@ -75,10 +75,10 @@ class XML extends View {
 			$this->addEntity($data);
 		}
 		elseif ($data instanceof \Exception) {
-			//$this->addException($data);
+			$this->addException($data);
 		}
 		elseif ($data instanceof Util\Debug) {
-			//$this->addDebug($data);
+			$this->addDebug($data);
 		}
 		elseif (is_array($data)) {
 			$this->xmlRoot->appendChild($this->convertArray($data));
@@ -163,11 +163,11 @@ class XML extends View {
 	protected function addDebug(Util\Debug $debug) {
 		$xmlDebug = $this->xmlDoc->createElement('debug');
 		$xmlDebug->appendChild($this->xmlDoc->createElement('time', $debug->getExecutionTime()));
-		$xmlDebug->appendChild($this->convertArray($debug->getMessages(), 'messages'));
+		$xmlDebug->appendChild($this->convertArray($debug->getMessages(), 'messages', 'message'));
 		
 		$xmlDatabase = $this->xmlDoc->createElement('database');
 		$xmlDatabase->setAttribute('driver', Util\Configuration::read('db.driver'));
-		$xmlDatabase->appendChild($this->convertArray($debug->getQueries(), 'queries'));
+		$xmlDatabase->appendChild($this->convertArray($debug->getQueries(), 'queries', 'query'));
 
 		$xmlDebug->appendChild($xmlDatabase);
 		$this->xmlRoot->appendChild($xmlDebug);
@@ -198,28 +198,30 @@ class XML extends View {
 	/**
 	 * Add data to output queue
 	 *
-	 * @param Interpreter\InterpreterInterface $interpreter
+	 * @param $interpreter
 	 */
-	protected function addData(Interpreter\InterpreterInterface $interpreter) {
-		$data = $interpreter->getValues($this->request->getParameter('tuples'), $this->request->getParameter('group'));
+	protected function addData($interpreter) {
+		$xmlDoc = $this->xmlDoc;
 		$xmlData = $this->xmlDoc->createElement('data');
 		$xmlTuples = $this->xmlDoc->createElement('tuples');
-		foreach ($data as $tuple) {
-			$xmlTuple = $this->xmlDoc->createElement('tuple');
-			$xmlTuple->setAttribute('timestamp', $tuple[0]);	// hardcoded data fields for performance optimization
-			$xmlTuple->setAttribute('value', $tuple[1]);
-			$xmlTuple->setAttribute('count', $tuple[2]);
-			$xmlTuples->appendChild($xmlTuple);
-		}
-
+		
+		$data = $interpreter->getValues(
+			$this->request->getParameter('tuples'),
+			$this->request->getParameter('group'), 
+			function($tuple) use ($xmlDoc, $xmlTuples) {
+				$xmlTuple = $xmlDoc->createElement('tuple');
+				$xmlTuple->setAttribute('timestamp', $tuple[0]);	// hardcoded data fields for performance optimization
+				$xmlTuple->setAttribute('value', View::formatNumber($tuple[1]));
+				$xmlTuple->setAttribute('count', $tuple[2]);
+				$xmlTuples->appendChild($xmlTuple);
+			}
+		);
+		
 		$xmlData->appendChild($this->xmlDoc->createElement('uuid', $interpreter->getEntity()->getUuid()));
-		$xmlData->appendChild($this->xmlDoc->createElement('count', count($data)));
-		$xmlData->appendChild($this->xmlDoc->createElement('first', (isset($data[0][0])) ? $data[0][0] : NULL));
-		$xmlData->appendChild($this->xmlDoc->createElement('last', (isset($data[count($data)-1][0])) ? $data[count($data)-1][0] : NULL));
 		$xmlData->appendChild($this->xmlDoc->createElement('min', $interpreter->getMin()));
 		$xmlData->appendChild($this->xmlDoc->createElement('max', $interpreter->getMax()));
-		$xmlData->appendChild($this->xmlDoc->createElement('average', $interpreter->getAverage()));
-		$xmlData->appendChild($this->xmlDoc->createElement('last', $interpreter->getLast()));
+		$xmlData->appendChild($this->xmlDoc->createElement('average', self::formatNumber($interpreter->getAverage())));
+		$xmlData->appendChild($this->xmlDoc->createElement('consumption', self::formatNumber($interpreter->getConsumption())));
 		$xmlData->appendChild($xmlTuples);
 	
 		$this->xmlRoot->appendChild($xmlData);
@@ -231,28 +233,25 @@ class XML extends View {
 	 * @param array the input array
 	 * @return DOMElement
 	 */
-	protected function convertArray(array $array, $identifier = 'array') {
-		$xmlArray = $this->xmlDoc->createElement($identifier);
+	protected function convertArray(array $array, $identifierPlural = 'array', $identifierSingular = 'entry') {
+		$xmlArray = $this->xmlDoc->createElement($identifierPlural);
 
 		foreach ($array as $key => $value) {
-			// determine tagname
 			if (is_numeric($key)) {
-				if (substr($identifier, -3) == 'ies') {
-					$key = substr($identifier, 0, -3) . 'y';
-				}
-				elseif (substr($identifier, -1) == 's') {
-					$key = substr($identifier, 0, -1);
-				}
-				else {
-					$key = 'index' . $key;
-				}
+				$key = $identifierSingular;
 			}
 
 			if (is_array($value)) {
 				$xmlArray->appendChild($this->convertArray($value, $key));
 			}
-			else {
-				$xmlArray->appendChild($this->xmlDoc->createElement($key, (is_scalar($value)) ? $value : 'object'));
+			elseif (is_numeric($value)) {
+				$xmlArray->appendChild($this->xmlDoc->createElement($key, self::formatNumber($value)));
+			}
+			elseif (is_scalar($value)) {
+				$xmlArray->appendChild($this->xmlDoc->createElement($key, $value));
+			}
+			else { // TODO required?
+				$xmlArray->appendChild($this->xmlDoc->createElement($key, 'object'));
 			}
 		}
 		

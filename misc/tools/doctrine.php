@@ -26,8 +26,6 @@
 
 use Volkszaehler\Util;
 
-// TODO replace by state class
-define('VZ_VERSION', 0.2);
 define('VZ_DIR', realpath(__DIR__ . '/../..'));
 
 // class autoloading

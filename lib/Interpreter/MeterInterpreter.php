@@ -38,12 +38,12 @@ class MeterInterpreter extends Interpreter {
 	/**
 	 * Calculates the consumption for interval speciefied by $from and $to
 	 *
-	 * @todo reimplement according to new env
+	 * @todo improfve workaround
 	 */
 	public function getConsumption() {
-		$sql = 'SELECT COUNT(*) FROM `data` WHERE `channel_id` = ' . $this->channel->getId() . parent::buildDateTimeFilterSQL($this->from, $this->to);
+		$sql = 'SELECT COUNT(*) FROM `data` WHERE `channel_id` = ?' . parent::buildDateTimeFilterSQL($this->from, $this->to);
 
-		return $this->conn->fetchColumn($sql, array($this->channel->getId()), 0)/$this->channel->getProperty('resolution');     // return KWh
+		return $this->conn->fetchColumn($sql, array($this->channel->getId()), 0) / $this->channel->getProperty('resolution');     // return KWh
 	}
 
 	/**
@@ -92,13 +92,13 @@ class MeterInterpreter extends Interpreter {
 	 * @todo untested
 	 * @return array with timestamp, values, and pulse count
 	 */
-	public function getValues($tuples = NULL, $groupBy = NULL) {
+	public function getValues($tuples, $groupBy, $callback) {
 		$pulses = parent::getData($tuples, $groupBy);
 
 		$values = array();
 		foreach ($pulses as $pulse) {
 			if (isset($last)) {
-				$values[] = $this->raw2differential($last, $pulse);
+				$values[] = $callback($this->raw2differential($last, $pulse));
 				$last = $pulse;
 			}
 			else {

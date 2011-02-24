@@ -159,11 +159,11 @@ abstract class Interpreter {
 		$sql = '';
 
 		if (isset($from)) {
-			$sql .= '  AND timestamp >= ' . $from;
+			$sql .= ' AND timestamp >= ' . $from;
 		}
 
 		if (isset($to)) {
-			$sql .= '  AND timestamp <= ' . $to;
+			$sql .= ' AND timestamp <= ' . $to;
 		}
 
 		return $sql;

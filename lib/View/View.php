@@ -137,6 +137,16 @@ abstract class View {
 				throw new Exception('Unknown caching mode: ' . $mode);
 		}
 	}
+	
+	/**
+	 * Round decimal numbers to given precission
+	 *
+	 * @param $number float the number
+	 * @return (float|string) the formatted number
+	 */
+	public static function formatNumber($number) {
+		return round($number, self::PRECISSION);
+	}
 
 	public abstract function add($object);
 	protected abstract function render();

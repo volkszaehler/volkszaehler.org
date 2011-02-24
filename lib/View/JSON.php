@@ -171,7 +171,7 @@ class JSON extends View {
 		if (count($queries) > 0) {
 			$jsonDebug['database'] = array(
 				'driver' => Util\Configuration::read('db.driver'),
-				'queries' => $queries
+				'queries' => array_values($queries)
 			);
 		}
 
@@ -208,19 +208,31 @@ class JSON extends View {
 	/**
 	 * Add data to output queue
 	 *
-	 * @param Interpreter\InterpreterInterface $interpreter
+	 * @param $interpreter
 	 */
-	protected function addData(Interpreter\Interpreter $interpreter) {
+	protected function addData($interpreter) {
 		$this->json['data']['uuid'] = $interpreter->getEntity()->getUuid();
 
-		$data = $interpreter->getValues($this->request->getParameter('tuples'), $this->request->getParameter('group'));
+		$data = $interpreter->getValues(
+			$this->request->getParameter('tuples'),
+			$this->request->getParameter('group'), 
+			function($tuple) {
+				return array(
+					$tuple[0],
+					View::formatNumber($tuple[1]),
+					$tuple[2]
+				);
+			}
+		);
 		$min = $interpreter->getMin();
 		$max = $interpreter->getMax();
 		$average = $interpreter->getAverage();
+		$consumption = $interpreter->getConsumption();
 		
-		if (isset($min)) $this->json['data']['min'] = $min;
-		if (isset($max)) $this->json['data']['max'] = $max;
-		if (isset($average)) $this->json['data']['average'] = $average;
+		$this->json['data']['min'] = $min;
+		$this->json['data']['max'] = $max;
+		$this->json['data']['average'] = View::formatNumber($average);
+		$this->json['data']['consumption'] = View::formatNumber($consumption);
 		if (count($data) > 0) $this->json['data']['tuples'] = $data;
 	}
 

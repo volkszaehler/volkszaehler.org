@@ -35,8 +35,8 @@ use Volkszaehler\Interpreter;
  * @todo rework
  */
 class CSV extends View {
-	protected $delimiter = ';';
-	protected $enclosure = '"';
+	const DELIMITER = ';';
+	const ENCLOSURE = '"';
 
 	protected $csv = array();
 
@@ -115,14 +115,19 @@ class CSV extends View {
 	 * @param Interpreter\InterpreterInterface $interpreter
 	 */
 	protected function addData(Interpreter\Interpreter $interpreter) {
-		$tuples = $interpreter->getValues($this->request->getParameter('tuples'), $this->request->getParameter('group'));
-		
 		//$this->response->setHeader('Content-Disposition', 'attachment; filename="' . strtolower($interpreter->getEntity()->getProperty('title')) . '.csv"'); // TODO add time?
-	
-		foreach ($tuples as $row) {
-			$array = array_map(array($this, 'escape'), $row);
-			echo implode($this->delimiter, $row) . PHP_EOL;
-		}
+		
+		$tuples = $interpreter->getValues(
+			$this->request->getParameter('tuples'),
+			$this->request->getParameter('group'), 
+			function($tuple) {
+				echo implode(CSV::DELIMITER, array(
+					$tuple[0],
+					View::formatNumber($tuple[1]),
+					$tuple[2]
+				)) . PHP_EOL; 
+			}
+		);
 	}
 
 	/**
@@ -138,7 +143,7 @@ class CSV extends View {
 	 */
 	protected function escape($value) {
 		if (is_string($value)) {
-			return $this->enclosure . $value . $this->enclosure;
+			return self::ENCLOSURE . $value . self::ENCLOSURE;
 		}
 		elseif (is_numeric($value)) {
 			return $value;
