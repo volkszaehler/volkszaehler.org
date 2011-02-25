@@ -53,18 +53,16 @@ class DataController extends Controller {
 		$timestamp = $this->view->request->getParameter('ts');
 		$value = $this->view->request->getParameter('value');
 
-		if (!$timestamp) {
+		if (!is_null($timestamp)) {
 			$timestamp = round(microtime(TRUE) * 1000);
 		}
 
-		if (!$value) {
+		if (!is_null($value)) {
 			$value = 1;
 		}
 
 		$data = new Model\Data($channel, $timestamp, $value);
-
 		$channel->addData($data);
-
 		$this->em->flush();
 	}
 
