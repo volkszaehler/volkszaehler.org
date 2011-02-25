@@ -32,9 +32,9 @@ use Doctrine\DBAL;
  * @package default
  */
 class DataAggregationIterator implements \Iterator, \Countable {
-	protected $current;
-	protected $key;			// key
-	protected $size;		// total readings in PDOStatement
+	protected $current;	// the current data
+	protected $key;		// key
+	protected $size;	// total readings in PDOStatement
 	protected $iterator;	// subiterator
 
 	/**
@@ -44,30 +44,36 @@ class DataAggregationIterator implements \Iterator, \Countable {
 	 * @param integer $size
 	 * @param integer $tuples
 	 */
-	public function __construct(\PDOStatement $stmt, $size, $tuples) {
-		$this->iterator = new DataIterator($stmt, $size);
+	public function __construct(\PDOStatement $stmt, $rows, $count) {
+		$this->iterator = new DataIterator($stmt, $rows);
 
-		$this->packageSize = floor($size / $tuples);
-		$this->size = (int) $tuples;
+		$this->packageSize = floor($rows / $count);
+		$this->size = $count;
 	}
 
 	/**
 	 * Aggregate data
 	 */
 	public function next() {
-		$current = array(0, 0, 0);
-		for ($i = 0; $i < $this->packageSize && $this->iterator->valid(); $i++, $this->iterator->next()) {
+		$this->current = array(0, 0, 0);
+		for ($i = 0; $i < $this->packageSize; $i++, $this->iterator->next()) {
 			$tuple = $this->iterator->current();
 
-			$current[0] = $tuple[0];
-			$current[1] += $tuple[1];
-			$current[2] += $tuple[2];
+			$this->current[0] = $tuple[0];
+			$this->current[1] += $tuple[1];
+			$this->current[2] += $tuple[2];
 		}
 
 		$this->key++;
-		return $this->current = $current;
+		return $this->current;
 	}
 
+	/**
+	 * Rewind the iterator
+	 *
+	 * Should only be called once
+	 * PDOStatement hasn't a rewind()
+	 */
 	public function rewind() {
 		$this->iterator->rewind();
 		// skip first readings to get an even divisor

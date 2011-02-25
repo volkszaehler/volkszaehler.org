@@ -45,7 +45,7 @@ class MeterInterpreter extends Interpreter {
 	 * @return float total consumption
 	 */
 	public function getConsumption() {
-		if (is_null($this->consumption)) throw new \Excpetion('Data has to be processed first!');
+		if (is_null($this->consumption)) throw new \Exception('Data has to be processed first!');
 		
 		return $this->consumption / $this->resolution;
 	}
@@ -55,7 +55,7 @@ class MeterInterpreter extends Interpreter {
 	 * @return array (0 => timestamp, 1 => value)
 	 */
 	public function getMin() {
-		if (is_null($this->min)) throw new \Excpetion('Data has to be processed first!');
+		if (is_null($this->min)) throw new \Exception('Data has to be processed first!');
 		
 		return $this->min;		
 	}
@@ -65,7 +65,7 @@ class MeterInterpreter extends Interpreter {
 	 * @return array (0 => timestamp, 1 => value)
 	 */
 	public function getMax() {
-		if (is_null($this->max)) throw new \Excpetion('Data has to be processed first!');
+		if (is_null($this->max)) throw new \Exception('Data has to be processed first!');
 		
 		return $this->max;
 	}
@@ -97,7 +97,6 @@ class MeterInterpreter extends Interpreter {
 		$next =  $pulses->current();
 		
 		while ($pulses->valid()) {
-			Util\Debug::log('after valid()', $last, $next);
 			$tuple = $callback($this->raw2differential($last, $next));
 			
 			if (is_null($this->max) || $tuple[1] > $this->max[1]) {

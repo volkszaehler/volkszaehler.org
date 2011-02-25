@@ -31,10 +31,10 @@ use Doctrine\DBAL;
  * @package default
  */
 class DataIterator implements \Iterator, \Countable {
-	protected $current;		// the current data
-	protected $key;			// key
-	protected $stmt;		// PDOStatement
-	protected $size;		// total readings in PDOStatement
+	protected $current;	// the current data
+	protected $key;		// key
+	protected $stmt;	// PDOStatement
+	protected $size;	// total readings in PDOStatement
 
 	/**
 	 * Constructor
@@ -81,7 +81,7 @@ class DataIterator implements \Iterator, \Countable {
 	 * Rewind the iterator
 	 *
 	 * Should only be called once
-	 * PDOStatements doest support rewind()
+	 * PDOStatement hasn't a rewind() aquivalent
 	 */
 	public function rewind() {
 		$this->key = 0;
