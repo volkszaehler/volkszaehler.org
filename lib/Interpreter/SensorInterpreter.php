@@ -34,10 +34,9 @@ use Volkszaehler\Util;
 class SensorInterpreter extends Interpreter {
 
 	/**
-	 * @todo untested
 	 * @param string|integer $groupBy
 	 */
-	public function getValues($tuples, $groupBy, $callback) {
+	public function processData($tuples, $groupBy, $callback) {
 		$data = parent::getData($tuples, $groupBy);
 
 		$values = array();

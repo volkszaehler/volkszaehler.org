@@ -64,8 +64,8 @@ class DataAggregationIterator implements \Iterator, \Countable {
 			$current[2] += $tuple[2];
 		}
 
-		$this->current = $current;
 		$this->key++;
+		return $this->current = $current;
 	}
 
 	public function rewind() {
@@ -75,7 +75,7 @@ class DataAggregationIterator implements \Iterator, \Countable {
 		for ($i = 0; $i < $skip; $i++) {
 			$this->iterator->next();
 		}
-		$this->next();
+		return $this->next();
 	}
 
 	public function valid() {

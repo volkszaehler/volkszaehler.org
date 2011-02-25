@@ -112,9 +112,7 @@ class JpGraph extends View {
 		$this->graph->xaxis->SetLabelAngle(45);
 		$this->graph->xaxis->SetLabelFormatCallback(function($label) { return date('j.n.y G:i', $label); });
 
-		if (function_exists('imageantialias')) {
-			$this->graph->img->SetAntiAliasing();
-		}
+		$this->graph->img->SetAntiAliasing(function_exists('imageantialias'));
 	}
 
 	/**
@@ -144,7 +142,7 @@ class JpGraph extends View {
 	 * @param $data
 	 */
 	public function addData(Interpreter\InterpreterInterface $interpreter){
-		$data = $interpreter->getValues($this->width/4);
+		$data = $interpreter->processData($this->width/4);
 
 		if (count($data) > 0) {
 			$count = count($this->channels);

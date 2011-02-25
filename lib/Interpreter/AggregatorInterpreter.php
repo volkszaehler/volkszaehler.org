@@ -78,7 +78,7 @@ class AggregatorInterpreter {
 	 * @todo to be implemented
 	 * @return array of values
 	 */
-	public function getValues($tuples = NULL, $groupBy = NULL) {
+	public function processData($tuples = NULL, $groupBy = NULL) {
 
 	}
 

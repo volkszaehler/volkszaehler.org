@@ -213,7 +213,7 @@ class JSON extends View {
 	protected function addData($interpreter) {
 		$this->json['data']['uuid'] = $interpreter->getEntity()->getUuid();
 
-		$data = $interpreter->getValues(
+		$data = $interpreter->processData(
 			$this->request->getParameter('tuples'),
 			$this->request->getParameter('group'), 
 			function($tuple) {

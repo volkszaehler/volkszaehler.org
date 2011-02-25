@@ -35,50 +35,43 @@ use Volkszaehler\Util;
 
 class MeterInterpreter extends Interpreter {
 
+	protected $min = NULL;
+	protected $max = NULL;
+	protected $consumption = NULL;
+	protected $resolution;
+	
 	/**
-	 * Calculates the consumption for interval speciefied by $from and $to
-	 *
-	 * @todo improfve workaround
+	 * Calculates the consumption
+	 * @return float total consumption
 	 */
 	public function getConsumption() {
-		$sql = 'SELECT COUNT(*) FROM `data` WHERE `channel_id` = ?' . parent::buildDateTimeFilterSQL($this->from, $this->to);
-
-		return $this->conn->fetchColumn($sql, array($this->channel->getId()), 0) / $this->channel->getProperty('resolution');     // return KWh
+		if (is_null($this->consumption)) throw new \Excpetion('Data has to be processed first!');
+		
+		return $this->consumption / $this->resolution;
 	}
 
 	/**
+	 * Get minimum
 	 * @return array (0 => timestamp, 1 => value)
-	 * @todo reimplement according to new env
 	 */
 	public function getMin() {
-		/*$data = $this->getData();
-
-		$min = current($data);
-		foreach ($data as $reading) {
-			if ($reading['value '] < $min['value']) {
-				$min = $reading;
-			}
-		}
-		return $min;*/
+		if (is_null($this->min)) throw new \Excpetion('Data has to be processed first!');
+		
+		return $this->min;		
 	}
 
 	/**
+	 * Get maximum
 	 * @return array (0 => timestamp, 1 => value)
-	 * @todo reimplement according to new env
 	 */
 	public function getMax() {
-		/*$data = $this->getData();
-
-		$max = current($data);
-		foreach ($data as $reading) {
-			if ($reading['value '] > $max['value']) {
-				$max = $reading;
-			}
-		}
-		return $max;*/
+		if (is_null($this->max)) throw new \Excpetion('Data has to be processed first!');
+		
+		return $this->max;
 	}
 
 	/**
+	 * Get Average
 	 * @return float
 	 */
 	public function getAverage() {
@@ -92,21 +85,37 @@ class MeterInterpreter extends Interpreter {
 	 * @todo untested
 	 * @return array with timestamp, values, and pulse count
 	 */
-	public function getValues($tuples, $groupBy, $callback) {
-		$pulses = parent::getData($tuples, $groupBy);
+	public function processData($count, $groupBy, $callback) {
+		$this->resolution = $this->channel->getProperty('resolution');
+		$this->consumption = 0;
+		
+		$pulses = parent::getData($count, $groupBy);
 
-		$values = array();
-		foreach ($pulses as $pulse) {
-			if (isset($last)) {
-				$values[] = $callback($this->raw2differential($last, $pulse));
-				$last = $pulse;
+		$tuples = array();
+		$last = $pulses->rewind();
+		$next = $pulses->next();
+		$next =  $pulses->current();
+		
+		while ($pulses->valid()) {
+			Util\Debug::log('after valid()', $last, $next);
+			$tuple = $callback($this->raw2differential($last, $next));
+			
+			if (is_null($this->max) || $tuple[1] > $this->max[1]) {
+				$this->max = $tuple;
 			}
-			else {
-				$last = $pulse;
+			
+			if (is_null($this->min) || $tuple[1] < $this->min[1]) {
+				$this->min = $tuple;
 			}
+				
+			$this->consumption += $tuple[2];
+
+			$tuples[] = $tuple;
+			$last = $next;			
+			$next = $pulses->next();
 		}
 
-		return $values;
+		return $tuples;
 	}
 
 	/**
@@ -120,8 +129,8 @@ class MeterInterpreter extends Interpreter {
 
 		return array(
 			($next[0] - $delta / 2),	// timestamp
-			$next[1] * (3600000 / (($this->channel->getProperty('resolution') / 1000) * $delta)),	// value
-			$next[2]
+			$next[1] * (3600000 / (($this->resolution / 1000) * $delta)),	// value
+			$next[2]	// num of pulses
 		);
 	}
 }

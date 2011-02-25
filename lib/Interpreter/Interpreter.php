@@ -43,6 +43,8 @@ abstract class Interpreter {
 
 	protected $from;
 	protected $to;
+	
+	protected $rows;
 
 	/**
 	 * Constructor
@@ -72,7 +74,7 @@ abstract class Interpreter {
 	 * @param string|integer $groupBy
 	 * @return Volkszaehler\DataIterator
 	 */
-	protected function getData($tuples = NULL, $groupBy = NULL) {
+	protected function getData($count = NULL, $groupBy = NULL) {
 		// prepare sql
 		$sql['from']	= ' FROM data';
 		$sql['where']	= ' WHERE channel_id = ?' . self::buildDateTimeFilterSQL($this->from, $this->to);
@@ -90,17 +92,17 @@ abstract class Interpreter {
 		}
 
 		// get total row count for grouping
-		$rowCount = $this->conn->fetchColumn($sql['rowCount'], array($this->channel->getId()), 0);
+		$this->rows = $this->conn->fetchColumn($sql['rowCount'], array($this->channel->getId()), 0);
 
 		// query for data
 		$stmt = $this->conn->executeQuery('SELECT ' . $sql['fields'] . $sql['from'] . $sql['where'] . $sql['groupBy'] . $sql['orderBy'], array($this->channel->getId()));
 
 		// return iterators
-		if ($sql['groupBy'] || is_null($tuples) || $rowCount < $tuples) {
-			return new Iterator\DataIterator($stmt, $rowCount);
+		if ($sql['groupBy'] || is_null($count) || $this->rows < $count) {
+			return new Iterator\DataIterator($stmt, $this->rows);
 		}
 		else {
-			return new Iterator\DataAggregationIterator($stmt, $rowCount, $tuples);
+			return new Iterator\DataAggregationIterator($stmt, $this->rows, $count);
 		}
 	}
 

@@ -117,7 +117,7 @@ class CSV extends View {
 	protected function addData(Interpreter\Interpreter $interpreter) {
 		//$this->response->setHeader('Content-Disposition', 'attachment; filename="' . strtolower($interpreter->getEntity()->getProperty('title')) . '.csv"'); // TODO add time?
 		
-		$tuples = $interpreter->getValues(
+		$tuples = $interpreter->processData(
 			$this->request->getParameter('tuples'),
 			$this->request->getParameter('group'), 
 			function($tuple) {

@@ -205,7 +205,7 @@ class XML extends View {
 		$xmlData = $this->xmlDoc->createElement('data');
 		$xmlTuples = $this->xmlDoc->createElement('tuples');
 		
-		$data = $interpreter->getValues(
+		$data = $interpreter->processData(
 			$this->request->getParameter('tuples'),
 			$this->request->getParameter('group'), 
 			function($tuple) use ($xmlDoc, $xmlTuples) {
