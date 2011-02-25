@@ -29,7 +29,7 @@ vz.options = {
 	language: 'de',
 	backendUrl: '../backend.php',
 	tuples: 300,
-	rounding: 1,
+	precission: 2,
 	render: 'lines',
 	refresh: false,
 	defaultInterval: 24*60*60*1000, // 1 day

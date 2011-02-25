@@ -138,8 +138,8 @@ vz.wui.initEvents = function() {
 		.bind("plotselected", function (event, ranges) {
 			vz.options.plot.xaxis.min = ranges.xaxis.from;
 			vz.options.plot.xaxis.max = ranges.xaxis.to;
-			vz.options.plot.yaxis.min = null;   // autoscaling for neg. values as well
-			vz.options.plot.yaxis.max = null;	// autoscaling
+			vz.options.plot.yaxis.max = null; // autoscaling
+			vz.options.plot.yaxis.min = 0; // fixed by 0
 			vz.entities.loadData();
 		})
 		/*.bind('plotpan', function (event, plot) {
@@ -148,8 +148,8 @@ vz.wui.initEvents = function() {
 			vz.options.plot.xaxis.max = axes.xaxis.max;
 			vz.options.plot.yaxis.min = axes.yaxis.min;
 			vz.options.plot.yaxis.max = axes.yaxis.max;
-		})*/
-		/*.bind('mouseup', function(event) {
+		})
+		.bind('mouseup', function(event) {
 			vz.entities.loadData();
 		})*/
 		.bind('plotzoom', function (event, plot) {
@@ -376,30 +376,46 @@ vz.entities.loadData = function() {
 					// update entity table
 					// TODO add units
 					if (entity.data.min) {
+						if (entity.data.min < vz.options.plot.yaxis.min) { // allow negative values for temperature sensors
+							vz.options.plot.yaxis.min = entity.data.min;
+						}
+					
 						$('#entity-' + entity.uuid + ' .min')
-							.text(entity.data.min.value)
-							.attr('title', $.plot.formatDate(new Date(entity.data.min.timestamp), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames));	
+							.text(vz.wui.formatNumber(entity.data.min[1]))
+							.attr('title', $.plot.formatDate(new Date(entity.data.min[0]), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames));	
 					}
 					if (entity.data.max) {
 						$('#entity-' + entity.uuid + ' .max')
-							.text(entity.data.max.value)
-							.attr('title', $.plot.formatDate(new Date(entity.data.max.timestamp), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames));	
+							.text(vz.wui.formatNumber(entity.data.max[1]))
+							.attr('title', $.plot.formatDate(new Date(entity.data.max[0]), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames));	
 					}
-					// rounding: Math.round rounds to whole numbers; to round to one decimal (e.g. 15.2) we multiply by 10, round and reverse the multiplication again; therefore "vz.options.rounding" needs to be set to 1 (for 1 decimal) in that case
 					if (entity.data.average) {
-						$('#entity-' + entity.uuid + ' .average').text(Math.round(entity.data.average*Math.pow(10, vz.options.rounding))/Math.pow(10, vz.options.rounding));
+						$('#entity-' + entity.uuid + ' .average').text(vz.wui.formatNumber(entity.data.average));
 					}
 					if (entity.data.consumption) {
-						$('#entity-' + entity.uuid + ' .consumption').text(Math.round(entity.data.consumption*Math.pow(10, vz.options.rounding))/Math.pow(10, vz.options.rounding));
+						$('#entity-' + entity.uuid + ' .consumption').text(vz.wui.formatNumber(entity.data.consumption));
 					}
 					if (entity.data.tuples) {
-						$('#entity-' + entity.uuid + ' .last').text(Math.round(entity.data.tuples.last()[1]*Math.pow(10, vz.options.rounding))/Math.pow(10, vz.options.rounding));
+						$('#entity-' + entity.uuid + ' .last').text(vz.wui.formatNumber(entity.data.tuples.last()[1]));
 					}
 				}, vz.drawPlot, 'data')
 			);
 		}
 	});
 };
+
+/**
+ * Rounding precission
+ *
+ * Math.round rounds to whole numbers
+ * to round to one decimal (e.g. 15.2) we multiply by 10,
+ * round and reverse the multiplication again
+ * therefore "vz.options.precission" needs
+ * to be set to 1 (for 1 decimal) in that case
+ */
+vz.wui.formatNumber = function(number) {
+	return Math.round(number*Math.pow(10, vz.options.precission))/Math.pow(10, vz.options.precission);
+}
 
 vz.wui.updateHeadline = function() {
 	var from = $.plot.formatDate(new Date(vz.options.plot.xaxis.min + vz.options.timezoneOffset), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames);
