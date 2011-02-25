@@ -39,17 +39,14 @@ tbody tr td {
 
 #flot {
 	height: 500px;
+	z-index: 1;
 }
 
 #overlay {
 	position: absolute;
 	width: 100%;
 	top: 0;
-	z-index: 1;
-
-	display: block;
-	margin: auto;
-	padding-top: 200px;
+	margin: 200px auto;
 	text-align: center;
 	color: grey;
 }
