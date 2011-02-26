@@ -53,11 +53,11 @@ class DataController extends Controller {
 		$timestamp = $this->view->request->getParameter('ts');
 		$value = $this->view->request->getParameter('value');
 
-		if (!is_null($timestamp)) {
+		if (is_null($timestamp)) {
 			$timestamp = round(microtime(TRUE) * 1000);
 		}
 
-		if (!is_null($value)) {
+		if (is_null($value)) {
 			$value = 1;
 		}
 
