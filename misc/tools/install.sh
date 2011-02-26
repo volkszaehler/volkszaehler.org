@@ -35,6 +35,7 @@ set -e
 shopt -s nocasematch
 
 doctrine_git=git://github.com/doctrine/doctrine2.git
+doctrine_tar=http://www.doctrine-project.org/downloads/DoctrineORM-2.0.1-full.tar.gz
 vz_git=git://github.com/volkszaehler/volkszaehler.org.git
 
 ask() {
@@ -64,13 +65,16 @@ get_db_name() {
 echo
 echo doctrine setup...
 
-ask "doctrine path?" /usr/local/lib/doctrine
+ask "doctrine path?" /usr/local/lib
 dtdir=$REPLY
 
 REPLY=y
 test -e "$dtdir" && ask "$dtdir already exists. overwrite?" n
 if [ "$REPLY" == 'y' ]; then
 	echo "installing doctrine into $dtdir"
+
+#	wget -O - $doctrine_tar | tar xz -C $dtdir
+
 	mkdir -p $dtdir
 	git clone $doctrine_git $dtdir
 	pushd $dtdir
@@ -100,6 +104,7 @@ if [ "$REPLY" == 'y' ]; then
 	pushd $vzdir/lib/vendor
 	ln -s $dtdir/lib/Doctrine/ .
 	ln -s $dtdir/lib/vendor/Symfony/ .
+#	ln -s $dtdir/Doctrine/ .	
 	popd
 fi
 
@@ -110,6 +115,7 @@ echo
 ask "configure volkszaehler.org (database connection)?" y
 
 if [ "$REPLY" == "y" ]; then
+	#TODO check for php5-mysql
 	echo database config...
 	ask "mysql user?" vz
 	db_user=$REPLY
