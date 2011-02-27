@@ -41,22 +41,21 @@
 
 <?php
 
-$vzDir = '/var/www/volkszaehler.org';
+$vzDir = '/var/www/vz';
 $output = array();
 $rc = 0;
 
-# change directory
+// change directory
 chdir($vzDir . '/github/');
 
-# update git
+// update git
 $cmd = 'git pull';
 $output[] = $cmd . PHP_EOL;
 exec($cmd, $output, $rc);
 
-if ($rc == 0) {
-	# update documentation
-	$cmd = $vzDir . '/phpdoc/phpdoc -c ' . $vzDir . '/github/misc/tools/phpdoc.ini';
-	//$cmd = 'php5 ' . $vzDir . '/phpdoctor/phpdoc.php ' . $vzDir . '/github/misc/tools/phpdoctor.ini';
+if ($rc == 0) { // git pull succeded
+	// update documentation
+	$cmd = 'doxygen ' . $vzDir . '/doxygen.conf';
 	$output[] = PHP_EOL . $cmd . PHP_EOL;
 	exec($cmd, $output, $rc);
 }
