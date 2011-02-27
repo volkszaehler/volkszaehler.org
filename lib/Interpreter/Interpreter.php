@@ -44,7 +44,8 @@ abstract class Interpreter {
 	protected $from;
 	protected $to;
 	
-	protected $rows;
+	protected $rowCount = NULL;
+	protected $tupleCount = NULL;
 
 	/**
 	 * Constructor
@@ -92,17 +93,19 @@ abstract class Interpreter {
 		}
 
 		// get total row count for grouping
-		$this->rows = $this->conn->fetchColumn($sql['rowCount'], array($this->channel->getId()), 0);
+		$this->rowCount = $this->conn->fetchColumn($sql['rowCount'], array($this->channel->getId()), 0);
 
 		// query for data
 		$stmt = $this->conn->executeQuery('SELECT ' . $sql['fields'] . $sql['from'] . $sql['where'] . $sql['groupBy'] . $sql['orderBy'], array($this->channel->getId()));
 
 		// return iterators
-		if ($sql['groupBy'] || is_null($count) || $this->rows < $count) {
-			return new Iterator\DataIterator($stmt, $this->rows);
+		if ($sql['groupBy'] || is_null($count) || $this->rowCount < $count) {
+			$this->tupleCount = $this->rowCount;
+			return new Iterator\DataIterator($stmt, $this->rowCount);
 		}
 		else {
-			return new Iterator\DataAggregationIterator($stmt, $this->rows, $count);
+			$this->tupleCount = $count;
+			return new Iterator\DataAggregationIterator($stmt, $this->rowCount, $count);
 		}
 	}
 
@@ -198,6 +201,7 @@ abstract class Interpreter {
 	 */
 
 	public function getEntity() { return $this->channel; }
+	public function getTupleCount() { return $this->tupleCount; }
 }
 
 ?>

@@ -224,15 +224,12 @@ class JSON extends View {
 				);
 			}
 		);
-		$min = $interpreter->getMin();
-		$max = $interpreter->getMax();
-		$average = $interpreter->getAverage();
-		$consumption = $interpreter->getConsumption();
-		
-		$this->json['data']['min'] = $min;
-		$this->json['data']['max'] = $max;
-		$this->json['data']['average'] = View::formatNumber($average);
-		$this->json['data']['consumption'] = View::formatNumber($consumption);
+
+		$this->json['data']['min'] = $interpreter->getMin();
+		$this->json['data']['max'] = $interpreter->getMax();
+		$this->json['data']['average'] = View::formatNumber($interpreter->getAverage());
+		$this->json['data']['consumption'] = View::formatNumber($interpreter->getConsumption());
+		$this->json['data']['count'] = $interpreter->getTupleCount();
 		if (count($data) > 0) $this->json['data']['tuples'] = $data;
 	}
 

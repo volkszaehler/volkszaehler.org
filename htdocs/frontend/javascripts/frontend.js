@@ -373,31 +373,22 @@ vz.entities.loadData = function() {
 				waitAsync(function(json) {
 					entity.data = json.data;
 					
+					if (entity.data.min !== null && entity.data.min < vz.options.plot.yaxis.min) { // allow negative values for temperature sensors
+						vz.options.plot.yaxis.min = entity.data.min;
+					}
+
+					
 					// update entity table
 					// TODO add units
-					if (entity.data.min) {
-						if (entity.data.min < vz.options.plot.yaxis.min) { // allow negative values for temperature sensors
-							vz.options.plot.yaxis.min = entity.data.min;
-						}
-					
-						$('#entity-' + entity.uuid + ' .min')
-							.text(vz.wui.formatNumber(entity.data.min[1]))
-							.attr('title', $.plot.formatDate(new Date(entity.data.min[0]), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames));	
-					}
-					if (entity.data.max) {
-						$('#entity-' + entity.uuid + ' .max')
-							.text(vz.wui.formatNumber(entity.data.max[1]))
-							.attr('title', $.plot.formatDate(new Date(entity.data.max[0]), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames));	
-					}
-					if (entity.data.average) {
-						$('#entity-' + entity.uuid + ' .average').text(vz.wui.formatNumber(entity.data.average));
-					}
-					if (entity.data.consumption) {
-						$('#entity-' + entity.uuid + ' .consumption').text(vz.wui.formatNumber(entity.data.consumption));
-					}
-					if (entity.data.tuples) {
-						$('#entity-' + entity.uuid + ' .last').text(vz.wui.formatNumber(entity.data.tuples.last()[1]));
-					}
+					$('#entity-' + entity.uuid + ' .min')
+						.text((entity.data.min !== null) ? vz.wui.formatNumber(entity.data.min[1]) : '-')
+						.attr('title', (entity.data.min !== null) ? $.plot.formatDate(new Date(entity.data.min[0]), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames) : '');
+					$('#entity-' + entity.uuid + ' .max')
+						.text((entity.data.max !== null) ? vz.wui.formatNumber(entity.data.max[1]) : '-')
+						.attr('title', (entity.data.max !== null) ? $.plot.formatDate(new Date(entity.data.max[0]), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames) : '');
+					$('#entity-' + entity.uuid + ' .average').text((entity.data.average !== null) ? vz.wui.formatNumber(entity.data.average) : '-');
+					$('#entity-' + entity.uuid + ' .consumption').text(vz.wui.formatNumber(entity.data.consumption));
+					$('#entity-' + entity.uuid + ' .last').text((entity.data.tuples) ? vz.wui.formatNumber(entity.data.tuples.last()[1]) : '-');
 				}, vz.drawPlot, 'data')
 			);
 		}

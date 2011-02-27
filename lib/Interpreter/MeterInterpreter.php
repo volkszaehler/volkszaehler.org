@@ -37,8 +37,7 @@ class MeterInterpreter extends Interpreter {
 
 	protected $min = NULL;
 	protected $max = NULL;
-	protected $consumption = NULL;
-	protected $tuples = NULL;
+	protected $pulses = NULL;
 	protected $resolution;
 	
 	/**
@@ -46,9 +45,9 @@ class MeterInterpreter extends Interpreter {
 	 * @return float total consumption
 	 */
 	public function getConsumption() {
-		if (is_null($this->consumption) && is_null($this->tuples)) throw new \Exception('Data has to be processed first!');
+		if (is_null($this->pulses) && is_null($this->tupleCount)) throw new \Exception('Data has to be processed first!');
 		
-		return $this->consumption / $this->resolution;
+		return $this->pulses / $this->resolution;
 	}
 
 	/**
@@ -56,7 +55,7 @@ class MeterInterpreter extends Interpreter {
 	 * @return array (0 => timestamp, 1 => value)
 	 */
 	public function getMin() {
-		if (is_null($this->min) && is_null($this->tuples)) throw new \Exception('Data has to be processed first!');
+		if (is_null($this->min) && is_null($this->tupleCount)) throw new \Exception('Data has to be processed first!');
 		
 		return $this->min;		
 	}
@@ -66,7 +65,7 @@ class MeterInterpreter extends Interpreter {
 	 * @return array (0 => timestamp, 1 => value)
 	 */
 	public function getMax() {
-		if (is_null($this->max) && is_null($this->tuples)) throw new \Exception('Data has to be processed first!');
+		if (is_null($this->max) && is_null($this->tupleCount)) throw new \Exception('Data has to be processed first!');
 		
 		return $this->max;
 	}
@@ -89,9 +88,8 @@ class MeterInterpreter extends Interpreter {
 	public function processData($count, $groupBy, $callback) {
 		$pulses = parent::getData($count, $groupBy);
 
-		$this->tuples = count($pulses);
 		$this->resolution = $this->channel->getProperty('resolution');
-		$this->consumption = 0;
+		$this->pulses = 0;
 
 		$tuples = array();
 		$last = $pulses->rewind();
@@ -109,7 +107,7 @@ class MeterInterpreter extends Interpreter {
 				$this->min = $tuple;
 			}
 				
-			$this->consumption += $tuple[2];
+			$this->pulses += $tuple[2];
 
 			$tuples[] = $tuple;
 			$last = $next;			
