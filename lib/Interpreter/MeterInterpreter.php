@@ -38,6 +38,7 @@ class MeterInterpreter extends Interpreter {
 	protected $min = NULL;
 	protected $max = NULL;
 	protected $consumption = NULL;
+	protected $tuples = NULL;
 	protected $resolution;
 	
 	/**
@@ -45,7 +46,7 @@ class MeterInterpreter extends Interpreter {
 	 * @return float total consumption
 	 */
 	public function getConsumption() {
-		if (is_null($this->consumption)) throw new \Exception('Data has to be processed first!');
+		if (is_null($this->consumption) && is_null($this->tuples)) throw new \Exception('Data has to be processed first!');
 		
 		return $this->consumption / $this->resolution;
 	}
@@ -55,7 +56,7 @@ class MeterInterpreter extends Interpreter {
 	 * @return array (0 => timestamp, 1 => value)
 	 */
 	public function getMin() {
-		if (is_null($this->min)) throw new \Exception('Data has to be processed first!');
+		if (is_null($this->min) && is_null($this->tuples)) throw new \Exception('Data has to be processed first!');
 		
 		return $this->min;		
 	}
@@ -65,7 +66,7 @@ class MeterInterpreter extends Interpreter {
 	 * @return array (0 => timestamp, 1 => value)
 	 */
 	public function getMax() {
-		if (is_null($this->max)) throw new \Exception('Data has to be processed first!');
+		if (is_null($this->max) && is_null($this->tuples)) throw new \Exception('Data has to be processed first!');
 		
 		return $this->max;
 	}
@@ -86,10 +87,11 @@ class MeterInterpreter extends Interpreter {
 	 * @return array with timestamp, values, and pulse count
 	 */
 	public function processData($count, $groupBy, $callback) {
+		$pulses = parent::getData($count, $groupBy);
+
+		$this->tuples = count($pulses);
 		$this->resolution = $this->channel->getProperty('resolution');
 		$this->consumption = 0;
-		
-		$pulses = parent::getData($count, $groupBy);
 
 		$tuples = array();
 		$last = $pulses->rewind();
