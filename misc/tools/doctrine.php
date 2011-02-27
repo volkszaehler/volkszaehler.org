@@ -33,7 +33,7 @@ require_once VZ_DIR . '/lib/Util/ClassLoader.php';
 
 $classLoaders = array(
 	new Volkszaehler\Util\ClassLoader('Doctrine', VZ_DIR . '/lib/vendor/Doctrine'),
-	new Volkszaehler\Util\ClassLoader('Symfony', VZ_DIR . '/lib/vendor/Symfony'),
+	new Volkszaehler\Util\ClassLoader('Symfony', VZ_DIR . '/lib/vendor/Doctrine/Symfony'),
 	new Volkszaehler\Util\ClassLoader('Volkszaehler', VZ_DIR . '/lib')
 );
 
