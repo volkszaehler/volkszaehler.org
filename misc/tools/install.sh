@@ -103,8 +103,8 @@ if [ "$REPLY" == 'y' ]; then
 
 	pushd $vzdir/lib/vendor
 	ln -s $dtdir/lib/Doctrine/ .
-	ln -s $dtdir/lib/vendor/Symfony/ .
-#	ln -s $dtdir/Doctrine/ .	
+	ln -s $dtdir/lib/vendor/Symfony/ ./Doctrine/
+#	ln -s $dtdir/Doctrine/ .
 	popd
 fi
 
