@@ -127,51 +127,6 @@ Einführung
 \end_layout
 
 \begin_layout Standard
-In diesem Artikel werden wir das Projekt vorstellen, einen generellen Überblick
- über die einzellnen Kompontenten geben und auf die Implementierung eingehen.
- Ich möchte damit den Einstieg in das Projekt erleichtern und neue Entwickler
- motivieren sich zu beteiligen.
-\end_layout
-
-\begin_layout Standard
-Einzellheiten zur Installation/Konfiguration eines eigenen volkszaehler.org
- Setups finden Sie unsere Mailingliste
-\begin_inset Foot
-status collapsed
-
-\begin_layout Plain Layout
-volkszaehler-dev@lists.volkszaehler.org
-\end_layout
-
-\end_inset
-
- und im Wiki
-\begin_inset Foot
-status collapsed
-
-\begin_layout Plain Layout
-\begin_inset Flex URL
-status collapsed
-
-\begin_layout Plain Layout
-
-http://wiki.volkszaehler.org
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-.
-\end_layout
-
-\begin_layout Standard
-\begin_inset VSpace defskip
-\end_inset
-
 Neben dem 
 \series bold
 Schutz der Privatsphäre
@@ -180,12 +135,11 @@ Schutz der Privatsphäre
 \end_layout
 
 \begin_layout Itemize
-eine kostenfreie Alternative gegenüber den kommerziellen Messstellenbetreibern
- anbieten
+kostenfreie Alternative gegenüber den kommerziellen Messstellenbetreibern
 \end_layout
 
 \begin_layout Itemize
-dem Nutzer ein Bewusstsein über seinen Verbrauch/Nutzungsverhalten aufzeigen
+Bewusstsein über Verbrauch/Nutzungsverhalten bilden
 \end_layout
 
 \begin_layout Itemize
@@ -222,6 +176,48 @@ Wir haben es uns zur Aufgabe gemacht diese Ziele durch eine lückenlose Kette
  Daraus folgt nicht, dass wir jede Zeile Code selbst geschrieben haben.
  Wir nutzen eine Reihe anderer Software, die aber wiederum selbst quelloffen
  ist.
+\end_layout
+
+\begin_layout Standard
+In diesem Artikel werden wir das Projekt vorstellen, einen generellen Überblick
+ über die einzellnen Kompontenten geben und auf die Implementierung eingehen.
+ Ich möchte damit den Einstieg in das Projekt erleichtern und neue Entwickler
+ motivieren sich zu beteiligen.
+\end_layout
+
+\begin_layout Standard
+Einzelheiten zur Installation/Konfiguration eines eigenen volkszaehler.org
+ Setups finden Sie unsere Mailingliste
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+volkszaehler-dev@lists.volkszaehler.org
+\end_layout
+
+\end_inset
+
+ und im Wiki
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://wiki.volkszaehler.org
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Section
@@ -272,52 +268,6 @@ Dem Energieversorger dienen die genaueren Verbrauchszahlen im Falle eines
  Um dies zu erreichen sind die intelligenten Zähler in der Regel aus der
  Ferne vom Versorger auslesbar.
  
-\end_layout
-
-\begin_layout Standard
-Wikipedia schreibt zum Thema intelligente Zähler:
-\end_layout
-
-\begin_layout Quotation
-Ein intelligenter Zähler (auch Smart Meter genannt) ist ein elektronischer
- Stromzähler, der dem Energieversorgungsunternehmen über eingebaute Zusatzfunkti
-onen oder nachträgliche Module ermöglicht, die erfassten Zählerstände über
- die Ferne auszulesen.
-\end_layout
-
-\begin_layout Quotation
-[…] Neben dem reinen Einsatz von intelligenten Zählern zur Messung des Stromverb
-rauchs ist es auch möglich, in einem Haushalt den Wasser-, Gas-, und Wärmeverbra
-uch intelligent zu überwachen.
-\end_layout
-
-\begin_layout Quotation
-[…] Der Zweck intelligenter Zähler ist vornehmlich, variable Leistungsentgelte
- in Abhängigkeit von der Gesamtnachfrage und Netzauslastung erheben zu können.
- Damit erhoffen die Energieversorger, das Netz und die vorhandene Kraftwerkinfra
-struktur besser auszunutzen sowie Investitionen für Spitzenlastausbau zu
- vermeiden oder zumindest zurückzustellen.
-\begin_inset Foot
-status collapsed
-
-\begin_layout Plain Layout
-Quelle: 
-\begin_inset Flex URL
-status open
-
-\begin_layout Plain Layout
-
-http://de.wikipedia.org/wiki/Intelligenter_Zähler
-\end_layout
-
-\end_inset
-
- 
-\end_layout
-
-\end_inset
-
-
 \end_layout
 
 \begin_layout Standard
@@ -404,37 +354,7 @@ Das Energiewirtschaftsgesetz (EnWG) schreibt den Versorgern nur vor, das
 \end_layout
 
 \begin_layout Section
-Was ist der Volkszaehler?
-\end_layout
-
-\begin_layout Standard
-volkszaehler.org ist ein freier intelligenter Stromzähler im Selbstbau, bei
- dem die anfallenden Stromprofile unter der Kontrolle des Nutzers verbleiben.
- Die Daten des Volkszaehlers sind nicht duch den Versorger auslesbar.
- Mit einem Materialeinsatz von ca.
- EUR 100, etwas Geschick und Zeit lässt sich ein solcher Volkszaehler auf
- Basis eines Standard-µC-Moduls aufbauen.
-\end_layout
-
-\begin_layout Standard
-Der Volkszaehler kann nicht als fertiges Gerät gekauft werden.
- Es ist ein Selfmade-Projekt.
- Der Volkszaehler besteht nicht aus einem einzigen Element sondern aus insgesamm
-t 4 Modulen (Messung, Verarbeitung, Speicherung & Auswertung).
- Das Modul zur Messung muss in der Regel von einem Elektriker im Schaltschrank
- der Hausinstallation eingebaut werden.
- Es gibt auch Varianten die keinen Eingriff in die Hausinstallation benötigen.
- Alle anderen Module lassen sich von interessierten Tüftlern selber nachbauen.
-\end_layout
-
-\begin_layout Standard
-Die einzelnen Module und deren Zusammenspiel wird etwas weiter unten genauer
- erklärt.
- 
-\end_layout
-
-\begin_layout Section
-Warum brauche ich einen Volkszaehler?
+Warum brauche ich einen volkszaehler?
 \end_layout
 
 \begin_layout Standard
@@ -468,7 +388,7 @@ So Lustig diese Gedankenspiele auch sind - mit einem intelligenten Zähler
 \end_layout
 
 \begin_layout Standard
-Wer dies nicht möchte, hat mit dem Volkszaehler die Möglichkeit sich einen
+Wer dies nicht möchte, hat mit dem volkszaehler die Möglichkeit sich einen
  intelligenten Zähler selbst zu bauen und die Verbrauchsdaten selbst auszuwerten.
  Die Daten bleiben beim Kunden und der Versorger hat keinen Zugriff auf
  diese Daten.
@@ -476,15 +396,15 @@ Wer dies nicht möchte, hat mit dem Volkszaehler die Möglichkeit sich einen
 \end_layout
 
 \begin_layout Section
-Wie funktioniert der Volkszaehler?
+Wie funktioniert der volkszaehler?
 \end_layout
 
 \begin_layout Standard
-Der Volkszaehler besteht aus mehreren Modulen.
+Der volkszaehler besteht aus mehreren Modulen.
  Für jedes Modul gibt es unterschiedliche Ideen der Umsetzung.
- Es gibt also nicht den einen Volkszaehler, sondern in der technischen Ausführun
+ Es gibt also nicht den einen volkszaehler, sondern in der technischen Ausführun
 g verschiedene Varianten.
- Grundsätzlich funktionieren aber alle diese Varanten nach dem gleichen
+ Grundsätzlich funktionieren aber alle diese Varianten nach dem gleichen
  Prinzip.
 \end_layout
 
@@ -517,52 +437,40 @@ Die folgende Zeichnung zeigt die Position der Sensoren im Schaltschrank.
 \end_layout
 
 \begin_layout Section
-Woraus besteht ein Volkszaehler?
+Woraus besteht ein volkszaehler?
 \end_layout
 
 \begin_layout Standard
-Der Volkszaehler besteht aus 4 Modulen:
+Der volkszaehler besteht aus vier Modulen:
 \end_layout
 
 \begin_layout Itemize
-Messen
+Sensor(en)
 \end_layout
 
 \begin_layout Itemize
-Verarbeiten
+Controller
 \end_layout
 
 \begin_layout Itemize
-Protokollieren/Speichern
+Backend
 \end_layout
 
 \begin_layout Itemize
-Auswerten
+Frontend(s)
 \end_layout
 
 \begin_layout Standard
-Für jedes dieser Module gibt es verschiedene Ideen diese zu realisieren.
+Diese vier Module grenzen sich lokal, durch die verwendeten Technologien
+ und ihre Aufgabe voneinder ab.
+ Alle Module sind in mehreren Varianten verfügbar.
+ So den individuellen Bedürfnissen entsprechend ein angepasstes Setup aufgebaut
+ werden.
  Mehr dazu findet Ihr im Wiki unter Morphologischer Kasten.
 \end_layout
 
-\begin_layout Standard
-Hier möchte ich für jedes Modul eine Beispielkonfiguration vorstellen und
- kurz ein paar Infos dazu schreiben: 
-\end_layout
-
-\begin_layout Standard
-Das Projekt lässt sich in drei Bereiche aufteilen, die untereinander über
- eine spezifizierte API kommunizieren.
- Diese drei Module grenzen sich lokal, durch die verwendeten Technologien
- und ihre Aufgabe voneinder ab.
- Alle Module sollen untereinander austauschbar sein und sind in mehreren
- Varianten verfügbar.
- So kann den individuellen Bedürfnissen nach ein angepasstes Setup aufgebaut
- werden.
-\end_layout
-
 \begin_layout Subsection
-Messen
+Sensoren
 \end_layout
 
 \begin_layout Standard
@@ -573,7 +481,16 @@ sautomaten eingeschleift wird.
 \end_layout
 
 \begin_layout Standard
+\begin_inset Note Comment
+status open
+
+\begin_layout Plain Layout
 hier ein Foto der Wattmeter im Schaltschrank einfügen!
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -582,29 +499,36 @@ Auf dem Foto sieht man unten die Stromanschlüße und oben - die etwas dünnere
 \end_layout
 
 \begin_layout Standard
+\begin_inset Note Comment
+status open
+
+\begin_layout Plain Layout
 kurz die Funktionsweise der Wattmeter erklären
 \end_layout
 
-\begin_layout Subsection
-Verarbeiten
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-Die Aufgabe der Controller ist es Sensoren auszulesen und diese Daten direkt
- an das Backend zu senden.
- Meist sind sie direkt mit den Zählern/Sensoren verbunden.
- Ein typischer Ort wäre also der Sicherungskasten.
- Diese Controller sind dann meist in das lokale IP Netzwerk eingebunden
- und senden ihre Daten an ein Backend.
- Ausgehend von Prototyp sind im volkszaehler.org Projekt bisher die Atmel
- AVR/Ethersex basierenden Controller am meisten verbreitet.
-\end_layout
+Diese S0-Impulszähler waren die ersten unterstützten Sensoren.
+ 
+\begin_inset Quotes eld
+\end_inset
 
-\begin_layout Standard
-Als Sensoren werden hier für das Erfassen des Verbrauchs Impulszähler eingesetzt.
- Diese signalisieren dem Controller durch einen elektrischen Impuls, das
- eine bestimmte Menge an elektrischer Energie, Wasser oder Gas verbraucht
- wurde.
+S0
+\begin_inset Quotes erd
+\end_inset
+
+ steht hier für den Standard, der die Sensoren mit dem Controller verbindet
+ und darf nicht mit dem S0-Bus aus der ISDN Technik verwechselt werden.
+ Dieser sehr einfache Bus steht nur aus zwei Adern.
+ Nach einer zählerspezifischen Verbrauchseinheit wird ein elektrischer Impuls
+ erzeugt, der vom Controller verarbeitet werden kann.
+ Bei Stromzählern sind dies meist um die 1000 Impulse pro kWh.
+ Die gleiche Technik wird häufig auch bei Gas- und Wasserzählern eingesetzt.
+ Da lag es nahe mit dem volkszaehler auch gleich diese Gräßen zu erfassen.
  Auch skalare Messgrößen wie z.B.
  Temperatur, Luftdruck oder Luftfeuchtigkeit sind möglich, werden dann aber
  nicht mehr durch Impulse erfasst.
@@ -615,17 +539,7 @@ Ein typisches Setup für ein Einfamilienhaus könnte folgendermaßen aussehen:
 \end_layout
 
 \begin_layout Itemize
-3x 1-phasige S0-Stromzähler für den Hausanschluss
-\begin_inset Foot
-status collapsed
-
-\begin_layout Plain Layout
-jede Phase erhällt einen Zähler
-\end_layout
-
-\end_inset
-
-
+3x S0-Stromzähler für den Hausanschluss
 \end_layout
 
 \begin_layout Itemize
@@ -641,7 +555,22 @@ jede Phase erhällt einen Zähler
 \end_layout
 
 \begin_layout Subsection
-Protokollieren/Speichern
+Controller
+\end_layout
+
+\begin_layout Standard
+Die Aufgabe der Controller ist es Sensoren auszulesen und diese Daten direkt
+ an das Backend zu senden.
+ Meist sind sie direkt mit den Zählern/Sensoren verbunden.
+ Ein typischer Ort wäre also der Sicherungskasten.
+ Diese Controller sind dann meist in das lokale IP Netzwerk eingebunden
+ und senden ihre Daten an ein Backend.
+ Ausgehend von Prototyp sind im volkszaehler.org Projekt bisher die Atmel
+ AVR/Ethersex basierenden Controller am meisten verbreitet.
+\end_layout
+
+\begin_layout Subsection
+Backend
 \end_layout
 
 \begin_layout Standard
@@ -658,7 +587,7 @@ n um sie gegen Zugriff über das Internet zu schützen.
 \end_layout
 
 \begin_layout Subsection
-Auswerten
+Frontend
 \end_layout
 
 \begin_layout Standard
@@ -733,6 +662,10 @@ Die möglichen Visualisierungsmethoden sind praktisch endlos.
 
 \begin_layout Section
 API
+\end_layout
+
+\begin_layout Standard
+Die zuvor besprochenen Module kommunikzieren über eine spezifizierte API.
 \end_layout
 
 \begin_layout Standard
