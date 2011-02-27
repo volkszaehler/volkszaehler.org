@@ -4,8 +4,9 @@
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @copyright Copyright (c) 2010, The volkszaehler.org project
- * @package default
+ * @package frontend
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ * @todo check for requirements (Javascript etc)
  */
 /*
  * This file is part of volkzaehler.org
@@ -24,8 +25,25 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
-// TODO check for requirements (Javascript etc)
-
-header('Location: ' . ((isset($_SERVER['HTTPS'])) ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . dirname($_SERVER['SCRIPT_NAME']) . '/frontend/');
-
 ?>
+
+<?= '<?xml version="1.0" encoding="UTF-8" ?>' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
+<head>
+	<title>volkszaehler.org - frontend</title>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+	<noscript>
+		<p>JavaScript is turned off in your web browser!</p>
+		<p>To use the web frontend you need to turn it on!</p>
+	</noscript>
+	<script>
+		// TODO add user agent detection for smartphones
+		window.location = 'frontend/';
+	</script>
+</body>
+</html>
+
