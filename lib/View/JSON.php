@@ -228,7 +228,11 @@ class JSON extends View {
 		$this->json['data']['min'] = $interpreter->getMin();
 		$this->json['data']['max'] = $interpreter->getMax();
 		$this->json['data']['average'] = View::formatNumber($interpreter->getAverage());
-		$this->json['data']['consumption'] = View::formatNumber($interpreter->getConsumption());
+		
+		if ($interpreter instanceof Interpreter\MeterInterpreter) {
+			$this->json['data']['consumption'] = View::formatNumber($interpreter->getConsumption());
+		}
+		
 		$this->json['data']['count'] = $interpreter->getTupleCount();
 		if (count($data) > 0) $this->json['data']['tuples'] = $data;
 	}
