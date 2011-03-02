@@ -57,7 +57,7 @@ class SensorInterpreter extends Interpreter {
 	 * @return array (0 => timestamp, 1 => value)
 	 */
 	public function getMin() {
-		$min = $this->conn->fetchAssoc('SELECT value, timestamp FROM data WHERE channel_id = ?' . parent::buildDateTimeFilterSQL($this->from, $this->to) . ' ORDER BY value ASC LIMIT 1',  array($this->channel->getId()));
+		$min = $this->conn->fetchArray('SELECT timestamp, value FROM data WHERE channel_id = ?' . parent::buildDateTimeFilterSQL($this->from, $this->to) . ' ORDER BY value ASC LIMIT 1',  array($this->channel->getId()));
 		return ($min) ? array_map('floatval', $min) : NULL;
 	}
 
@@ -67,7 +67,7 @@ class SensorInterpreter extends Interpreter {
 	 * @return array (0 => timestamp, 1 => value)
 	 */
 	public function getMax() {
-		$max = $this->conn->fetchAssoc('SELECT value, timestamp FROM data WHERE channel_id = ?' . parent::buildDateTimeFilterSQL($this->from, $this->to) . ' ORDER BY value DESC LIMIT 1', array($this->channel->getId()));
+		$max = $this->conn->fetchArray('SELECT timestamp, value FROM data WHERE channel_id = ?' . parent::buildDateTimeFilterSQL($this->from, $this->to) . ' ORDER BY value DESC LIMIT 1', array($this->channel->getId()));
 		return ($max) ? array_map('floatval', $max) : NULL;
 	}
 
