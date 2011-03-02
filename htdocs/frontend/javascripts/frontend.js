@@ -139,7 +139,7 @@ vz.wui.initEvents = function() {
 			vz.options.plot.xaxis.min = ranges.xaxis.from;
 			vz.options.plot.xaxis.max = ranges.xaxis.to;
 			vz.options.plot.yaxis.max = null; // autoscaling
-			vz.options.plot.yaxis.min = 0; // fixed by 0
+			vz.options.plot.yaxis.min = 0; // fixed to 0
 			vz.entities.loadData();
 		})
 		/*.bind('plotpan', function (event, plot) {
@@ -235,8 +235,8 @@ vz.wui.handleControls = function () {
 	}
 
 	// reenable autoscaling for yaxis
-	vz.options.plot.yaxis.min = null;
-	vz.options.plot.yaxis.max = null;
+	vz.options.plot.yaxis.max = null; // autoscaling
+	vz.options.plot.yaxis.min = 0; // fixed to 0
 	
 	// we dont want to zoom/pan into the future
 	if (vz.options.plot.xaxis.max > new Date().getTime()) {
@@ -378,9 +378,8 @@ vz.entities.loadData = function() {
 					entity.data = json.data;
 					
 					if (entity.data.min !== null && entity.data.min < vz.options.plot.yaxis.min) { // allow negative values for temperature sensors
-						vz.options.plot.yaxis.min = entity.data.min;
+						vz.options.plot.yaxis.min = null;
 					}
-
 					
 					// update entity table
 					// TODO add units
