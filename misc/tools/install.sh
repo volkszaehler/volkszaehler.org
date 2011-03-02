@@ -65,7 +65,7 @@ get_db_name() {
 echo
 echo doctrine setup...
 
-ask "doctrine path?" /usr/local/lib
+ask "doctrine path?" /usr/local/lib/doctrine-orm
 dtdir=$REPLY
 
 REPLY=y
@@ -102,8 +102,8 @@ if [ "$REPLY" == 'y' ]; then
 	git clone $vz_git $vzdir
 
 	pushd $vzdir/lib/vendor
-	ln -s $dtdir/lib/Doctrine/ .
-	ln -s $dtdir/lib/vendor/Symfony/ ./Doctrine/
+	ln -s $dtdir/lib/Doctrine .
+	ln -s $dtdir/lib/vendor/Symfony ./Doctrine/
 #	ln -s $dtdir/Doctrine/ .
 	popd
 fi
