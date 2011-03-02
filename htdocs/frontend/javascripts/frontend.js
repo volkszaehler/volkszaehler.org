@@ -364,10 +364,14 @@ vz.entities.loadData = function() {
 	$('#overlay').html('<img src="images/loading.gif" alt="loading..." /><p>loading...</p>');
 	this.each(function(entity, parent) {
 		if (entity.active && entity.type != 'group') { // TODO add group data aggregation
+			//var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
+			//var offset = delta * 0.1;
+			var offset = 1000*60*60;
+		
 			vz.load('data', entity.uuid,
 				{
-					from: Math.floor(vz.options.plot.xaxis.min),  // TODO fetch enough data to fill the holes on the beginning and the end of the plot
-					to: Math.ceil(vz.options.plot.xaxis.max),
+					from: Math.floor(vz.options.plot.xaxis.min - offset), // fuzy-logic to get enough data
+					to: Math.ceil(vz.options.plot.xaxis.max + offset),
 					tuples: vz.options.tuples
 				},
 				waitAsync(function(json) {
