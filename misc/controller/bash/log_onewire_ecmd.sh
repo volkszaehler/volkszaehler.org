@@ -38,7 +38,7 @@ URL="http://volkszaehler.org/neu/backend/index.php"
 
 # sensor settings
 #  id of the sensor
-SENSORID=<put your onewire sensor's hw id here>
+SENSORID=<put your onewire sensors hw id here>
 #  ip address of the controller board running ethersex
 ESEXIP=<put the ip address of your controller board here>
 #  uuid of the sensor in the volkszaehler database
@@ -53,6 +53,6 @@ NC=/bin/nc
 # ========= do not change anything below this line ==============
 
 echo "1w convert $SENSORID" |$NC $ESEXIP 2701 -q 1 2>/dev/null | grep -qe OK || exit 1
-TEMPERATURE=`echo 1w get $SENSORID | nc $ESEXIP 2701 -q 1 2>/dev/null | sed -e 's/Temperatur: //'`
+TEMPERATURE=`echo 1w get $SENSORID | $NC $ESEXIP 2701 -q 1 2>/dev/null | sed -e 's/Temperatur: //'`
 
 $CURL --data "" "$URL/data/$UUID.json?value=$TEMPERATURE"
