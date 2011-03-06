@@ -39,7 +39,7 @@ URL="http://192.168.10.1/backend"
 # sensor settings
 # Sensor 0x48 (72) ist bei ds1631 sensorid = 0 warum auch immer?
 # folglich ist sensor 0x4d (75) sensorid = 3 usw.
-SENSORID=<put your onewire sensors hw id here>
+SENSORID=<put your i2c sensors hw id here>
 #  ip address of the controller board running ethersex
 ESEXIP=<put the ip address of your controller board here>
 #  uuid of the sensor in the volkszaehler database
@@ -52,7 +52,7 @@ NC=/bin/nc
 
 # ========= do not change anything below this line ==============
 
-echo "ds1631 convert $SENSORID 1" |$NC $ESEXIP 2701 -q 1 2>/dev/null | grep -qie OK || exit 1
+echo "ds1631 convert $SENSORID 1" |$NC $ESEXIP 2701 -q 1 2>/dev/null | grep -qe OK || exit 1
 TEMPERATURE=`echo ds1631 temp $SENSORID | $NC $ESEXIP 2701 -q 1 2>/dev/null | sed -e 's/Temperatur: //'`
 
 $CURL --data "" "$URL/data/$UUID.json?value=$TEMPERATURE"
