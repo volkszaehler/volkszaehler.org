@@ -26,6 +26,7 @@ namespace Volkszaehler\Controller;
 use Volkszaehler\Definition;
 use Volkszaehler\Util;
 use Volkszaehler\Model;
+use Doctrine\ORM;
 
 /**
  * Entity controller
@@ -61,7 +62,7 @@ class EntityController extends Controller {
 			}
 		}
 		else { // get public entities
-			return $this->filter(array('public' => TRUE));
+			return array('entities' => $this->filter(array('public' => TRUE)));
 		}
 	}
 

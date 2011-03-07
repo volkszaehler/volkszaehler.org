@@ -80,10 +80,12 @@ class XML extends View {
 		elseif ($data instanceof Util\Debug) {
 			$this->addDebug($data);
 		}
-		elseif (is_array($data)) {
-			$this->xmlRoot->appendChild($this->convertArray($data));
+		elseif (is_array($data) || $data instanceof Util\JSON) {
+			foreach($data as $key => $value) {
+				$this->xmlRoot->appendChild($this->convertArray($value, $key));
+			}
 		}
-		else {
+		elseif (isset($data)) { // ignores NULL data
 			throw new \Exception('Can\'t show ' . get_class($data));
 		}
 	}
@@ -163,13 +165,14 @@ class XML extends View {
 	protected function addDebug(Util\Debug $debug) {
 		$xmlDebug = $this->xmlDoc->createElement('debug');
 		$xmlDebug->appendChild($this->xmlDoc->createElement('time', $debug->getExecutionTime()));
-		$xmlDebug->appendChild($this->convertArray($debug->getMessages(), 'messages', 'message'));
 		
-		$xmlDatabase = $this->xmlDoc->createElement('database');
-		$xmlDatabase->setAttribute('driver', Util\Configuration::read('db.driver'));
-		$xmlDatabase->appendChild($this->convertArray($debug->getQueries(), 'queries', 'query'));
-
-		$xmlDebug->appendChild($xmlDatabase);
+		$xmlMessages = $this->xmlDoc->createElement('messages');
+		foreach ($debug->getMessages() as $message) {
+			$xmlMessages->appendChild($this->convertMessage($message));
+		}
+		
+		$xmlDebug->appendChild($xmlMessages);
+		$xmlDebug->appendChild($this->convertArray($debug->getQueries(), 'queries', 'query'));
 		$this->xmlRoot->appendChild($xmlDebug);
 	}
 
@@ -193,6 +196,27 @@ class XML extends View {
 		}
 
 		$this->xmlRoot->appendChild($xmlException);
+	}
+	
+	/**
+	 * Converts message to DOMElement
+	 *
+	 * @param array $message
+	 * @return DOMElement
+	 */
+	protected function convertMessage($message) {
+		$xmlMessage = $this->xmlDoc->createElement('message');
+
+		$xmlMessage->appendChild($this->xmlDoc->createElement('message', $message['message']));
+
+		if (Util\Debug::isActivated()) {
+			$xmlMessage->appendChild($this->xmlDoc->createElement('file', $message['file']));
+			$xmlMessage->appendChild($this->xmlDoc->createElement('line', $message['line']));
+			$xmlMessage->appendChild($this->convertArray($message['args'], 'args', 'arg'));
+			$xmlMessage->appendChild($this->convertTrace($message['trace']));
+		}
+		
+		return $xmlMessage;
 	}
 
 	/**
@@ -233,7 +257,7 @@ class XML extends View {
 	 * @param array the input array
 	 * @return DOMElement
 	 */
-	protected function convertArray(array $array, $identifierPlural = 'array', $identifierSingular = 'entry') {
+	protected function convertArray($array, $identifierPlural = 'array', $identifierSingular = 'entry') {
 		$xmlArray = $this->xmlDoc->createElement($identifierPlural);
 
 		foreach ($array as $key => $value) {
@@ -241,7 +265,11 @@ class XML extends View {
 				$key = $identifierSingular;
 			}
 
-			if (is_array($value)) {
+			if (is_null($value)) {
+				$value = 'null';
+			}
+			
+			if (is_array($value) || $value instanceof Util\JSON || $value instanceof \stdClass) {
 				$xmlArray->appendChild($this->convertArray($value, $key));
 			}
 			elseif (is_numeric($value)) {
@@ -251,7 +279,7 @@ class XML extends View {
 				$xmlArray->appendChild($this->xmlDoc->createElement($key, $value));
 			}
 			else { // TODO required?
-				$xmlArray->appendChild($this->xmlDoc->createElement($key, 'object'));
+				$xmlArray->appendChild($this->xmlDoc->createElement($key, 'object:' . get_class($value)));
 			}
 		}
 		
@@ -275,11 +303,7 @@ class XML extends View {
 			foreach ($trace as $key => $value) {
 				switch ($key) {	
 					case 'args':
-						$xmlArgs = $this->xmlDoc->createElement($key);
-						$xmlTrace->appendChild($xmlArgs);
-						foreach ($value as $arg) {
-							$xmlArgs->appendChild($this->xmlDoc->createElement('arg', (is_scalar($value)) ? $value : 'object'));
-						}
+						$xmlTrace->appendChild($this->convertArray($value, 'args', 'arg'));
 						break;
 
 					case 'type':

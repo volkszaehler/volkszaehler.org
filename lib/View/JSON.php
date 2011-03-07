@@ -80,7 +80,7 @@ class JSON extends View {
 			$this->addDebug($data);
 		}
 		elseif ($data instanceof Util\JSON || is_array($data)) {
-			$this->addArray($data);
+			$this->addArray($data, $this->json);
 		}
 		elseif (isset($data)) { // ignores NULL data
 			throw new \Exception('Can\'t show ' . get_class($data));
@@ -159,21 +159,9 @@ class JSON extends View {
 	 * @param Util\Debug $debug
 	 */
 	protected function addDebug(Util\Debug $debug) {
-		$queries = $debug->getQueries();
-		$messages = $debug->getMessages();
-
 		$jsonDebug['time'] = $debug->getExecutionTime();
-
-		if (count($messages) > 0) {
-			$jsonDebug['messages'] = $messages;
-		}
-
-		if (count($queries) > 0) {
-			$jsonDebug['database'] = array(
-				'driver' => Util\Configuration::read('db.driver'),
-				'queries' => array_values($queries)
-			);
-		}
+		$jsonDebug['messages'] = $debug->getMessages();
+		$jsonDebug['queries'] = array_values($debug->getQueries());
 
 		$this->json['debug'] = $jsonDebug;
 	}
@@ -238,17 +226,18 @@ class JSON extends View {
 	}
 
 	/**
-	 * Insert array in output
 	 *
-	 * @todo fix workaround for public entities
 	 */
-	protected function addArray($data) {
+	protected function addArray($data, &$refNode) {
 		foreach ($data as $index => $value) {
-			if ($value instanceof Model\Entity) {
-				$this->json['entities'][] = self::convertEntity($value);
+			if ($value instanceof Util\JSON || is_array($value)) {
+				$this->addArray($value, $refNode[$index]);
+			}
+			elseif ($value instanceof Model\Entity) {
+				$refNode[$index] = self::convertEntity($value);
 			}
 			else {
-				$this->json[$index] = $value;
+				$refNode[$index] = $value;
 			}
 		}
 	}
