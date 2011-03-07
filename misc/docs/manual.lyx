@@ -834,8 +834,8 @@ Alle Anfragen an das Backend müssen einem bestimmten Schema entsprechen.
 \begin_layout Standard
 
 \family typewriter
-http://server:port/path/to/volkszaehler/backend.php/kontext/uuid.format?paramters=
-values
+http://<server>:<port>/<path_to_volkszaehler>/backend[.php]/<context>[/<uuid>].<fo
+rmat>?<paramters>=<values>
 \end_layout
 
 \begin_layout Subsubsection
@@ -844,20 +844,62 @@ Kontext (Controller)
 
 \begin_layout Standard
 Das Backend hat verschiedene Aufgaben zu bewältigen.
- Für jede dieser Aufgaben gibt es einen eigenen Kontext, der praktisch die
- ganze Logik enthällt:
+ Für jede dieser Aufgaben gibt es einen eigenen Kontext
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Eigentlich handelt es sich hier um die Controller des MVC-Konzeptes.
+ Wir nennen sie nur Kontext um eine Verwechslung mit den Hardware-Controllern
+ zu vermeiden.
+\end_layout
+
+\end_inset
+
+.
+ Diese Kontexte enthalten die Logik des Backends:
 \end_layout
 
 \begin_layout Itemize
-Daten erfassen/ausgeben
+
+\family typewriter
+DataController
+\family default
+: Daten verarbeiten
 \end_layout
 
 \begin_layout Itemize
-Entities erstellen/bearbeiten/abfragen
+
+\family typewriter
+EntityController
+\family default
+: Entities verwalten
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+
+\family typewriter
+ChannelController
+\family default
+: für Sensoren und Zähler
 \end_layout
 
 \begin_layout Itemize
-Eigenschaften des Backends abfragen
+
+\family typewriter
+AggregatorController
+\family default
+: für Gruppen/User/Gebäude etc.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
+CapabilitiesController
+\family default
+: Eigenschaften/Fähigkeiten des Backends abfragen
 \end_layout
 
 \begin_layout Subsubsection
@@ -930,6 +972,76 @@ Dabei ist JSON das bevorzugte Format, das auch von dem Webinterface genutzt
  gedacht.
  Wir können nicht garantieren, dass diese Formate den gleichen Funktionsumfang
  wie das JSON Format besitzen.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	"version": "0.2.git-b449d4b8",
+\end_layout
+
+\begin_layout Plain Layout
+
+	"data": {
+\end_layout
+
+\begin_layout Plain Layout
+
+		"uuid": "a301d8d0-903b-1234-94bb-d943d061b6a8",
+\end_layout
+
+\begin_layout Plain Layout
+
+		"min": [1287971672430, 8.0965, 44],
+\end_layout
+
+\begin_layout Plain Layout
+
+		"max": [1288266637795, 3017.14286, 44],
+\end_layout
+
+\begin_layout Plain Layout
+
+		"average": 14.47368,
+\end_layout
+
+\begin_layout Plain Layout
+
+		"consumption": 10.45,
+\end_layout
+
+\begin_layout Plain Layout
+
+		"count": 476,
+\end_layout
+
+\begin_layout Plain Layout
+
+		"tuples": [ ]
+\end_layout
+
+\begin_layout Plain Layout
+
+	},
+\end_layout
+
+\begin_layout Plain Layout
+
+	"debug":
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \end_body
