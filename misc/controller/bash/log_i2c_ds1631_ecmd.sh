@@ -6,14 +6,14 @@
 #
 # call it with a cronjob similiar to this one:
 #
-# */5 * * * *   ~/bin/log_onewire_ecmd.sh
+# */5 * * * *   ~/bin/log_i2c_ds1631_ecmd.sh
 #
 # @copyright Copyright (c) 2010, The volkszaehler.org project
 # @package controller
 # @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
 # @author Justin Otherguy <justin@justinotherguy.org>
 # @author Steffen Vogel <info@steffenvogel.de>
-#
+# @author Sven Peitz <sven@pubeam.de>
 ##
 # This file is part of volkzaehler.org
 #
@@ -34,16 +34,16 @@
 # configuration
 #
 # backend url
-URL="http://volkszaehler.org/neu/backend/index.php"
+URL="http://192.168.10.1/backend"
 
 # sensor settings
-#  id of the sensor
+# Sensor 0x48 (72) ist bei ds1631 sensorid = 0 warum auch immer?
+# folglich ist sensor 0x4d (75) sensorid = 3 usw.
 SENSORID=<put your onewire sensors hw id here>
 #  ip address of the controller board running ethersex
 ESEXIP=<put the ip address of your controller board here>
 #  uuid of the sensor in the volkszaehler database
 UUID=<put the uuid of your temperature sensor here>
-
 ## 
 # paths to binaries - you should not need to change these
 CURL=/usr/bin/curl
@@ -52,7 +52,7 @@ NC=/bin/nc
 
 # ========= do not change anything below this line ==============
 
-echo "1w convert $SENSORID" |$NC $ESEXIP 2701 -q 1 2>/dev/null | grep -qe OK || exit 1
-TEMPERATURE=`echo 1w get $SENSORID | $NC $ESEXIP 2701 -q 1 2>/dev/null | sed -e 's/Temperatur: //'`
+echo "ds1631 convert $SENSORID 1" |$NC $ESEXIP 2701 -q 1 2>/dev/null | grep -qie OK || exit 1
+TEMPERATURE=`echo ds1631 temp $SENSORID | $NC $ESEXIP 2701 -q 1 2>/dev/null | sed -e 's/Temperatur: //'`
 
 $CURL --data "" "$URL/data/$UUID.json?value=$TEMPERATURE"
