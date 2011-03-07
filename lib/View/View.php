@@ -35,10 +35,13 @@ use Volkszaehler\Util;
  * @author Steffen Vogel <info@steffenvogel.de>
  */
 abstract class View {
+
 	/**
+	 * Round all values to save bandwidth
+	 *
 	 * @var integer round all values to x decimals
 	 */
-	const PRECISSION = 5;
+	const PRECISSION = 3;
 
 	/**
 	 * @var HTTP\Request

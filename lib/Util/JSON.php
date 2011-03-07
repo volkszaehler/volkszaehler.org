@@ -41,7 +41,7 @@ class JSON extends \ArrayObject {
 	 * @param string $json
 	 * @return Util\JSON
 	 */
-	static public function decode($json, $assoc = false, $depth = 512) {
+	static public function decode($json, $assoc = FALSE, $depth = 512) {
 		$data = json_decode(self::strip($json), $assoc, $depth);
 
 		if (is_null($data)) {

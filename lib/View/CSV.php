@@ -154,5 +154,4 @@ class CSV extends View {
 	}
 }
 
-
 ?>
