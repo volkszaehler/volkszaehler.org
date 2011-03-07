@@ -363,11 +363,11 @@ vz.entities.loadData = function() {
 	vz.wui.updateHeadline();
 	$('#overlay').html('<img src="images/loading.gif" alt="loading..." /><p>loading...</p>');
 	this.each(function(entity, parent) {
+		//var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
+		//var offset = delta * 0.1;
+		var offset = 1000*60*60; // load additional data to avoid paddings
+	
 		if (entity.active && entity.type != 'group') { // TODO add group data aggregation
-			//var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
-			//var offset = delta * 0.1;
-			var offset = 1000*60*60;
-		
 			vz.load('data', entity.uuid,
 				{
 					from: Math.floor(vz.options.plot.xaxis.min - offset), // fuzy-logic to get enough data
@@ -377,7 +377,7 @@ vz.entities.loadData = function() {
 				waitAsync(function(json) {
 					entity.data = json.data;
 					
-					if (entity.data.min !== null && entity.data.min < vz.options.plot.yaxis.min) { // allow negative values for temperature sensors
+					if (entity.data.min !== null && entity.data.min[1] < vz.options.plot.yaxis.min) { // allow negative values for temperature sensors
 						vz.options.plot.yaxis.min = null;
 					}
 					

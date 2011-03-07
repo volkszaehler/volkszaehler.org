@@ -37,7 +37,7 @@ class MeterInterpreter extends Interpreter {
 
 	protected $min = NULL;
 	protected $max = NULL;
-	protected $pulses = NULL;
+	protected $pulseCount = NULL;
 	protected $resolution;
 	
 	/**
@@ -45,9 +45,9 @@ class MeterInterpreter extends Interpreter {
 	 * @return float total consumption
 	 */
 	public function getConsumption() {
-		if (is_null($this->pulses) && is_null($this->tupleCount)) throw new \Exception('Data has to be processed first!');
+		if (is_null($this->tupleCount)) throw new \Exception('Data has to be processed first!');
 		
-		return $this->pulses / $this->resolution;
+		return $this->pulseCount / $this->resolution;
 	}
 
 	/**
@@ -55,9 +55,9 @@ class MeterInterpreter extends Interpreter {
 	 * @return array (0 => timestamp, 1 => value)
 	 */
 	public function getMin() {
-		if (is_null($this->min) && is_null($this->tupleCount)) throw new \Exception('Data has to be processed first!');
+		if (is_null($this->tupleCount)) throw new \Exception('Data has to be processed first!');
 		
-		return $this->min;		
+		return ($this->min) ? array_map('floatval', array_slice($this->min, 0 , 2)) : NULL;
 	}
 
 	/**
@@ -65,9 +65,9 @@ class MeterInterpreter extends Interpreter {
 	 * @return array (0 => timestamp, 1 => value)
 	 */
 	public function getMax() {
-		if (is_null($this->max) && is_null($this->tupleCount)) throw new \Exception('Data has to be processed first!');
+		if (is_null($this->tupleCount)) throw new \Exception('Data has to be processed first!');
 		
-		return $this->max;
+		return ($this->max) ? array_map('floatval', array_slice($this->max, 0 , 2)) : NULL;
 	}
 
 	/**
@@ -89,12 +89,11 @@ class MeterInterpreter extends Interpreter {
 		$pulses = parent::getData($count, $groupBy);
 
 		$this->resolution = $this->channel->getProperty('resolution');
-		$this->pulses = 0;
+		$this->pulseCount = 0;
 
 		$tuples = array();
 		$last = $pulses->rewind();
 		$next = $pulses->next();
-		$next =  $pulses->current();
 		
 		while ($pulses->valid()) {
 			$tuple = $callback($this->raw2differential($last, $next));
@@ -107,7 +106,7 @@ class MeterInterpreter extends Interpreter {
 				$this->min = $tuple;
 			}
 				
-			$this->pulses += $tuple[2];
+			$this->pulseCount += $tuple[2];
 
 			$tuples[] = $tuple;
 			$last = $next;			
