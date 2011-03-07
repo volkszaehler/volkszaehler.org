@@ -1,2 +1,2 @@
 Deny from all
-#Allow from localhost
+Allow from localhost
