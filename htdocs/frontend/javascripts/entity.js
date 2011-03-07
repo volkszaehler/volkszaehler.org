@@ -29,25 +29,15 @@
  * @todo add validation
  */
 var Entity = function(json) {
-	for (var i in json) {
-		switch(i) {
-			case 'children':
-				this.children = new Array;
-				this.children.each = vz.entities.each;
-				for (var j = 0; j < json.children.length; j++) {
-					var child = new Entity(json.children[j]);
-					this.children.push(child);
-				}
-				break;
-				
-			case 'type':
-			case 'uuid':
-			default:		// properties
-				this[i] = json[i];
-		}	
+	$.extend(true, this, json);
+
+	if (this.children) {
+		for (var i in this.children) {
+			this.children[i] = new Entity(this.children[i]);
+		}
 	}
 
-	//this.definition = vz.definitions.get('entity', this.type);
+	this.definition = vz.capabilities.definitions.get('entities', this.type);
 };
 
 /**
@@ -59,7 +49,7 @@ Entity.prototype.showDetails = function() {
 	.append(this.getDOM())
 	.dialog({
 		title: 'Details f&uuml;r ' + this.title,
-		width: 450,
+		width: 480,
 		resizable: false
 	});
 };
@@ -74,24 +64,43 @@ Entity.prototype.getDOM = function() {
 	var data = $('<tbody>');
 
 	for (var property in this) {
-		if (this.hasOwnProperty(property) && property != 'data' && property != 'children') {
+		if (this.hasOwnProperty(property) && !['data', 'definition', 'children'].contains(property)) {
 			switch(property) {
-				case 'color':
-					var value = '<span style="background-color: ' + this[property] + '">' + this[property] + '</span>';
+				case 'type':
+					var title = 'Typ';
+					var value = this.definition.translation[vz.options.language];
+					break;
+					
+				case 'uuid':
+					var title = 'UUID';
+					var value = '<a href="' + vz.options.backendUrl + '/entity/' + this[property] + '.json">' + this[property] + '</a>';
 					break;
 			
+				case 'color':
+					var title = 'Farbe';
+					var value = '<span style="background-color: ' + this[property] + '">' + this[property] + '</span>';
+					break;
+					
+				case 'public':
+					var title = vz.capabilities.definitions.get('properties', property).translation[vz.options.language];
+					var value = (this[property]) ? 'ja' : 'nein';
+					break;
+					
+			
 				case 'active':
-					var value = (this[property]) ? 'yes' : 'no';
+					var title = 'Aktiv';
+					var value = (this[property]) ? 'ja' : 'nein';
 					break;
 
 				default:
+					var title = vz.capabilities.definitions.get('properties', property).translation[vz.options.language];
 					var value = this[property];
 			}
 
 			data.append($('<tr>')
 				.append($('<td>')
 					.addClass('key')
-					.text(property)
+					.text(title)
 				)
 				.append($('<td>')
 					.addClass('value')

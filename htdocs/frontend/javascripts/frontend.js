@@ -305,7 +305,7 @@ vz.entities.show = function() {
 					.addClass((entity.type == 'group') ? 'group' : 'channel')
 				)
 			)
-			.append($('<td>').text(entity.type))		// channel type
+			.append($('<td>').text(vz.capabilities.definitions.get('entities', entity.type).translation[vz.options.language]))		// channel type
 			.append($('<td>').addClass('min'))		// min
 			.append($('<td>').addClass('max'))		// max
 			.append($('<td>').addClass('average'))		// avg
@@ -493,33 +493,26 @@ vz.parseUrlParams = function() {
 };
 
 /**
- * Load definitions from backend
+ * Load capabilities from backend
  */
-vz.definitions.load = function() {
+vz.capabilities.load = function() {
 	$.ajax({
 		cache: true,
 		dataType: 'json',
-		url: vz.options.backendUrl + '/capabilities/definition/entity.json',
+		url: vz.options.backendUrl + '/capabilities/definitions.json',
 		success: function(json) {
-			vz.definitions.entity = json.definition.entity
-		}
-	});
-
-	$.ajax({
-		cache: true,
-		dataType: 'json',
-		url: vz.options.backendUrl + '/capabilities/definition/property.json',
-		success: function(json) {
-			vz.definitions.property = json.definition.property
+			$.extend(true, vz.capabilities, json.capabilities);
+		
+			// load entity details & properties
+			vz.entities.loadDetails();
 		}
 	});
 };
 
-vz.definitions.get = function(section, iname) {
-	for (var i in vz.definitions[section]) {
-		alert(vz.definitions[section][i].name);
-		if (vz.definitions[section][i].name == iname) {
-			return definition;
+vz.capabilities.definitions.get = function(section, name) {
+	for (var i in this[section]) {
+		if (this[section][i].name == name) {
+			return this[section][i];
 		}
 	}
 }

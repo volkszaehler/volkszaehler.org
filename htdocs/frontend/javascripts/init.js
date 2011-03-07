@@ -42,9 +42,10 @@ var vz = {
 	// flot instance
 	plot: { },
 	
-	// definitions of entities & properties
-	// for validation, translation etc..
-	definitions: { },
+	// debugging and runtime information from backend
+	capabilities: {
+		definitions: { } // definitions of entities & properties
+	},
 
 	// options loaded from cookies in options.js
 	options: { }
@@ -59,11 +60,9 @@ $(document).ready(function() {
 		vz.drawPlot();
 	});
 
-	// parse uuids & options from cookie
-	vz.definitions.load();
-	vz.uuids.load();
-	vz.options.load();
-	vz.parseUrlParams();
+	vz.uuids.load(); // load uuids from cookie
+	vz.options.load(); // load options from cookie
+	vz.parseUrlParams(); // parse additional url params (new uuid etc..)
 
 	// initialize user interface
 	vz.wui.init();
@@ -74,6 +73,8 @@ $(document).ready(function() {
 		$('#entity-add').dialog('open');
 	}
 	
-	// load entity details & properties
-	vz.entities.loadDetails();
+	// starting with request to backend:
+	// capabiltities -> entities -> data
+	// try to follow the callbacks ;)
+	vz.capabilities.load(); // load properties, entity types and other capabilities from backend
 });

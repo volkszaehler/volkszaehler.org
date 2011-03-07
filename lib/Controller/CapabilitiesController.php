@@ -65,7 +65,9 @@ class CapabilitiesController extends Controller {
 		}
 		
 		if (is_null($section) || $section == 'definitions') {
-			$this->view->setCaching('expires', time()+2*7*24*60*60); // cache for 2 weeks
+			if (!is_null($section)) { // only caching when we doesn't request dynamic informations
+				$this->view->setCaching('expires', time()+2*7*24*60*60); // cache for 2 weeks
+			}
 			
 			$capabilities['definitions']['entities'] = \Volkszaehler\Definition\EntityDefinition::getJSON();
 			$capabilities['definitions']['properties'] = \Volkszaehler\Definition\PropertyDefinition::getJSON();
@@ -75,7 +77,7 @@ class CapabilitiesController extends Controller {
 			throw new \Exception('Invalid capability identifier!');
 		}
 		
-		return $capabilities;
+		return array('capabilities' => $capabilities);
 	}
 }
 
