@@ -80,16 +80,15 @@ class Debug {
 	 */
 	static public function log($message) {
 		if (isset(self::$instance)) {
-			$trace = debug_backtrace();
+			$trace = debug_backtrace(FALSE);
 			$info = $trace[0];
 
 			self::$instance->messages[] = array(
 				'message' => $message,
 				'file' => $info['file'],
 				'line' => $info['line'],
-				//'time' => date('r'),
-				'args' => array_slice($info['args'], 1)
-				//'trace' => array_slice($trace, 1)
+				'args' => array_slice($info['args'], 1),
+				'trace' => array_slice($trace, 1)
 			);
 		}
 	}
@@ -156,9 +155,55 @@ class Debug {
 	 * @return string the hash
 	 */
 	public static function getCurrentCommit() {
-		if (file_exists(VZ_DIR . '/.git/HEAD')) {
+		if (false && file_exists(VZ_DIR . '/.git/HEAD')) {
 			$head = file_get_contents(VZ_DIR . '/.git/HEAD');
 			return substr(file_get_contents(VZ_DIR . '/.git/' . substr($head, strpos($head, ' ')+1, -1)), 0, -1);
+		}
+		elseif (function_exists("shell_exec")) {
+			return shell_exec('git show --pretty=format:%H --quiet');
+		}
+		else {
+			return FALSE;
+		}
+	}
+	
+	/**
+	 * Get average server load
+	 *
+	 * @return array average load (1min, 5min, 15min)
+	 */
+	public static function getLoadAvg() { 
+		if (file_exists("/proc/loadavg")) {
+			$load = file_get_contents("/proc/loadavg");
+			$load = array_slice(explode(' ', $load), 0, 3);
+		}
+		elseif (function_exists("shell_exec")) {
+			$load = explode(', ', substr(shell_exec('uptime'), -16));
+		}
+		
+		return (isset($load)) ? array_map('floatval', $load) : FALSE;
+	}
+	
+	/**
+	 * Get server uptime
+	 *
+	 * @return integer server uptime in seconds
+	 */
+	public static function getUptime() {
+		if (file_exists("/proc/uptime")) {
+			$uptime = explode(' ', file_get_contents("/proc/uptime"));
+			return (float) $uptime[0];
+		}
+		elseif (function_exists("shell_exec")) {
+			$matches = array();
+			preg_match("/up (?:(?P<days>\d+) days?,? )?(?P<hours>\d+):(?P<minutes>\d{2})/", shell_exec('uptime'), $matches);
+			$uptime = 60*$matches['hours'] + $matches['minutes'];
+			
+			if (isset($matches['days'])) {
+				$uptime += $matches['days']*60*24;
+			}
+			
+			return $uptime*60; // minutes => seconds
 		}
 		else {
 			return FALSE;
