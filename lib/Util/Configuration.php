@@ -34,24 +34,6 @@ class Configuration {
 	static protected $values = array();
 
 	/**
-	 * @param string $var A string delimited by dots
-	 * @param mixed $value A scalar value or array which should be set as the value for $var
-	 */
-	static public function write($var, $value) {
-		if (!is_scalar($value) && !is_array($value)) {
-			throw new \Exception('Can\'t store this datatype in the configuration');
-		}
-
-		$values =& self::$values;
-		$tree = explode('.', $var);
-		foreach ($tree as $part) {
-			$values =& $values[$part];
-		}
-
-		$values = array_merge_recursive($values, $value);
-	}
-
-	/**
 	 *
 	 * @param string $var A string delimited by dots
 	 * @return mixed the configuration value
@@ -69,21 +51,6 @@ class Configuration {
 		}
 
 		return $values;
-	}
-
-	/**
-	 *
-	 * @param string $var A string delimited by dots
-	 */
-	static public function delete($var) {
-		$tree = explode('.', $var);
-
-		$values =& self::$values;
-		foreach ($tree as $part) {
-			$values =& $values[$part];
-		}
-
-		unset($values);
 	}
 
 	/**
@@ -105,42 +72,6 @@ class Configuration {
 		}
 
 		self::$values = $config;
-	}
-	/**
-	 *
-	 * @param string $filename A string pointing to a file on the filesystem
-	 * @return boolean TRUE on success
-	 */
-	static public function store($filename) {
-		$filename .= '.php';
-
-		$delcaration = '';
-		foreach (self::$values as $key => $value) {
-			$export = var_export($value, TRUE);
-			$export = preg_replace('/=>\s+array/', '=> array', $export);
-			$export = str_replace("  ", "\t", $export);
-
-			$declaration .= '$config[\'' . $key . '\'] = ' . $export . ';' . PHP_EOL . PHP_EOL;
-		}
-
-		$content = <<<EOT
-<?php
-
-/**
- * That's the volkszaehler.org configuration file.
- * Please take care of the following rules:
- * - you are allowed to edit it by your own
- * - anything else than the \$config declaration
- *   will maybe be removed during the reconfiguration
- *   by the configuration parser!
- * - only literals are allowed as parameters
- * - expressions will be evaluated by the parser
- *   and saved as literals
- */
-
-$declaration?>
-EOT;
-		return file_put_contents($filename, $content);
 	}
 }
 
