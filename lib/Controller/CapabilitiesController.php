@@ -25,6 +25,7 @@ namespace Volkszaehler\Controller;
 
 use Volkszaehler\Model;
 use Volkszaehler\Util;
+use Volkszaehler\View;
 
 /**
  * Capabilities controller
@@ -39,27 +40,42 @@ class CapabilitiesController extends Controller {
 	 * @param string $capabilities
 	 * @param string $sub
 	 */
-	public function get($capabilities, $sub) {
-		switch ($capabilities) {
-			case 'definition':
-				if (in_array($sub, array('property', 'entity'))) {
-					$class = 'Volkszaehler\Definition\\' . ucfirst($sub) . 'Definition';
-					$json = $class::getJSON();
-					$this->view->setCaching('expires', time()+2*7*24*60*60);	// cache for 2 weeks
-					$this->view->add(array('definition' => array($sub => $json)));
-				}
-				else {
-					throw new Exception('Unkown definition information');
-				}
-				break;
-
-			case 'version':
-				// TODO implement
-				break;
-
-			default:
-				throw new \Exception('Unknown capability information: ' . implode('/', func_get_args()));
+	public function get($section = NULL) {
+		$capabilities = array();
+		
+		if (is_null($section) || $section == 'configuration') {
+			$configuration = array(
+				'precission' => View\View::PRECISSION,
+				'database' => Util\Configuration::read('db.driver'),
+				'debug' => Util\Configuration::read('debug'),
+				'devmode' => Util\Configuration::read('devmode')
+			);
+			
+			$capabilities['configuration'] = $configuration;
 		}
+		
+		if (is_null($section) || $section == 'statistics') { // TODO database statistics
+			$statistics = array();
+
+			if ($load = Util\Debug::getLoadAvg()) $statistics['load'] = $load;
+			if ($uptime = Util\Debug::getUptime()) $statistics['uptime'] = $uptime*1000;
+			if ($commit = Util\Debug::getCurrentCommit()) $statistics['commit-hash'] = $commit;
+
+			$capabilities['statistics'] = $statistics;
+		}
+		
+		if (is_null($section) || $section == 'definitions') {
+			$this->view->setCaching('expires', time()+2*7*24*60*60); // cache for 2 weeks
+			
+			$capabilities['definitions']['entities'] = \Volkszaehler\Definition\EntityDefinition::getJSON();
+			$capabilities['definitions']['properties'] = \Volkszaehler\Definition\PropertyDefinition::getJSON();
+		}
+		
+		if (count($capabilities) == 0) {
+			throw new \Exception('Invalid capability identifier!');
+		}
+		
+		return $capabilities;
 	}
 }
 
