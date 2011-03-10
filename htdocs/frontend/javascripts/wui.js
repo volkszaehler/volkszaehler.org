@@ -33,6 +33,7 @@ vz.wui.init = function() {
 		$(this).next().toggle('fast');
 		return false;
 	}).next().hide();
+	$('#entity-list').show(); // open entity list by default
 	
 	// buttons
 	$('button, input[type=button],[type=image]').button();
@@ -46,7 +47,7 @@ vz.wui.init = function() {
 			'&to=' + vz.options.plot.xaxis.max;
 
 		vz.entities.each(function(entity, parent) {
-			if (entity.active) {
+			if (entity.active && entity.definition.model == 'Volkszaehler\\Model\\Channel') {
 				uuids.push(entity.uuid);
 			}
 		});
@@ -57,19 +58,7 @@ vz.wui.init = function() {
 
 		window.location = url;
 	});
-	$('button[name=entity-add]').click(function() { $('#entity-add').dialog('open'); });
-	$('#entity-subscribe input[type=button]').click(function() {
-		try {
-			vz.uuids.add($('#entity-subscribe input[type=text]').val());
-			vz.uuids.save();
-			$('#entity-subscribe input[type=text]').val('');
-			$('#entity-add').dialog('close');
-			vz.entities.loadDetails();
-		}
-		catch (exception) {
-			vz.wui.dialogs.exception(exception);
-		}
-	});
+	$('button[name=entity-add]').click(vz.wui.dialogs.init);
 	
 	// bind plot actions
 	$('#controls button').click(this.handleControls);
@@ -111,7 +100,7 @@ vz.wui.init = function() {
 	$('input[name=render][type=radio]').change(function() {
 		if ($(this).attr('checked')) {
 			vz.options.render = $(this).val();
-			vz.drawPlot();
+			vz.wui.drawPlot();
 		}
 	});
 };
@@ -122,12 +111,95 @@ vz.wui.init = function() {
 vz.wui.dialogs.init = function() {
 	// initialize dialogs
 	$('#entity-add.dialog').dialog({
-		autoOpen: false,
 		title: 'Kanal hinzuf&uuml;gen',
 		width: 530,
 		resizable: false
 	});
 	$('#entity-add.dialog > div').tabs();
+	
+	// load public entities
+	vz.load({
+		context: 'entity',
+		success: function(json) {
+			if (json.entities.length > 0) {
+				json.entities.each(function(index, entity) {
+					$('#entity-subscribe-public select#public').append(
+						$('<option>').text(entity.title).data('entity', entity)
+					);
+				});
+			}
+			else {
+			
+			}
+		}
+	});
+	
+	// show available entity types
+	vz.capabilities.definitions.entities.each(function(index, def) {
+		$('#entity-create select#type').append(
+			$('<option>').text(def.translation[vz.options.language]).data('definition', def)
+		);
+	});
+
+	/*$('#entity-create select#type option:selected').data('definition').required.each(function(index, property) {
+		$('#entity-create #properties').append(
+			vz.capabilities.definitions.get('properties', property).getDOM()
+		)
+	});*/
+	
+	// actions
+	$('#entity-subscribe input[type=button]').click(function() {
+		try {
+			var uuid = $('#entity-subscribe input#uuid');
+			vz.uuids.add(uuid.val());
+
+			if ($('#entity-subscribe input.cookie').attr('checked')) {
+				vz.uuids.save();
+			}
+			
+			vz.entities.loadDetails(); // reload entity details and load data
+		}
+		catch (e) {
+			vz.wui.dialogs.exception(e);
+		}
+		finally {
+			$('#entity-add').dialog('close');
+			$('#entity-add input[type!=button]').val(''); // reset form
+			$('#entity-add input.cookie').attr('checked', false); // reset form
+		}
+	});
+	
+	$('#entity-subscribe-public input[type=button]').click(function() {
+		var entity = $('#entity-subscribe-public select#public option:selected').data('entity');
+	
+		try {
+			vz.uuids.add(entity.uuid);
+
+			if ($('#entity-subscribe-public input.cookie').attr('checked')) {
+				vz.uuids.save();
+			}
+			
+			vz.entities.loadDetails(); // reload entity details and load data
+		}
+		catch (e) {
+			vz.wui.dialogs.exception(e);
+		}
+		finally {
+			$('#entity-add').dialog('close');
+			$('#entity-add input[type!=button]').val(''); // reset form
+			$('#entity-add input.cookie').attr('checked', false); // reset form
+		}
+	});
+	
+	/*$('#entity-create input[type=button]').click(function() {
+
+	});*/
+	
+	// update event handler
+	$('button[name=entity-add]').unbind('click', vz.wui.dialogs.init);
+	$('button[name=entity-add]').click(function() {
+		$('#entity-add.dialog').dialog('open');
+	});
 };
 
 /**
@@ -248,156 +320,6 @@ vz.wui.handleControls = function () {
 	vz.entities.loadData();
 };
 
-
-/**
- * Get all entity information from backend
- */
-vz.entities.loadDetails = function() {
-	this.clear();
-	$('#entity-list tbody').empty();
-
-	vz.uuids.each(function(index, value) {
-		vz.load('entity', value, {}, waitAsync(function(json) {
-			vz.entities.push(new Entity(json.entity));
-		}, vz.entities.show, 'information'));
-	});
-};
-
-/**
- * Create nested entity list
- */
-vz.entities.show = function() {
-	var i = 0;
-
-	vz.entities.each(function(entity, parent) {
-		entity.color = vz.options.plot.colors[i++ % vz.options.plot.colors.length];
-		entity.active = (entity.active) ? entity.active : true;
-
-		var row = $('<tr>')
-			.addClass((parent) ? 'child-of-entity-' + parent.uuid : '')
-			.attr('id', 'entity-' + entity.uuid)
-			.append($('<td>')
-				.addClass('visibility')
-				.css('background-color', entity.color)
-				.append($('<input>')
-					.attr('type', 'checkbox')
-					.attr('checked', entity.active)
-					.bind('change', entity, function(event) {
-						var state = $(this).attr('checked');
-						event.data.active = state;
-
-						if (entity.type == 'group') {
-							entity.children.each(function(child) {
-								$('#entity-' + child.uuid + '.child-of-entity-' + entity.uuid + ' input[type=checkbox]').attr('checked', state);
-								child.active = state;
-							});
-						}
-
-						vz.drawPlot();
-					})
-				)
-			)
-			.append($('<td>').addClass('expander'))
-			.append($('<td>')
-				.append($('<span>')
-					.text(entity.title)
-					.addClass('indicator')
-					.addClass((entity.type == 'group') ? 'group' : 'channel')
-				)
-			)
-			.append($('<td>').text(vz.capabilities.definitions.get('entities', entity.type).translation[vz.options.language]))		// channel type
-			.append($('<td>').addClass('min'))		// min
-			.append($('<td>').addClass('max'))		// max
-			.append($('<td>').addClass('average'))		// avg
-			.append($('<td>').addClass('consumption'))	// consumption
-			.append($('<td>').addClass('last'))		// last
-			.append($('<td>')				// operations
-				.addClass('ops')
-				.append($('<input>')
-					.attr('type', 'image')
-					.attr('src', 'images/information.png')
-					.attr('alt', 'details')
-					.bind('click', entity, function(event) { event.data.showDetails(); })
-				)
-			);
-				
-		if (parent == null) {
-			$('td.ops', row).prepend($('<input>')
-				.attr('type', 'image')
-				.attr('src', 'images/delete.png')
-				.attr('alt', 'delete')
-				.bind('click', entity, function(event) {
-					vz.uuids.remove(event.data.uuid);
-					vz.uuids.save();
-					vz.entities.loadDetails();
-				})
-			);
-		}
-			
-		$('#entity-list tbody').append(row);
-	});
-	
-	// http://ludo.cubicphuse.nl/jquery-plugins/treeTable/doc/index.html
-	$('#entity-list table').treeTable({
-		treeColumn: 2,
-		clickableNodeNames: true
-	});
-
-	// load data and show plot
-	vz.entities.loadData();
-};
-
-/**
- * Overwritten each iterator for entity array
- */
-vz.entities.each = function(cb) {
-	for (var i = 0; i < this.length; i++) {
-		this[i].each(cb);
-	}
-}
-
-/**
- * Load json data from the backend
- */
-vz.entities.loadData = function() {
-	vz.wui.updateHeadline();
-	$('#overlay').html('<img src="images/loading.gif" alt="loading..." /><p>loading...</p>');
-	this.each(function(entity, parent) {
-		//var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
-		//var offset = delta * 0.1;
-		var offset = 1000*60*60; // load additional data to avoid paddings
-	
-		if (entity.active && entity.type != 'group') { // TODO add group data aggregation
-			vz.load('data', entity.uuid,
-				{
-					from: Math.floor(vz.options.plot.xaxis.min - offset), // fuzy-logic to get enough data
-					to: Math.ceil(vz.options.plot.xaxis.max + offset),
-					tuples: vz.options.tuples
-				},
-				waitAsync(function(json) {
-					entity.data = json.data;
-					
-					if (entity.data.min !== null && entity.data.min[1] < vz.options.plot.yaxis.min) { // allow negative values for temperature sensors
-						vz.options.plot.yaxis.min = null;
-					}
-					
-					// update entity table
-					// TODO add units
-					$('#entity-' + entity.uuid + ' .min')
-						.text((entity.data.min !== null) ? vz.wui.formatNumber(entity.data.min[1]) : '-')
-						.attr('title', (entity.data.min !== null) ? $.plot.formatDate(new Date(entity.data.min[0]), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames) : '');
-					$('#entity-' + entity.uuid + ' .max')
-						.text((entity.data.max !== null) ? vz.wui.formatNumber(entity.data.max[1]) : '-')
-						.attr('title', (entity.data.max !== null) ? $.plot.formatDate(new Date(entity.data.max[0]), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames) : '');
-					$('#entity-' + entity.uuid + ' .average').text((entity.data.average !== null) ? vz.wui.formatNumber(entity.data.average) : '-');
-					$('#entity-' + entity.uuid + ' .consumption').text(vz.wui.formatNumber(entity.data.consumption));
-					$('#entity-' + entity.uuid + ' .last').text((entity.data.tuples) ? vz.wui.formatNumber(entity.data.tuples.last()[1]) : '-');
-				}, vz.drawPlot, 'data')
-			);
-		}
-	});
-};
-
 /**
  * Rounding precission
  *
@@ -418,11 +340,252 @@ vz.wui.updateHeadline = function() {
 }
 
 /**
+ * Overwritten each iterator to iterate recursively throug all entities
+ */
+vz.entities.each = function(cb) {
+	for (var i = 0; i < this.length; i++) {
+		this[i].each(cb);
+	}
+}
+
+/**
+ * Get all entity information from backend
+ */
+vz.entities.loadDetails = function() {
+	vz.entities.clear();
+	
+	vz.uuids.each(function(index, value) {
+		vz.load({
+			context: 'entity',
+			identifier: value,
+			success: vz.wait(function(json) {
+				vz.entities.push(new Entity(json.entity));
+			}, vz.entities.showTable, 'information')
+		});
+	});
+};
+
+/**
+ * Create nested entity list
+ *
+ * @todo move to Entity class
+ */
+vz.entities.showTable = function() {
+	$('#entity-list tbody').empty();
+	
+	var c = 0; // for colors
+	
+	vz.entities = vz.entities.sort(function(e1, e2) {
+		e1.title > e2.title;
+	});
+	
+	vz.entities.each(function(entity, parent) {
+		entity.color = vz.options.plot.colors[c++ % vz.options.plot.colors.length];
+		entity.active = (entity.active) ? entity.active : true; // TODO check
+	
+		var row = $('<tr>')
+			.addClass((parent) ? 'child-of-entity-' + parent.uuid : '')
+			.addClass((entity.definition.model == 'Volkszaehler\\Model\\Aggregator') ? 'aggregator' : 'channel')
+			.attr('id', 'entity-' + entity.uuid)
+			.append($('<td>')
+				.addClass('visibility')
+				.css('background-color', entity.color)
+				.append($('<input>')
+					.attr('type', 'checkbox')
+					.attr('checked', entity.active)
+					.bind('change', function(event) {
+						var state = $(this).attr('checked');
+						
+						entity.each(function(child) {
+							$('#entity-' + child.uuid + '.child-of-entity-' + entity.uuid + ' input[type=checkbox]').attr('checked', state);
+							child.active = state;
+						});
+
+						vz.wui.drawPlot();
+					})
+				)
+			)
+			.append($('<td>').addClass('expander'))
+			.append($('<td>')
+				.append($('<span>')
+					.text(entity.title)
+					.addClass('indicator')
+				)
+			)
+			.append($('<td>').text(entity.definition.translation[vz.options.language])) // channel type
+			.append($('<td>').addClass('min'))		// min
+			.append($('<td>').addClass('max'))		// max
+			.append($('<td>').addClass('average'))		// avg
+			.append($('<td>').addClass('consumption'))	// consumption
+			.append($('<td>').addClass('last'))		// last
+			.append($('<td>')				// operations
+				.addClass('ops')
+				.append($('<input>')
+					.attr('type', 'image')
+					.attr('src', 'images/information.png')
+					.attr('alt', 'details')
+					.bind('click', entity, function(event) { event.data.showDetails(); })
+				)
+			)
+			.data('entity', entity);
+				
+		if (vz.uuids.contains(entity.uuid)) { // removable from cookies?
+			$('td.ops', row).prepend($('<input>')
+				.attr('type', 'image')
+				.attr('src', 'images/delete.png')
+				.attr('alt', 'delete')
+				.bind('click', entity, function(event) {
+					vz.uuids.remove(event.data.uuid);
+					vz.uuids.save();
+					vz.entities.loadDetails();
+				})
+			);
+		}
+		
+		$('#entity-list tbody').append(row);
+	});
+
+	/*
+	 * Initialize treeTable
+	 * 
+	 * http://ludo.cubicphuse.nl/jquery-plugins/treeTable/doc/index.html
+	 * https://github.com/ludo/jquery-plugins/tree/master/treeTable
+	 */
+	// configure entities as draggable
+	$('#entity-list tr.channel span.indicator, #entity-list tr.aggregator span.indicator').draggable({
+		helper:  'clone',
+		opacity: .75,
+		refreshPositions: true, // Performance?
+		revert: 'invalid',
+		revertDuration: 300,
+		scroll: true
+	});
+
+	// configure aggregators as droppable
+	$('#entity-list tr.aggregator span.indicator').each(function() {
+		$(this).parents('tr').droppable({
+			//accept: 'tr.channel span.indicator, tr.aggregator span.indicator',
+			drop: function(event, ui) {
+				var child = $(ui.draggable.parents('tr')[0]).data('entity');
+				var from = child.parent;
+				var to = $(this).data('entity');
+				
+				$('#entity-move').dialog({ // confirm prompt
+					resizable: false,
+					modal: true,
+					title: 'Verschieben',
+					width: 400,
+					buttons: {
+						'Verschieben': function() {
+							try {
+								to.addChild(child); // add to new aggregator
+					
+								if (typeof from != 'undefined') {
+									from.removeChild(child); // remove from aggregator
+								}
+								else {
+									vz.uuids.remove(child.uuid); // remove from cookies
+									vz.uuids.save();
+								}
+							} catch (e) {
+								vz.wui.dialogs.exception(e);
+							} finally {
+								$(this).dialog('close');
+							}
+						},
+						'Abbrechen': function() {
+							$(this).dialog('close');
+						}
+					}
+				});
+			},
+			hoverClass: 'accept',
+			over: function(event, ui) {
+				// make the droppable branch expand when a draggable node is moved over it
+				if (this.id != $(ui.draggable.parents('tr')[0]).id && !$(this).hasClass('expanded')) {
+					$(this).expand();
+				}
+			}
+		});
+	});
+
+	// make visible that a row is clicked
+	$('#entity-list table tbody tr').mousedown(function() {
+		$('tr.selected').removeClass('selected'); // deselect currently selected rows
+		$(this).addClass('selected');
+	});
+
+	// make sure row is selected when span is clicked
+	$('#entity-list table tbody tr span').mousedown(function() {
+		$($(this).parents('tr')[0]).trigger('mousedown');
+	});
+	
+	$('#entity-list table').treeTable({
+		treeColumn: 2,
+		clickableNodeNames: true,
+		initialState: 'expanded'
+	});
+	
+	// load data and show plot
+	vz.entities.loadData();
+};
+
+/**
+ * Load json data from the backend
+ *
+ * @todo move to Entity class
+ */
+vz.entities.loadData = function() {
+	$('#overlay').html('<img src="images/loading.gif" alt="loading..." /><p>loading...</p>');
+	vz.entities.each(function(entity) {
+		if (entity.active && entity.type != 'group') { // TODO add group data aggregation
+			//var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
+			//var offset = delta * 0.1;
+			var offset = 1000*60*60; // load additional data to avoid paddings
+	
+			vz.load({
+				context: 'data',
+				identifier: entity.uuid,
+				data: {
+					from: Math.floor(vz.options.plot.xaxis.min - offset), // TODO fuzy-logic to get enough data
+					to: Math.ceil(vz.options.plot.xaxis.max + offset),
+					tuples: vz.options.tuples
+				},
+				success: vz.wait(function(json) {
+					entity.data = json.data;
+				
+					if (entity.data.min !== null && entity.data.min[1] < vz.options.plot.yaxis.min) { // allow negative values for temperature sensors
+						vz.options.plot.yaxis.min = null;
+					}
+				
+					// update entity table
+					var unit = ' ' + entity.definition.unit;
+					$('#entity-' + entity.uuid + ' .min')
+						.text(
+							(entity.data.min !== null) ? vz.wui.formatNumber(entity.data.min[1]) + unit : '-')
+						.attr('title', (entity.data.min !== null) ? $.plot.formatDate(new Date(entity.data.min[0]), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames) : '');
+					$('#entity-' + entity.uuid + ' .max')
+						.text((entity.data.max !== null) ? vz.wui.formatNumber(entity.data.max[1]) + unit : '-')
+						.attr('title', (entity.data.max !== null) ? $.plot.formatDate(new Date(entity.data.max[0]), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames) : '');
+					$('#entity-' + entity.uuid + ' .average').text((entity.data.average !== null) ? vz.wui.formatNumber(entity.data.average) + unit : '');
+					$('#entity-' + entity.uuid + ' .last').text((entity.data.tuples) ? vz.wui.formatNumber(entity.data.tuples.last()[1]) + unit : '');
+					if (entity.definition.interpreter == 'Volkszaehler\\Interpreter\\MeterInterpreter') { // sensors have no consumption
+						$('#entity-' + entity.uuid + ' .consumption').text(vz.wui.formatNumber(entity.data.consumption) + unit + 'h');
+					}
+				}, vz.wui.drawPlot, 'data')
+			});
+		}
+	});
+};
+
+/**
  * Draws plot to container
  */
-vz.drawPlot = function () {
+vz.wui.drawPlot = function () {
+	vz.wui.updateHeadline();
+
 	var data = new Array;
-	vz.entities.each(function(entity, parent) {
+	vz.entities.each(function(entity) {
 		if (entity.active && entity.data && entity.data.tuples && entity.data.tuples.length > 0) {
 			data.push({
 				data: entity.data.tuples,
@@ -445,84 +608,20 @@ vz.drawPlot = function () {
 	vz.plot = $.plot($('#flot'), data, vz.options.plot);
 };
 
-/**
- * Universal helper for backend ajax requests with error handling
- */
-vz.load = function(context, identifier, data, success) {
-	$.ajax({
-		success: success,
-		url: this.options.backendUrl + '/' + context + '/' + identifier + '.json',
-		dataType: 'json',
-		data: data,
-		error: function(xhr) {
-			json = JSON.parse(xhr.responseText);
-			vz.wui.dialogs.error(xhr.statusText, json.exception.message, xhr.status); // TODO or throw exception?
-		}
-	});
-};
-
-/**
- * Parse URL GET parameters
- */
-vz.parseUrlParams = function() {
-	var vars = $.getUrlParams();
-	for (var key in vars) {
-		if (vars.hasOwnProperty(key)) {
-			switch (key) {
-				case 'uuid': // add optional uuid from url
-					var uuids = (typeof vars[key] == 'string') ? [vars[key]] : vars[key]; // handle multiple uuids
-					uuids.each(function(index, uuid) {
-						try { vz.uuids.add(uuid); } catch (exception) { /* ignore exception */ }
-					});
-					break;
-					
-				case 'from':
-					vz.options.plot.xaxis.min = parseInt(vars[key]);
-					break;
-					
-				case 'to':
-					vz.options.plot.xaxis.max = parseInt(vars[key]);
-					break;
-					
-				case 'debug':
-					$.getScript('javascripts/firebug-lite.js');
-					break;
-			}
-		}
-	}
-};
-
-/**
- * Load capabilities from backend
- */
-vz.capabilities.load = function() {
-	$.ajax({
-		cache: true,
-		dataType: 'json',
-		url: vz.options.backendUrl + '/capabilities/definitions.json',
-		success: function(json) {
-			$.extend(true, vz.capabilities, json.capabilities);
-		
-			// load entity details & properties
-			vz.entities.loadDetails();
-		}
-	});
-};
-
-vz.capabilities.definitions.get = function(section, name) {
-	for (var i in this[section]) {
-		if (this[section][i].name == name) {
-			return this[section][i];
-		}
-	}
-}
-
 /*
  * Error & Exception handling
  */
+ 
+var Exception = function(type, message, code) {
+	return {
+		type: type,
+		message: message,
+		code: code
+	};
+}
 
 vz.wui.dialogs.error = function(error, description, code) {
-	if (typeof code != undefined) {
+	if (typeof code != 'undefined') {
 		error = code + ': ' + error;
 	}
 
