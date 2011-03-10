@@ -80,8 +80,35 @@ class Request {
 	 
 	public function getHeader($header) { return $this->headers[$header]; }
 	public function getMethod() { return $this->method; }
-	public function getParameter($name, $method = 'get') { return (isset($this->parameters[$method][$name])) ? $this->parameters[$method][$name] : NULL; }
-	public function getParameters($method = 'get') { return $this->parameters[$method]; }
+	
+	public function getParameter($name, $method = NULL) {
+		if (isset($method) && isset($this->parameters[$method][$name])) {
+			return $this->parameters[$method][$name];
+		}
+		else { // fall through: get -> post -> cookie -> files
+			foreach (array_keys($this->parameters) as $method) {
+				if (isset($this->parameters[$method][$name])) {
+					return $this->parameters[$method][$name];
+				}
+			}
+		}
+		return NULL;
+	}
+	
+	public function getParameters($method = NULL) {
+		if (isset($method)) {
+			return $this->parameters[$method];
+		}
+		else { // merge all
+			return array_merge(
+				$this->parameters['files'],
+				$this->parameters['cookies'],
+				$this->parameters['post'],
+				$this->parameters['get']
+			);
+		}
+		return NULL;
+	}
 
 }
 
