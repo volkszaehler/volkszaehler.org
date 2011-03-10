@@ -1,6 +1,8 @@
 /**
  * Some functions and prototypes which make our life easier
  * 
+ * not volkszaehler.org related
+ * 
  * @author Florian Ziegler <fz@f10-home.de>
  * @author Justin Otherguy <justin@justinotherguy.org>
  * @author Steffen Vogel <info@steffenvogel.de>
@@ -23,32 +25,6 @@
  * You should have received a copy of the GNU General Public License along with
  * volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
-
-/**
- * Helper function to wait for multiple ajax requests to complete
- */
-function waitAsync(callback, finished, identifier) {
-	if (!waitAsync.counter) { waitAsync.counter = new Array(); }
-	if (!waitAsync.counter[identifier]) { waitAsync.counter[identifier] = 0; }
-	
-	waitAsync.counter[identifier]++;
-	
-	return function (data, textStatus) {
-		callback(data, textStatus);
-		
-		if (!--waitAsync.counter[identifier]) {
-			finished();
-		}
-	};
-}
-
-var Exception = function(type, message, code) {
-	return {
-		type: type,
-		message: message,
-		code: code
-	};
-}
 
 /*
  * Array extensions

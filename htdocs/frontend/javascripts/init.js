@@ -25,11 +25,15 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
-// volkszaehler.org namespace (holds all data, options and functions for the frontend)
-// we dont want to pollute the global namespace
+/**
+ * volkszaehler.org namespace
+ *
+ * holds all data, options and functions for the frontend
+ * we dont want to pollute the global namespace
+ */
 var vz = {
 	// entity properties + data
-	entities: new Array,
+	entities: new Array, // TODO new Entity?
 
 	// web user interface
 	wui: {
@@ -51,14 +55,21 @@ var vz = {
 	options: { }
 };
 
-// executed on document loaded complete
-// this is where it all starts...
+/**
+ * Executed on document loaded complete
+ * this is where it all starts...
+ */
 $(document).ready(function() {
+	// late binding
 	$(window).resize(function() {
 		vz.options.tuples = Math.round($('#flot').width() / 3);
 		$('#tuples').val(vz.options.tuples);
-		vz.drawPlot();
+		vz.wui.drawPlot();
 	});
+	
+	window.onerror = function(errorMsg, url, lineNumber) {
+		vz.wui.dialogs.error('Javascript Runtime Error', errorMsg);
+	};
 
 	vz.uuids.load(); // load uuids from cookie
 	vz.options.load(); // load options from cookie
@@ -67,14 +78,12 @@ $(document).ready(function() {
 	// initialize user interface
 	vz.wui.init();
 	vz.wui.initEvents();
-	vz.wui.dialogs.init();
 
 	if (vz.uuids.length == 0) {
 		$('#entity-add').dialog('open');
 	}
 	
-	// starting with request to backend:
+	// starting with request to backend; try to follow the callbacks ;)
 	// capabiltities -> entities -> data
-	// try to follow the callbacks ;)
 	vz.capabilities.load(); // load properties, entity types and other capabilities from backend
 });

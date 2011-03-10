@@ -46,10 +46,10 @@ vz.uuids.add = function(uuid) {
  */
 vz.uuids.remove = function(uuid) {
 	if (this.contains(uuid)) {
-		this.splice(this.indexOf(uuid), 1);	// remove uuid from array
+		this.splice(this.indexOf(uuid), 1); // remove uuid from array
 	}
 	else {
-		throw new Exception('UUIDException', 'UUID unkown: ' + uuid);
+		throw new Exception('UUIDException', 'Unknown UUID: ' + uuid);
 	}
 };
 	

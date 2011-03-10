@@ -27,8 +27,8 @@
 /**
  * Property constructor
  */
-var Property = function(key, value) {
-	
+var Property = function(json) {
+	$.extend(this, json);
 };
 
 /**
@@ -38,7 +38,7 @@ var Property = function(key, value) {
  * @todo implement/test
  */
 Property.prototype.validate = function(value) {
-	switch (property.type) {
+	switch (this.type) {
 		case 'string':
 		case 'text':
 			// TODO check pattern
@@ -59,10 +59,10 @@ Property.prototype.validate = function(value) {
 			return value == '1' || value == '';
 			
 		case 'multiple':
-			return $.inArray(value, property.options);
+			return this.options.contains(value);
 			
 		default:
-			alert('Error: unknown property!');
+			throw new Exception('EntityException', 'Unknown property');
 	}
 };
 
@@ -70,25 +70,25 @@ Property.prototype.validate = function(value) {
  * 
  * @todo implement/test
  */
-Property.prototype.getDOM = function() {
-	switch (property.type) {
+Property.prototype.getInput = function(value) {
+	switch (this.type) {
 		case 'string':
 		case 'float':
 		case 'integer':
 			return $('<input>')
 				.attr('type', 'text')
-				.attr('name=', property.name)
-				.attr('maxlength', (property.type == 'string') ? property.max : 0);
+				.attr('name=', this.name)
+				.attr('maxlength', (property.type == 'string') ? this.max : 0);
 			
 		case 'text':
 			return $('<textarea>')
-				.attr('name', property.name);
+				.attr('name', this.name);
 			
 		case 'boolean':
 			return $('<input>')
 				.attr('type', 'checkbox')
-				.attr('name', property.name)
-				.value(1);
+				.attr('name', this.name)
+				.attr('checked', true);
 			
 		case 'multiple':
 			var dom = $('<select>').attr('name', property.name)
@@ -101,6 +101,6 @@ Property.prototype.getDOM = function() {
 			return dom;
 	
 		default:
-			throw 'Unknown property type';
+			throw new Exception('PropertyException', 'Unknown property');
 	}
 };

@@ -28,13 +28,19 @@
  * Entity constructor
  * @todo add validation
  */
-var Entity = function(json) {
+var Entity = function(json, parent) {
 	$.extend(true, this, json);
-
+	this.parent = parent;
+	
 	if (this.children) {
-		for (var i in this.children) {
-			this.children[i] = new Entity(this.children[i]);
-		}
+		var children = new Array();
+		for (var i = 0; i < this.children.length; i++) {
+			children.push(new Entity(this.children[i], this));
+		};
+		
+		this.children = children.sort(function(e1, e2) {
+			e1.title < e2.title;
+		});
 	}
 
 	this.definition = vz.capabilities.definitions.get('entities', this.type);
@@ -60,11 +66,11 @@ Entity.prototype.showDetails = function() {
  * @todo implement/test
  */
 Entity.prototype.getDOM = function() {
-	var table = $('<table><thead><tr><th>Key</th><th>Value</th></tr></thead></table>');
+	var table = $('<table><thead><tr><th>Eigenschaft</th><th>Wert</th></tr></thead></table>');
 	var data = $('<tbody>');
 
 	for (var property in this) {
-		if (this.hasOwnProperty(property) && !['data', 'definition', 'children'].contains(property)) {
+		if (this.hasOwnProperty(property) && !['data', 'definition', 'children', 'parent'].contains(property)) {
 			switch(property) {
 				case 'type':
 					var title = 'Typ';
@@ -113,17 +119,50 @@ Entity.prototype.getDOM = function() {
 };
 
 /**
+ * Add entity as child
+ */
+Entity.prototype.addChild = function(child) {
+	if (this.definition.model != 'Volkszaehler\\Model\\Aggregator') {
+		throw new Exception('EntityException', 'Entity is not an Aggregator');
+	}
+
+	vz.load({
+		context: 'group',
+		identifier: this.uuid,
+		data: {
+			uuid: child.uuid
+		},
+		type: 'post',
+		success: vz.wait($.noop, vz.entities.loadDetails, 'information')
+	});
+}
+
+/**
+ * Remove entity from children
+ */
+Entity.prototype.removeChild = function(child) {
+	vz.load({
+		context: 'group',
+		identifier: this.uuid,
+		data: {
+			uuid: child.uuid,
+			operation: 'delete'
+		},
+		success: vz.wait($.noop, vz.entities.loadDetails, 'information')
+	});
+};
+
+/**
  * Validate Entity for required and optional properties and their values
+ *
  * @return boolean
  * @todo implement/test
  */
 Entity.prototype.validate = function() {
-	var def = getDefinition(vz.definitions.entities, entity.type);
-	
-	def.required.each(function(index, property) {
-		var property = getDefinition(vz.definitions.properties, property);
+	this.definition.required.each(function(index, property) {
+		var propertyDefinition = vz.capabilities.definitions.get('properties', property);
 		if (!validateProperty(property, form.elements[property.name].value)) {
-			throw 'Invalid property: ' + property.name + ' = ' + form.elements[property.name].value;
+			throw new Exception('EntityException', 'Invalid property: ' + property.name + ' = ' + form.elements[property.name].value);
 		}
 	});
 	
