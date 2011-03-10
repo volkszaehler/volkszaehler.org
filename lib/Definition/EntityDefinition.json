@@ -49,7 +49,7 @@
 		"required"		: ["title", "resolution"],
 		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "port", "cuuid", "public", "active"],
 		"icon"			: "",					// TODO look for an icon
-		"unit"			: "kW",
+		"unit"			: "W",
 		"interpreter"	: "Volkszaehler\\Interpreter\\MeterInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"translation"	: { "de" : "Stromzähler" }
@@ -59,7 +59,7 @@
 		"required"		: ["title"],
 		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "port", "cuuid", "public", "active"],
 		"icon"			: "",					// TODO look for an icon
-		"unit"			: "kW",
+		"unit"			: "W",
 		"interpreter"	: "Volkszaehler\\Interpreter\\SensorInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"translation"	: { "de" : "Stromsensor" }
@@ -69,7 +69,7 @@
 		"required"		: ["title", "resolution"],
 		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "port", "cuuid", "public", "active"],
 		"icon"			: "",					// TODO look for an icon
-		"unit"			: "m³/h",
+		"unit"			: "m³",
 		"interpreter"	: "Volkszaehler\\Interpreter\\MeterInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"translation"	: { "de" : "Gas" }
@@ -79,7 +79,7 @@
 		"required"		: ["title", "resolution"],
 		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "port", "cuuid", "public", "active"],
 		"icon"			: "",					// TODO look for an icon
-		"unit"			: "m³/h",
+		"unit"			: "m³",
 		"interpreter"	: "Volkszaehler\\Interpreter\\MeterInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"translation"	: { "de" : "Wasser" }
@@ -143,5 +143,15 @@
 		"interpreter"	: "Volkszaehler\\Interpreter\\SensorInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"translation"	: { "de" : "Lichtstärke" }
+	},
+	{
+		"name"			: "workinghours",
+		"required"		: ["title", "resolution"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "active"],
+		"icon"			: "",					// TODO look for an icon
+		"unit"			: "h",					// TODO add unit
+		"interpreter"	: "Volkszaehler\\Interpreter\\MeterInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"	: { "de" : "Betriebsstundenzähler" }
 	}
 ]

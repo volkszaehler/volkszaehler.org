@@ -42,12 +42,12 @@ class MeterInterpreter extends Interpreter {
 	
 	/**
 	 * Calculates the consumption
-	 * @return float total consumption
+	 * @return float total consumption in Wh
 	 */
 	public function getConsumption() {
 		if (is_null($this->tupleCount)) throw new \Exception('Data has to be processed first!');
 		
-		return $this->pulseCount / $this->resolution;
+		return 1000 * $this->pulseCount / $this->resolution;
 	}
 
 	/**
@@ -75,8 +75,8 @@ class MeterInterpreter extends Interpreter {
 	 * @return float
 	 */
 	public function getAverage() {
-		// 3600: 3600 s/h; 1000: ms -> s; 1000: KW -> W
-		return (3600 * 1000 * 1000 * $this->getConsumption()) / ($this->to - $this->from);
+		// 3600: 3600 s/h; 1000: ms -> s
+		return (3600 * 1000 * $this->getConsumption()) / ($this->to - $this->from);
 	}
 
 	/**
