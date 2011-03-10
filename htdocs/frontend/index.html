@@ -10,9 +10,9 @@
 	<link rel="apple-touch-icon" href="../favicon.ico">
 
 	<!-- jQuery -->
-	<script type="text/javascript" src="javascripts/jquery/jquery-1.4.2.min.js"></script>
-	<script type="text/javascript" src="javascripts/jquery/jquery-ui-1.8.6.min.js"></script>
-	<script type="text/javascript" src="javascripts/jquery/jquery-treeTable.min.js"></script>
+	<script type="text/javascript" src="javascripts/jquery/jquery-1.4.4.js"></script>
+	<script type="text/javascript" src="javascripts/jquery/jquery-ui-1.8.10.min.js"></script>
+	<script type="text/javascript" src="javascripts/jquery/jquery-treeTable.js"></script>
 	<script type="text/javascript" src="javascripts/jquery/jquery-extensions.js"></script>
 	
 	<!-- misc helpers -->
@@ -26,13 +26,14 @@
 	<script type="text/javascript" src="javascripts/flot/jquery.flot.selection.js"></script>
 
 	<!-- volkszaehler.org code -->
-	<script type="text/javascript" src="javascripts/init.js"></script>	
+	<script type="text/javascript" src="javascripts/init.js"></script>
 	<script type="text/javascript" src="javascripts/options.js"></script>
+	<script type="text/javascript" src="javascripts/functions.js"></script>
 	<script type="text/javascript" src="javascripts/uuid.js"></script>
-	<script type="text/javascript" src="javascripts/frontend.js"></script>
+	<script type="text/javascript" src="javascripts/wui.js"></script>
 	<script type="text/javascript" src="javascripts/entity.js"></script>
 	
-	<link rel="stylesheet" type="text/css" href="stylesheets/ui-lightness/jquery-ui-1.8.6.css" />
+	<link rel="stylesheet" type="text/css" href="stylesheets/ui-lightness/jquery-ui-1.8.10.css" />
 	<link rel="stylesheet" type="text/css" href="stylesheets/jquery.treeTable.css">
 	<link rel="stylesheet" type="text/css" href="stylesheets/jquery.ui.custom.css">	
 	<link rel="stylesheet" type="text/css" href="stylesheets/style.css">
@@ -125,31 +126,39 @@
 </div>
 
 <!-- dialogs -->
+<div id="entity-move" class="dialog">
+	<p>
+		<span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>
+		Sie sind im Begriff einen Kanal oder eine Gruppe zu Verschieben!
+	</p>
+</div>
+
 <div id="entity-add" class="dialog">
 	<div class="tabs">
-		<!--<ul>-->
-		<!--	<li><a href="#entity-subscribe">Kanal abonnieren</a></li> -->
-		<!--	<li><a href="#entity-create">Kanal erstellen</a></li> -->
-		<!--	<li><a href="#public-entities">&ouml;ffentliche Kan&auml;le</a></li> -->
-		<!--</ul>-->
+		<ul>
+			<li><a href="#entity-subscribe">Kanal abonnieren</a></li>
+			<li><a href="#entity-subscribe-public">&ouml;ffentliche Kan&auml;le</a></li>
+			<li><a href="#entity-create">Kanal erstellen</a></li>
+		</ul>
 		<div id="entity-subscribe">
 			<p>Hier k&ouml;nnen Sie einen existierenden Kanal über seine UUID hinzuf&uuml;gen</p>
-			<table>
-				<tr><td><label for="uuid">UUID:</label></td><td><input id="uuid" type="text" size="36" maxlength="36" /></td></tr>
-				<!--<tr><td><label for="remember">Cookie:</label></td><td><input id="remember" type="checkbox" /></td></tr>-->
-			</table>
+			<p><label for="uuid">UUID:</label> <input id="uuid" type="text" size="36" maxlength="36" /></p>
+			<!-- <p><label for="backend">Backend: </label> <input id="backend" type="text" /></p> -->
+			<p><label for="cookie">Cookie:</label> <input class="cookie" type="checkbox" /></p>
 			<input type="button" value="abonnieren" />
 		</div>
-		<!--div id="entity-create"> -->
-		<!--	<p>Hier können Sie einen neuen Kanal erstellen</p> -->
-		<!--	<p><label for="type">Typ: </label><select id="type" size="1"><option>Strom (das funktioniert noch nicht)</option></select></p> -->
-		<!--	<input type="button" value="erstellen" /> -->
-		<!--</div> -->
-		<!--<div id="public-entities"> -->
-		<!--	<p>Hier k&ouml;nnen Sie demn&auml;chst &ouml;ffentliche Kan&auml;le abonnieren.</p> -->
-		<!--	<p><label for="uuid">Kanal: </label><select id="public-uuids" size="1"><option>Demo (das funktioniert noch nicht)</option></select></p> -->
-		<!--	<input type="button" value="abonnieren" /> -->
-		<!--</div> -->
+		<div id="entity-subscribe-public">
+			<p>Hier k&ouml;nnen Sie &ouml;ffentliche Kan&auml;le abonnieren.</p>
+			<p><label for="uuid">Kanal:</label> <select id="public" size="1"></select></p>
+			<p><label for="cookie">Cookie:</label> </td><td><input class="cookie" type="checkbox" /></p>
+			<input type="button" value="abonnieren" />
+		</div>
+		<div id="entity-create">
+			<p>Hier können Sie einen neuen Kanal erstellen</p>
+			<p><label for="type">Typ: </label><select id="type" size="1"></select></p>
+			<fieldset id="properties"></fieldset>
+			<input type="button" value="erstellen" />
+		</div>
 	</div>
 </div>
 </body>

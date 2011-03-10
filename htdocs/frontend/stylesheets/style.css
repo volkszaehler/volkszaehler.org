@@ -19,7 +19,7 @@ thead tr th {
 }
 
 tbody tr td {
-	border-bottom: 1px solid #A7A7A7;
+	border-top: 1px solid #A7A7A7;
 }
 
 #content {
@@ -91,6 +91,19 @@ tbody tr td {
 	height: 28px;
 }
 
+#headline {
+	margin-bottom: 15px;
+}
+
+#title {
+	margin: 0.2em;
+	float: left;
+}
+
+#permalink {
+	float: right;
+}
+
 /* treeTable for entities */
 #entity-list tbody span {
 	background-position: left center;
@@ -99,11 +112,11 @@ tbody tr td {
 	margin: 0;
 }
 
-#entity-list tbody span.channel {
+#entity-list tr.channel span.indicator {
 	background-image: url("../images/chart_curve.png");
 }
 
-#entity-list tbody span.group {
+#entity-list tr.aggregator span.indicator {
 	background-image: url("../images/folder.png");
 }
 
@@ -120,6 +133,7 @@ tbody tr td {
 
 .dialog {
 	display: none;
+	padding: 10px;
 }
 
 .ops {
@@ -132,17 +146,4 @@ tbody tr td {
 
 .expander {
 	width: 20px;
-}
-
-#headline {
-	margin-bottom: 15px;
-}
-
-#title {
-	margin: 0.2em;
-	float: left;
-}
-
-#permalink {
-	float: right;
 }
