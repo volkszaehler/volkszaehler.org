@@ -202,8 +202,6 @@ class JSON extends View {
 		$this->json['data']['uuid'] = $interpreter->getEntity()->getUuid();
 
 		$data = $interpreter->processData(
-			$this->request->getParameter('tuples'),
-			$this->request->getParameter('group'), 
 			function($tuple) {
 				return array(
 					$tuple[0],

@@ -85,14 +85,15 @@ class MeterInterpreter extends Interpreter {
 	 * @todo untested
 	 * @return array with timestamp, values, and pulse count
 	 */
-	public function processData($count, $groupBy, $callback) {
-		$pulses = parent::getData($count, $groupBy);
+	public function processData($callback) {
+		$pulses = parent::getData();
 
 		$this->resolution = $this->channel->getProperty('resolution');
 		$this->pulseCount = 0;
 
 		$tuples = array();
-		$last = $pulses->rewind();
+		$pulses->rewind();
+		$last = $pulses->next();
 		$next = $pulses->next();
 		
 		while ($pulses->valid()) {

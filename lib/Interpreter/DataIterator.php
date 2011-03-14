@@ -21,21 +21,25 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace Volkszaehler\Interpreter\Iterator;
+namespace Volkszaehler\Interpreter;
 
 use Volkszaehler\Util;
-
 use Doctrine\DBAL;
 
 /**
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
  */
-class DataAggregationIterator implements \Iterator, \Countable {
+class DataIterator implements \Iterator, \Countable {
+	protected $stmt;	// PDO statement
+
 	protected $current;	// the current data
 	protected $key;		// key
-	protected $size;	// total readings in PDOStatement
-	protected $iterator;	// subiterator
+	private $rowKey;	// internal key for PDO statement
+	
+	protected $rowCount;	// num of readings in PDOStatement
+	protected $tupleCount;	// num of requested tuples
+	protected $packageSize; // num of rows we aggregate in each tuple
 
 	/**
 	 * Constructor
@@ -44,28 +48,40 @@ class DataAggregationIterator implements \Iterator, \Countable {
 	 * @param integer $size
 	 * @param integer $tuples
 	 */
-	public function __construct(\PDOStatement $stmt, $rows, $count) {
-		$this->iterator = new DataIterator($stmt, $rows);
+	public function __construct(\PDOStatement $stmt, $rowCount, $tupleCount) {
+		$this->rowCount = $rowCount;
+		$this->tupleCount = $tupleCount;
+	
+		$this->stmt = $stmt;
+		$this->stmt->setFetchMode(\PDO::FETCH_NUM);
 
-		$this->packageSize = floor($rows / $count);
-		$this->size = $count;
+		if ($this->rowCount > $this->tupleCount) {
+			$this->packageSize = floor($this->rowCount / $this->tupleCount);
+			$this->tupleCount = floor($this->rowCount / $this->packageSize) + $this->rowCount % $this->packageSize;
+		}
+		else {
+			 $this->packageSize = 1;
+		}
 	}
 
 	/**
 	 * Aggregate data
 	 */
 	public function next() {
-		$this->current = array(0, 0, 0);
-		for ($i = 0; $i < $this->packageSize; $i++, $this->iterator->next()) {
-			$tuple = $this->iterator->current();
+		$package = array(0, 0, 0);
+		for ($i = 0; $i < $this->packageSize && $this->valid(); $i++) {
+			$tuple = $this->stmt->fetch();
 
-			$this->current[0] = $tuple[0];
-			$this->current[1] += $tuple[1];
-			$this->current[2] += $tuple[2];
+			$package[0] = $tuple[0];
+			$package[1] += $tuple[1];
+			$package[2] += $tuple[2];
+			
+			$this->rowKey++;
 		}
-
+		
 		$this->key++;
-		return $this->current;
+		Util\Debug::log('key++', $this->key);
+		return $this->current = $package;
 	}
 
 	/**
@@ -75,24 +91,18 @@ class DataAggregationIterator implements \Iterator, \Countable {
 	 * PDOStatement hasn't a rewind()
 	 */
 	public function rewind() {
-		$this->iterator->rewind();
-		// skip first readings to get an even divisor
-		$skip = count($this->iterator) - count($this) * $this->packageSize;
-		for ($i = 0; $i < $skip; $i++) {
-			$this->iterator->next();
-		}
-		return $this->next();
+		$this->key = $this->rowKey = 0;
 	}
 
 	public function valid() {
-		return $this->key <= $this->size;
+		return $this->rowKey < $this->rowCount;
 	}
 
 	/**
 	 * Getter & setter
 	 */
 	public function getPackageSize() { return $this->packageSize; }
-	public function count() { return $this->size; }
+	public function count() { return $this->tupleCount; }
 	public function key() { return $this->key; }
 	public function current() { return $this->current; }
 }

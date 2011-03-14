@@ -185,19 +185,6 @@ abstract class Entity {
 	public function getUuid() { return $this->uuid; }	// read only
 	public function getType() { return $this->type; }	// read only
 	public function getDefinition() { return Definition\EntityDefinition::get($this->type); }
-
-	/**
-	 * Get interpreter to obtain data and statistical information for a given time interval
-	 *
-	 * @param Doctrine\ORM\EntityManager $em
-	 * @param integer $from timestamp in ms since 1970
-	 * @param integer $to timestamp in ms since 1970
-	 * @return Interpreter
-	 */
-	public function getInterpreter(\Doctrine\ORM\EntityManager $em, $from, $to) {
-		$class = $this->getDefinition()->getInterpreter();
-		return new $class($this, $em, $from, $to);
-	}
 }
 
 ?>

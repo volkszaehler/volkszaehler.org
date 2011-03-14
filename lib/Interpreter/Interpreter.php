@@ -43,6 +43,7 @@ abstract class Interpreter {
 
 	protected $from;
 	protected $to;
+	protected $groupBy;
 	
 	protected $rowCount = NULL;
 	protected $tupleCount = NULL;
@@ -55,14 +56,25 @@ abstract class Interpreter {
 	 * @param integer $from timestamp in ms since 1970
 	 * @param integer $to timestamp in ms since 1970
 	 */
-	public function __construct(Model\Channel $channel, ORM\EntityManager $em, $from, $to) {
+	public function __construct(Model\Channel $channel, ORM\EntityManager $em, $from, $to, $tupleCount, $groupBy) {
 		$this->channel = $channel;
+		$this->tupleCount = $tupleCount;
+		$this->groupBy = $groupBy;
 		
 		// get dbal connection from EntityManager
 		$this->conn = $em->getConnection();
 
-		$this->from = (isset($from)) ? self::parseDateTimeString($from, time() * 1000) : NULL;
-		$this->to = (isset($to)) ? self::parseDateTimeString($to, (isset($this->from)) ? $this->from : time() * 1000) : NULL;
+		$this->from = $from;
+		$this->to = $to;
+		
+		// parse interval
+		if (isset($from)) {
+			$this->from = self::parseDateTimeString($from, time() * 1000);
+		}
+		
+		if (isset($to)) {
+			$this->to = self::parseDateTimeString($to, (isset($this->from)) ? $this->from : time() * 1000);
+		}
 
 		if (isset($this->from) && isset($this->to) && $this->from > $this->to) {
 			throw new \Exception('&from is larger than &to parameter');
@@ -75,13 +87,13 @@ abstract class Interpreter {
 	 * @param string|integer $groupBy
 	 * @return Volkszaehler\DataIterator
 	 */
-	protected function getData($count = NULL, $groupBy = NULL) {
+	protected function getData() {
 		// prepare sql
 		$sql['from']	= ' FROM data';
 		$sql['where']	= ' WHERE channel_id = ?' . self::buildDateTimeFilterSQL($this->from, $this->to);
 		$sql['orderBy']	= ' ORDER BY timestamp ASC';
 
-		if ($groupBy && $sql['groupFields'] = self::buildGroupBySQL($groupBy)) {
+		if ($this->groupBy && $sql['groupFields'] = self::buildGroupBySQL($this->groupBy)) {
 			$sql['rowCount']	= 'SELECT COUNT(DISTINCT ' . $sql['groupFields'] . ')' . $sql['from'] . $sql['where'];
 			$sql['fields']		= ' MAX(timestamp) AS timestamp, SUM(value) AS value, COUNT(timestamp) AS count';
 			$sql['groupBy']		= ' GROUP BY ' . $sql['groupFields'];
@@ -98,15 +110,10 @@ abstract class Interpreter {
 		// query for data
 		$stmt = $this->conn->executeQuery('SELECT ' . $sql['fields'] . $sql['from'] . $sql['where'] . $sql['groupBy'] . $sql['orderBy'], array($this->channel->getId()));
 
-		// return iterators
-		if ($sql['groupBy'] || is_null($count) || $this->rowCount < $count) {
-			$this->tupleCount = $this->rowCount;
-			return new Iterator\DataIterator($stmt, $this->rowCount);
-		}
-		else {
-			$this->tupleCount = $count;
-			return new Iterator\DataAggregationIterator($stmt, $this->rowCount, $count);
-		}
+		Util\Debug::log('rowcount', $this->rowCount);
+		Util\Debug::log('tuplecount', $this->tupleCount);
+
+		return new DataIterator($stmt, $this->rowCount, $this->tupleCount);
 	}
 
 	/**

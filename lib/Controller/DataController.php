@@ -40,8 +40,11 @@ class DataController extends Controller {
 	public function get(Model\Entity $entity) {
 		$from = $this->view->request->getParameter('from');
 		$to = $this->view->request->getParameter('to');
+		$tuples = $this->view->request->getParameter('tuples');
+		$groupBy = $this->view->request->getParameter('group');
+		$class = $entity->getDefinition()->getInterpreter();
 
-		return $entity->getInterpreter($this->em, $from, $to);
+		return new $class($entity, $this->em, $from, $to, $tuples, $groupBy);
 	}
 
 	/**
