@@ -36,8 +36,8 @@ class SensorInterpreter extends Interpreter {
 	/**
 	 * @param string|integer $groupBy
 	 */
-	public function processData($tuples, $groupBy, $callback) {
-		$data = parent::getData($tuples, $groupBy);
+	public function processData($callback) {
+		$data = parent::getData();
 
 		$values = array();
 		foreach ($data as $reading) {
