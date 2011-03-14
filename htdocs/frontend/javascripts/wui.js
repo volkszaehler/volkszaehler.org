@@ -37,7 +37,7 @@ vz.wui.init = function() {
 	
 	// buttons
 	$('button, input[type=button],[type=image]').button();
-	$('button[name=options-save]').click(function() { vz.options.save(); });
+	$('button[name=options-save]').click(vz.options.save);
 	$('#permalink').click(function() {
 		var uuids = [];
 		var url = window.location.protocol + '//' +
@@ -58,7 +58,7 @@ vz.wui.init = function() {
 
 		window.location = url;
 	});
-	$('button[name=entity-add]').click(vz.wui.dialogs.init);
+	$('button[name=entity-add]').click(this.dialogs.init);
 	
 	// bind plot actions
 	$('#controls button').click(this.handleControls);
@@ -68,7 +68,7 @@ vz.wui.init = function() {
 	vz.options.tuples = Math.round($('#flot').width() / 4);
 	$('#tuples').val(vz.options.tuples).change(function() {
 		vz.options.tuples = $(this).val();
-		vz.entities.loadData();
+		vz.entities.loadData().done(vz.wui.drawPlot);
 	});
 
 	// backend address
@@ -81,16 +81,16 @@ vz.wui.init = function() {
 	// auto refresh
 	if (vz.options.refresh) {
 		$('#refresh').attr('checked', true);
-		vz.wui.timeout = window.setTimeout(vz.wui.refresh, 3000);
+		this.timeout = window.setTimeout(this.refresh, 3000);
 	}
 	$('#refresh').change(function() {
 		if ($(this).attr('checked')) {
 			vz.options.refresh = true;
-			vz.wui.timeout = window.setTimeout(vz.wui.refresh, 3000);
+			this.timeout = window.setTimeout(this.refresh, 3000);
 		}
 		else {
 			vz.options.refresh = false;
-			window.clearTimeout(vz.wui.timeout);
+			window.clearTimeout(this.timeout);
 		}
 	});
 	
@@ -119,7 +119,7 @@ vz.wui.dialogs.init = function() {
 	
 	// load public entities
 	vz.load({
-		context: 'entity',
+		controller: 'entity',
 		success: function(json) {
 			if (json.entities.length > 0) {
 				json.entities.each(function(index, entity) {
@@ -127,9 +127,6 @@ vz.wui.dialogs.init = function() {
 						$('<option>').text(entity.title).data('entity', entity)
 					);
 				});
-			}
-			else {
-			
 			}
 		}
 	});
@@ -157,7 +154,10 @@ vz.wui.dialogs.init = function() {
 				vz.uuids.save();
 			}
 			
-			vz.entities.loadDetails(); // reload entity details and load data
+			vz.entities.loadDetails().done(function() {
+				vz.entities.showTable();
+				vz.entities.loadData().done(vz.wui.drawPlot);
+			}); // reload entity details and load data
 		}
 		catch (e) {
 			vz.wui.dialogs.exception(e);
@@ -179,7 +179,10 @@ vz.wui.dialogs.init = function() {
 				vz.uuids.save();
 			}
 			
-			vz.entities.loadDetails(); // reload entity details and load data
+			vz.entities.loadDetails().done(function() {
+				vz.entities.showTable();
+				vz.entities.loadData().done(vz.wui.drawPlot);
+			}); // reload entity details and load data
 		}
 		catch (e) {
 			vz.wui.dialogs.exception(e);
@@ -196,7 +199,7 @@ vz.wui.dialogs.init = function() {
 	});*/
 	
 	// update event handler
-	$('button[name=entity-add]').unbind('click', vz.wui.dialogs.init);
+	$('button[name=entity-add]').unbind('click', this.init);
 	$('button[name=entity-add]').click(function() {
 		$('#entity-add.dialog').dialog('open');
 	});
@@ -212,7 +215,7 @@ vz.wui.initEvents = function() {
 			vz.options.plot.xaxis.max = ranges.xaxis.to;
 			vz.options.plot.yaxis.max = null; // autoscaling
 			vz.options.plot.yaxis.min = 0; // fixed to 0
-			vz.entities.loadData();
+			vz.entities.loadData().done(vz.wui.drawPlot);
 		})
 		/*.bind('plotpan', function (event, plot) {
 			var axes = plot.getAxes();
@@ -222,7 +225,7 @@ vz.wui.initEvents = function() {
 			vz.options.plot.yaxis.max = axes.yaxis.max;
 		})
 		.bind('mouseup', function(event) {
-			vz.entities.loadData();
+			vz.entities.loadData().done(vz.wui.drawPlot);
 		})*/
 		.bind('plotzoom', function (event, plot) {
 			var axes = plot.getAxes();
@@ -230,7 +233,7 @@ vz.wui.initEvents = function() {
 			vz.options.plot.xaxis.max = axes.xaxis.max;
 			vz.options.plot.yaxis.min = axes.yaxis.min;
 			vz.options.plot.yaxis.max = axes.yaxis.max;
-			vz.entities.loadData();
+			vz.entities.loadData().done(vz.wui.drawPlot);
 		});
 };
 
@@ -242,9 +245,9 @@ vz.wui.refresh = function() {
 	
 	vz.options.plot.xaxis.max = new Date().getTime();		// move plot
 	vz.options.plot.xaxis.min = vz.options.plot.xaxis.max - delta;	// move plot
-	vz.entities.loadData();
+	vz.entities.loadData().done(vz.wui.drawPlot);
 	
-	vz.wui.timeout = window.setTimeout(vz.wui.refresh, (delta / 100 < 3000) ? 3000 : delta / 100); // TODO update timeout after zooming
+	this.timeout = window.setTimeout(this.refresh, (delta / 100 < 3000) ? 3000 : delta / 100); // TODO update timeout after zooming
 };
 
 /**
@@ -317,7 +320,7 @@ vz.wui.handleControls = function () {
 		vz.options.plot.xaxis.min = new Date().getTime() - delta;
 	}
 	
-	vz.entities.loadData();
+	vz.entities.loadData().done(vz.wui.drawPlot);
 };
 
 /**
@@ -352,17 +355,21 @@ vz.entities.each = function(cb) {
  * Get all entity information from backend
  */
 vz.entities.loadDetails = function() {
-	vz.entities.clear();
+	this.clear();
 	
-	vz.uuids.each(function(index, value) {
-		vz.load({
-			context: 'entity',
-			identifier: value,
-			success: vz.wait(function(json) {
+	var queue = new Array;
+	
+	vz.uuids.each(function(index, uuid) {
+		queue.push(vz.load({
+			controller: 'entity',
+			identifier: uuid,
+			success: function(json) {
 				vz.entities.push(new Entity(json.entity));
-			}, vz.entities.showTable, 'information')
-		});
+			}
+		}));
 	});
+	
+	return $.when.apply($, queue);
 };
 
 /**
@@ -372,77 +379,14 @@ vz.entities.loadDetails = function() {
  */
 vz.entities.showTable = function() {
 	$('#entity-list tbody').empty();
+
+	vz.entities.sort(Entity.compare);
 	
 	var c = 0; // for colors
-	
-	vz.entities = vz.entities.sort(function(e1, e2) {
-		e1.title > e2.title;
-	});
-	
 	vz.entities.each(function(entity, parent) {
 		entity.color = vz.options.plot.colors[c++ % vz.options.plot.colors.length];
-		entity.active = (entity.active) ? entity.active : true; // TODO check
-	
-		var row = $('<tr>')
-			.addClass((parent) ? 'child-of-entity-' + parent.uuid : '')
-			.addClass((entity.definition.model == 'Volkszaehler\\Model\\Aggregator') ? 'aggregator' : 'channel')
-			.attr('id', 'entity-' + entity.uuid)
-			.append($('<td>')
-				.addClass('visibility')
-				.css('background-color', entity.color)
-				.append($('<input>')
-					.attr('type', 'checkbox')
-					.attr('checked', entity.active)
-					.bind('change', function(event) {
-						var state = $(this).attr('checked');
-						
-						entity.each(function(child) {
-							$('#entity-' + child.uuid + '.child-of-entity-' + entity.uuid + ' input[type=checkbox]').attr('checked', state);
-							child.active = state;
-						});
-
-						vz.wui.drawPlot();
-					})
-				)
-			)
-			.append($('<td>').addClass('expander'))
-			.append($('<td>')
-				.append($('<span>')
-					.text(entity.title)
-					.addClass('indicator')
-				)
-			)
-			.append($('<td>').text(entity.definition.translation[vz.options.language])) // channel type
-			.append($('<td>').addClass('min'))		// min
-			.append($('<td>').addClass('max'))		// max
-			.append($('<td>').addClass('average'))		// avg
-			.append($('<td>').addClass('consumption'))	// consumption
-			.append($('<td>').addClass('last'))		// last
-			.append($('<td>')				// operations
-				.addClass('ops')
-				.append($('<input>')
-					.attr('type', 'image')
-					.attr('src', 'images/information.png')
-					.attr('alt', 'details')
-					.bind('click', entity, function(event) { event.data.showDetails(); })
-				)
-			)
-			.data('entity', entity);
-				
-		if (vz.uuids.contains(entity.uuid)) { // removable from cookies?
-			$('td.ops', row).prepend($('<input>')
-				.attr('type', 'image')
-				.attr('src', 'images/delete.png')
-				.attr('alt', 'delete')
-				.bind('click', entity, function(event) {
-					vz.uuids.remove(event.data.uuid);
-					vz.uuids.save();
-					vz.entities.loadDetails();
-				})
-			);
-		}
 		
-		$('#entity-list tbody').append(row);
+		$('#entity-list tbody').append(entity.getRow());
 	});
 
 	/*
@@ -464,7 +408,7 @@ vz.entities.showTable = function() {
 	// configure aggregators as droppable
 	$('#entity-list tr.aggregator span.indicator').each(function() {
 		$(this).parents('tr').droppable({
-			//accept: 'tr.channel span.indicator, tr.aggregator span.indicator',
+			//accept: 'tr.channel span.indicator, tr.aggregator span.indicator', // TODO
 			drop: function(event, ui) {
 				var child = $(ui.draggable.parents('tr')[0]).data('entity');
 				var from = child.parent;
@@ -478,18 +422,26 @@ vz.entities.showTable = function() {
 					buttons: {
 						'Verschieben': function() {
 							try {
-								to.addChild(child); // add to new aggregator
+								var queue = new Array;
+								console.log('moving...');
+								queue.push(to.addChild(child)); // add to new aggregator
 					
-								if (typeof from != 'undefined') {
-									from.removeChild(child); // remove from aggregator
+								if (from !== undefined) {
+									console.log('remove from aggre');
+									queue.push(from.removeChild(child)); // remove from aggregator
 								}
 								else {
-									vz.uuids.remove(child.uuid); // remove from cookies
+									console.log('remove from cookies');
+									queue.push(vz.uuids.remove(child.uuid)); // remove from cookies
 									vz.uuids.save();
 								}
 							} catch (e) {
 								vz.wui.dialogs.exception(e);
 							} finally {
+								$.when(queue).done(function() {
+									// wait for backend
+									vz.entities.loadDetails().done(vz.entities.showTable);
+								});
 								$(this).dialog('close');
 							}
 						},
@@ -525,9 +477,6 @@ vz.entities.showTable = function() {
 		clickableNodeNames: true,
 		initialState: 'expanded'
 	});
-	
-	// load data and show plot
-	vz.entities.loadData();
 };
 
 /**
@@ -537,45 +486,16 @@ vz.entities.showTable = function() {
  */
 vz.entities.loadData = function() {
 	$('#overlay').html('<img src="images/loading.gif" alt="loading..." /><p>loading...</p>');
+
+	var queue = new Array;
+
 	vz.entities.each(function(entity) {
-		if (entity.active && entity.type != 'group') { // TODO add group data aggregation
-			//var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
-			//var offset = delta * 0.1;
-			var offset = 1000*60*60; // load additional data to avoid paddings
-	
-			vz.load({
-				context: 'data',
-				identifier: entity.uuid,
-				data: {
-					from: Math.floor(vz.options.plot.xaxis.min - offset), // TODO fuzy-logic to get enough data
-					to: Math.ceil(vz.options.plot.xaxis.max + offset),
-					tuples: vz.options.tuples
-				},
-				success: vz.wait(function(json) {
-					entity.data = json.data;
-				
-					if (entity.data.min !== null && entity.data.min[1] < vz.options.plot.yaxis.min) { // allow negative values for temperature sensors
-						vz.options.plot.yaxis.min = null;
-					}
-				
-					// update entity table
-					var unit = ' ' + entity.definition.unit;
-					$('#entity-' + entity.uuid + ' .min')
-						.text(
-							(entity.data.min !== null) ? vz.wui.formatNumber(entity.data.min[1]) + unit : '-')
-						.attr('title', (entity.data.min !== null) ? $.plot.formatDate(new Date(entity.data.min[0]), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames) : '');
-					$('#entity-' + entity.uuid + ' .max')
-						.text((entity.data.max !== null) ? vz.wui.formatNumber(entity.data.max[1]) + unit : '-')
-						.attr('title', (entity.data.max !== null) ? $.plot.formatDate(new Date(entity.data.max[0]), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames) : '');
-					$('#entity-' + entity.uuid + ' .average').text((entity.data.average !== null) ? vz.wui.formatNumber(entity.data.average) + unit : '');
-					$('#entity-' + entity.uuid + ' .last').text((entity.data.tuples) ? vz.wui.formatNumber(entity.data.tuples.last()[1]) + unit : '');
-					if (entity.definition.interpreter == 'Volkszaehler\\Interpreter\\MeterInterpreter') { // sensors have no consumption
-						$('#entity-' + entity.uuid + ' .consumption').text(vz.wui.formatNumber(entity.data.consumption) + unit + 'h');
-					}
-				}, vz.wui.drawPlot, 'data')
-			});
+		if (entity.active && entity.definition.model == 'Volkszaehler\\Model\\Channel') {
+			queue.push(entity.loadData());
 		}
 	});
+	
+	return $.when.apply($, queue);
 };
 
 /**
@@ -621,7 +541,7 @@ var Exception = function(type, message, code) {
 }
 
 vz.wui.dialogs.error = function(error, description, code) {
-	if (typeof code != 'undefined') {
+	if (code !== undefined) {
 		error = code + ': ' + error;
 	}
 

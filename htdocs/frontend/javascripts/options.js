@@ -77,7 +77,11 @@ vz.options.plot = {
 
 vz.options.save = function() {
 	for (var key in this) {
-		if (this.hasOwnProperty(key) && typeof this[key] != 'function' && typeof this[key] != 'object' && typeof this[key] != 'undefined') {
+		if (this.hasOwnProperty(key) &&
+			typeof this[key] != 'function' &&
+			typeof this[key] != 'object' &&
+			typeof this[key] != 'undefined')
+		{
 			$.setCookie('vz_' + key, this[key]);
 		}
 	}
@@ -86,7 +90,7 @@ vz.options.save = function() {
 vz.options.load = function() {
 	for (var key in this) {
 		var value = $.getCookie('vz_' + key);
-		if (typeof value != 'undefined') {
+		if (value !== undefined) {
 			switch(typeof this[key]) {
 				case 'string':
 					this[key] = value;

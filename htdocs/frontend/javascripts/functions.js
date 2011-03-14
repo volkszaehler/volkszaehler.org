@@ -25,24 +25,6 @@
  */
  
 /**
- * Helper function to wait for multiple ajax requests to complete
- */
-vz.wait = function(callback, finished, identifier) {
-	if (!vz.wait.counter) { vz.wait.counter = new Array(); }
-	if (!vz.wait.counter[identifier]) { vz.wait.counter[identifier] = 0; }
-	
-	vz.wait.counter[identifier]++;
-	
-	return function (data, textStatus) {
-		callback(data, textStatus);
-		
-		if (!--vz.wait.counter[identifier]) {
-			finished();
-		}
-	};
-};
-
-/**
  * Universal helper for backend ajax requests with error handling
  */
 vz.load = function(args) {
@@ -55,15 +37,15 @@ vz.load = function(args) {
 		}
 	});
 	
-	if (args.context) {
-		args.url += '/' + args.context;
+	if (args.controller) {
+		args.url += '/' + args.controller;
 	}
 	if (args.identifier) {
 		args.url += '/' + args.identifier;
 	}
 	args.url += '.json';
 
-	$.ajax(args);
+	return $.ajax(args);
 };
 
 /**
@@ -89,7 +71,7 @@ vz.parseUrlParams = function() {
 					vz.options.plot.xaxis.max = parseInt(vars[key]);
 					break;
 					
-				case 'debug':
+				case 'debug': // TODO test
 					$.getScript('javascripts/firebug-lite.js');
 					break;
 			}
@@ -101,14 +83,11 @@ vz.parseUrlParams = function() {
  * Load capabilities from backend
  */
 vz.capabilities.load = function() {
-	vz.load({
-		context: 'capabilities',
+	return vz.load({
+		controller: 'capabilities',
 		identifier: 'definitions',
 		success: function(json) {
 			$.extend(true, vz.capabilities, json.capabilities);
-		
-			// load entity details
-			vz.entities.loadDetails();
 		}
 	});
 };

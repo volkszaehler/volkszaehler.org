@@ -40,9 +40,11 @@ Array.prototype.remove = function(n) {
 	this.splice(this.indexOf(n), 1);
 };
 
-Array.prototype.each = function(cb) {
+Array.prototype.each = function(cb, ctx) {
 	for (var i = 0, l = this.length; i < l; i++) {
-		cb(i, this[i]);
+		if (cb.call((ctx === undefined) ? this[i] : ctx, i, this[i]) === false) {
+			break;
+		}
 	}
 };
 
@@ -55,7 +57,7 @@ Array.prototype.clear = function() {
 }
 
 Array.prototype.unique = function() {
-	var r = new Array();
+	var r = new Array;
 	this.each(function(key, value) {
 		if (!r.contains(value)) {
 			r.push(value);
@@ -65,5 +67,7 @@ Array.prototype.unique = function() {
 }
 
 Array.prototype.last = function() {
-	return (this.length > 0) ? this[this.length-1] : null;
+	if (this.length > 0) {
+		return this[this.length-1];
+	}
 }

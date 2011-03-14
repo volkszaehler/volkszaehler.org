@@ -32,15 +32,16 @@ var Entity = function(json, parent) {
 	$.extend(true, this, json);
 	this.parent = parent;
 	
+	if (this.active === undefined) {
+		this.active = true; // active by default
+	}
+	
 	if (this.children) {
-		var children = new Array();
 		for (var i = 0; i < this.children.length; i++) {
-			children.push(new Entity(this.children[i], this));
+			this.children[i] = new Entity(this.children[i], this);
 		};
 		
-		this.children = children.sort(function(e1, e2) {
-			e1.title < e2.title;
-		});
+		this.children.sort(Entity.compare);
 	}
 
 	this.definition = vz.capabilities.definitions.get('entities', this.type);
@@ -65,7 +66,7 @@ Entity.prototype.showDetails = function() {
  * 
  * @todo implement/test
  */
-Entity.prototype.getDOM = function() {
+Entity.prototype.getDOM = function(edit) {
 	var table = $('<table><thead><tr><th>Eigenschaft</th><th>Wert</th></tr></thead></table>');
 	var data = $('<tbody>');
 
@@ -118,6 +119,115 @@ Entity.prototype.getDOM = function() {
 	return table.append(data);
 };
 
+Entity.prototype.getRow = function() {
+	var row =  $('<tr>')
+		.addClass((this.parent) ? 'child-of-entity-' + this.parent.uuid : '')
+		.addClass((this.definition.model == 'Volkszaehler\\Model\\Aggregator') ? 'aggregator' : 'channel')
+		.attr('id', 'entity-' + this.uuid)
+		.append($('<td>')
+			.addClass('visibility')
+			.css('background-color', this.color)
+			.append($('<input>')
+				.attr('type', 'checkbox')
+				.attr('checked', this.active)
+				.bind('change', this, function(event) {
+					var state = $(this).attr('checked');
+					
+					event.data.each(function(entity, parent) {
+						$('#entity-' + entity.uuid + ((parent) ? '.child-of-entity-' + parent.uuid : '') + ' input[type=checkbox]')
+						.attr('checked', state);
+						entity.active = state;
+					});
+					
+					vz.wui.drawPlot();
+				})
+			)
+		)
+		.append($('<td>').addClass('expander'))
+		.append($('<td>')
+			.append($('<span>')
+				.text(this.title)
+				.addClass('indicator')
+			)
+		)
+		.append($('<td>').text(this.definition.translation[vz.options.language])) // channel type
+		.append($('<td>').addClass('min'))		// min
+		.append($('<td>').addClass('max'))		// max
+		.append($('<td>').addClass('average'))		// avg
+		.append($('<td>').addClass('consumption'))	// consumption
+		.append($('<td>').addClass('last'))		// last
+		.append($('<td>')				// operations
+			.addClass('ops')
+			.append($('<input>')
+				.attr('type', 'image')
+				.attr('src', 'images/information.png')
+				.attr('alt', 'details')
+				.bind('click', this, function(event) {
+					event.data.showDetails();
+				})
+			)
+		)
+		.data('entity', this);
+			
+	if (vz.uuids.contains(this.uuid)) { // removable from cookies?
+		$('td.ops', row).prepend($('<input>')
+			.attr('type', 'image')
+			.attr('src', 'images/delete.png')
+			.attr('alt', 'delete')
+			.bind('click', this, function(event) {
+				vz.uuids.remove(event.data.uuid);
+				vz.uuids.save();
+				
+				vz.entities.remove(event.data);
+				vz.entities.showTable();
+				
+				vz.wui.drawPlot();
+			})
+		);
+	}
+	
+	return row;
+};
+
+Entity.prototype.loadData = function() {
+	//var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
+	//var offset = delta * 0.1;
+	var offset = 1000*30*60; // load additional data to avoid paddings
+
+	return vz.load({
+		controller: 'data',
+		identifier: this.uuid,
+		context: this,
+		data: {
+			from: Math.floor(vz.options.plot.xaxis.min - offset), // TODO fuzy-logic to get enough data
+			to: Math.ceil(vz.options.plot.xaxis.max + offset),
+			tuples: vz.options.tuples
+		},
+		success: function(json) {
+			this.data = json.data;
+		
+			if (this.data.min !== null && this.data.min[1] < vz.options.plot.yaxis.min) { // allow negative values for temperature sensors
+				vz.options.plot.yaxis.min = null;
+			}
+		
+			// update entity table
+			var unit = ' ' + this.definition.unit;
+			$('#entity-' + this.uuid + ' .min')
+				.text(
+					(this.data.min !== null) ? vz.wui.formatNumber(this.data.min[1]) + unit : '-')
+				.attr('title', (this.data.min !== null) ? $.plot.formatDate(new Date(this.data.min[0]), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames) : '');
+			$('#entity-' + this.uuid + ' .max')
+				.text((this.data.max !== null) ? vz.wui.formatNumber(this.data.max[1]) + unit : '-')
+				.attr('title', (this.data.max !== null) ? $.plot.formatDate(new Date(this.data.max[0]), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames) : '');
+			$('#entity-' + this.uuid + ' .average').text((this.data.average !== null) ? vz.wui.formatNumber(this.data.average) + unit : '');
+			$('#entity-' + this.uuid + ' .last').text((this.data.tuples) ? vz.wui.formatNumber(this.data.tuples.last()[1]) + unit : '');
+			if (this.definition.interpreter == 'Volkszaehler\\Interpreter\\MeterInterpreter') { // sensors have no consumption
+				$('#entity-' + this.uuid + ' .consumption').text(vz.wui.formatNumber(this.data.consumption) + unit + 'h');
+			}
+		}
+	});
+};
+
 /**
  * Add entity as child
  */
@@ -126,14 +236,13 @@ Entity.prototype.addChild = function(child) {
 		throw new Exception('EntityException', 'Entity is not an Aggregator');
 	}
 
-	vz.load({
-		context: 'group',
+	return vz.load({
+		controller: 'group',
 		identifier: this.uuid,
 		data: {
 			uuid: child.uuid
 		},
-		type: 'post',
-		success: vz.wait($.noop, vz.entities.loadDetails, 'information')
+		type: 'post'
 	});
 }
 
@@ -141,14 +250,13 @@ Entity.prototype.addChild = function(child) {
  * Remove entity from children
  */
 Entity.prototype.removeChild = function(child) {
-	vz.load({
-		context: 'group',
+	return vz.load({
+		controller: 'group',
 		identifier: this.uuid,
 		data: {
 			uuid: child.uuid,
 			operation: 'delete'
-		},
-		success: vz.wait($.noop, vz.entities.loadDetails, 'information')
+		}
 	});
 };
 
@@ -178,8 +286,8 @@ Entity.prototype.validate = function() {
  * 
  * @param cb callback function
  */
-Entity.prototype.each = function(cb, parent) {
-	cb(this, parent);
+Entity.prototype.each = function(cb) {
+	cb(this, this.parent);
 	
 	if (this.children) {
 		for (var i = 0; i < this.children.length; i++) {
@@ -187,3 +295,20 @@ Entity.prototype.each = function(cb, parent) {
 		}
 	}
 };
+
+/**
+ * Compares two entities for sorting
+ *
+ * @static
+ * @todo Channels before Aggregators
+ */
+Entity.compare = function(a, b) {
+	if (a.definition.model == 'Volkszaehler\\Model\\Channel' && // Channels before Aggregators
+		b.definition.model == 'Volkszaehler\\Model\\Aggregator')
+	{	
+		return 1;
+	}
+	else {
+		return ((a.title < b.title) ? -1 : ((a.title > b.title) ? 1 : 0));
+	}
+}

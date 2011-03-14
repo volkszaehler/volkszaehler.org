@@ -83,7 +83,12 @@ $(document).ready(function() {
 		$('#entity-add').dialog('open');
 	}
 	
-	// starting with request to backend; try to follow the callbacks ;)
-	// capabiltities -> entities -> data
-	vz.capabilities.load(); // load properties, entity types and other capabilities from backend
-});
+	// chaining ajax request with jquery deferred object
+	vz.capabilities.load().done(function() {
+		vz.entities.loadDetails().done(function(a, b, c, d) {
+			vz.entities.showTable();
+			vz.entities.loadData().done(vz.wui.drawPlot);
+		});
+	});
+});	
+
