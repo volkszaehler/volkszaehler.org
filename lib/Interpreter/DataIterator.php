@@ -57,7 +57,7 @@ class DataIterator implements \Iterator, \Countable {
 
 		if ($this->rowCount > $this->tupleCount) {
 			$this->packageSize = floor($this->rowCount / $this->tupleCount);
-			$this->tupleCount = floor($this->rowCount / $this->packageSize) + $this->rowCount % $this->packageSize;
+			$this->tupleCount = floor($this->rowCount / $this->packageSize) + 1;
 		}
 		else {
 			 $this->packageSize = 1;
@@ -80,7 +80,6 @@ class DataIterator implements \Iterator, \Countable {
 		}
 		
 		$this->key++;
-		Util\Debug::log('key++', $this->key);
 		return $this->current = $package;
 	}
 

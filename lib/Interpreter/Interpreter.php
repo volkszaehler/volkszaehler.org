@@ -110,9 +110,6 @@ abstract class Interpreter {
 		// query for data
 		$stmt = $this->conn->executeQuery('SELECT ' . $sql['fields'] . $sql['from'] . $sql['where'] . $sql['groupBy'] . $sql['orderBy'], array($this->channel->getId()));
 
-		Util\Debug::log('rowcount', $this->rowCount);
-		Util\Debug::log('tuplecount', $this->tupleCount);
-
 		return new DataIterator($stmt, $this->rowCount, $this->tupleCount);
 	}
 
