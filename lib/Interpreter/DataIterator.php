@@ -91,6 +91,7 @@ class DataIterator implements \Iterator, \Countable {
 	 */
 	public function rewind() {
 		$this->key = $this->rowKey = 0;
+		return $this->next();
 	}
 
 	public function valid() {
