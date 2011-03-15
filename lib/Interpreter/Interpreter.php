@@ -205,7 +205,6 @@ abstract class Interpreter {
 	 */
 
 	public function getEntity() { return $this->channel; }
-	public function getTupleCount() { return $this->tupleCount; }
 }
 
 ?>

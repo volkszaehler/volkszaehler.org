@@ -92,8 +92,7 @@ class MeterInterpreter extends Interpreter {
 		$this->pulseCount = 0;
 
 		$tuples = array();
-		$pulses->rewind();
-		$last = $pulses->next();
+		$last = $pulses->rewind();
 		$next = $pulses->next();
 		
 		while ($pulses->valid()) {
@@ -127,9 +126,10 @@ class MeterInterpreter extends Interpreter {
 		$delta = $next[0] - $last[0];
 
 		return array(
-			($next[0] - $delta / 2),	// timestamp
-			$next[1] * (3600000 / (($this->resolution / 1000) * $delta)),	// value
-			$next[2]	// num of pulses
+			//($next[0] - $delta / 2), // timestamp in the middle
+			$next[0], // timestamp at the end
+			$next[1] * (3600000 / (($this->resolution / 1000) * $delta)), // value
+			$next[2] // num of pulses
 		);
 	}
 }

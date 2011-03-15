@@ -199,9 +199,7 @@ class JSON extends View {
 	 * @param $interpreter
 	 */
 	protected function addData($interpreter) {
-		$this->json['data']['uuid'] = $interpreter->getEntity()->getUuid();
-
-		$data = $interpreter->processData(
+		$data = $interpreter->processData( // iterate through PDO resultset
 			function($tuple) {
 				return array(
 					$tuple[0],
@@ -210,17 +208,25 @@ class JSON extends View {
 				);
 			}
 		);
+		
+		$this->json['data']['uuid'] = $interpreter->getEntity()->getUuid();
+		$this->json['data']['count'] = count($data);
+		
+		$min = $interpreter->getMin();
+		$max = $interpreter->getMax();
+		$average = View::formatNumber($interpreter->getAverage());
 
-		$this->json['data']['min'] = $interpreter->getMin();
-		$this->json['data']['max'] = $interpreter->getMax();
-		$this->json['data']['average'] = View::formatNumber($interpreter->getAverage());
-		
-		if ($interpreter instanceof Interpreter\MeterInterpreter) {
+		if (isset($min))
+			$this->json['data']['min'] = $min;
+		if (isset($max))
+			$this->json['data']['max'] = $max;
+		if (isset($average)) 
+			$this->json['data']['average'] = $average;
+		if ($interpreter instanceof Interpreter\MeterInterpreter)
 			$this->json['data']['consumption'] = View::formatNumber($interpreter->getConsumption());
+		if (count($data) > 0) {
+			$this->json['data']['tuples'] = $data;
 		}
-		
-		$this->json['data']['count'] = $interpreter->getTupleCount();
-		if (count($data) > 0) $this->json['data']['tuples'] = $data;
 	}
 
 	/**
@@ -233,6 +239,9 @@ class JSON extends View {
 			}
 			elseif ($value instanceof Model\Entity) {
 				$refNode[$index] = self::convertEntity($value);
+			}
+			elseif (is_numeric($value)) {
+				$refNode[$index] = View::formatNumber($value);
 			}
 			else {
 				$refNode[$index] = $value;

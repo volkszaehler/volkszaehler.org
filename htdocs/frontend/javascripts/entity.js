@@ -206,23 +206,33 @@ Entity.prototype.loadData = function() {
 		success: function(json) {
 			this.data = json.data;
 		
-			if (this.data.min !== null && this.data.min[1] < vz.options.plot.yaxis.min) { // allow negative values for temperature sensors
-				vz.options.plot.yaxis.min = null;
-			}
+			if (this.data.count > 0) {
+				if (this.data.min[1] < vz.options.plot.yaxis.min) { // allow negative values for temperature sensors
+					vz.options.plot.yaxis.min = null;
+				}
 		
-			// update entity table
-			var unit = ' ' + this.definition.unit;
-			$('#entity-' + this.uuid + ' .min')
-				.text(
-					(this.data.min !== null) ? vz.wui.formatNumber(this.data.min[1]) + unit : '-')
-				.attr('title', (this.data.min !== null) ? $.plot.formatDate(new Date(this.data.min[0]), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames) : '');
-			$('#entity-' + this.uuid + ' .max')
-				.text((this.data.max !== null) ? vz.wui.formatNumber(this.data.max[1]) + unit : '-')
-				.attr('title', (this.data.max !== null) ? $.plot.formatDate(new Date(this.data.max[0]), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames) : '');
-			$('#entity-' + this.uuid + ' .average').text((this.data.average !== null) ? vz.wui.formatNumber(this.data.average) + unit : '');
-			$('#entity-' + this.uuid + ' .last').text((this.data.tuples) ? vz.wui.formatNumber(this.data.tuples.last()[1]) + unit : '');
-			if (this.definition.interpreter == 'Volkszaehler\\Interpreter\\MeterInterpreter') { // sensors have no consumption
-				$('#entity-' + this.uuid + ' .consumption').text(vz.wui.formatNumber(this.data.consumption) + unit + 'h');
+				// update entity table
+				var unit = ' ' + this.definition.unit;
+				$('#entity-' + this.uuid + ' .min')
+					.text(vz.wui.formatNumber(this.data.min[1]) + unit)
+					.attr('title', $.plot.formatDate(new Date(this.data.min[0]), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames));
+				$('#entity-' + this.uuid + ' .max')
+					.text(vz.wui.formatNumber(this.data.max[1]) + unit)
+					.attr('title', $.plot.formatDate(new Date(this.data.max[0]), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames));
+				$('#entity-' + this.uuid + ' .average')
+					.text(vz.wui.formatNumber(this.data.average) + unit);
+				$('#entity-' + this.uuid + ' .last')
+					.text(vz.wui.formatNumber(this.data.tuples.last()[1]) + unit);
+				if (this.definition.interpreter == 'Volkszaehler\\Interpreter\\MeterInterpreter') { // sensors have no consumption
+					$('#entity-' + this.uuid + ' .consumption').text(vz.wui.formatNumber(this.data.consumption) + unit + 'h');
+				}
+			}
+			else { // no data available, clear table
+				$('#entity-' + this.uuid + ' .min').text('').attr('title', '');
+				$('#entity-' + this.uuid + ' .max').text('').attr('title', '');
+				$('#entity-' + this.uuid + ' .average').text('');
+				$('#entity-' + this.uuid + ' .last').text('');
+				$('#entity-' + this.uuid + ' .consumption').text('');
 			}
 		}
 	});

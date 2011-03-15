@@ -55,12 +55,14 @@ class DataIterator implements \Iterator, \Countable {
 		$this->stmt = $stmt;
 		$this->stmt->setFetchMode(\PDO::FETCH_NUM);
 
-		if ($this->rowCount > $this->tupleCount) {
+		if ($this->rowCount > $this->tupleCount) { // sumarize
 			$this->packageSize = floor($this->rowCount / $this->tupleCount);
 			$this->tupleCount = floor($this->rowCount / $this->packageSize) + 1;
 		}
-		else {
+		else { // passthrough
 			 $this->packageSize = 1;
+			 $this->tupleCount = $this->rowCount;
+			 
 		}
 	}
 
@@ -68,15 +70,20 @@ class DataIterator implements \Iterator, \Countable {
 	 * Aggregate data
 	 */
 	public function next() {
-		$package = array(0, 0, 0);
-		for ($i = 0; $i < $this->packageSize && $this->valid(); $i++) {
-			$tuple = $this->stmt->fetch();
+		if ( $this->packageSize == 1) { // return each row as single tuple
+			$package = $this->stmt->fetch();
+		}
+		else { // summarize rows
+			$package = array(0, 0, 0);
+			for ($i = 0; $i < $this->packageSize && $this->rowKey < $this->rowCount; $i++) {
+				$tuple = $this->stmt->fetch();
 
-			$package[0] = $tuple[0];
-			$package[1] += $tuple[1];
-			$package[2] += $tuple[2];
+				$package[0] = $tuple[0];
+				$package[1] += $tuple[1];
+				$package[2] += $tuple[2];
 			
-			$this->rowKey++;
+				$this->rowKey++;
+			}
 		}
 		
 		$this->key++;
@@ -91,11 +98,11 @@ class DataIterator implements \Iterator, \Countable {
 	 */
 	public function rewind() {
 		$this->key = $this->rowKey = 0;
-		return $this->next();
+		return $this->next(); // fetch first tuple
 	}
 
 	public function valid() {
-		return $this->rowKey < $this->rowCount;
+		return $this->key < $this->tupleCount;
 	}
 
 	/**
