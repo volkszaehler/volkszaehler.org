@@ -155,8 +155,9 @@ Entity.prototype.getRow = function() {
 		.append($('<td>').addClass('min'))		// min
 		.append($('<td>').addClass('max'))		// max
 		.append($('<td>').addClass('average'))		// avg
+		.append($('<td>').addClass('last'))		// last value
 		.append($('<td>').addClass('consumption'))	// consumption
-		.append($('<td>').addClass('last'))		// last
+		.append($('<td>').addClass('cost'))		// costs
 		.append($('<td>')				// operations
 			.addClass('ops')
 			.append($('<input>')
@@ -214,21 +215,23 @@ Entity.prototype.loadData = function() {
 		
 				// update details in table
 				$('#entity-' + this.uuid + ' .min')
-					.text(vz.wui.formatNumber(this.data.min[1]) + this.definition.unit)
-					.attr('title', $.plot.formatDate(new Date(this.data.min[0]), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames));
+					.text(vz.wui.formatNumber(this.data.min[1]) + ' ' + this.definition.unit)
+					.attr('title', $.plot.formatDate(new Date(this.data.min[0] + vz.options.timezoneOffset), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames));
 				$('#entity-' + this.uuid + ' .max')
-					.text(vz.wui.formatNumber(this.data.max[1]) + this.definition.unit)
-					.attr('title', $.plot.formatDate(new Date(this.data.max[0]), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames));
+					.text(vz.wui.formatNumber(this.data.max[1]) + ' ' + this.definition.unit)
+					.attr('title', $.plot.formatDate(new Date(this.data.max[0] + vz.options.timezoneOffset), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames));
 				$('#entity-' + this.uuid + ' .average')
-					.text(vz.wui.formatNumber(this.data.average) + this.definition.unit);
+					.text(vz.wui.formatNumber(this.data.average) + ' ' + this.definition.unit);
 				$('#entity-' + this.uuid + ' .last')
-					.text(vz.wui.formatNumber(this.data.tuples.last()[1]) + this.definition.unit);
+					.text(vz.wui.formatNumber(this.data.tuples.last()[1]) + ' ' + this.definition.unit);
 				if (this.definition.interpreter == 'Volkszaehler\\Interpreter\\MeterInterpreter') { // sensors have no consumption
-					var consumption = vz.wui.formatNumber((this.data.consumption > 1000) ? this.data.consumption / 1000 : this.data.consumption);
-					var unit = ((this.data.consumption > 1000) ? ' k' : ' ') + this.definition.unit + 'h';
-					var cost = (this.cost !== undefined) ? ' (' + vz.wui.formatNumber(this.cost * this.data.consumption) + ' €)' : '';
-					
-					$('#entity-' + this.uuid + ' .consumption').text(consumption + unit + cost);
+					$('#entity-' + this.uuid + ' .consumption').text(
+						vz.wui.formatNumber((this.data.consumption > 1000) ? this.data.consumption / 1000 : this.data.consumption) +
+						((this.data.consumption > 1000) ? ' k' : ' ') + this.definition.unit + 'h'
+					);
+				}
+				if (this.cost !== undefined) {
+					$('#entity-' + this.uuid + ' .cost').text(vz.wui.formatNumber(this.cost * this.data.consumption) + ' €');
 				}
 			}
 			else { // no data available, clear table
@@ -237,6 +240,7 @@ Entity.prototype.loadData = function() {
 				$('#entity-' + this.uuid + ' .average').text('');
 				$('#entity-' + this.uuid + ' .last').text('');
 				$('#entity-' + this.uuid + ' .consumption').text('');
+				$('#entity-' + this.uuid + ' .cost').text('');
 			}
 		}
 	});
