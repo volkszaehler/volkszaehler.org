@@ -45,8 +45,8 @@ class DataIterator implements \Iterator, \Countable {
 	 * Constructor
 	 *
 	 * @param \PDOStatement $stmt
-	 * @param integer $size
-	 * @param integer $tuples
+	 * @param integer $rowCount total num of rows in $stmt
+	 * @param integer $tupleCount set to NULL to get all rows
 	 */
 	public function __construct(\PDOStatement $stmt, $rowCount, $tupleCount) {
 		$this->rowCount = $rowCount;
@@ -55,14 +55,17 @@ class DataIterator implements \Iterator, \Countable {
 		$this->stmt = $stmt;
 		$this->stmt->setFetchMode(\PDO::FETCH_NUM);
 
-		if ($this->rowCount > $this->tupleCount) { // sumarize
-			$this->packageSize = floor($this->rowCount / $this->tupleCount);
-			$this->tupleCount = floor($this->rowCount / $this->packageSize) + 1;
-		}
-		else { // passthrough
+		if (empty($this->tupleCount) || $this->rowCount < $this->tupleCount) { // get all rows
 			 $this->packageSize = 1;
 			 $this->tupleCount = $this->rowCount;
-			 
+		}
+		else { // sumarize
+			$this->packageSize = floor($this->rowCount / $this->tupleCount);
+			$this->tupleCount = floor($this->rowCount / $this->packageSize);
+			
+			if (fmod($this->rowCount, $this->packageSize) > 0) {
+				$this->tupleCount++;
+			}
 		}
 	}
 
@@ -102,7 +105,7 @@ class DataIterator implements \Iterator, \Countable {
 	}
 
 	public function valid() {
-		return $this->key < $this->tupleCount;
+		return $this->key <= $this->tupleCount;
 	}
 
 	/**

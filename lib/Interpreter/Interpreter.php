@@ -24,9 +24,7 @@
 namespace Volkszaehler\Interpreter;
 
 use Volkszaehler\Util;
-use Volkszaehler\Interpreter\Iterator;
 use Volkszaehler\Model;
-use Doctrine\ORM\Query;
 use Doctrine\ORM;
 
 /**
@@ -45,8 +43,8 @@ abstract class Interpreter {
 	protected $to;
 	protected $groupBy;
 	
-	protected $rowCount = NULL;
-	protected $tupleCount = NULL;
+	protected $rowCount;
+	protected $tupleCount;
 
 	/**
 	 * Constructor
@@ -58,14 +56,11 @@ abstract class Interpreter {
 	 */
 	public function __construct(Model\Channel $channel, ORM\EntityManager $em, $from, $to, $tupleCount, $groupBy) {
 		$this->channel = $channel;
-		$this->tupleCount = $tupleCount;
 		$this->groupBy = $groupBy;
-		
-		// get dbal connection from EntityManager
-		$this->conn = $em->getConnection();
-
+		$this->tupleCount = $tupleCount;
 		$this->from = $from;
 		$this->to = $to;
+		$this->conn = $em->getConnection(); // get dbal connection from EntityManager
 		
 		// parse interval
 		if (isset($from)) {
@@ -106,11 +101,16 @@ abstract class Interpreter {
 
 		// get total row count for grouping
 		$this->rowCount = $this->conn->fetchColumn($sql['rowCount'], array($this->channel->getId()), 0);
+		
+		if ($this->rowCount > 0) {
+			// query for data
+			$stmt = $this->conn->executeQuery('SELECT ' . $sql['fields'] . $sql['from'] . $sql['where'] . $sql['groupBy'] . $sql['orderBy'], array($this->channel->getId()));
 
-		// query for data
-		$stmt = $this->conn->executeQuery('SELECT ' . $sql['fields'] . $sql['from'] . $sql['where'] . $sql['groupBy'] . $sql['orderBy'], array($this->channel->getId()));
-
-		return new DataIterator($stmt, $this->rowCount, $this->tupleCount);
+			return new DataIterator($stmt, $this->rowCount, $this->tupleCount);
+		}
+		else { // no data available
+			return new \EmptyIterator();
+		}
 	}
 
 	/**
@@ -189,7 +189,7 @@ abstract class Interpreter {
 	 * @return float
 	 */
 	protected static function parseDateTimeString($string, $now) {
-		if (ctype_digit($string)) {
+		if (ctype_digit($string)) { // handling as ms timestamp
 			return (float) $string;
 		}
 		elseif ($ts = strtotime($string, $now / 1000)) {
@@ -205,6 +205,10 @@ abstract class Interpreter {
 	 */
 
 	public function getEntity() { return $this->channel; }
+	public function getRowCount() { return $this->rowCount; }
+	public function getTupleCount() { return $this->tupleCount; }
+	public function getFrom() { return $this->from; }
+	public function getTo() { return $this->to; }
 }
 
 ?>

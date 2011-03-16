@@ -42,56 +42,53 @@ class MeterInterpreter extends Interpreter {
 	
 	/**
 	 * Calculates the consumption
+	 *
 	 * @return float total consumption in Wh
 	 */
 	public function getConsumption() {
-		if (is_null($this->tupleCount)) throw new \Exception('Data has to be processed first!');
-		
 		return 1000 * $this->pulseCount / $this->resolution;
 	}
 
 	/**
 	 * Get minimum
+	 *
 	 * @return array (0 => timestamp, 1 => value)
 	 */
 	public function getMin() {
-		if (is_null($this->tupleCount)) throw new \Exception('Data has to be processed first!');
-		
 		return ($this->min) ? array_map('floatval', array_slice($this->min, 0 , 2)) : NULL;
 	}
 
 	/**
 	 * Get maximum
+	 *
 	 * @return array (0 => timestamp, 1 => value)
 	 */
 	public function getMax() {
-		if (is_null($this->tupleCount)) throw new \Exception('Data has to be processed first!');
-		
 		return ($this->max) ? array_map('floatval', array_slice($this->max, 0 , 2)) : NULL;
 	}
 
 	/**
 	 * Get Average
-	 * @return float
+	 *
+	 * @return float 3600: 3600 s/h; 1000: ms -> s
 	 */
 	public function getAverage() {
-		// 3600: 3600 s/h; 1000: ms -> s
 		return (3600 * 1000 * $this->getConsumption()) / ($this->to - $this->from);
 	}
 
 	/**
 	 * Raw pulses to power conversion
 	 *
-	 * @todo untested
+	 * @param $callback a callback called each iteration for output
 	 * @return array with timestamp, values, and pulse count
 	 */
 	public function processData($callback) {
+		$tuples = array();
 		$pulses = parent::getData();
 
 		$this->resolution = $this->channel->getProperty('resolution');
 		$this->pulseCount = 0;
-
-		$tuples = array();
+		
 		$last = $pulses->rewind();
 		$next = $pulses->next();
 		
