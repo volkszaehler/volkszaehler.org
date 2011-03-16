@@ -112,14 +112,6 @@ tbody tr td {
 	margin: 0;
 }
 
-#entity-list tr.channel span.indicator {
-	background-image: url("../images/chart_curve.png");
-}
-
-#entity-list tr.aggregator span.indicator {
-	background-image: url("../images/folder.png");
-}
-
 .indicator {
 	height: 12px;
 }

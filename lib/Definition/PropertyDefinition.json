@@ -30,75 +30,112 @@
 		"name"			: "title",
 		"type"			: "string",
 		"pattern"		: "/[a-z0-9 ]/",
-		"min"			: 3,
+		"min"			: 4,
 		"max"			: 255,
-		"translation"	: { "de" : "Titel" }
+		"translation"		: {
+			"de" : "Titel",
+			"en" : "Title"
+		}
 	},
 	{
 		"name"			: "description",
 		"type"			: "text",
-		"pattern"		: "/[a-z0-9 ]/",	// TODO add whitespaces as \t \n \r
-		"max"			: 255,			// TODO allowed column size in database?
-		"translation"	: { "de" : "Beschreibung" }
+		"pattern"		: "/[a-z0-9\\s]/",
+		"max"			: 255,			// TODO use "text" type for unlimited descriptions => PropertyModel
+		"translation"		: {
+			"de" : "Beschreibung",
+			"en" : "Description"
+		}
 	},
 	{
 		"name"			: "public",
 		"type"			: "boolean",
-		"translation"	: { "de" : "Öffentlich" }
+		"translation"		: {
+			"de" : "Öffentlich",
+			"en" : "Public"
+		}
 	},
 	{
 		"name"			: "active",
 		"type"			: "boolean",
-		"translation"	: { "de" : "Aktiv?" }
+		"translation"		: {
+			"de" : "Aktiv",
+			"en" : "Active"
+		}
 	},
 	{
 		"name"			: "cost",
 		"type"			: "float",
 		"min"			: 0,
-		"translation"	: { "de" : "Kosten" }
+		"translation"		: {
+			"de" : "Kosten",
+			"en" : "Costs"
+		}
 	},
 	{
 		"name"			: "resolution",
 		"type"			: "integer",
 		"min"			: 1,
-		"translation"	: { "de" : "Auflösung" }
+		"translation"		: {
+			"de" : "Auflösung",
+			"en" : "Resolution"
+		}
 	},
 	{
 		"name"			: "tolerance",
 		"type"			: "float",
 		"min"			: 0,
 		"max"			: 1,
-		"translation"	: { "de" : "Toleranz" }
+		"translation"		: {
+			"de" : "Toleranz",
+			"en" : "Tolerance"
+		}
 	},
 	{
 		"name"			: "address:lat",
 		"type"			: "float",
 		"min"			: -90,
 		"max"			: 90,
-		"translation"	: { "de" : "Latitude" }
+		"translation"		: {
+			"de" : "Breitengrad",
+			"en" : "Latitude"
+		}
 	},
 	{
 		"name"			: "address:lon",
 		"type"			: "float",
 		"min"			: -90,
 		"max"			: 90,
-		"translation"	: { "de" : "Longitude" }
+		"translation"		: {
+			"de" : "Längengrad",
+			"en" : "Longitude"
+		}
 	},
 	{
 		"name"			: "address:city",
 		"type"			: "string",
-		"pattern"		: "",				// TODO add pattern
-		"translation"	: { "de" : "Stadt" }
+		"pattern"		: "/[a-z -]/",
+		"translation"		: {
+			"de" : "Stadt",
+			"en" : "City"
+		}
 	},
 	{
 		"name"			: "address:houseno",
 		"type"			: "string",
-		"translation"	: { "de" : "Hausnummer" }
+		"max"			: 5,
+		"translation"		: {
+			"de" : "Hausnummer",
+			"en" : "House Number"
+		}
 	},
 	{
 		"name"			: "address:postal",
-		"type"			: "string",
-		"translation"	: { "de" : "Postleitzahl" }
+		"type"			: "integer",
+		"translation"		: {
+			"de" : "Postleitzahl",
+			"en" : "Postal Code"
+		}
 	},
 	{
 		"name"			: "address:state",
@@ -294,17 +331,26 @@
 			"Yemen",
 			"Zambia"
 		],
-		"translation"	: { "de" : "Land" }
+		"translation"		: {
+			"de" : "Land",
+			"en" : "State"
+		}
 	},
 	{
 		"name"			: "address:country",
 		"type"			: "string",
-		"translation"	: { "de" : "Staat" }
+		"translation"		: {
+			"de" : "Staat",
+			"en" : "Country"
+		}
 	},
 	{
 		"name"			: "photo:url",
 		"type"			: "string",
 		"pattern"		: "",				// TODO add pattern
-		"translation"	: { "de" : "Foto (URL)" }
+		"translation"		: {
+			"de" : "Foto (URL)",
+			"en" : "Photo (URL)"
+		}
 	}
 ]

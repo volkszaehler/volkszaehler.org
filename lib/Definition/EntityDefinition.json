@@ -29,129 +29,194 @@
 	{
 		"name"			: "group",
 		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "tolerance", "public", "active"],
-		"icon"			: "",					// TODO look for an icon
-		"interpreter"	: "Volkszaehler\\Interpreter\\AggregatorInterpreter",
+		"optional"		: ["description", "details:", "owner:", "tolerance", "public"],
+		"icon"			: "folder.png",
+		"interpreter"		: "Volkszaehler\\Interpreter\\AggregatorInterpreter",
 		"model"			: "Volkszaehler\\Model\\Aggregator",
-		"translation"	: { "de" : "Gruppe" }
+		"translation"		: {
+			"de" : "Gruppe",
+			"en" : "Group",
+			"fr" : "Groupe"
+		}
 	},
 	{
 		"name"			: "user",
 		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "tolerance", "active"],
-		"icon"			: "",				// TODO look for an icon
-		"interpreter"	: "Volkszaehler\\Interpreter\\AggregatorInterpreter",
+		"optional"		: ["description", "details:", "owner:", "tolerance", "public"],
+		"icon"			: "user.png",
+		"interpreter"		: "Volkszaehler\\Interpreter\\AggregatorInterpreter",
 		"model"			: "Volkszaehler\\Model\\Aggregator",
-		"translation"	: { "de" : "Nutzer" }
+		"translation"		: {
+			"de" : "Nutzer",
+			"en" : "User",
+			"fr" : "Usager"
+		}
+	},
+	{
+		"name"			: "building",
+		"required"		: ["title"],
+		"optional"		: ["description", "details:", "owner:", "tolerance", "public"],
+		"icon"			: "house.png",
+		"interpreter"		: "Volkszaehler\\Interpreter\\AggregatorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Aggregator",
+		"translation"		: {
+			"de" : "Gebäude",
+			"en" : "Building",
+			"fr" : "Immeuble"
+		}
 	},
 	{
 		"name"			: "power",
 		"required"		: ["title", "resolution"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "port", "cuuid", "public", "active"],
-		"icon"			: "",					// TODO look for an icon
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "cost"],
+		"icon"			: "bolt.png",
 		"unit"			: "W",
-		"interpreter"	: "Volkszaehler\\Interpreter\\MeterInterpreter",
+		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
-		"translation"	: { "de" : "Stromzähler" }
+		"translation"		: {
+			"de" : "Stromzähler",
+			"en" : "Electric Meter",
+			"fr" : "Compteur de courant"
+		}
 	},
 	{
 		"name"			: "powersensor",
 		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "port", "cuuid", "public", "active"],
-		"icon"			: "",					// TODO look for an icon
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "cost"],
+		"icon"			: "bolt.png",
 		"unit"			: "W",
-		"interpreter"	: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
-		"translation"	: { "de" : "Stromsensor" }
+		"translation"		: {
+			"de" : "Stromsensor",
+			"en" : "Electric Sensor",
+			"fr" : "Capteur de courant"
+		}
 	},
 	{
 		"name"			: "gas",
 		"required"		: ["title", "resolution"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "port", "cuuid", "public", "active"],
-		"icon"			: "",					// TODO look for an icon
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "cost"],
+		"icon"			: "flame.png",
 		"unit"			: "m³",
-		"interpreter"	: "Volkszaehler\\Interpreter\\MeterInterpreter",
+		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
-		"translation"	: { "de" : "Gas" }
+		"translation"		: {
+			"de" : "Gas",
+			"en" : "Gas",
+			"fr" : "Gaz"
+		}
 	},
 	{
 		"name"			: "water",
 		"required"		: ["title", "resolution"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "port", "cuuid", "public", "active"],
-		"icon"			: "",					// TODO look for an icon
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "cost"],
+		"icon"			: "waterdrop.png",
 		"unit"			: "m³",
-		"interpreter"	: "Volkszaehler\\Interpreter\\MeterInterpreter",
+		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
-		"translation"	: { "de" : "Wasser" }
+		"translation"		: {
+			"de" : "Wasser",
+			"en" : "Water",
+			"fr" : "Eau"
+		}
 	},
 	{
 		"name"			: "temperature",
 		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "active"],
-		"icon"			: "",					// TODO look for an icon
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public"],
+		"icon"			: "thermometer.png",
 		"unit"			: "°C",
-		"interpreter"	: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
-		"translation"	: { "de" : "Temperatur" }
+		"translation"		: {
+			"de" : "Temperatur",
+			"en" : "Temperature",
+			"fr" : "Température"
+		}
 	},
 	{
 		"name"			: "pressure",
 		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "active"],
-		"icon"			: "",					// TODO look for an icon
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public"],
+		"icon"			: "cloud.png",
 		"unit"			: "hPa",
-		"interpreter"	: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
-		"translation"	: { "de" : "Luftdruck" }
+		"translation"		: {
+			"de" : "Luftdruck",
+			"en" : "Barometric Pressure",
+			"fr" : "Pression d'air"
+		}
 	},
 	{
 		"name"			: "humidity",
 		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "active"],
-		"icon"			: "",					// TODO look for an icon
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public"],
+		"icon"			: "rain.png",
 		"unit"			: "%",
-		"interpreter"	: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
-		"translation"	: { "de" : "Luftfeuchtigkeit" }
+		"translation"		: {
+			"de" : "Luftfeuchtigkeit",
+			"en" : "Air Humidity",
+			"fr" : "Hygrométrie"
+		}
 	},
 	{
 		"name"			: "windspeed",
 		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "active"],
-		"icon"			: "",					// TODO look for an icon
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public"],
+		"icon"			: "propeller.png",
 		"unit"			: "km/h",
-		"interpreter"	: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
-		"translation"	: { "de" : "Windgeschwindigkeit" }
+		"translation"		: {
+			"de" : "Windgeschwindigkeit",
+			"en" : "Windspeed",
+			"fr" : "Vitesse du vent"
+		}
 	},
 	{
 		"name"			: "radition",
 		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "active"],
-		"icon"			: "",					// TODO look for an icon
-		"unit"			: "",					// TODO add unit
-		"interpreter"	: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public"],
+		"icon"			: "radioactivity.png",
+		"unit"			: "μSv",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
-		"translation"	: { "de" : "Strahlung" }
+		"translation"		: {
+			"de" : "Radioaktivität (Dosis)",
+			"en" : "Radioactivity (Dose)",
+			"fr" : "Radioactivité (Dose)"
+		}
 	},
 	{
 		"name"			: "luminosity",
 		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "active"],
-		"icon"			: "",					// TODO look for an icon
-		"unit"			: "",					// TODO add unit
-		"interpreter"	: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public"],
+		"icon"			: "sun.png",
+		"unit"			: "cd",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
-		"translation"	: { "de" : "Lichtstärke" }
+		"translation"		: {
+			"de" : "Lichtstärke",
+			"en" : "Luminosity",
+			"fr" : "Intensité lumineuse"
+		}
 	},
 	{
 		"name"			: "workinghours",
 		"required"		: ["title", "resolution"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "active"],
-		"icon"			: "",					// TODO look for an icon
-		"unit"			: "h",					// TODO add unit
-		"interpreter"	: "Volkszaehler\\Interpreter\\MeterInterpreter",
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public"],
+		"icon"			: "clock.png",
+		"unit"			: "h",
+		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
-		"translation"	: { "de" : "Betriebsstundenzähler" }
+		"translation"		: {
+			"de" : "Betriebsstundenzähler",
+			"en" : "Working Hour Meter",
+			"fr" : "Compteur horaire"
+		}
 	}
 ]
