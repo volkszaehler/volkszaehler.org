@@ -173,9 +173,10 @@ class JSON extends View {
 	 * @param boolean $debug
 	 */
 	protected function addException(\Exception $exception) {
+		$exceptionType = explode('\\', get_class($exception));
 		$exceptionInfo = array(
 			'message' => $exception->getMessage(),
-			'type' => get_class($exception),
+			'type' => end($exceptionType),
 			'code' => $exception->getCode()
 		);
 
@@ -211,6 +212,7 @@ class JSON extends View {
 		
 		$this->json['data']['uuid'] = $interpreter->getEntity()->getUuid();
 		$this->json['data']['count'] = count($data);
+		$this->json['data']['rowCount'] = $interpreter->getRowCount();
 		
 		$min = $interpreter->getMin();
 		$max = $interpreter->getMax();

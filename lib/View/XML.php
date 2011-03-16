@@ -183,9 +183,11 @@ class XML extends View {
 	 * @param boolean $debug
 	 */
 	protected function addException(\Exception $exception) {
+		$exceptionType = explode('\\', get_class($exception));
+
 		$xmlException = $this->xmlDoc->createElement('exception');
 		$xmlException->setAttribute('code', $exception->getCode());
-		$xmlException->setAttribute('type', get_class($exception));
+		$xmlException->setAttribute('type', end($exceptionType));
 
 		$xmlException->appendChild($this->xmlDoc->createElement('message', $exception->getMessage()));
 
