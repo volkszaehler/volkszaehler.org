@@ -160,6 +160,7 @@ class JSON extends View {
 	 */
 	protected function addDebug(Util\Debug $debug) {
 		$jsonDebug['time'] = $debug->getExecutionTime();
+		$jsonDebug['level'] = $debug->getLevel();
 		$jsonDebug['messages'] = $debug->getMessages();
 		$jsonDebug['queries'] = array_values($debug->getQueries());
 
@@ -210,25 +211,29 @@ class JSON extends View {
 			}
 		);
 		
-		$this->json['data']['uuid'] = $interpreter->getEntity()->getUuid();
-		$this->json['data']['count'] = count($data);
-		$this->json['data']['rowCount'] = $interpreter->getRowCount();
-		
 		$min = $interpreter->getMin();
 		$max = $interpreter->getMax();
-		$average = View::formatNumber($interpreter->getAverage());
+		$average = $interpreter->getAverage();
+		
+		$from = $interpreter->getFrom();
+		$to = $interpreter->getTo();
 
+		$this->json['data']['uuid']		= $interpreter->getEntity()->getUuid();
+		if (isset($from))
+			$this->json['data']['from']	= $from;
+		if (isset($to))
+			$this->json['data']['to']	= $to;
 		if (isset($min))
-			$this->json['data']['min'] = $min;
+			$this->json['data']['min']	= $min;
 		if (isset($max))
-			$this->json['data']['max'] = $max;
+			$this->json['data']['max']	= $max;
 		if (isset($average)) 
-			$this->json['data']['average'] = $average;
+			$this->json['data']['average']	= View::formatNumber($average);
 		if ($interpreter instanceof Interpreter\MeterInterpreter)
 			$this->json['data']['consumption'] = View::formatNumber($interpreter->getConsumption());
-		if (count($data) > 0) {
-			$this->json['data']['tuples'] = $data;
-		}
+		$this->json['data']['count']		= count($data);
+		if (($interpreter->getTupleCount() > 0 || is_null($interpreter->getTupleCount())) && count($data) > 0)
+			$this->json['data']['tuples']	= $data;
 	}
 
 	/**

@@ -178,9 +178,9 @@
 		}
 	},
 	{
-		"name"			: "radition",
+		"name"			: "radiation",
 		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "resolution", "public"],
 		"icon"			: "radioactivity.png",
 		"unit"			: "μSv",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",

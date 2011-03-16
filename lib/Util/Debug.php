@@ -64,12 +64,6 @@ class Debug {
 			throw new \Exception('Debugging has already been started. please use the static functions!');
 		}
 		self::$instance = $this;
-
-		// assert options
-		assert_options(ASSERT_ACTIVE, TRUE);	// activate assertions
-		assert_options(ASSERT_BAIL, FALSE);
-		assert_options(ASSERT_WARNING, FALSE);
-		assert_options(ASSERT_CALLBACK, array($this, 'assertHandler'));
 	}
 
 	/*
@@ -82,44 +76,25 @@ class Debug {
 		if (isset(self::$instance)) {
 			$trace = debug_backtrace(FALSE);
 			$info = $trace[0];
+			$level = self::$instance->level;
 
-			self::$instance->messages[] = array(
-				'message' => $message,
-				'file' => $info['file'],
-				'line' => $info['line'],
-				'args' => array_slice($info['args'], 1),
-				'trace' => array_slice($trace, 1)
-			);
+			$message = array('message' => $message);
+			
+			if ($level > 2) {
+				$message['file'] = $info['file'];
+				$message['line'] = $info['line'];
+			}
+			
+			if ($level > 4) {
+				$message['args'] = array_slice($info['args'], 1);
+			}
+			
+			if ($level > 5) {
+				$message['trace'] = array_slice($trace, 1);
+			}
+			
+			self::$instance->messages[] = $message;
 		}
-	}
-
-	/**
-	 * simple assertion passthrough for future improvements
-	 *
-	 * @param string $code code to be evaluated
-	 */
-	public static function assert($code) {
-		return assert($code);
-	}
-
-	/**
-	 * handles failed assertions
-	 *
-	 * @param string $file
-	 * @param integer $line
-	 * @param string $code code to be evaluated
-	 */
-	public function assertHandler($file, $line, $code) {
-		$trace = debug_backtrace();
-		$info = $trace[2];
-
-		$this->messages[] = array(
-			'message' => 'assertion failed: ' . $code,
-			'file' => $info['file'],
-			'line' => $info['line'],
-			'time' => date('r'),
-			'trace' => array_slice($trace, 3)
-		);
 	}
 
 	/**
@@ -148,6 +123,11 @@ class Debug {
 	 * @todo encapsulate in state class? or inherit from singleton class?
 	 */
 	public static function getInstance() { return self::$instance; }
+	
+	/**
+	 * @return integer current debug level
+	 */
+	 public function getLevel() { return $this->level; }
 	
 	/**
 	 * Tries to determine the current SHA1 hash of your git commit

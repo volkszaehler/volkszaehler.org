@@ -164,6 +164,7 @@ class XML extends View {
 	 */
 	protected function addDebug(Util\Debug $debug) {
 		$xmlDebug = $this->xmlDoc->createElement('debug');
+		$xmlDebug->setAttribute('level', $debug->getLevel());
 		$xmlDebug->appendChild($this->xmlDoc->createElement('time', $debug->getExecutionTime()));
 		
 		$xmlMessages = $this->xmlDoc->createElement('messages');
@@ -232,23 +233,38 @@ class XML extends View {
 		$xmlTuples = $this->xmlDoc->createElement('tuples');
 		
 		$data = $interpreter->processData(
-			$this->request->getParameter('tuples'),
-			$this->request->getParameter('group'), 
 			function($tuple) use ($xmlDoc, $xmlTuples) {
 				$xmlTuple = $xmlDoc->createElement('tuple');
-				$xmlTuple->setAttribute('timestamp', $tuple[0]);	// hardcoded data fields for performance optimization
+				$xmlTuple->setAttribute('timestamp', $tuple[0]);
 				$xmlTuple->setAttribute('value', View::formatNumber($tuple[1]));
 				$xmlTuple->setAttribute('count', $tuple[2]);
 				$xmlTuples->appendChild($xmlTuple);
 			}
 		);
 		
+		$min = $interpreter->getMin();
+		$max = $interpreter->getMax();
+		$average = $interpreter->getAverage();
+		
+		$from = $interpreter->getFrom();
+		$to = $interpreter->getTo();
+		
 		$xmlData->appendChild($this->xmlDoc->createElement('uuid', $interpreter->getEntity()->getUuid()));
-		$xmlData->appendChild($this->xmlDoc->createElement('min', $interpreter->getMin()));
-		$xmlData->appendChild($this->xmlDoc->createElement('max', $interpreter->getMax()));
-		$xmlData->appendChild($this->xmlDoc->createElement('average', self::formatNumber($interpreter->getAverage())));
-		$xmlData->appendChild($this->xmlDoc->createElement('consumption', self::formatNumber($interpreter->getConsumption())));
-		$xmlData->appendChild($xmlTuples);
+		if (isset($from)) 
+			$xmlData->appendChild($this->xmlDoc->createElement('from', $from));
+		if (isset($to)) 
+			$xmlData->appendChild($this->xmlDoc->createElement('to', $to));
+		if (isset($min)) 
+			$xmlData->appendChild($this->xmlDoc->createElement('min', $min));
+		if (isset($max)) 
+			$xmlData->appendChild($this->xmlDoc->createElement('max', $max));
+		if (isset($average)) 
+			$xmlData->appendChild($this->xmlDoc->createElement('average', View::formatNumber($average)));
+		if ($interpreter instanceof Interpreter\MeterInterpreter)
+			$xmlData->appendChild($this->xmlDoc->createElement('consumption', View::formatNumber($interpreter->getConsumption())));
+		$xmlData->appendChild($this->xmlDoc->createElement('count', count($data)));
+		if (($interpreter->getTupleCount() > 0 || is_null($interpreter->getTupleCount())) && count($data) > 0)
+			$xmlData->appendChild($xmlTuples);
 	
 		$this->xmlRoot->appendChild($xmlData);
 	}
