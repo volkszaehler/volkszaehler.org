@@ -81,15 +81,20 @@ vz.wui.init = function() {
 	// auto refresh
 	if (vz.options.refresh) {
 		$('#refresh').attr('checked', true);
-		this.timeout = window.setTimeout(this.refresh, 3000);
+		
+		var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
+		this.timeout = window.setTimeout(
+			this.refresh,
+			(delta / 100 < 3000) ? 3000 : delta / 100
+		);
 	}
 	$('#refresh').change(function() {
-		if ($(this).attr('checked')) {
-			vz.options.refresh = true;
-			this.timeout = window.setTimeout(this.refresh, 3000);
+		vz.options.refresh = $(this).attr('checked');
+	
+		if (vz.options.refresh) {
+			vz.wui.timeout = window.setTimeout(vz.wui.refresh, 3000);
 		}
 		else {
-			vz.options.refresh = false;
 			window.clearTimeout(this.timeout);
 		}
 	});
@@ -245,9 +250,13 @@ vz.wui.refresh = function() {
 	
 	vz.options.plot.xaxis.max = new Date().getTime();		// move plot
 	vz.options.plot.xaxis.min = vz.options.plot.xaxis.max - delta;	// move plot
-	vz.entities.loadData().done(vz.wui.drawPlot);
-	
-	this.timeout = window.setTimeout(this.refresh, (delta / 100 < 3000) ? 3000 : delta / 100); // TODO update timeout after zooming
+	vz.entities.loadData().done(function() {
+		vz.wui.drawPlot();
+		vz.wui.timeout = window.setTimeout( // restart refresh timeout
+			vz.wui.refresh, // self
+			(delta / 100 < 3000) ? 3000 : delta / 100
+		);
+	});
 };
 
 /**
@@ -423,16 +432,13 @@ vz.entities.showTable = function() {
 						'Verschieben': function() {
 							try {
 								var queue = new Array;
-								console.log('moving...');
 								queue.push(to.addChild(child)); // add to new aggregator
 					
 								if (from !== undefined) {
-									console.log('remove from aggre');
 									queue.push(from.removeChild(child)); // remove from aggregator
 								}
 								else {
-									console.log('remove from cookies');
-									queue.push(vz.uuids.remove(child.uuid)); // remove from cookies
+									vz.uuids.remove(child.uuid); // remove from cookies
 									vz.uuids.save();
 								}
 							} catch (e) {

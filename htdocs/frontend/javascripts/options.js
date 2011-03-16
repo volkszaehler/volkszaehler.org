@@ -27,9 +27,9 @@
 // default time interval to show
 vz.options = {
 	language: 'de',
-	backendUrl: '../backend.php',
+	backendUrl: '../backend.php', // TODO default backend, store backend urls in cookies
 	tuples: 300,
-	precission: 2, // gets updated via backend
+	precission: 2, // TODO update from backend capabilities?
 	render: 'lines',
 	refresh: false,
 	defaultInterval: 24*60*60*1000, // 1 day
@@ -76,13 +76,13 @@ vz.options.plot = {
 }
 
 vz.options.save = function() {
-	for (var key in this) {
-		if (this.hasOwnProperty(key) &&
-			typeof this[key] != 'function' &&
-			typeof this[key] != 'object' &&
-			typeof this[key] != 'undefined')
-		{
-			$.setCookie('vz_' + key, this[key]);
+	for (var key in vz.options) {
+		if (vz.options.hasOwnProperty(key) &&
+			typeof vz.options[key] != 'function' &&
+			typeof vz.options[key] != 'object' &&
+			typeof vz.options[key] != 'undefined'
+		) {
+			$.setCookie('vz_' + key, vz.options[key]);
 		}
 	}
 };
