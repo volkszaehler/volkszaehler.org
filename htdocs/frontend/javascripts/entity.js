@@ -148,6 +148,7 @@ Entity.prototype.getRow = function() {
 			.append($('<span>')
 				.text(this.title)
 				.addClass('indicator')
+				.css('background-image', 'url(images/types/' + this.definition.icon + ')')
 			)
 		)
 		.append($('<td>').text(this.definition.translation[vz.options.language])) // channel type
@@ -211,20 +212,23 @@ Entity.prototype.loadData = function() {
 					vz.options.plot.yaxis.min = null;
 				}
 		
-				// update entity table
-				var unit = ' ' + this.definition.unit;
+				// update details in table
 				$('#entity-' + this.uuid + ' .min')
-					.text(vz.wui.formatNumber(this.data.min[1]) + unit)
+					.text(vz.wui.formatNumber(this.data.min[1]) + this.definition.unit)
 					.attr('title', $.plot.formatDate(new Date(this.data.min[0]), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames));
 				$('#entity-' + this.uuid + ' .max')
-					.text(vz.wui.formatNumber(this.data.max[1]) + unit)
+					.text(vz.wui.formatNumber(this.data.max[1]) + this.definition.unit)
 					.attr('title', $.plot.formatDate(new Date(this.data.max[0]), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames));
 				$('#entity-' + this.uuid + ' .average')
-					.text(vz.wui.formatNumber(this.data.average) + unit);
+					.text(vz.wui.formatNumber(this.data.average) + this.definition.unit);
 				$('#entity-' + this.uuid + ' .last')
-					.text(vz.wui.formatNumber(this.data.tuples.last()[1]) + unit);
+					.text(vz.wui.formatNumber(this.data.tuples.last()[1]) + this.definition.unit);
 				if (this.definition.interpreter == 'Volkszaehler\\Interpreter\\MeterInterpreter') { // sensors have no consumption
-					$('#entity-' + this.uuid + ' .consumption').text(vz.wui.formatNumber(this.data.consumption) + unit + 'h');
+					var consumption = vz.wui.formatNumber((this.data.consumption > 1000) ? this.data.consumption / 1000 : this.data.consumption);
+					var unit = ((this.data.consumption > 1000) ? ' k' : ' ') + this.definition.unit + 'h';
+					var cost = (this.cost !== undefined) ? ' (' + vz.wui.formatNumber(this.cost * this.data.consumption) + ' €)' : '';
+					
+					$('#entity-' + this.uuid + ' .consumption').text(consumption + unit + cost);
 				}
 			}
 			else { // no data available, clear table
