@@ -32,8 +32,20 @@ vz.load = function(args) {
 		url: this.options.backendUrl,
 		dataType: 'json',
 		error: function(xhr) {
-			json = JSON.parse(xhr.responseText);
-			vz.wui.dialogs.error(xhr.statusText, json.exception.message, xhr.status);
+			try {
+				if (xhr.getResponseHeader('Content-type') == 'application/json') {
+					var json = JSON.parse(xhr.responseText);
+				
+					if (json.exception) {
+						throw new Exception(json.exception.type, json.exception.message, (json.exception.code) ? json.exception.code : xhr.status);
+					}
+				}
+				
+				throw new Exception(xhr.statusText, 'Unknown backend response', xhr.status)
+			}
+			catch (e) {
+				vz.wui.dialogs.exception(e);
+			}
 		}
 	});
 	
