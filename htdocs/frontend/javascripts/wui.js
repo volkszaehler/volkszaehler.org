@@ -333,16 +333,16 @@ vz.wui.handleControls = function () {
 };
 
 /**
- * Rounding precission
+ * Rounding precision
  *
  * Math.round rounds to whole numbers
  * to round to one decimal (e.g. 15.2) we multiply by 10,
  * round and reverse the multiplication again
- * therefore "vz.options.precission" needs
+ * therefore "vz.options.precision" needs
  * to be set to 1 (for 1 decimal) in that case
  */
 vz.wui.formatNumber = function(number) {
-	return Math.round(number*Math.pow(10, vz.options.precission))/Math.pow(10, vz.options.precission);
+	return Math.round(number*Math.pow(10, vz.options.precision))/Math.pow(10, vz.options.precision);
 }
 
 vz.wui.updateHeadline = function() {

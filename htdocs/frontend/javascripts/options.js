@@ -29,7 +29,7 @@ vz.options = {
 	language: 'de',
 	backendUrl: '../backend.php', // TODO default backend, store backend urls in cookies
 	tuples: 300,
-	precission: 2, // TODO update from backend capabilities?
+	precision: 2, // TODO update from backend capabilities?
 	render: 'lines',
 	refresh: false,
 	defaultInterval: 24*60*60*1000, // 1 day
