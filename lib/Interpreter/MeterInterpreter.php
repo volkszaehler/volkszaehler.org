@@ -124,7 +124,7 @@ class MeterInterpreter extends Interpreter {
 
 		return array(
 			//($next[0] - $delta / 2), // timestamp in the middle
-			$next[0], // timestamp at the end
+			$last[0], // timestamp at the start
 			$next[1] * (3600000 / (($this->resolution / 1000) * $delta)), // value
 			$next[2] // num of pulses
 		);

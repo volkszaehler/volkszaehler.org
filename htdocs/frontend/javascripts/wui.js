@@ -102,6 +102,7 @@ vz.wui.init = function() {
 	// plot rendering
 	$('#render-lines').attr('checked', (vz.options.render == 'lines'));
 	$('#render-points').attr('checked', (vz.options.render == 'points'));
+	$('#render-steps').attr('checked', (vz.options.render == 'steps'));
 	$('input[name=render][type=radio]').change(function() {
 		if ($(this).attr('checked')) {
 			vz.options.render = $(this).val();
@@ -528,7 +529,8 @@ vz.wui.drawPlot = function () {
 		$('#overlay').empty();
 	}
 
-	vz.options.plot.series.lines.show = (vz.options.render == 'lines');
+	vz.options.plot.series.lines.show = (vz.options.render == 'lines' || vz.options.render == 'steps');
+	vz.options.plot.series.lines.steps = (vz.options.render == 'steps');
 	vz.options.plot.series.points.show = (vz.options.render == 'points');
 
 	vz.plot = $.plot($('#flot'), data, vz.options.plot);

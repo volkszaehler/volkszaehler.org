@@ -30,7 +30,7 @@ vz.options = {
 	backendUrl: '../backend.php', // TODO default backend, store backend urls in cookies
 	tuples: 300,
 	precission: 2, // TODO update from backend capabilities?
-	render: 'lines',
+	render: 'steps',
 	refresh: false,
 	defaultInterval: 24*60*60*1000, // 1 day
 	timezoneOffset: -(new Date().getTimezoneOffset() * 60000) // TODO add option with timezone dropdown
