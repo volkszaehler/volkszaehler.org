@@ -57,19 +57,25 @@ $config['db']['password']			= 'demo';
  */
 $config['db']['dbname']				= 'volkszaehler';
 
-/*
+/**
  * For administration tasks (used by doctrine cli and the setup script)
  * the following $['db']['admin'] settings will be merged with $config['db']
  */
 //$config['db']['admin']['user']		= 'vz_admin';
 //$config['db']['admin']['password']		= 'admin_demo';
 
-
 /**
  * @var string path of the sqlite database
  * @link http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
  */
 //$config['db']['path']				= 'volkszaehler';
+
+/**
+ * Set to NULL to use PHP's include path
+ * @var string path of Doctrine library
+ * @link http://www.php.net/manual/en/ini.core.php#ini.include-path
+ */
+$config['lib']['doctrine'] = VZ_DIR . '/lib/vendor/Doctrine';
 
 /** @var boolean disables some optimizations. Only use it when you exactly know what you are doing. */
 $config['devmode']				= FALSE;

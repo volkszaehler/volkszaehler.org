@@ -36,18 +36,20 @@ define('VZ_DIR', realpath(__DIR__ . '/..'));
 define('VZ_VERSION', '0.2');
 
 // class autoloading
-require VZ_DIR . '/lib/Util/ClassLoader.php';
+require_once VZ_DIR . '/lib/Util/ClassLoader.php';
+require_once VZ_DIR . '/lib/Util/Configuration.php';
+
+// load configuration
+Util\Configuration::load(VZ_DIR . '/etc/volkszaehler.conf');
 
 $classLoaders = array(
-	new Util\ClassLoader('Volkszaehler', VZ_DIR . '/lib'),
-	new Util\ClassLoader('Doctrine', VZ_DIR . '/lib/vendor/Doctrine')
+	new Util\ClassLoader('Doctrine', Util\Configuration::read('lib.doctrine')),
+	new Util\ClassLoader('Volkszaehler', VZ_DIR . '/lib')
 );
 
 foreach ($classLoaders as $loader) {
 	$loader->register(); // register on SPL autoload stack
 }
-
-Util\Configuration::load(VZ_DIR . '/etc/volkszaehler.conf');
 
 $r = new Router();
 $r->run();

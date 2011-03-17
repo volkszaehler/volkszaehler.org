@@ -30,19 +30,20 @@ define('VZ_DIR', realpath(__DIR__ . '/../..'));
 
 // class autoloading
 require_once VZ_DIR . '/lib/Util/ClassLoader.php';
+require_once VZ_DIR . '/lib/Util/Configuration.php';
+
+// load configuration
+Util\Configuration::load(VZ_DIR . '/etc/volkszaehler.conf');
 
 $classLoaders = array(
-	new Volkszaehler\Util\ClassLoader('Doctrine', VZ_DIR . '/lib/vendor/Doctrine'),
-	new Volkszaehler\Util\ClassLoader('Symfony', VZ_DIR . '/lib/vendor/Doctrine/Symfony'),
-	new Volkszaehler\Util\ClassLoader('Volkszaehler', VZ_DIR . '/lib')
+	new Util\ClassLoader('Doctrine', Util\Configuration::read('lib.doctrine')),
+	new Util\ClassLoader('Symfony', VZ_DIR . '/lib/vendor/Doctrine/Symfony'),
+	new Util\ClassLoader('Volkszaehler', VZ_DIR . '/lib')
 );
 
 foreach ($classLoaders as $loader) {
 	$loader->register(); // register on SPL autoload stack
 }
-
-// load configuration
-Util\Configuration::load(VZ_DIR . '/etc/volkszaehler.conf');
 
 $em = Volkszaehler\Router::createEntityManager(TRUE); // get admin credentials
 
