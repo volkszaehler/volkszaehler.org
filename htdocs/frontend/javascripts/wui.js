@@ -102,7 +102,6 @@ vz.wui.init = function() {
 	// plot rendering
 	$('#render-lines').attr('checked', (vz.options.render == 'lines'));
 	$('#render-points').attr('checked', (vz.options.render == 'points'));
-	$('#render-steps').attr('checked', (vz.options.render == 'steps'));
 	$('input[name=render][type=radio]').change(function() {
 		if ($(this).attr('checked')) {
 			vz.options.render = $(this).val();
@@ -511,29 +510,32 @@ vz.entities.loadData = function() {
 vz.wui.drawPlot = function () {
 	vz.wui.updateHeadline();
 
-	var data = new Array;
+	var series = new Array;
 	vz.entities.each(function(entity) {
 		if (entity.active && entity.data && entity.data.tuples && entity.data.tuples.length > 0) {
-			data.push({
+			var serie = {
 				data: entity.data.tuples,
-				color: entity.color
-			});
+				color: entity.color,
+				lines: {
+					show: (vz.options.render == 'lines'),
+					steps: (entity.definition.interpreter == 'Volkszaehler\\Interpreter\\MeterInterpreter')
+				},
+				points: { show: (vz.options.render == 'points') }
+			};
+			
+			series.push(serie);
 		}
 	});
 	
-	if (data.length == 0) {
+	if (series.length == 0) {
 		$('#overlay').html('<img src="images/empty.png" alt="no data..." /><p>nothing to plot...</p>');
-		data.push({});  // add empty dataset to show axes
+		series.push({});  // add empty dataset to show axes
 	}
 	else {
 		$('#overlay').empty();
 	}
 
-	vz.options.plot.series.lines.show = (vz.options.render == 'lines' || vz.options.render == 'steps');
-	vz.options.plot.series.lines.steps = (vz.options.render == 'steps');
-	vz.options.plot.series.points.show = (vz.options.render == 'points');
-
-	vz.plot = $.plot($('#flot'), data, vz.options.plot);
+	vz.plot = $.plot($('#flot'), series, vz.options.plot);
 };
 
 /*

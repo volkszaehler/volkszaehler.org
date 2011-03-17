@@ -30,7 +30,7 @@ vz.options = {
 	backendUrl: '../backend.php', // TODO default backend, store backend urls in cookies
 	tuples: 300,
 	precission: 2, // TODO update from backend capabilities?
-	render: 'steps',
+	render: 'lines',
 	refresh: false,
 	defaultInterval: 24*60*60*1000, // 1 day
 	timezoneOffset: -(new Date().getTimezoneOffset() * 60000) // TODO add option with timezone dropdown
@@ -39,10 +39,8 @@ vz.options = {
 vz.options.plot = {
 	colors: ['#579D1C', '#7E0021', '#FFD320', '#FF420E', '#004586', '#0084D1', '#C5000B', '#FF950E', '#4B1F6F', '#AECF00', '#314004', '#83CAFF'],
 	series: {
-		lines: { show: true },
 		shadowSize: 0,
 		points: {
-			show: false,
 			radius: 1,
 			//symbol: 'square'
 			symbol: function(ctx, x, y, radius, shadow) { // just draw simple pixels
