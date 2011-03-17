@@ -47,7 +47,12 @@ class Configuration {
 
 		$values = self::$values;
 		foreach ($tree as $part) {
-			$values = $values[$part];
+			if (isset($values[$part])) {
+				$values = $values[$part];
+			}
+			else {
+				return NULL;
+			}
 		}
 
 		return $values;
