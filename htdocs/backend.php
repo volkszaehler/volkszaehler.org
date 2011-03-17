@@ -43,7 +43,7 @@ require_once VZ_DIR . '/lib/Util/Configuration.php';
 Util\Configuration::load(VZ_DIR . '/etc/volkszaehler.conf');
 
 $classLoaders = array(
-	new Util\ClassLoader('Doctrine', (is_null(Util\Configuration::read('lib.doctrine')) ? 'Doctrine' : Util\Configuration::read('lib.doctrine')),
+	new Util\ClassLoader('Doctrine', (is_null(Util\Configuration::read('lib.doctrine'))) ? 'Doctrine' : Util\Configuration::read('lib.doctrine')),
 	new Util\ClassLoader('Volkszaehler', VZ_DIR . '/lib')
 );
 

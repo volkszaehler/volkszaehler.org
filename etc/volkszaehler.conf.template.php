@@ -75,7 +75,7 @@ $config['db']['dbname']				= 'volkszaehler';
  * @var string path of Doctrine library
  * @link http://www.php.net/manual/en/ini.core.php#ini.include-path
  */
-$config['lib']['doctrine'] = VZ_DIR . '/lib/vendor/Doctrine';
+$config['lib']['doctrine']			= VZ_DIR . '/lib/vendor/Doctrine';
 
 /** @var boolean disables some optimizations. Only use it when you exactly know what you are doing. */
 $config['devmode']				= FALSE;
