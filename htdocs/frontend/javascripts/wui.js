@@ -256,7 +256,16 @@ vz.wui.setTimeout = function() {
 	// clear an already set timeout
 	if (vz.wui.timeout != null) {
 		window.clearTimeout(vz.wui.timeout);
+		vz.wui.timeout = null;
 	}
+	// don't refresh if the end of the x axis is not the current time, i.e. we are looking at some old data
+	// we allow an offset of 1s, because loading data takes some time. this also means that if it takes more than 1s,
+	// we will not automatically refresh. this is a feature!
+	if (vz.options.plot.xaxis.max < Number(new Date()) - 1000) {
+		$('#refresh-time').html('(deactivated)');
+		return;
+	}
+
 	var t = Math.max((vz.options.plot.xaxis.max - vz.options.plot.xaxis.min)/vz.options.tuples, vz.options.minTimeout);
 	$('#refresh-time').html(Math.round(t/1000)+"s");
 	vz.wui.timeout = window.setTimeout(this.refresh, t);
@@ -334,14 +343,14 @@ vz.wui.handleControls = function () {
 	// reenable autoscaling for yaxis
 	vz.options.plot.yaxis.max = null; // autoscaling
 	vz.options.plot.yaxis.min = 0; // fixed to 0
-	
+
 	// we dont want to zoom/pan into the future
 	if (vz.options.plot.xaxis.max > new Date().getTime()) {
 		delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
 		vz.options.plot.xaxis.max = new Date().getTime();
 		vz.options.plot.xaxis.min = new Date().getTime() - delta;
 	}
-	
+
 	vz.entities.loadData().done(vz.wui.drawPlot);
 };
 
