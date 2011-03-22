@@ -98,7 +98,7 @@
 		"required"		: ["title", "resolution"],
 		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "cost"],
 		"icon"			: "flame.png",
-		"unit"			: "m³",
+		"unit"			: "m³/h",
 		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"translation"		: {
@@ -112,7 +112,7 @@
 		"required"		: ["title", "resolution"],
 		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "cost"],
 		"icon"			: "waterdrop.png",
-		"unit"			: "m³",
+		"unit"			: "l/h",
 		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"translation"		: {
