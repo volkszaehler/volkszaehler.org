@@ -28,6 +28,7 @@
  * Initialize the WUI (Web User Interface)
  */
 vz.wui.init = function() {
+	vz.wui.timeout = null;
 	// initialize dropdown accordion
 	$('#accordion h3').click(function() {
 		$(this).next().toggle('fast');
@@ -81,21 +82,14 @@ vz.wui.init = function() {
 	// auto refresh
 	if (vz.options.refresh) {
 		$('#refresh').attr('checked', true);
-		
-		var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
-		this.timeout = window.setTimeout(
-			this.refresh,
-			(delta / 100 < 3000) ? 3000 : delta / 100
-		);
+		vz.wui.setTimeout();
 	}
 	$('#refresh').change(function() {
 		vz.options.refresh = $(this).attr('checked');
-	
 		if (vz.options.refresh) {
-			vz.wui.timeout = window.setTimeout(vz.wui.refresh, 3000);
-		}
-		else {
-			window.clearTimeout(this.timeout);
+			vz.wui.setTimeout();
+		} else {
+			vz.wui.clearTimeout();
 		}
 	});
 	
@@ -252,12 +246,31 @@ vz.wui.refresh = function() {
 	vz.options.plot.xaxis.min = vz.options.plot.xaxis.max - delta;	// move plot
 	vz.entities.loadData().done(function() {
 		vz.wui.drawPlot();
-		vz.wui.timeout = window.setTimeout( // restart refresh timeout
-			vz.wui.refresh, // self
-			(delta / 100 < 3000) ? 3000 : delta / 100
-		);
 	});
 };
+
+/**
+ * refresh graphs after timeout ms, with a minimum f vz.options.minTimeout ms
+ */
+vz.wui.setTimeout = function() {
+	// clear an already set timeout
+	if (vz.wui.timeout != null) {
+		window.clearTimeout(vz.wui.timeout);
+	}
+	var t = Math.max((vz.options.plot.xaxis.max - vz.options.plot.xaxis.min)/vz.options.tuples, vz.options.minTimeout);
+	$('#refresh-time').html(Math.round(t/1000)+"s");
+	vz.wui.timeout = window.setTimeout(this.refresh, t);
+}
+
+/**
+ * stop auto-refresh of graphs
+ */
+vz.wui.clearTimeout = function() {
+	$('#refresh-time').html('');
+	var rc = window.clearTimeout(vz.wui.timeout);
+	vz.wui.timeout = null;
+	return rc;
+}
 
 /**
  * Move & zoom in the plotting area
@@ -536,6 +549,9 @@ vz.wui.drawPlot = function () {
 	}
 
 	vz.plot = $.plot($('#flot'), series, vz.options.plot);
+	if (vz.options.refresh) {
+		vz.wui.setTimeout();
+	}
 };
 
 /*
