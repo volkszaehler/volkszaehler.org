@@ -42,7 +42,7 @@ class EntityController extends Controller {
 	 * @param string $identifier
 	 */
 	public function get($uuid = NULL) {
-		if (isset($uuid)) {		
+		if (isset($uuid)) { // single entity
 			if (!Util\UUID::validate($uuid)) {
 				throw new \Exception('Invalid UUID: ' . $uuid);
 			}
@@ -61,8 +61,11 @@ class EntityController extends Controller {
 				throw new \Exception('No entity found with UUID: ' . $uuid, 404);
 			}
 		}
-		else { // get public entities
-			return array('entities' => $this->filter(array('public' => TRUE)));
+		elseif ($publicEntities = $this->filter(array('public' => TRUE))) { // public entities
+			return array('entities' => $publicEntities);
+		}
+		else { // no public entities available
+			return array('entities' => array());
 		}
 	}
 
