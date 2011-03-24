@@ -26,7 +26,7 @@
 
 use Volkszaehler\Util;
 
-include '../../backend/lib/Util/Configuration.php';
+include '../lib/Util/Configuration.php';
 echo '<pre>';
 
 Util\Configuration::load('test.conf');

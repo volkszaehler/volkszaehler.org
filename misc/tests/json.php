@@ -25,7 +25,7 @@
  */
 
 use Volkszaehler\Util;
-include '../../backend/lib/Util/JSON.php';
+include '../lib/Util/JSON.php';
 echo '<pre>';
 
 $data = '{

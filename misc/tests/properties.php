@@ -27,11 +27,11 @@
 use Volkszaehler\Util;
 use Volkszaehler\Model;
 
-define('VZ_DIR', '/home/steffen/workspace/volkszaehler.org');	// TODO realpath(__DIR__)
+define('VZ_DIR', realpath(__DIR__ . '/..'));
 
-include '../../backend/lib/Util/JSONDefinition.php';
-include '../../backend/lib/Model/Property.php';
-include '../../backend/lib/Util/JSON.php';
+include '../lib/Util/JSONDefinition.php';
+include '../lib/Model/Property.php';
+include '../lib/Util/JSON.php';
 
 echo '<pre>';
 

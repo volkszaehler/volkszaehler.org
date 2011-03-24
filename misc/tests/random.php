@@ -24,9 +24,8 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
-include '../../backend/lib/Util/Random.php';
-include '../../backend/lib/Util/UUID.php';
-include '../../backend/lib/Model/Token.php';
+include '../lib/Util/Random.php';
+include '../lib/Util/UUID.php';
 
 use Volkszaehler\Model;
 use Volkszaehler\Util;
@@ -48,14 +47,6 @@ $chars = array(
 echo 'Numbers: ' . implode(',', Util\Random::getNumbers(0, 15, 10)) . PHP_EOL;
 echo 'String: ' . Util\Random::getString($chars, 100) . PHP_EOL;
 echo 'Bytes: ' . Util\Random::getBytes(100) . PHP_EOL;
-?>
-</pre>
-<h4>Token tests</h4>
-<pre>
-<?php
-for ($i = 0; $i < 100; $i++) {
-	echo new Model\Token() . PHP_EOL;
-}
 ?>
 </pre>
 <h4>UUId tests</h4>
