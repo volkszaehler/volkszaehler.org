@@ -31,8 +31,8 @@
 
 # configuration
 #
-# backend url
-URL="http://localhost/workspace/volkszaehler.org/backend/index.php/"
+# middleware url
+URL="http://volkszaehler.org/demo/middleware.php"
 
 # 1wire sensor id => volkszaehler.org uuid
 declare -A MAPPING

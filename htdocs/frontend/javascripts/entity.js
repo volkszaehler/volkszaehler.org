@@ -80,7 +80,7 @@ Entity.prototype.getDOM = function(edit) {
 					
 				case 'uuid':
 					var title = 'UUID';
-					var value = '<a href="' + vz.options.backendUrl + '/entity/' + this[property] + '.json">' + this[property] + '</a>';
+					var value = '<a href="' + vz.options.middlewareUrl + '/entity/' + this[property] + '.json">' + this[property] + '</a>';
 					break;
 			
 				case 'color':

@@ -751,7 +751,7 @@ C
 ontroller Entwurfsmuster aufgebaut.
  Jeder Request an das Backend muss über die Datei 
 \family typewriter
-/htdocs/backend.php
+/htdocs/middleware.php
 \family default
  erfolgen.
  Sie ist quasi der 
@@ -834,7 +834,7 @@ Alle Anfragen an das Backend müssen einem bestimmten Schema entsprechen.
 \begin_layout Standard
 
 \family typewriter
-http://<server>:<port>/<path_to_volkszaehler>/backend[.php]/<context>[/<uuid>].<fo
+http://<server>:<port>/<path_to_volkszaehler>/middleware[.php]/<context>[/<uuid>].<fo
 rmat>?<paramters>=<values>
 \end_layout
 

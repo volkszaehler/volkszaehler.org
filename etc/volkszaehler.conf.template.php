@@ -52,7 +52,7 @@ $config['db']['user']				= 'vz';
 $config['db']['password']			= 'demo';
 
 /**
- * @var string backend database
+ * @var string database name
  * @link http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
  */
 $config['db']['dbname']				= 'volkszaehler';

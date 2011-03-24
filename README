@@ -3,12 +3,12 @@ Feel free to setup your own installation and protect your privacy!
 
 volkszaehler.org/
  |_ htdocs/			static files accessible through the web
- |   |_ backend.php		backend bootstrapping
+ |   |_ middleware.php		middleware bootstrapping
  |   \_ frontend		web frontend
  |
  |_ etc/			configuration files
  |_ var/			SQLite database (optional)
- |_ lib/			backend libraries
+ |_ lib/			middleware libraries
  |_ misc/
      |_ controller/
      |   |_ php/		simple reference implemenation of controllers
@@ -21,7 +21,7 @@ volkszaehler.org/
      |   \_ demo/		demo data
      |
      |_ tools/			scripts for imports, installation etc.
-     |_ tests/			simple tests for backend classes
+     |_ tests/			simple tests for middleware classes
      \_ website/		our main webpage on http://volkszaehler.org
 
 Wiki: http://wiki.volkszaehler.org

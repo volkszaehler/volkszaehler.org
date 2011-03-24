@@ -27,9 +27,9 @@
 // default time interval to show
 vz.options = {
 	language: 'de',
-	backendUrl: '../backend.php', // TODO default backend, store backend urls in cookies
+	middlewareUrl: '../middleware.php', // TODO default middleware, store middleware urls in cookies
 	tuples: 300,
-	precision: 2, // TODO update from backend capabilities?
+	precision: 2, // TODO update from middleware capabilities?
 	render: 'lines',
 	refresh: false,
 	defaultInterval: 24*60*60*1000, // 1 day

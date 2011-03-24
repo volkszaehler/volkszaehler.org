@@ -71,11 +71,11 @@ vz.wui.init = function() {
 		vz.entities.loadData().done(vz.wui.drawPlot);
 	});
 
-	// backend address
-	$('#backend-url')
-		.val(vz.options.backendUrl)
+	// middleware address
+	$('#middleware-url')
+		.val(vz.options.middlewareUrl)
 		.change(function() {
-			vz.options.backendUrl = $(this).val();
+			vz.options.middlewareUrl = $(this).val();
 		});
 
 	// auto refresh
@@ -361,7 +361,7 @@ vz.entities.each = function(cb) {
 }
 
 /**
- * Get all entity information from backend
+ * Get all entity information from middleware
  */
 vz.entities.loadDetails = function() {
 	this.clear();
@@ -445,7 +445,7 @@ vz.entities.showTable = function() {
 								vz.wui.dialogs.exception(e);
 							} finally {
 								$.when(queue).done(function() {
-									// wait for backend
+									// wait for middleware
 									vz.entities.loadDetails().done(vz.entities.showTable);
 								});
 								$(this).dialog('close');
@@ -486,7 +486,7 @@ vz.entities.showTable = function() {
 };
 
 /**
- * Load json data from the backend
+ * Load json data from the middleware
  *
  * @todo move to Entity class
  */

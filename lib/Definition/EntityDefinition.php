@@ -52,14 +52,14 @@ class EntityDefinition extends Definition {
 	protected $optional = array();
 
 	/**
-	 * Classname of intepreter (see backend/lib/Interpreter/)
+	 * Classname of intepreter (see lib/Interpreter/)
 	 *
 	 * @var string
 	 */
 	protected $interpreter;
 
 	/**
-	 * Classname of model (see backend/lib/Model/)
+	 * Classname of model (see lib/Model/)
 	 *
 	 * @var string
 	 */

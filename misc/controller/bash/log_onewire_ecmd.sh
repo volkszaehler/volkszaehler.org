@@ -33,14 +33,16 @@
 
 # configuration
 #
-# backend url
-URL="http://volkszaehler.org/neu/backend/index.php"
+# middleware url
+URL="http://volkszaehler.org/demo/middleware.php"
 
 # sensor settings
 #  id of the sensor
 SENSORID=<put your onewire sensors hw id here>
+
 #  ip address of the controller board running ethersex
 ESEXIP=<put the ip address of your controller board here>
+
 #  uuid of the sensor in the volkszaehler database
 UUID=<put the uuid of your temperature sensor here>
 

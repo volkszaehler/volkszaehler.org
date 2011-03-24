@@ -46,7 +46,7 @@ var vz = {
 	// flot instance
 	plot: { },
 	
-	// debugging and runtime information from backend
+	// debugging and runtime information from middleware
 	capabilities: {
 		definitions: { } // definitions of entities & properties
 	},

@@ -25,11 +25,11 @@
  */
  
 /**
- * Universal helper for backend ajax requests with error handling
+ * Universal helper for middleware ajax requests with error handling
  */
 vz.load = function(args) {
 	$.extend(args, {
-		url: this.options.backendUrl,
+		url: this.options.middlewareUrl,
 		dataType: 'json',
 		error: function(xhr) {
 			try {
@@ -41,7 +41,7 @@ vz.load = function(args) {
 					}
 				}
 				
-				throw new Exception(xhr.statusText, 'Unknown backend response', xhr.status)
+				throw new Exception(xhr.statusText, 'Unknown middleware response', xhr.status)
 			}
 			catch (e) {
 				vz.wui.dialogs.exception(e);
@@ -92,7 +92,7 @@ vz.parseUrlParams = function() {
 };
 
 /**
- * Load capabilities from backend
+ * Load capabilities from middleware
  */
 vz.capabilities.load = function() {
 	return vz.load({

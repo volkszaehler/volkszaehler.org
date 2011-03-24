@@ -33,17 +33,20 @@
 
 # configuration
 #
-# backend url
-URL="http://192.168.10.1/backend"
+# middleware url
+URL="http://volkszaehler.org/demo/middleware.php"
 
 # sensor settings
 # Sensor 0x48 (72) ist bei ds1631 sensorid = 0 warum auch immer?
 # folglich ist sensor 0x4d (75) sensorid = 3 usw.
 SENSORID=<put your onewire sensors hw id here>
+
 #  ip address of the controller board running ethersex
 ESEXIP=<put the ip address of your controller board here>
+
 #  uuid of the sensor in the volkszaehler database
 UUID=<put the uuid of your temperature sensor here>
+
 ## 
 # paths to binaries - you should not need to change these
 CURL=/usr/bin/curl
