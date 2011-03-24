@@ -240,6 +240,10 @@ class JSON extends View {
 	 *
 	 */
 	protected function addArray($data, &$refNode) {
+		if (is_null($refNode)) {
+			$refNode = array();
+		}
+		
 		foreach ($data as $index => $value) {
 			if ($value instanceof Util\JSON || is_array($value)) {
 				$this->addArray($value, $refNode[$index]);

@@ -61,11 +61,8 @@ class EntityController extends Controller {
 				throw new \Exception('No entity found with UUID: ' . $uuid, 404);
 			}
 		}
-		elseif ($publicEntities = $this->filter(array('public' => TRUE))) { // public entities
-			return array('entities' => $publicEntities);
-		}
-		else { // no public entities available
-			return array('entities' => array());
+		else { // public entities
+			return array('entities' => $this->filter(array('public' => TRUE)));
 		}
 	}
 
@@ -121,7 +118,7 @@ class EntityController extends Controller {
 		});
 
 		// send new cookie to browser
-		setcookie('vz_uuids', implode(';', array_unique($uuids)), 0, '/');	// TODO correct path
+		setcookie('vz_uuids', implode(';', array_unique($uuids)), 0, '/'); // TODO correct path
 	}
 
 	/**
