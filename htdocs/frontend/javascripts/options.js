@@ -55,12 +55,7 @@ vz.options.plot = {
 		mode: 'time',
 		max: new Date().getTime(), // timeinterval to request
 		min: new Date().getTime() - vz.options.defaultInterval,
-		timeformat: '%d. %b %h:%M',
 		monthNames: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
-		tickFormatter: function(val, axis) {
-			var date = new Date(val + vz.options.timezoneOffset); /* add timezone offset */
-			return $.plot.formatDate(date, this.timeformat, this.monthNames);			
-		}
 	},
 	yaxis: {
 		min: 0,
