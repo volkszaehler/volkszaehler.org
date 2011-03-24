@@ -2,6 +2,5 @@ Allow from all
 
 <IfModule mod_rewrite.c>
 	RewriteEngine On
-	RewriteRule ^backend/(.*) backend.php/$1 [L]
-	RewriteBase /vz
+	RewriteRule ^middleware/(.*) middleware.php/$1 [L]
 </IfModule>
