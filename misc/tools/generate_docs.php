@@ -49,7 +49,7 @@ $rc = 0;
 chdir($vzDir . '/github/');
 
 // update git
-$cmd = 'git pull';
+$cmd = 'git pull origin master';
 $output[] = $cmd . PHP_EOL;
 exec($cmd, $output, $rc);
 
