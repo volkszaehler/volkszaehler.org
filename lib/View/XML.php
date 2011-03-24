@@ -212,12 +212,10 @@ class XML extends View {
 
 		$xmlMessage->appendChild($this->xmlDoc->createElement('message', $message['message']));
 
-		if (Util\Debug::isActivated()) {
-			$xmlMessage->appendChild($this->xmlDoc->createElement('file', $message['file']));
-			$xmlMessage->appendChild($this->xmlDoc->createElement('line', $message['line']));
-			$xmlMessage->appendChild($this->convertArray($message['args'], 'args', 'arg'));
-			$xmlMessage->appendChild($this->convertTrace($message['trace']));
-		}
+		if (isset($message['file'])) $xmlMessage->appendChild($this->xmlDoc->createElement('file', $message['file']));
+		if (isset($message['line'])) $xmlMessage->appendChild($this->xmlDoc->createElement('line', $message['line']));
+		if (isset($message['args'])) $xmlMessage->appendChild($this->convertArray($message['args'], 'args', 'arg'));
+		if (isset($message['trace'])) $xmlMessage->appendChild($this->convertTrace($message['trace']));
 		
 		return $xmlMessage;
 	}
