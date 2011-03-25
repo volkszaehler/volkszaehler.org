@@ -37,7 +37,8 @@ var vz = {
 
 	// web user interface
 	wui: {
-		dialogs: { }
+		dialogs: { },
+		timeout: null
 	},
 	
 	// known UUIDs in the browser

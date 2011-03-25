@@ -28,7 +28,6 @@
  * Initialize the WUI (Web User Interface)
  */
 vz.wui.init = function() {
-	vz.wui.timeout = null;
 	// initialize dropdown accordion
 	$('#accordion h3').click(function() {
 		$(this).next().toggle('fast');
@@ -85,8 +84,7 @@ vz.wui.init = function() {
 		vz.wui.setTimeout();
 	}
 	$('#refresh').change(function() {
-		vz.options.refresh = $(this).attr('checked');
-		if (vz.options.refresh) {
+		if (vz.options.refresh = $(this).attr('checked')) {
 			vz.wui.setTimeout();
 		} else {
 			vz.wui.clearTimeout();
@@ -123,7 +121,7 @@ vz.wui.dialogs.init = function() {
 			if (json.entities.length > 0) {
 				json.entities.each(function(index, entity) {
 					$('#entity-subscribe-public select#public').append(
-						$('<option>').text(entity.title).data('entity', entity)
+						$('<option>').html(entity.title).data('entity', entity)
 					);
 				});
 			}
@@ -133,7 +131,7 @@ vz.wui.dialogs.init = function() {
 	// show available entity types
 	vz.capabilities.definitions.entities.each(function(index, def) {
 		$('#entity-create select#type').append(
-			$('<option>').text(def.translation[vz.options.language]).data('definition', def)
+			$('<option>').html(def.translation[vz.options.language]).data('definition', def)
 		);
 	});
 
@@ -225,7 +223,7 @@ vz.wui.initEvents = function() {
 		})
 		.bind('mouseup', function(event) {
 			vz.entities.loadData().done(vz.wui.drawPlot);
-		})*/
+		})
 		.bind('plotzoom', function (event, plot) {
 			var axes = plot.getAxes();
 			vz.options.plot.xaxis.min = axes.xaxis.min;
@@ -233,53 +231,8 @@ vz.wui.initEvents = function() {
 			vz.options.plot.yaxis.min = axes.yaxis.min;
 			vz.options.plot.yaxis.max = axes.yaxis.max;
 			vz.entities.loadData().done(vz.wui.drawPlot);
-		});
+		});*/
 };
-
-/**
- * Refresh plot with new data
- */
-vz.wui.refresh = function() {
-	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
-	
-	vz.options.plot.xaxis.max = new Date().getTime();		// move plot
-	vz.options.plot.xaxis.min = vz.options.plot.xaxis.max - delta;	// move plot
-	vz.entities.loadData().done(function() {
-		vz.wui.drawPlot();
-	});
-};
-
-/**
- * refresh graphs after timeout ms, with a minimum f vz.options.minTimeout ms
- */
-vz.wui.setTimeout = function() {
-	// clear an already set timeout
-	if (vz.wui.timeout != null) {
-		window.clearTimeout(vz.wui.timeout);
-		vz.wui.timeout = null;
-	}
-	// don't refresh if the end of the x axis is not the current time, i.e. we are looking at some old data
-	// we allow an offset of 1s, because loading data takes some time. this also means that if it takes more than 1s,
-	// we will not automatically refresh. this is a feature!
-	if (vz.options.plot.xaxis.max < Number(new Date()) - 1000) {
-		$('#refresh-time').html('(deactivated)');
-		return;
-	}
-
-	var t = Math.max((vz.options.plot.xaxis.max - vz.options.plot.xaxis.min)/vz.options.tuples, vz.options.minTimeout);
-	$('#refresh-time').html(Math.round(t/1000)+"s");
-	vz.wui.timeout = window.setTimeout(this.refresh, t);
-}
-
-/**
- * stop auto-refresh of graphs
- */
-vz.wui.clearTimeout = function() {
-	$('#refresh-time').html('');
-	var rc = window.clearTimeout(vz.wui.timeout);
-	vz.wui.timeout = null;
-	return rc;
-}
 
 /**
  * Move & zoom in the plotting area
@@ -355,6 +308,43 @@ vz.wui.handleControls = function () {
 };
 
 /**
+ * Refresh plot with new data
+ */
+vz.wui.refresh = function() {
+	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
+	
+	vz.options.plot.xaxis.max = new Date().getTime();		// move plot
+	vz.options.plot.xaxis.min = vz.options.plot.xaxis.max - delta;	// move plot
+	vz.entities.loadData().done(vz.wui.drawPlot);
+};
+
+/**
+ * Refresh graphs after timeout ms, with a minimum of vz.options.minTimeout ms
+ */
+vz.wui.setTimeout = function() {
+	// clear an already set timeout
+	if (vz.wui.timeout != null) {
+		window.clearTimeout(vz.wui.timeout);
+	}
+
+	var t = Math.max((vz.options.plot.xaxis.max - vz.options.plot.xaxis.min) / vz.options.tuples, vz.options.minTimeout);
+	vz.wui.timeout = window.setTimeout(vz.wui.refresh, t);
+	
+	$('#refresh-time').html('(' + Math.round(t / 1000) + ' s)');
+}
+
+/**
+ * Stop auto-refresh of graphs
+ */
+vz.wui.clearTimeout = function() {
+	$('#refresh-time').html('');
+	
+	var rc = window.clearTimeout(vz.wui.timeout);
+	vz.wui.timeout = null;
+	return rc;
+}
+
+/**
  * Rounding precision
  *
  * Math.round rounds to whole numbers
@@ -364,13 +354,13 @@ vz.wui.handleControls = function () {
  * to be set to 1 (for 1 decimal) in that case
  */
 vz.wui.formatNumber = function(number) {
-	return Math.round(number*Math.pow(10, vz.options.precision))/Math.pow(10, vz.options.precision);
+	return Math.round(number * Math.pow(10, vz.options.precision)) / Math.pow(10, vz.options.precision);
 }
 
 vz.wui.updateHeadline = function() {
 	var from = $.plot.formatDate(new Date(vz.options.plot.xaxis.min + vz.options.timezoneOffset), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames);
 	var to = $.plot.formatDate(new Date(vz.options.plot.xaxis.max + vz.options.timezoneOffset), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames);
-	$('#title').text(from + ' - ' + to);
+	$('#title').html(from + ' - ' + to);
 }
 
 /**
@@ -558,7 +548,13 @@ vz.wui.drawPlot = function () {
 	}
 
 	vz.plot = $.plot($('#flot'), series, vz.options.plot);
-	if (vz.options.refresh) {
+	
+	// disable automatic refresh if we are in past
+	if (vz.options.refresh && vz.options.plot.xaxis.max < new Date().getTime() - 1000) {
+		$('#refresh').attr('checked', vz.options.refresh = false);
+		vz.wui.clearTimeout();
+	}
+	else if (vz.options.refresh) {
 		vz.wui.setTimeout();
 	}
 };
@@ -581,7 +577,7 @@ vz.wui.dialogs.error = function(error, description, code) {
 	}
 
 	$('<div>')
-	.append($('<span>').text(description))
+	.append($('<span>').html(description))
 	.dialog({
 		title: error,
 		width: 450,
