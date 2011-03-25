@@ -9,7 +9,7 @@
 #
 # @copyright Copyright (c) 2010, The volkszaehler.org project
 # @package controller
-# @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+# @license http://www.gnu.org/licenses/gpl.txt GNU Public License
 # @author Steffen Vogel <info@steffenvogel.de>
 #
 ##
