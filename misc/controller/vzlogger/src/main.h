@@ -28,13 +28,21 @@
 
 typedef float (*rfp)();
 
-struct type {
-	char name[8];
-	char desc[50];
+struct device {
+	char * name;
+	char * desc;
 	rfp read_fnct;
 };
 
+struct options {
+	char * uuid;		/* universal unique channel identifier */
+	char * middleware;	/* url to middleware server */
+	char * port;		/* port your sensor is connected to */
+	unsigned interval;	/* interval in seconds, the daemon send data */
+	unsigned verbose:1;	/* boolean bitfield, at the end of struct */
+	unsigned daemon:1;	/* boolean bitfield */
+};
+
 void usage(char ** argv);
-void config_read(char * file);
 
 #endif /* _MAIN_H_ */
