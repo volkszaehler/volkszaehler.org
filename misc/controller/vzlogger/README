@@ -1,0 +1,7 @@
+vzlogger is a tiny command line utility to log sensors/meters against the volkszaehler.org middleware.
+It's designed to run linux machines as well as embedded systems (routers, etc..).
+
+Feel free to add your own hardware ;)
+
+More information are available in our wiki:
+http://wiki.volkszaehler.org/software/controller/vzlogger
