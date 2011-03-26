@@ -36,7 +36,7 @@ vz.wui.init = function() {
 	$('#entity-list').show(); // open entity list by default
 	
 	// buttons
-	$('button, input[type=button],[type=image]').button();
+	$('button, input[type=button],[type=image],[type=submit]').button();
 	$('button[name=options-save]').click(vz.options.save);
 	$('#permalink').click(function() {
 		var uuids = [];
@@ -130,16 +130,19 @@ vz.wui.dialogs.init = function() {
 	
 	// show available entity types
 	vz.capabilities.definitions.entities.each(function(index, def) {
-		$('#entity-create select#type').append(
-			$('<option>').html(def.translation[vz.options.language]).data('definition', def)
+		$('#entity-create select[name=type]').append(
+			$('<option>').html(def.translation[vz.options.language]).data('definition', def).val(def.name)
 		);
 	});
+	$('#entity-create option[value=power]').attr('selected', 'selected');
 
-	/*$('#entity-create select#type option:selected').data('definition').required.each(function(index, property) {
+	/*$('#entity-create select[name=type] option:selected').data('definition').required.each(function(index, property) {
 		$('#entity-create #properties').append(
 			vz.capabilities.definitions.get('properties', property).getDOM()
 		)
 	});*/
+	
+	$('#entity-create-middlware').val(vz.options.middlewareUrl);
 	
 	// actions
 	$('#entity-subscribe input[type=button]').click(function() {
@@ -191,9 +194,10 @@ vz.wui.dialogs.init = function() {
 		}
 	});
 	
-	/*$('#entity-create input[type=button]').click(function() {
-
-	});*/
+	$('#entity-create form').submit(function() {
+		$(this).attr('action', $('#entity-create-middlware').val() + '/channel.json');
+		$('#entity-add').dialog('close');
+	});
 	
 	// update event handler
 	$('button[name=entity-add]').unbind('click', this.init);
