@@ -82,10 +82,6 @@ vz.parseUrlParams = function() {
 				case 'to':
 					vz.options.plot.xaxis.max = parseInt(vars[key]);
 					break;
-					
-				case 'debug': // TODO test
-					$.getScript('javascripts/firebug-lite.js');
-					break;
 			}
 		}
 	}
