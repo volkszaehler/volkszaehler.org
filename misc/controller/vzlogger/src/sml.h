@@ -47,21 +47,9 @@ struct SML_Message {
 	
 	uint32_t tag;
 	union { /* SML_MessageBody */
-		//struct SML_PublicOpen.Req * openRequest;			/* 0x00000100 */
-		struct SML_PublicOpen.Res * openResponse;			/* 0x00000101 */
-		//struct SML_PublicClose.Req * closeRequest;			/* 0x00000200 */
-		struct SML_PublicClose.Res * closeResponse;			/* 0x00000201 */
-		//struct SML_GetProfilePack.Req * getProfilePackRequest;	/* 0x00000300 */
-		//struct SML_GetProfilePack.Res * getProfilePackResponse;	/* 0x00000301 */
-		//struct SML_GetProfileList.Req * getProfileListRequest;	/* 0x00000400 */
-		//struct SML_GetProfileList.Res * getProfileListResponse;	/* 0x00000401 */
-		//struct SML_GetProcParameter.Req * getProcParameterRequest;	/* 0x00000500 */	/* not implemented yet! */
-		//struct SML_GetProcParameter.Res * getProcParameterResponse;	/* 0x00000501 */
-		//struct SML_SetProcParameter.Req * setProcParameterRequest;	/* 0x00000600 */
-		//struct SML_SetProcParameter.Res * setProcParameterResponse;	/* 0x00000601 */
-		//struct SML_GetList.Req * getListRequest;			/* 0x00000700 */
-		struct SML_GetList.Res * getListResponse;			/* 0x00000701 */
-		//struct SML_Attention.Res * attentionResponse;			/* 0x0000ff01 */
+		struct SML_PublicOpen.Res * openResponse;	/* 0x00000101 */
+		struct SML_PublicClose.Res * closeResponse;	/* 0x00000201 */
+		struct SML_GetList.Res * getListResponse;	/* 0x00000701 */
 	}
 	
 	SML_Message * next; /* NULL for end of list */
@@ -70,8 +58,8 @@ struct SML_Message {
 SML_Time {
 	uint8_t tag;
 	union { /* SML_Timestamp */
-		uint32_t secIndex; /* 0x01 */
-		uint32_t timestamp; /* 0x02 */
+		uint32_t secIndex;	/* 0x01 */
+		uint32_t timestamp;	/* 0x02 */
 	}
 }
 
