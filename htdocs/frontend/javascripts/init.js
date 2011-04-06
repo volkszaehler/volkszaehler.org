@@ -86,6 +86,10 @@ $(document).ready(function() {
 	
 	// chaining ajax request with jquery deferred object
 	vz.capabilities.load().done(function() {
+		if (vz.capabilities.formats.contains('png')) {
+			$('#snapshot').show();
+		}
+		
 		vz.entities.loadDetails().done(function(a, b, c, d) {
 			vz.entities.showTable();
 			vz.entities.loadData().done(vz.wui.drawPlot);

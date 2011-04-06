@@ -71,11 +71,19 @@ $config['db']['dbname']				= 'volkszaehler';
 //$config['db']['path']				= 'volkszaehler';
 
 /**
+ * Vendor libs
  * Set to NULL to use PHP's include path
- * @var string path of Doctrine library
+ * @var string path to vendor libs
  * @link http://www.php.net/manual/en/ini.core.php#ini.include-path
  */
 $config['lib']['doctrine']			= VZ_DIR . '/lib/vendor/Doctrine';
+$config['lib']['jpgraph']			= VZ_DIR . '/lib/vendor/JpGraph';
+
+/**
+ * Plot colors
+ * @var array of colors for plot series
+ */
+$config['colors'] = array('#83CAFF', '#7E0021', '#579D1C', '#FFD320', '#FF420E', '#004586', '#0084D1', '#C5000B', '#FF950E', '#4B1F6F', '#AECF00', '#314004');
 
 /** @var boolean disables some optimizations. Only use it when you exactly know what you are doing. */
 $config['devmode']				= FALSE;

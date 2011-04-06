@@ -64,6 +64,14 @@ class CapabilitiesController extends Controller {
 			$capabilities['statistics'] = $statistics;
 		}
 		
+		if (is_null($section) || $section == 'formats') {
+			$capabilities['formats'] = array_keys(\Volkszaehler\Router::$viewMapping);
+		}
+		
+		if (is_null($section) || $section == 'contexts') {
+			$capabilities['contexts'] = array_keys(\Volkszaehler\Router::$controllerMapping);
+		}
+		
 		if (is_null($section) || $section == 'definitions') {
 			if (!is_null($section)) { // only caching when we doesn't request dynamic informations
 				$this->view->setCaching('expires', time()+2*7*24*60*60); // cache for 2 weeks

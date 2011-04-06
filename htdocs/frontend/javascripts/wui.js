@@ -38,27 +38,9 @@ vz.wui.init = function() {
 	// buttons
 	$('button, input[type=button],[type=image],[type=submit]').button();
 	$('button[name=options-save]').click(vz.options.save);
-	$('#permalink').click(function() {
-		var uuids = [];
-		var url = window.location.protocol + '//' +
-			window.location.host +
-			window.location.pathname +
-			'?from=' + vz.options.plot.xaxis.min +
-			'&to=' + vz.options.plot.xaxis.max;
-
-		vz.entities.each(function(entity, parent) {
-			if (entity.active && entity.definition.model == 'Volkszaehler\\Model\\Channel') {
-				uuids.push(entity.uuid);
-			}
-		});
-		
-		uuids.unique().each(function(key, value) {
-			url += '&uuid=' + value;
-		});
-
-		window.location = url;
-	});
 	$('button[name=entity-add]').click(this.dialogs.init);
+	$('#permalink').click(function() { window.location = vz.wui.getPermalink(); });
+	$('#snapshot').click(function() { window.location = vz.wui.getSnaplink(); }).hide();
 	
 	// bind plot actions
 	$('#controls button').click(this.handleControls);
@@ -81,10 +63,12 @@ vz.wui.init = function() {
 	// auto refresh
 	if (vz.options.refresh) {
 		$('#refresh').attr('checked', true);
+		vz.wui.refresh(); // refresh once
 		vz.wui.setTimeout();
 	}
 	$('#refresh').change(function() {
 		if (vz.options.refresh = $(this).attr('checked')) {
+			vz.wui.refresh(); // refresh once
 			vz.wui.setTimeout();
 		} else {
 			vz.wui.clearTimeout();
@@ -207,16 +191,70 @@ vz.wui.dialogs.init = function() {
 };
 
 /**
+ * Build link to current viewport
+ *
+ * @return string url
+ */
+vz.wui.getPermalink = function() {
+	var uuids = new Array;
+	vz.entities.each(function(entity, parent) {
+		if (entity.active && entity.definition.model == 'Volkszaehler\\Model\\Channel') {
+			uuids.push(entity.uuid);
+		}
+	});
+	
+	var params = $.param({
+		from: Math.floor(vz.options.plot.xaxis.min),
+		to: Math.ceil(vz.options.plot.xaxis.max),
+		uuid: uuids.unique()
+	});
+	
+	return window.location.protocol + '//' + window.location.host + window.location.pathname + '?' + params;
+}
+
+/**
+ * Build link to rendered image of current viewport
+ *
+ * @return string url
+ */
+vz.wui.getSnaplink = function() {
+	var uuids = new Array;
+	vz.entities.each(function(entity, parent) {
+		if (entity.active) {
+			uuids.push(entity.uuid);
+		}
+	});
+	
+	return vz.options.middlewareUrl + '/data/' + uuids[0] + '.png?' + $.param({
+		from: Math.floor(vz.options.plot.xaxis.min),
+		to: Math.ceil(vz.options.plot.xaxis.max)
+	});
+}
+
+vz.wui.zoom = function(from, to) {
+	vz.options.plot.xaxis.min = from;
+	vz.options.plot.xaxis.max = to;
+
+	// we dont want to zoom/pan into the future
+	if (vz.options.plot.xaxis.max > new Date().getTime()) {
+		delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
+		vz.options.plot.xaxis.max = new Date().getTime();
+		vz.options.plot.xaxis.min = new Date().getTime() - delta;
+	}
+	
+	vz.options.plot.yaxis.max = null; // autoscaling
+	vz.options.plot.yaxis.min = 0; // fixed to 0
+	
+	vz.entities.loadData().done(vz.wui.drawPlot);
+}
+
+/**
  * Bind events to handle plot zooming & panning
  */
 vz.wui.initEvents = function() {
 	$('#plot')
 		.bind("plotselected", function (event, ranges) {
-			vz.options.plot.xaxis.min = ranges.xaxis.from;
-			vz.options.plot.xaxis.max = ranges.xaxis.to;
-			vz.options.plot.yaxis.max = null; // autoscaling
-			vz.options.plot.yaxis.min = 0; // fixed to 0
-			vz.entities.loadData().done(vz.wui.drawPlot);
+			vz.wui.zoom(ranges.xaxis.from, ranges.xaxis.to);
 		})
 		/*.bind('plotpan', function (event, plot) {
 			var axes = plot.getAxes();
@@ -247,68 +285,77 @@ vz.wui.handleControls = function () {
 
 	switch($(this).val()) {
 		case 'move-last':
-			vz.options.plot.xaxis.max = new Date().getTime();
-			vz.options.plot.xaxis.min = new Date().getTime() - delta;
+			vz.wui.zoom(
+				new Date().getTime() - delta,
+				new Date().getTime()
+			);
 			break;
 		case 'move-back':
-			vz.options.plot.xaxis.min -= delta;
-			vz.options.plot.xaxis.max -= delta;
+			vz.wui.zoom(
+				vz.options.plot.xaxis.min - delta,
+				vz.options.plot.xaxis.max - delta
+			);
 			break;
 		case 'move-forward':
-			vz.options.plot.xaxis.min += delta;
-			vz.options.plot.xaxis.max += delta;
+			vz.wui.zoom(
+				vz.options.plot.xaxis.min + delta,
+				vz.options.plot.xaxis.max + delta
+			);
 			break;
 		case 'zoom-reset':
-			vz.options.plot.xaxis.min = middle - vz.options.defaultInterval/2;
-			vz.options.plot.xaxis.max =  middle + vz.options.defaultInterval/2;
+			vz.wui.zoom(
+				middle - vz.options.defaultInterval/2,
+				middle + vz.options.defaultInterval/2
+			);
 			break;
 		case 'zoom-in':
-			vz.options.plot.xaxis.min += delta/4;
-			vz.options.plot.xaxis.max -= delta/4;
+			vz.wui.zoom(
+				middle - delta/4,
+				middle + delta/4
+			);
 			break;
 		case 'zoom-out':
-			vz.options.plot.xaxis.min -= delta;
-			vz.options.plot.xaxis.max += delta;
+			vz.wui.zoom(
+				middle - delta,
+				middle + delta
+			);
 			break;
 		case 'zoom-hour':
 			hour = 60*60*1000;
-			vz.options.plot.xaxis.min = middle - hour/2;
-			vz.options.plot.xaxis.max =  middle + hour/2;
+			vz.wui.zoom(
+				middle - hour/2,
+				middle + hour/2
+			);
 			break;
 		case 'zoom-day':
 			var day = 24*60*60*1000;
-			vz.options.plot.xaxis.min = middle - day/2;
-			vz.options.plot.xaxis.max =  middle + day/2;
+			vz.wui.zoom(
+				middle - day/2,
+				middle + day/2
+			);
 			break;
 		case 'zoom-week':
 			var week = 7*24*60*60*1000;
-			vz.options.plot.xaxis.min = middle - week/2;
-			vz.options.plot.xaxis.max =  middle + week/2;
+			vz.wui.zoom(
+				middle - week/2,
+				middle + week/2
+			);
 			break;
 		case 'zoom-month':
 			var month = 30*24*60*60*1000;
-			vz.options.plot.xaxis.min = middle - month/2;
-			vz.options.plot.xaxis.max =  middle + month/2;
+			vz.wui.zoom(
+				middle - month/2,
+				middle + month/2
+			);
 			break;
 		case 'zoom-year':
 			var year = 365*24*60*60*1000;
-			vz.options.plot.xaxis.min = middle - year/2;
-			vz.options.plot.xaxis.max =  middle + year/2;
+			vz.wui.zoom(
+				middle - year/2,
+				middle + year/2
+			);
 			break;
 	}
-
-	// reenable autoscaling for yaxis
-	vz.options.plot.yaxis.max = null; // autoscaling
-	vz.options.plot.yaxis.min = 0; // fixed to 0
-
-	// we dont want to zoom/pan into the future
-	if (vz.options.plot.xaxis.max > new Date().getTime()) {
-		delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
-		vz.options.plot.xaxis.max = new Date().getTime();
-		vz.options.plot.xaxis.min = new Date().getTime() - delta;
-	}
-
-	vz.entities.loadData().done(vz.wui.drawPlot);
 };
 
 /**
@@ -316,10 +363,10 @@ vz.wui.handleControls = function () {
  */
 vz.wui.refresh = function() {
 	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
-	
-	vz.options.plot.xaxis.max = new Date().getTime();		// move plot
-	vz.options.plot.xaxis.min = vz.options.plot.xaxis.max - delta;	// move plot
-	vz.entities.loadData().done(vz.wui.drawPlot);
+	vz.wui.zoom( // move plot
+		new Date().getTime() - delta,
+		new Date().getTime()
+	);
 };
 
 /**
@@ -329,8 +376,9 @@ vz.wui.setTimeout = function() {
 	// clear an already set timeout
 	if (vz.wui.timeout != null) {
 		window.clearTimeout(vz.wui.timeout);
+		vz.wui.timeout = null;
 	}
-
+	
 	var t = Math.max((vz.options.plot.xaxis.max - vz.options.plot.xaxis.min) / vz.options.tuples, vz.options.minTimeout);
 	vz.wui.timeout = window.setTimeout(vz.wui.refresh, t);
 	
@@ -340,8 +388,8 @@ vz.wui.setTimeout = function() {
 /**
  * Stop auto-refresh of graphs
  */
-vz.wui.clearTimeout = function() {
-	$('#refresh-time').html('');
+vz.wui.clearTimeout = function(text) {
+	$('#refresh-time').html(text || '');
 	
 	var rc = window.clearTimeout(vz.wui.timeout);
 	vz.wui.timeout = null;
@@ -545,7 +593,7 @@ vz.wui.drawPlot = function () {
 	
 	if (series.length == 0) {
 		$('#overlay').html('<img src="images/empty.png" alt="no data..." /><p>nothing to plot...</p>');
-		series.push({});  // add empty dataset to show axes
+		series.push({}); // add empty dataset to show axes
 	}
 	else {
 		$('#overlay').empty();
@@ -555,8 +603,7 @@ vz.wui.drawPlot = function () {
 	
 	// disable automatic refresh if we are in past
 	if (vz.options.refresh && vz.options.plot.xaxis.max < new Date().getTime() - 1000) {
-		$('#refresh').attr('checked', vz.options.refresh = false);
-		vz.wui.clearTimeout();
+		vz.wui.clearTimeout('(suspended)');
 	}
 	else if (vz.options.refresh) {
 		vz.wui.setTimeout();

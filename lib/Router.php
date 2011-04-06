@@ -61,7 +61,7 @@ class Router {
 	/**
 	 * @var array HTTP-method => operation mapping
 	 */
-	protected static $operationMapping = array(
+	public static $operationMapping = array(
 		'post'			=> 'add',
 		'delete'		=> 'delete',
 		'get'			=> 'get',
@@ -71,7 +71,7 @@ class Router {
 	/**
 	 * @var array context => controller mapping
 	 */
-	protected static $controllerMapping = array(
+	public static $controllerMapping = array(
 		'channel'		=> 'Volkszaehler\Controller\ChannelController',
 		'group'			=> 'Volkszaehler\Controller\AggregatorController',
 		'group'			=> 'Volkszaehler\Controller\AggregatorController',
@@ -83,11 +83,7 @@ class Router {
 	/**
 	 * @var array format => view mapping
 	 */
-	protected static $viewMapping = array(
-		'png'			=> 'Volkszaehler\View\JpGraph',
-		'jpeg'			=> 'Volkszaehler\View\JpGraph',
-		'jpg'			=> 'Volkszaehler\View\JpGraph',
-		'gif'			=> 'Volkszaehler\View\JpGraph',
+	public static $viewMapping = array(
 		'xml'			=> 'Volkszaehler\View\XML',
 		'csv'			=> 'Volkszaehler\View\CSV',
 		'json'			=> 'Volkszaehler\View\JSON',
@@ -108,6 +104,13 @@ class Router {
 		if (($debugLevel = $request->getParameter('debug')) != NULL || $debugLevel = Util\Configuration::read('debug')) {
 			if ($debugLevel > 0) {
 				$this->debug = new Util\Debug($debugLevel, $this->em);
+			}
+		}
+		
+		// check for JpGraph
+		if (file_exists(JPGRAPH_DIR . '/jpgraph.php')) {
+			foreach (array('png', 'jpeg', 'jpg', 'gif') as $format) {
+				self::$viewMapping[$format] = 'Volkszaehler\View\JpGraph';
 			}
 		}
 

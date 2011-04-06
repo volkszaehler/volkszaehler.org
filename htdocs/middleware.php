@@ -42,8 +42,12 @@ require_once VZ_DIR . '/lib/Util/Configuration.php';
 // load configuration
 Util\Configuration::load(VZ_DIR . '/etc/volkszaehler.conf');
 
+// define include dirs for vendor libs
+define('DOCTRINE_DIR', Util\Configuration::read('lib.doctrine') ? Util\Configuration::read('lib.doctrine') : 'Doctrine');
+define('JPGRAPH_DIR', Util\Configuration::read('lib.jpgraph') ? Util\Configuration::read('lib.jpgraph') : 'JpGraph');
+
 $classLoaders = array(
-	new Util\ClassLoader('Doctrine', (is_null(Util\Configuration::read('lib.doctrine'))) ? 'Doctrine' : Util\Configuration::read('lib.doctrine')),
+	new Util\ClassLoader('Doctrine', DOCTRINE_DIR),
 	new Util\ClassLoader('Volkszaehler', VZ_DIR . '/lib')
 );
 

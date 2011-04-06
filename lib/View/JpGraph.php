@@ -27,9 +27,9 @@ use Volkszaehler\Interpreter;
 use Volkszaehler\Model;
 use Volkszaehler\Util;
 
-require_once VZ_DIR . '/lib/vendor/JpGraph/jpgraph.php';
-require_once VZ_DIR . '/lib/vendor/JpGraph/jpgraph_scatter.php';
-require_once VZ_DIR . '/lib/vendor/JpGraph/jpgraph_date.php';
+require_once JPGRAPH_DIR . '/jpgraph.php';
+require_once JPGRAPH_DIR . '/jpgraph_line.php';
+require_once JPGRAPH_DIR . '/jpgraph_date.php';
 
 /**
  * Plotting and graphing of data on the server side
@@ -48,7 +48,7 @@ class JpGraph extends View {
 	 */
 	protected $axes = array();
 
-	protected $channels = array();
+	protected $count = 0;
 
 	/**
 	 * @var default width
@@ -64,10 +64,10 @@ class JpGraph extends View {
 	 * @var color palette for the scatter plots
 	 * This are the same colors as in the webfronted
 	 */
-	protected static $colors = array('#83CAFF', '#7E0021', '#579D1C', '#FFD320', '#FF420E', '#004586', '#0084D1', '#C5000B', '#FF950E', '#4B1F6F', '#AECF00', '#314004');
+	protected $colors;
 
 	/**
-	 * @var JPGrpah handle
+	 * @var JPGraph handle
 	 */
 	protected $graph;
 
@@ -92,6 +92,7 @@ class JpGraph extends View {
 			$this->height = $this->request->getParameter('height');
 		}
 
+		$this->colors = Util\Configuration::read('colors');
 		$this->graph = new \Graph($this->width, $this->height);
 
 		$this->graph->img->SetImgFormat($format);
@@ -99,8 +100,9 @@ class JpGraph extends View {
 		// Specify what scale we want to use,
 		$this->graph->SetScale('datlin');
 
-		$this->graph->legend->SetPos(0.1,0.02, 'left', 'top');
+		$this->graph->legend->SetPos(0.03, 0.06);
 		$this->graph->legend->SetShadow(FALSE);
+		$this->graph->legend->SetFrameWeight(1);
 
 		$this->graph->SetMarginColor('white');
 		$this->graph->SetYDeltaDist(65);
@@ -121,17 +123,17 @@ class JpGraph extends View {
 	 * @param mixed $data
 	 */
 	public function add($data) {
-		if ($data instanceof Interpreter\Interpreter || $data instanceof Interpreter\AggregatorInterpreter) {
+		if ($data instanceof Interpreter\Interpreter) {
 			$this->addData($data);
 		}
 		elseif($data instanceof Interpreter\AggregatorInterpreter) {
-			foreach ($data->getEntity()->getChildren() as $child) {
-				$this->add($child);
+			foreach ($data->getChildrenInterpreter() as $childInterpreter) {
+				$this->add($childInterpreter);
 			}
 		}
 		else {
 			// suppress other classes
-			//throw new \Exception('Can\'t show ' . get_class($data));
+			//throw new \JpGraphException('Can\'t show ' . get_class($data));
 		}
 	}
 
@@ -141,28 +143,31 @@ class JpGraph extends View {
 	 * @param $obj
 	 * @param $data
 	 */
-	public function addData(Interpreter\InterpreterInterface $interpreter){
-		$data = $interpreter->processData($this->width/4);
+	public function addData($interpreter) {
+		if (is_null($interpreter->getTupleCount())) {
+			$interpreter->setTupleCount($this->width);
+		}
+		
+		$data = $interpreter->processData(function($tuple) {
+			$tuple[0] /= 1000;
+			return $tuple;
+		});
 
 		if (count($data) > 0) {
-			$count = count($this->channels);
 			$xData = $yData = array();
+			// TODO adjust x-Axis
 
 			foreach ($data as $reading) {
-				$xData[] = $reading[0] / 1000;
+				$xData[] = $reading[0];
 				$yData[] = $reading[1];
 			}
 
 			// Create the scatter plot
-			$plot = new \ScatterPlot($yData, $xData);
+			$plot = new \LinePlot($yData, $xData);
 
 			$plot->setLegend($interpreter->getEntity()->getProperty('title') . ':  [' . $interpreter->getEntity()->getDefinition()->getUnit() . ']');
-			$plot->SetLinkPoints(TRUE, self::$colors[$count]);
-
-			$plot->mark->SetColor(self::$colors[$count]);
-			$plot->mark->SetFillColor(self::$colors[$count]);
-			$plot->mark->SetType(MARK_DIAMOND);
-			$plot->mark->SetWidth(1);
+			$plot->SetColor($this->colors[$this->count]);
+			$plot->SetStepStyle($interpreter instanceof Interpreter\MeterInterpreter);
 
 			$axis = $this->getAxisIndex($interpreter->getEntity());
 			if ($axis >= 0) {
@@ -172,18 +177,8 @@ class JpGraph extends View {
 				$this->graph->Add($plot);
 			}
 
-			$this->channels[] = $interpreter->getEntity();
+			$this->count++;
 		}
-	}
-
-	/**
-	 * Shows exception
-	 *
-	 * @todo avoid graph plotting and set content-type to text/plain
-	 * @param \Exception $exception
-	 */
-	protected function addException(\Exception $exception) {
-		echo $exception;
 	}
 
 	/**
