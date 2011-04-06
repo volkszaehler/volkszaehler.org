@@ -63,7 +63,6 @@ vz.wui.init = function() {
 	// auto refresh
 	if (vz.options.refresh) {
 		$('#refresh').attr('checked', true);
-		vz.wui.refresh(); // refresh once
 		vz.wui.setTimeout();
 	}
 	$('#refresh').change(function() {
