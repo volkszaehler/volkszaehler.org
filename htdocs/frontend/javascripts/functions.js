@@ -34,7 +34,7 @@ vz.load = function(args) {
 		error: function(xhr) {
 			try {
 				if (xhr.getResponseHeader('Content-type') == 'application/json') {
-					var json = JSON.parse(xhr.responseText);
+					var json = $.parseJSON(xhr.responseText);
 				
 					if (json.exception) {
 						throw new Exception(json.exception.type, json.exception.message, (json.exception.code) ? json.exception.code : xhr.status);
@@ -93,7 +93,6 @@ vz.parseUrlParams = function() {
 vz.capabilities.load = function() {
 	return vz.load({
 		controller: 'capabilities',
-		identifier: 'definitions',
 		success: function(json) {
 			$.extend(true, vz.capabilities, json.capabilities);
 		}
