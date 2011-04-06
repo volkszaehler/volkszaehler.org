@@ -40,7 +40,7 @@ class AggregatorInterpreter {
 	/**
 	 * @var array of Interpreter
 	 */
-	protected $channelInterpreter = array();
+	protected $childrenInterpreter = array();
 
 	protected $aggregator;
 
@@ -53,20 +53,13 @@ class AggregatorInterpreter {
 	 * @param integer $to timestamp in ms since 1970
 	 * @todo handle channels in nested aggregators
 	 */
-	public function __construct(Model\Aggregator $aggregator, ORM\EntityManager $em, $from, $to) {
-		$indicator = NULL;
+	public function __construct(Model\Aggregator $aggregator, ORM\EntityManager $em, $from, $to, $tupleCount, $groupBy) {
 		$this->aggregator = $aggregator;
-
+		
 		foreach ($aggregator->getChildren() as $child) {
 			if ($child instanceof Model\Channel) {
-				if (isset($indicator) && $indicator != $child->getType()) {
-					throw new \Exception('Can\'t aggregate channels of mixed types!');
-				}
-				else {
-					$indicator = $child->getType();
-				}
-
-				$this->channelInterpreter[] = $child->getInterpreter($em, $from, $to);
+				$class = $child->getDefinition()->getInterpreter();
+				$this->childrenInterpreter[] = new $class($child, $em, $from, $to, $tupleCount, $groupBy);
 			}
 		}
 	}
@@ -97,8 +90,8 @@ class AggregatorInterpreter {
 	 * @return array with the smallest value
 	 */
 	public function getMin() {
-		$min = current($this->channelInterpreter)->getMin();
-		foreach ($this->channelInterpreter as $interpreter) {
+		$min = current($this->childrenInterpreter)->getMin();
+		foreach ($this->childrenInterpreter as $interpreter) {
 			$arr = $interpreter->getMax();
 			if ($arr['value '] < $min['value']) {
 				$min = $arr;
@@ -113,8 +106,8 @@ class AggregatorInterpreter {
 	 * @return array with the biggest value
 	 */
 	public function getMax() {
-		$max = current($this->channelInterpreter)->getMax();
-		foreach ($this->channelInterpreter as $interpreter) {
+		$max = current($this->childrenInterpreter)->getMax();
+		foreach ($this->childrenInterpreter as $interpreter) {
 			$arr = $interpreter->getMax();
 			if ($arr['value '] > $max['value']) {
 				$max = $arr;
@@ -131,24 +124,10 @@ class AggregatorInterpreter {
 	public function getAverage() {
 		$sum = 0;
 
-		foreach ($this->channelInterpreter as $interpreter) {
+		foreach ($this->childrenInterpreter as $interpreter) {
 			$sum += $interpreter->getAverage();
 		}
-		return ($sum / count($this->channelInterpreter));
-	}
-
-	/**
-	 * Just a passthrough to the channel interpreters
-	 *
-	 * @return float last value
-	 */
-	public function getLast() {
-		$last = 0;
-
-		foreach ($this->channelInterpreter as $interpreter) {
-			$last = $interpreter->getLast();
-		}
-		return ($last($this->channelInterpreter));
+		return ($sum / count($this->childrenInterpreter));
 	}
 
 	/*
@@ -156,4 +135,5 @@ class AggregatorInterpreter {
 	 */
 
 	public function getEntity() { return $this->aggregator; }
+	public function getChildrenInterpreter() { return $this->childrenInterpreter; }
 }
