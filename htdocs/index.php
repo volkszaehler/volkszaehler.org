@@ -3,7 +3,7 @@
  * Redirect to default frontend
  *
  * @author Steffen Vogel <info@steffenvogel.de>
- * @copyright Copyright (c) 2010, The volkszaehler.org project
+ * @copyright Copyright (c) 2011, The volkszaehler.org project
  * @package frontend
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  * @todo check for requirements (Javascript etc)

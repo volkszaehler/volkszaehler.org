@@ -3,7 +3,7 @@
  * Backend bootstrap entrypoint
  *
  * @author Steffen Vogel <info@steffenvogel.de>
- * @copyright Copyright (c) 2010, The volkszaehler.org project
+ * @copyright Copyright (c) 2011, The volkszaehler.org project
  * @package default
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */

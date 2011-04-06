@@ -6,7 +6,7 @@
  * based on PHPDocumentor. It's used to be invoked by post-commit hooks
  * of GitHub or the release script.
  *
- * @copyright Copyright (c) 2010, The volkszaehler.org project
+ * @copyright Copyright (c) 2011, The volkszaehler.org project
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package tools
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
