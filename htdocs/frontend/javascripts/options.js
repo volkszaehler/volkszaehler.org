@@ -53,6 +53,7 @@ vz.options.plot = {
 	legend: { show: false },
 	xaxis: {
 		mode: 'time',
+		useLocalTime: true,
 		max: new Date().getTime(), // timeinterval to request
 		min: new Date().getTime() - vz.options.defaultInterval,
 		monthNames: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
