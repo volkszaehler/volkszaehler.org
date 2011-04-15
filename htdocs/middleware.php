@@ -1,6 +1,6 @@
 <?php
 /**
- * Backend bootstrap entrypoint
+ * middleware bootstrap entrypoint
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @copyright Copyright (c) 2011, The volkszaehler.org project
