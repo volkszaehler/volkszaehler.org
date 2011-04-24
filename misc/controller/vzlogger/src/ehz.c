@@ -2,9 +2,11 @@
  * eHz readout
  *
  * @package controller
+ * (c) Mathias Dalheimer <md@gonium.net>, 2010
  * @copyright Copyright (c) 2011, The volkszaehler.org project
  * @license http://www.gnu.org/licenses/gpl.txt GNU Public License
  * @author Steffen Vogel <info@steffenvogel.de>
+ * based heavily on libehz (https://github.com/gonium/libehz.git)
  */
 /*
  * This file is part of volkzaehler.org
