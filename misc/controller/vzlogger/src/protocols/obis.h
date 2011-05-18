@@ -1,5 +1,8 @@
 /**
- * main header
+ * OBIS protocol parser
+ *
+ * This is our example protocol. Use this skeleton to add your own
+ * protocols and meters.
  *
  * @package controller
  * @copyright Copyright (c) 2011, The volkszaehler.org project
@@ -23,42 +26,12 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
  
-#ifndef _MAIN_H_
-#define _MAIN_H_
+#ifndef _OBIS_H_
+#define _OBIS_H_
 
-typedef struct reading (*rfp)();
+#include "../main.h"
 
-struct curl_response {
-	char *data;
-	size_t size;
-};
+int obis_init(char * port);
+struct reading obis_get();
 
-struct reading {
-	float value;
-	struct timeval tv;
-};
-
-struct device {
-	char * name;
-	char * desc;
-	rfp read_fnct;
-};
-
-struct options {
-	unsigned interval;	/* interval in seconds, the daemon send data */
-	char * middleware;	/* url to middleware server */
-	
-	/* following options should be replace by a list of connected/configured sensors/meters */
-	char * uuid;		/* universal unique channel identifier */
-	char * port;		/* port your sensor is connected to */
-	
-	unsigned verbose:1;	/* boolean bitfield, at the end of struct */
-	unsigned daemon:1;	/* boolean bitfield */
-};
-
-/* Prototypes */
-void usage(char ** argv);
-struct options parse_options(int argc, char * argv[]);
-CURLcode api_log(char * middleware, char * uuid, struct reading read);
-
-#endif /* _MAIN_H_ */
+#endif /* _OBIS_H_ */

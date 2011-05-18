@@ -8,11 +8,11 @@ all: $(TARGET)
 clean:
 	rm -rf *.o
 
-vzlogger: main.c ehz.c
-	$(CC) $(LDFLAGS) main.o ehz.o `curl-config --libs` -o $(TARGET)
+vzlogger: main.c obis.c
+	$(CC) $(LDFLAGS) main.o obis.o `curl-config --libs` -l json -o $(TARGET)
 
 main.c:
 	$(CC) $(CFLAGS) src/main.c -o main.o `curl-config --cflags`
 
-ehz.c:
-	$(CC) $(CFLAGS) src/ehz.c -o ehz.o
+obis.c:
+	$(CC) $(CFLAGS) src/protocols/obis.c -o obis.o

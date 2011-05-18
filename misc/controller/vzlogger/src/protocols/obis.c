@@ -1,10 +1,15 @@
 /**
- * main header
+ * OBIS protocol parser
+ *
+ * This is our example protocol. Use this skeleton to add your own
+ * protocols and meters.
  *
  * @package controller
  * @copyright Copyright (c) 2011, The volkszaehler.org project
  * @license http://www.gnu.org/licenses/gpl.txt GNU Public License
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @author Mathias Dalheimer <md@gonium.net>
+ * based heavily on libehz (https://github.com/gonium/libehz.git)
  */
 /*
  * This file is part of volkzaehler.org
@@ -22,43 +27,32 @@
  * You should have received a copy of the GNU General Public License
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
- 
-#ifndef _MAIN_H_
-#define _MAIN_H_
 
-typedef struct reading (*rfp)();
+#include <fcntl.h>
+#include <termios.h>
+#include <string.h>
 
-struct curl_response {
-	char *data;
-	size_t size;
-};
-
-struct reading {
-	float value;
-	struct timeval tv;
-};
-
-struct device {
-	char * name;
-	char * desc;
-	rfp read_fnct;
-};
-
-struct options {
-	unsigned interval;	/* interval in seconds, the daemon send data */
-	char * middleware;	/* url to middleware server */
+int obis_init(char * port) {
+	struct termios tio;
+	int fd;
 	
-	/* following options should be replace by a list of connected/configured sensors/meters */
-	char * uuid;		/* universal unique channel identifier */
-	char * port;		/* port your sensor is connected to */
+	memset(&tio, 0, sizeof(tio));
 	
-	unsigned verbose:1;	/* boolean bitfield, at the end of struct */
-	unsigned daemon:1;	/* boolean bitfield */
-};
+	tio.c_iflag = 0;
+	tio.c_oflag = 0;
+	tio.c_cflag = CS7|CREAD|CLOCAL; // 7n1, see termios.h for more information
+	tio.c_lflag = 0;
+	tio.c_cc[VMIN] = 1;
+	tio.c_cc[VTIME] = 5;
 
-/* Prototypes */
-void usage(char ** argv);
-struct options parse_options(int argc, char * argv[]);
-CURLcode api_log(char * middleware, char * uuid, struct reading read);
+	fd = open(port, O_RDWR); // | O_NONBLOCK);
+	cfsetospeed(&tio, B9600); // 9600 baud
+	cfsetispeed(&tio, B9600); // 9600 baud
+	
+	return fd;
+}
 
-#endif /* _MAIN_H_ */
+float obis_get() {
+	return 0;
+}
+

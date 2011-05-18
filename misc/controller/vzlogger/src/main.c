@@ -34,27 +34,28 @@
 
 #include <sys/time.h>
 
+#include <json/json.h>
+
 #include <curl/curl.h>
 #include <curl/types.h>
 #include <curl/easy.h>
 
 #include "main.h"
-#include "ehz.h"
 
-struct options opt;
+#include "protocols/obis.h"
 
 static struct device devices[] = {
 //	{"1wire",	"Dallas 1-Wire Sensors",		1wire_get},
 //	{"ccost",	"CurrentCost",				ccost_get},
-//	{"fusb",	"FluksoUSB prototype board",		fusb_get}
-	{"ehz",		"German \"elektronische Heimzähler\"",	ehz_get},
+//	{"fusb",	"FluksoUSB prototype board",		fusb_get},
+	{"obis",	"Plaintext OBIS",			obis_get},
 	{NULL} /* stop condition for iterator */
 };
 
 static struct option long_options[] = {
 	{"middleware",	required_argument,	0,	'm'},
 	{"uuid",	required_argument,	0,	'u'},
-	{"value",	required_argument,	0,	'v'},
+	{"value",	required_argument,	0,	'V'},
 	{"device",	required_argument,	0,	'd'},
 	{"port",	required_argument,	0,	'p'},
 //	{"config", 	required_argument,	0,	'c'},
@@ -83,6 +84,12 @@ static char * long_options_descs[] = {
 	NULL /* stop condition for iterator */
 };
 
+/* globals */
+struct options opts;
+
+/**
+ * Print availble options and some other usefull information
+ */
 void usage(char * argv[]) {
 	char ** desc = long_options_descs;
 	struct option * op = long_options;
@@ -106,63 +113,25 @@ void usage(char * argv[]) {
 	}
 	
 	printf("\nvzlogger - volkszaehler.org logging utility VERSION\n");
-	printf("by Steffen Vogel <volkszaehler@steffenvogel.de>\n");
+	printf("by Steffen Vogel <stv0g@0l.de>\n");
 }
 
-CURLcode backend_log(char * middleware, char * uuid, struct timeval tv, float value) {
-	CURL *curl;
-	CURLcode res;
-
-	char url[255], useragent[255], post[255];
-
-	sprintf(url, "%s/data/%s.json", middleware, uuid); /* build url */
-	sprintf(useragent, "vzlogger/%s (%s)", VZ_VERSION, curl_version());
-	sprintf(post, "?timestamp=%lu%lu&value=%f", tv.tv_sec, tv.tv_usec, value);
- 
-	curl_global_init(CURL_GLOBAL_ALL);
- 
-	curl_formadd(&formpost,
-		&lastptr,
-		CURLFORM_COPYNAME, "value",
-		CURLFORM_PTRCONTENTS , value_str,
-		CURLFORM_END);
-		
-	curl_formadd(&formpost,
-		&lastptr,
-		CURLFORM_COPYNAME, "timestamp",
-		CURLFORM_PTRCONTENTS , &timestamp,
-		CURLFORM_END);
- 
-	curl = curl_easy_init();
+/**
+ * Parse options from command line
+ */
+struct options parse_options(int argc, char * argv[]) {
+	struct options opts;
 	
-	if (curl) {
-		/* what URL that receives this POST */ 
-		curl_easy_setopt(curl, CURLOPT_URL, url);
-		curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
-		curl_easy_setopt(curl, CURLOPT_USERAGENT, useragent);
-		curl_easy_setopt(curl, CURLOPT_VERBOSE, (int) opt.verbose);
-
-    		res = curl_easy_perform(curl);
-    
-		curl_easy_cleanup(curl); /* always cleanup */ 
-		curl_formfree(formpost); /* then cleanup the formpost chain */
-		
-		return res;
-	}
-	
-	return -1;
-}
-
-int main(int argc, char * argv[]) {
 	/* setting default options */
-	opt.interval = 300; /* 5 minutes */
+	opts.interval = 300;
+	opts.verbose = 0;
+	opts.daemon = 0; 
 
-	/* parse cli arguments */
- 	while (1) {
+	while (1) {
 		/* getopt_long stores the option index here. */
 		int option_index = 0;
 
-		int c = getopt_long(argc, argv, "i:m:u:v:t:p:c:hdv", long_options, &option_index);
+		int c = getopt_long(argc, argv, "i:m:u:V:t:p:c:hdv", long_options, &option_index);
 
 		/* detect the end of the options. */
 		if (c == -1)
@@ -170,64 +139,199 @@ int main(int argc, char * argv[]) {
 
 		switch (c) {
 			case 'v':
-				opt.verbose = 1;
+				opts.verbose = 1;
 				break;
-				
+
 			case 'd':
-				opt.daemon = 1;
+				opts.daemon = 1;
 				break;
-				
+
 			case 'i':
-				opt.interval = atoi(optarg);
+				opts.interval = atoi(optarg);
 				break;
-				
+
 			case 'u':
-				opt.uuid = (char *) malloc(strlen(optarg)+1);
-				strcpy(opt.uuid, optarg);
+				opts.uuid = (char *) malloc(strlen(optarg)+1);
+				strcpy(opts.uuid, optarg);
 				break;
-				
+
 			case 'm':
-				opt.middleware = (char *) malloc(strlen(optarg)+1);
-				strcpy(opt.middleware, optarg);
+				opts.middleware = (char *) malloc(strlen(optarg)+1);
+				strcpy(opts.middleware, optarg);
 				break;
-				
+
 			case 'p':
-				opt.port = (char *) malloc(strlen(optarg)+1);
-				strcpy(opt.port, optarg);
+				opts.port = (char *) malloc(strlen(optarg)+1);
+				strcpy(opts.port, optarg);
 				break;
-				
-			//case 'c': /* read config file */ 
-			
-			//	break;
+
+			//case 'c': /* read config file */
+				// break;
 
 			case 'h':
 			case '?':
 				usage(argv);
-				exit((c == '?') ? -1 : 0);
+				exit((c == '?') ? EXIT_FAILURE : EXIT_SUCCESS);
 		}
 	}
 	
-	/* setup devices */
+	return opts;
+}
+
+/**
+ * Reformat CURLs debugging output
+ */
+int curl_custom_debug_callback(CURL *curl, curl_infotype type, char *data, size_t size, void *custom) {
+	switch (type) {
+		case CURLINFO_TEXT:
+		case CURLINFO_END:
+			printf("%.*s", (int) size, data);
+			break;
+			
+		case CURLINFO_HEADER_IN:
+		case CURLINFO_HEADER_OUT:
+			//printf("header in: %.*s", size, data);
+			break;
+		
+		case CURLINFO_SSL_DATA_IN:
+		case CURLINFO_DATA_IN:
+			printf("Received %lu bytes\n", (unsigned long) size);
+			break;
+		
+		case CURLINFO_SSL_DATA_OUT:
+		case CURLINFO_DATA_OUT:
+			printf("Sent %lu bytes.. ", (unsigned long) size);
+			break;
+	}
 	
-	struct timeval tv;
+	return 0;
+}
+
+size_t curl_custom_write_callback(void *ptr, size_t size, size_t nmemb, void *data) {
+	size_t realsize = size * nmemb;
+	struct curl_response *response = (struct curl_response *) data;
+ 
+	response->data = realloc(response->data, response->size + realsize + 1);
+	if (response->data == NULL) { /* out of memory! */ 
+		fprintf(stderr, "Not enough memory (realloc returned NULL)\n");
+		exit(EXIT_FAILURE);
+	}
+ 
+	memcpy(&(response->data[response->size]), ptr, realsize);
+	response->size += realsize;
+	response->data[response->size] = 0;
+ 
+	return realsize;
+}
+
+/**
+ * Log against the vz.org middleware with simple HTTP requests via CURL
+ */
+CURLcode api_log(char * middleware, char * uuid, struct reading read) {
+	CURL *curl;
+	CURLcode rc = -1;
+
+	char url[255], useragent[255], post[255];
+	int curl_code;
+	struct curl_response chunk = {NULL, 0};
 	
+	sprintf(url, "%s/data/%s.json", middleware, uuid); /* build url */
+	sprintf(useragent, "vzlogger/%s (%s)", VZ_VERSION, curl_version());
+	sprintf(post, "?timestamp=%lu%lu&value=%f", read.tv.tv_sec, read.tv.tv_usec, read.value);
+ 
+	curl_global_init(CURL_GLOBAL_ALL);
+ 
+	curl = curl_easy_init();
+	
+	if (curl) {
+		curl_easy_setopt(curl, CURLOPT_URL, url);
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post);
+		curl_easy_setopt(curl, CURLOPT_USERAGENT, useragent);
+		curl_easy_setopt(curl, CURLOPT_VERBOSE, (int) opts.verbose);
+		curl_easy_setopt(curl, CURLOPT_DEBUGFUNCTION, curl_custom_debug_callback);
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_custom_write_callback);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *) &chunk);
+
+		if (opts.verbose) printf("Sending request: %s%s\n", url, post);
+
+    		rc = curl_easy_perform(curl);
+    		
+    		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &curl_code);
+    		
+    		if (opts.verbose) printf("Request %s with code: %i\n", (curl_code == 200) ? "succeded" : "failed", curl_code);
+    		
+    		if (rc != CURLE_OK) {
+			fprintf(stderr, "CURL error: %s\n", curl_easy_strerror(rc));
+		}
+    		else if (chunk.size == 0 || chunk.data == NULL) {
+			fprintf(stderr, "No data received!\n");
+			rc = -1;
+		}
+		else if (curl_code != 200) { /* parse exception */
+	    		struct json_tokener * json_tok;
+			struct json_object * json_obj;
+	
+	    		json_tok = json_tokener_new();
+			json_obj = json_tokener_parse_ex(json_tok, chunk.data, chunk.size);
+
+			if (json_tok->err == json_tokener_success) {
+				json_obj = json_object_object_get(json_obj, "exception");
+			
+				if (json_obj) {
+					fprintf(stderr, "%s [%i]: %s\n",
+						json_object_get_string(json_object_object_get(json_obj,  "type")),
+						json_object_get_int(json_object_object_get(json_obj,  "code")),
+						json_object_get_string(json_object_object_get(json_obj,  "message"))
+					);
+				}
+				else {
+					fprintf(stderr, "Malformed middleware response: missing exception\n");
+				}
+			}
+			else {
+				fprintf(stderr, "Malformed middleware response: %s\n", json_tokener_errors[json_tok->err]);
+			}
+			
+			rc = -1;
+		}
+    
+		curl_easy_cleanup(curl); /* always cleanup */
+		free(chunk.data); /* free response */
+	}
+	else {
+		fprintf(stderr, "Failed to create CURL handle\n");
+	}
+	
+	return rc;
+}
+
+/**
+ * The main loop
+ */
+int main(int argc, char * argv[]) {
+	opts = parse_options(argc, argv); /* parse command line arguments */
+	
+	struct reading rd;
 	
 	log: /* start logging */
 	
-	gettimeofday(&tv, NULL);
+	rd.value = 33.333;
+	gettimeofday(&rd.tv, NULL);
 
-	CURLcode rc = backend_log(opt.middleware, opt.uuid, tv, 33.333);
+	CURLcode rc = api_log(opts.middleware, opts.uuid, rd);
 	
 	if (rc != CURLE_OK) {
-		fprintf(stderr, "curl error: %s\n", curl_easy_strerror(rc));
-	} else if (opt.verbose) {
-		fprintf(stdout, "logging %s against %s with value %f", opt.uuid, opt.middleware, 33.333);
+		if (opts.verbose) printf("Delaying next transmission for 15 minutes due to pervious error\n");
+		sleep(15*60);
 	}
 	
-	if (opt.daemon) {
-		sleep(opt.interval);
+	if (opts.daemon) {
+		if (opts.verbose) printf("Sleeping %i seconds for next transmission\n", opts.interval);
+		sleep(opts.interval);
 		goto log;
 	}
 
 	return 0;
 }
+
+
