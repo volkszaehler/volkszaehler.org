@@ -1,7 +1,7 @@
 /**
- * main source
+ * Main source file
  *
- * @package controller
+ * @package vzlogger
  * @copyright Copyright (c) 2011, The volkszaehler.org project
  * @license http://www.gnu.org/licenses/gpl.txt GNU Public License
  * @author Steffen Vogel <info@steffenvogel.de>
@@ -26,40 +26,28 @@
 #define VZ_VERSION "0.2"
  
 #include <stdio.h>
-#include <getopt.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 #include <unistd.h>
+#include <getopt.h>
+#include <pthread.h>
 
-#include <sys/time.h>
-
-#include <json/json.h>
-
-#include <curl/curl.h>
 #include <curl/types.h>
-#include <curl/easy.h>
 
 #include "main.h"
+#include "api.h"
 
 #include "protocols/obis.h"
 
-static struct device devices[] = {
-//	{"1wire",	"Dallas 1-Wire Sensors",		1wire_get},
-//	{"ccost",	"CurrentCost",				ccost_get},
-//	{"fusb",	"FluksoUSB prototype board",		fusb_get},
-	{"obis",	"Plaintext OBIS",			obis_get},
+static struct protocol protocols[] = {
+	{"obis",	"Plaintext OBIS",	obis_get,	obis_init},
 	{NULL} /* stop condition for iterator */
 };
 
 static struct option long_options[] = {
-	{"middleware",	required_argument,	0,	'm'},
-	{"uuid",	required_argument,	0,	'u'},
-	{"value",	required_argument,	0,	'V'},
-	{"device",	required_argument,	0,	'd'},
-	{"port",	required_argument,	0,	'p'},
-//	{"config", 	required_argument,	0,	'c'},
-	{"daemon", 	required_argument,	0,	'D'},
+	{"config", 	required_argument,	0,	'c'},
+	{"daemon", 	required_argument,	0,	'd'},
 	{"interval", 	required_argument,	0,	'i'},
 //	{"local", 	no_argument,		0,	'l'},
 //	{"local-port",	required_argument,	0,	'p'},
@@ -69,14 +57,9 @@ static struct option long_options[] = {
 };
 
 static char * long_options_descs[] = {
-	"url to middleware",
-	"channel uuid",
-	"sensor value or meter consumption to log",
-	"device type",
-	"port the device is connected to",
-//	"config file with channel -> uuid mapping",
+	"config file with channel -> uuid mapping",
 	"run as daemon",
-	"interval in seconds to log data",
+	"interval in seconds to read meters",
 //	"activate local interface (tiny webserver)",
 //	"TCP port for local interface"	
 	"show this help",
@@ -93,7 +76,7 @@ struct options opts;
 void usage(char * argv[]) {
 	char ** desc = long_options_descs;
 	struct option * op = long_options;
-	struct device * dev = devices;
+	struct protocol * prot = protocols;
 
 	printf("Usage: %s [options]\n\n", argv[0]);
 	printf("  following options are available:\n");
@@ -105,11 +88,11 @@ void usage(char * argv[]) {
 	}
 	
 	printf("\n");
-	printf("  following device types are available:\n");
+	printf("  following protocol types are supported:\n");
 	
-	while (dev->name) {
-		printf("\t%-12s\t%s\n", dev->name, dev->desc);
-		dev++;
+	while (prot->name) {
+		printf("\t%-12s\t%s\n", prot->name, prot->desc);
+		prot++;
 	}
 	
 	printf("\nvzlogger - volkszaehler.org logging utility VERSION\n");
@@ -123,15 +106,17 @@ struct options parse_options(int argc, char * argv[]) {
 	struct options opts;
 	
 	/* setting default options */
-	opts.interval = 300;
-	opts.verbose = 0;
-	opts.daemon = 0; 
+	opts.interval = 300; /* seconds */
+	opts.verbose = FALSE;
+	opts.daemon = FALSE;
+	//opts.local = FALSE;
+	opts.config = NULL;
 
-	while (1) {
+	while (TRUE) {
 		/* getopt_long stores the option index here. */
 		int option_index = 0;
 
-		int c = getopt_long(argc, argv, "i:m:u:V:t:p:c:hdv", long_options, &option_index);
+		int c = getopt_long(argc, argv, "i:c:hdv", long_options, &option_index);
 
 		/* detect the end of the options. */
 		if (c == -1)
@@ -146,27 +131,10 @@ struct options parse_options(int argc, char * argv[]) {
 				opts.daemon = 1;
 				break;
 
-			case 'i':
-				opts.interval = atoi(optarg);
+			case 'c': /* read config file */
+				opts.config = (char *) malloc(strlen(optarg)+1);
+				strcpy(opts.config, optarg);
 				break;
-
-			case 'u':
-				opts.uuid = (char *) malloc(strlen(optarg)+1);
-				strcpy(opts.uuid, optarg);
-				break;
-
-			case 'm':
-				opts.middleware = (char *) malloc(strlen(optarg)+1);
-				strcpy(opts.middleware, optarg);
-				break;
-
-			case 'p':
-				opts.port = (char *) malloc(strlen(optarg)+1);
-				strcpy(opts.port, optarg);
-				break;
-
-			//case 'c': /* read config file */
-				// break;
 
 			case 'h':
 			case '?':
@@ -178,131 +146,80 @@ struct options parse_options(int argc, char * argv[]) {
 	return opts;
 }
 
-/**
- * Reformat CURLs debugging output
- */
-int curl_custom_debug_callback(CURL *curl, curl_infotype type, char *data, size_t size, void *custom) {
-	switch (type) {
-		case CURLINFO_TEXT:
-		case CURLINFO_END:
-			printf("%.*s", (int) size, data);
-			break;
+struct channel parse_channel(char * line) {
+	struct channel ch;
+	struct protocol * prot;
+	char *tok = strtok(line, ";");
 			
-		case CURLINFO_HEADER_IN:
-		case CURLINFO_HEADER_OUT:
-			//printf("header in: %.*s", size, data);
-			break;
-		
-		case CURLINFO_SSL_DATA_IN:
-		case CURLINFO_DATA_IN:
-			printf("Received %lu bytes\n", (unsigned long) size);
-			break;
-		
-		case CURLINFO_SSL_DATA_OUT:
-		case CURLINFO_DATA_OUT:
-			printf("Sent %lu bytes.. ", (unsigned long) size);
-			break;
+	for (int i = 0; i < 7 && tok != NULL; i++) {
+		switch(i) {
+			case 0: /* middleware */
+				ch.middleware = (char *) malloc(strlen(tok)+1);
+				strcpy(ch.middleware, tok);
+				break;
+				
+			case 1: /* uuid */
+				ch.uuid = (char *) malloc(strlen(tok)+1);
+				strcpy(ch.uuid, tok);
+				break;
+			
+			case 2: /* protocol */
+				prot = protocols; /* reset pointer */
+				while (prot->name && strcmp(prot->name, tok) != 0) prot++; /* linear search */
+				ch.prot = prot;
+				break;
+			
+			case 3: /* interval */
+				ch.interval = atoi(tok);
+				break;
+			
+			case 4: /* options */
+				ch.options = (char *) malloc(strlen(tok)+1);
+				strcpy(ch.options, tok);
+				break;
+		}
+	
+		tok = strtok(NULL, ";");
 	}
 	
-	return 0;
-}
-
-size_t curl_custom_write_callback(void *ptr, size_t size, size_t nmemb, void *data) {
-	size_t realsize = size * nmemb;
-	struct curl_response *response = (struct curl_response *) data;
- 
-	response->data = realloc(response->data, response->size + realsize + 1);
-	if (response->data == NULL) { /* out of memory! */ 
-		fprintf(stderr, "Not enough memory (realloc returned NULL)\n");
-		exit(EXIT_FAILURE);
-	}
- 
-	memcpy(&(response->data[response->size]), ptr, realsize);
-	response->size += realsize;
-	response->data[response->size] = 0;
- 
-	return realsize;
+	if (opts.verbose) printf("Channel parsed: %s\n", line);	
+	
+	return ch;
 }
 
 /**
- * Log against the vz.org middleware with simple HTTP requests via CURL
+ * Logging thread
  */
-CURLcode api_log(char * middleware, char * uuid, struct reading read) {
-	CURL *curl;
-	CURLcode rc = -1;
-
-	char url[255], useragent[255], post[255];
-	int curl_code;
-	struct curl_response chunk = {NULL, 0};
+void *log_thread(void *arg) {
+	static int threads; /* number of threads already started */
+	int thread_id = threads++; /* current thread identifier */
+	struct channel ch;
+	struct reading rd;
+	CURLcode rc;
 	
-	sprintf(url, "%s/data/%s.json", middleware, uuid); /* build url */
-	sprintf(useragent, "vzlogger/%s (%s)", VZ_VERSION, curl_version());
-	sprintf(post, "?timestamp=%lu%lu&value=%f", read.tv.tv_sec, read.tv.tv_usec, read.value);
- 
-	curl_global_init(CURL_GLOBAL_ALL);
- 
-	curl = curl_easy_init();
+	if (opts.verbose) printf("Thread #%i started\n", thread_id);
 	
-	if (curl) {
-		curl_easy_setopt(curl, CURLOPT_URL, url);
-		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post);
-		curl_easy_setopt(curl, CURLOPT_USERAGENT, useragent);
-		curl_easy_setopt(curl, CURLOPT_VERBOSE, (int) opts.verbose);
-		curl_easy_setopt(curl, CURLOPT_DEBUGFUNCTION, curl_custom_debug_callback);
-		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_custom_write_callback);
-		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *) &chunk);
-
-		if (opts.verbose) printf("Sending request: %s%s\n", url, post);
-
-    		rc = curl_easy_perform(curl);
-    		
-    		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &curl_code);
-    		
-    		if (opts.verbose) printf("Request %s with code: %i\n", (curl_code == 200) ? "succeded" : "failed", curl_code);
-    		
-    		if (rc != CURLE_OK) {
-			fprintf(stderr, "CURL error: %s\n", curl_easy_strerror(rc));
-		}
-    		else if (chunk.size == 0 || chunk.data == NULL) {
-			fprintf(stderr, "No data received!\n");
-			rc = -1;
-		}
-		else if (curl_code != 200) { /* parse exception */
-	    		struct json_tokener * json_tok;
-			struct json_object * json_obj;
+	ch = *(struct channel *) arg; /* copy channel struct */
 	
-	    		json_tok = json_tokener_new();
-			json_obj = json_tokener_parse_ex(json_tok, chunk.data, chunk.size);
-
-			if (json_tok->err == json_tokener_success) {
-				json_obj = json_object_object_get(json_obj, "exception");
-			
-				if (json_obj) {
-					fprintf(stderr, "%s [%i]: %s\n",
-						json_object_get_string(json_object_object_get(json_obj,  "type")),
-						json_object_get_int(json_object_object_get(json_obj,  "code")),
-						json_object_get_string(json_object_object_get(json_obj,  "message"))
-					);
-				}
-				else {
-					fprintf(stderr, "Malformed middleware response: missing exception\n");
-				}
-			}
-			else {
-				fprintf(stderr, "Malformed middleware response: %s\n", json_tokener_errors[json_tok->err]);
-			}
-			
-			rc = -1;
-		}
-    
-		curl_easy_cleanup(curl); /* always cleanup */
-		free(chunk.data); /* free response */
-	}
-	else {
-		fprintf(stderr, "Failed to create CURL handle\n");
+	ch.prot->init_func(ch.options); /* init sensor/meter */
+	
+	log:
+	
+	rd = ch.prot->read_func(); /* aquire reading */
+	rc = api_log(ch.middleware, ch.uuid, rd); /* log reading */
+	
+	if (rc != CURLE_OK) {
+		if (opts.verbose) printf("Delaying next transmission for 15 minutes due to pervious error\n");
+		sleep(15);
 	}
 	
-	return rc;
+	if (opts.daemon) {
+		if (opts.verbose) printf("Sleeping %i seconds for next transmission\n", ch.interval);
+		sleep(ch.interval);
+		goto log;
+	}
+	
+	return NULL;
 }
 
 /**
@@ -311,24 +228,29 @@ CURLcode api_log(char * middleware, char * uuid, struct reading read) {
 int main(int argc, char * argv[]) {
 	opts = parse_options(argc, argv); /* parse command line arguments */
 	
-	struct reading rd;
-	
-	log: /* start logging */
-	
-	rd.value = 33.333;
-	gettimeofday(&rd.tv, NULL);
+	FILE *file = fopen(opts.config, "r"); /* open configuration */
 
-	CURLcode rc = api_log(opts.middleware, opts.uuid, rd);
-	
-	if (rc != CURLE_OK) {
-		if (opts.verbose) printf("Delaying next transmission for 15 minutes due to pervious error\n");
-		sleep(15*60);
+	if (file == NULL) {
+		perror(opts.config); /* why didn't the file open? */
+		exit(EXIT_FAILURE);
 	}
 	
-	if (opts.daemon) {
-		if (opts.verbose) printf("Sleeping %i seconds for next transmission\n", opts.interval);
-		sleep(opts.interval);
-		goto log;
+	int i = 0;
+	char line[256];
+	pthread_t pthreads[16];
+	while (fgets(line, sizeof line, file) != NULL) { /* read a line */
+		if (line[0] == '#' || line[0] == '\n') continue; /* skip comments */
+	
+		struct channel ch = parse_channel(line);
+	
+		/* start logging threads */
+		pthread_create(&pthreads[i++], NULL, log_thread, (void *) &ch);
+	}
+	
+	fclose(file);
+	
+	for (int n = 0; n < i; n++) { /* wait for all threads to terminate */
+		pthread_join(pthreads[n], NULL);
 	}
 
 	return 0;

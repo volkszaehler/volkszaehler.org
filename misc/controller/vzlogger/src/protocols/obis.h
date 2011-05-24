@@ -4,7 +4,7 @@
  * This is our example protocol. Use this skeleton to add your own
  * protocols and meters.
  *
- * @package controller
+ * @package vzlogger
  * @copyright Copyright (c) 2011, The volkszaehler.org project
  * @license http://www.gnu.org/licenses/gpl.txt GNU Public License
  * @author Steffen Vogel <info@steffenvogel.de>
@@ -29,9 +29,9 @@
 #ifndef _OBIS_H_
 #define _OBIS_H_
 
-#include "../main.h"
+#include "../api.h"
 
-int obis_init(char * port);
+void obis_init(char * port);
 struct reading obis_get();
 
 #endif /* _OBIS_H_ */

@@ -4,7 +4,7 @@
  * This is our example protocol. Use this skeleton to add your own
  * protocols and meters.
  *
- * @package controller
+ * @package vzlogger
  * @copyright Copyright (c) 2011, The volkszaehler.org project
  * @license http://www.gnu.org/licenses/gpl.txt GNU Public License
  * @author Steffen Vogel <info@steffenvogel.de>
@@ -31,8 +31,11 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <string.h>
+#include <sys/time.h>
 
-int obis_init(char * port) {
+#include "obis.h"
+
+void obis_init(char * port) {
 	struct termios tio;
 	int fd;
 	
@@ -48,11 +51,14 @@ int obis_init(char * port) {
 	fd = open(port, O_RDWR); // | O_NONBLOCK);
 	cfsetospeed(&tio, B9600); // 9600 baud
 	cfsetispeed(&tio, B9600); // 9600 baud
-	
-	return fd;
 }
 
-float obis_get() {
-	return 0;
+struct reading obis_get() {
+	struct reading rd;
+	
+	rd.value = 33.3334;
+	gettimeofday(&rd.tv, NULL);
+	
+	return rd;
 }
 
