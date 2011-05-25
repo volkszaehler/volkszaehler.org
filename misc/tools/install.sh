@@ -37,6 +37,8 @@ shopt -s nocasematch
 doctrine_git=git://github.com/doctrine/doctrine2.git
 doctrine_tar=http://www.doctrine-project.org/downloads/DoctrineORM-2.0.1-full.tar.gz
 vz_git=git://github.com/volkszaehler/volkszaehler.org.git
+PHP_MAJOR=`/usr/bin/php --version | /bin/grep "^PHP" | /usr/bin/awk ' { print $2 } ' | /usr/bin/cut -b 1 `
+PHP_MINOR=`/usr/bin/php --version | /bin/grep "^PHP" | /usr/bin/awk ' { print $2 } ' | /usr/bin/cut -b 3 `
 
 ask() {
 	question=$1
@@ -60,6 +62,19 @@ get_db_name() {
 	ask "mysql database?" volkszaehler
 	db_name=$REPLY
 }
+
+############
+# check prerequisites
+if [ ${PHP_MAJOR }-lt "5" ] ; then
+  echo you need PHP version 5.3+ to run volkszaehler
+  exit
+elif [ ${PHP_MAJOR} == "5" ]
+  if [ ${PHP_MINOR }-lt "3" ] ; then
+    echo you need PHP version 5.3+ to run volkszaehler
+    exit
+  fi
+fi
+
 
 ############
 echo
