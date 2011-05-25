@@ -1,6 +1,3 @@
-[submodule "misc/controller/ethersex"]
-	path = misc/controller/ethersex
-	url = git://github.com/volkszaehler/ethersex.git
 [submodule "misc/frontend/fnordlicht"]
 	path = misc/frontend/fnordlicht
 	url = git://github.com/steffenvogel/libfn.git
