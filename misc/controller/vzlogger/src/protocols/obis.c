@@ -28,16 +28,16 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <fcntl.h>
-#include <termios.h>
+#include <stdlib.h>
 #include <string.h>
-#include <sys/time.h>
+#include <fcntl.h>
+#include <termios.h> 
 
 #include "obis.h"
 
-void obis_init(char * port) {
+void * obis_init(char * port) {
 	struct termios tio;
-	int fd;
+	int *fd = malloc(sizeof(int));
 	
 	memset(&tio, 0, sizeof(tio));
 	
@@ -48,13 +48,21 @@ void obis_init(char * port) {
 	tio.c_cc[VMIN] = 1;
 	tio.c_cc[VTIME] = 5;
 
-	fd = open(port, O_RDWR); // | O_NONBLOCK);
+	*fd = open(port, O_RDWR); // | O_NONBLOCK);
 	cfsetospeed(&tio, B9600); // 9600 baud
 	cfsetispeed(&tio, B9600); // 9600 baud
+	
+	return (void *) fd;
 }
 
-struct reading obis_get() {
-	struct reading rd;
+void obis_close(void *handle) {
+	// TODO close serial port
+
+	free(handle);
+}
+
+reading_t obis_get(void *handle) {
+	reading_t rd;
 	
 	rd.value = 33.3334;
 	gettimeofday(&rd.tv, NULL);

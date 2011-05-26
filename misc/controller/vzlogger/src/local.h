@@ -1,10 +1,10 @@
 /**
- * Header file for volkszaehler.org API calls
+ * Header file for local interface
  *
- * @author Steffen Vogel <info@steffenvogel.de>
- * @copyright Copyright (c) 2011, The volkszaehler.org project
  * @package vzlogger
- * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011, The volkszaehler.org project
+ * @license http://www.gnu.org/licenses/gpl.txt GNU Public License
+ * @author Steffen Vogel <info@steffenvogel.de>
  */
 /*
  * This file is part of volkzaehler.org
@@ -22,23 +22,23 @@
  * You should have received a copy of the GNU General Public License
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
+ 
+#ifndef _LOCAL_H_
+#define _LOCAL_H_
 
-#ifndef _API_H_
-#define _API_H_
+#include <microhttpd.h>
 
-#include <stddef.h>
-#include <curl/curl.h>
+int handle_request(
+	void *cls,
+	struct MHD_Connection *connection,
+	const char *url,
+	const char *method,
+	const char *version,
+	const char *upload_data,
+	size_t *upload_data_size,
+	void **con_cls
+);
 
-#include "main.h"
-#include "protocol.h"
+#endif /* _LOCAL_H_ */
 
-typedef struct {
-	char *data;
-	size_t size;
-}  curl_response_t;
 
-int curl_custom_debug_callback(CURL *curl, curl_infotype type, char *data, size_t size, void *custom);
-size_t curl_custom_write_callback(void *ptr, size_t size, size_t nmemb, void *data);
-CURLcode api_log(channel_t *ch, reading_t read);
-
-#endif /* _API_H_ */

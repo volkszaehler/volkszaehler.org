@@ -1,8 +1,5 @@
 /**
- * OBIS protocol parser
- *
- * This is our example protocol. Use this skeleton to add your own
- * protocols and meters.
+ * Circular queue to buffer readings
  *
  * @package vzlogger
  * @copyright Copyright (c) 2011, The volkszaehler.org project
@@ -26,13 +23,38 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
  
-#ifndef _OBIS_H_
-#define _OBIS_H_
+#ifndef _QUEUE_H_
+#define _QUEUE_H_
 
-#include "../protocol.h"
+#include "protocol.h"
 
-void * obis_init(char * port);
-void obis_close(void *handle);
-reading_t obis_get(void *handle);
+#ifndef TRUE
+#define TRUE 1
+#endif
 
-#endif /* _OBIS_H_ */
+#ifndef FALSE
+#define FALSE 0
+#endif
+
+typedef char bool_t;
+
+typedef struct {
+	size_t size;
+	
+	int read_p;
+	int write_p;
+	
+	reading_t *buf;
+} queue_t;
+
+bool_t queue_init(queue_t *q, size_t size);
+bool_t queue_is_full(queue_t *q);
+bool_t queue_is_empty(queue_t *q);
+bool_t queue_enque(queue_t *q, reading_t rd);
+bool_t queue_deque(queue_t *q, reading_t *rd);
+bool_t queue_first(queue_t *q, reading_t *rd);
+size_t queue_size(queue_t *q);
+void queue_print(queue_t *q);
+
+#endif /* _QUEUE_H_ */
+
