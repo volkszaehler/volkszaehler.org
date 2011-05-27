@@ -35,8 +35,8 @@
 #define VZ_VERSION "0.2"
 #define MAX_CHANNELS 16
 
-#define RETRY_PAUSE 16		/* seconds to wait after failed request */
-#define BUFFER_LENGTH 25	/* in seconds */
+#define RETRY_PAUSE 600		/* seconds to wait after failed request */
+#define BUFFER_LENGTH 600	/* in seconds */
 
 #ifndef TRUE
 #define TRUE 1
@@ -81,8 +81,8 @@ typedef struct {
 } options_t;
 
 /* Prototypes */
-options_t parse_options(int argc, char * argv[]);
-channel_t * parse_channels(char * filename, int * num_chans);
+void parse_options(int argc, char * argv[], options_t *opts);
+int parse_channels(char * filename, channel_t *chans);
 void print(int level, char * format, channel_t *ch, ... );
 void usage(char ** argv);
 

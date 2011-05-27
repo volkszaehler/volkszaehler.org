@@ -35,6 +35,7 @@ extern options_t opts;
 int handle_request(void *cls, struct MHD_Connection *connection, const char *url, const char *method,
 			const char *version, const char *upload_data, size_t *upload_data_size, void **con_cls) {
 	const char * json_str;
+	const char * uuid = url + 1;
 	int ret;
 	int num_chans = *(int *) cls;
 	
@@ -43,43 +44,45 @@ int handle_request(void *cls, struct MHD_Connection *connection, const char *url
 	struct MHD_Response *response;
 	
 	struct json_object * json_obj = json_object_new_object();
-	struct json_object * json_data = json_object_new_array();
+	struct json_object * json_data = json_object_new_object();
 
 	for (int i = 0; i < num_chans; i++) {
 		channel_t *ch = &chans[i];
 		reading_t rd;
 		
-		struct json_object * json_channel = json_object_new_object();
-		struct json_object * json_tuples = json_object_new_array();
-		
-		int j = ch->queue.write_p;
-		do {
+		if (strcmp(ch->uuid, uuid) == 0) {
 			pthread_mutex_lock(&ch->mutex);
-			rd = ch->queue.buf[j];
+			pthread_cond_wait(&ch->condition, &ch->mutex); /* wait for new data comet-like blocking of HTTP response */
 			pthread_mutex_unlock(&ch->mutex);
 		
-			if (rd.value != 0) {
-				struct json_object * json_tuple = json_object_new_array();
-			
-				int timestamp = rd.tv.tv_sec * 1000 + rd.tv.tv_usec / 1000;
+			struct json_object * json_tuples = json_object_new_array();
 		
-				json_object_array_add(json_tuple, json_object_new_int(timestamp));
-				json_object_array_add(json_tuple, json_object_new_double(rd.value));
-				json_object_array_add(json_tuple, json_object_new_int(1)); /* just for middleware compability */
+			int j = ch->queue.write_p;
+			do {
+				pthread_mutex_lock(&ch->mutex);
+				rd = ch->queue.buf[j];
+				pthread_mutex_unlock(&ch->mutex);
 		
-				json_object_array_add(json_tuples, json_tuple);
-			}
+				if (rd.value != 0) { /* skip invalid / empty readings */
+					struct json_object * json_tuple = json_object_new_array();
 			
-			j++;
-			j %= ch->queue.size;
-		} while (j != ch->queue.read_p);
+					int timestamp = rd.tv.tv_sec * 1000 + rd.tv.tv_usec / 1000;
+		
+					json_object_array_add(json_tuple, json_object_new_int(timestamp));
+					json_object_array_add(json_tuple, json_object_new_double(rd.value));
+					json_object_array_add(json_tuple, json_object_new_int(1)); /* just for middleware compability */
+		
+					json_object_array_add(json_tuples, json_tuple);
+				}
+			
+				j++;
+				j %= ch->queue.size;
+			} while (j != ch->queue.read_p);
 				
-		json_object_object_add(json_channel, "uuid", json_object_new_string(ch->uuid));
-		json_object_object_add(json_channel, "interval", json_object_new_int(ch->interval));
-		json_object_object_add(json_channel, "tuples", json_tuples);
-		
-	
-		json_object_array_add(json_data, json_channel);
+			json_object_object_add(json_data, "uuid", json_object_new_string(ch->uuid));
+			json_object_object_add(json_data, "interval", json_object_new_int(ch->interval));
+			json_object_object_add(json_data, "tuples", json_tuples);
+		}
 	}
 	
 	json_object_object_add(json_obj, "version", json_object_new_string(VZ_VERSION));

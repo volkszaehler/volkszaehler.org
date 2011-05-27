@@ -42,14 +42,23 @@
 #include "local.h"
 
 #include "protocols/obis.h"
- 
+#include "protocols/1wire.h"
+
+/**
+ * List of available protocols
+ * incl. function pointers
+ */
 static protocol_t protocols[] = {
-	{"obis",	"Plaintext OBIS",	obis_get,	obis_init,	obis_close},
-//	{"fluksousb", 	"FluksoUSB board", 	flukso_get,	flukso_init,	flukso_close},
-//	{"onewire",	"Dallas 1-Wire sensors",onewire_get,	onewire_init, onewire_close},
+	{"obis",	"Plaintext OBIS",			obis_get,	obis_init,	obis_close},
+//	{"fluksousb", 	"FluksoUSB board", 			flukso_get,	flukso_init,	flukso_close},
+	{"1wire",	"Dallas 1-Wire sensors (via OWFS)",	onewire_get,	onewire_init,	onewire_close},
 	{NULL} /* stop condition for iterator */
 };
 
+
+/**
+ * Command line options
+ */
 static struct option long_options[] = {
 	{"config", 	required_argument,	0,	'c'},
 	{"daemon", 	required_argument,	0,	'd'},
@@ -61,6 +70,9 @@ static struct option long_options[] = {
 	{NULL} /* stop condition for iterator */
 };
 
+/**
+ * Descriptions vor command line options
+ */
 static char * long_options_descs[] = {
 	"config file with channel -> uuid mapping",
 	"run as daemon",
@@ -72,9 +84,15 @@ static char * long_options_descs[] = {
 	NULL /* stop condition for iterator */
 };
 
-/* globals */
-options_t opts;
-channel_t * chans; /* mem gets allocated in parse_channels(), and freed in main() */
+/* Global variables */
+channel_t chans[MAX_CHANNELS]; // TODO use dynamic allocation
+options_t opts = { /* setting default options */
+	"vzlogger.conf",	/* config file */
+	8080,			/* port for local interface */
+	0,			/* debug level / verbosity */
+	FALSE,			/* daemon mode */
+	FALSE			/* local interface */
+};
 
 /**
  * Print availble options and some other usefull information
@@ -107,6 +125,9 @@ void usage(char * argv[]) {
 
 /**
  * Wrapper to log notices and errors
+ *
+ * @param ch could be NULL for general messages
+ * @todo integrate into syslog
  */
 void print(int level, char * format, channel_t *ch, ... ) {
 	static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -143,21 +164,12 @@ void print(int level, char * format, channel_t *ch, ... ) {
 /**
  * Parse options from command line
  */
-options_t parse_options(int argc, char * argv[]) {
-	options_t opts;
-	
-	/* setting default options */
-	opts.daemon = FALSE;
-	opts.local = FALSE;
-	opts.verbose = 0;
-	opts.port = 8080;
-	opts.config = "vzlogger.conf";
-
+void parse_options(int argc, char * argv[], options_t * opts) {
 	while (TRUE) {
 		/* getopt_long stores the option index here. */
 		int option_index = 0;
 
-		int c = getopt_long(argc, argv, "i:c:p:lhdv:", long_options, &option_index);
+		int c = getopt_long(argc, argv, "i:c:p:lhdv", long_options, &option_index);
 
 		/* detect the end of the options. */
 		if (c == -1)
@@ -165,24 +177,25 @@ options_t parse_options(int argc, char * argv[]) {
 
 		switch (c) {
 			case 'v':
-				opts.verbose = (optarg == NULL) ? 1 : atoi(optarg);
+				opts->verbose = (optarg == NULL) ? 1 : atoi(optarg);
 				break;
 				
 			case 'l':
-				opts.local = TRUE;
+				opts->local = TRUE;
+				opts->daemon = TRUE; /* implicates daemon mode */
 				break;
 				
 			case 'd':
-				opts.daemon = TRUE;
+				opts->daemon = TRUE;
 				break;
 				
 			case 'p': /* port for local interface */
-				opts.port = atoi(optarg);
+				opts->port = atoi(optarg);
 				break;
 
 			case 'c': /* read config file */
-				opts.config = (char *) malloc(strlen(optarg)+1);
-				strcpy(opts.config, optarg);
+				opts->config = (char *) malloc(strlen(optarg)+1);
+				strcpy(opts->config, optarg);
 				break;
 
 			case 'h':
@@ -191,11 +204,9 @@ options_t parse_options(int argc, char * argv[]) {
 				exit((c == '?') ? EXIT_FAILURE : EXIT_SUCCESS);
 		}
 	}
-	
-	return opts;
 }
 
-channel_t * parse_channels(char * filename, int * num_chans) {
+int parse_channels(char * filename, channel_t * chans) {
 	FILE *file = fopen(filename, "r"); /* open configuration */
 
 	if (file == NULL) {
@@ -206,9 +217,7 @@ channel_t * parse_channels(char * filename, int * num_chans) {
 	char line[256];
 	int j = 0;
 	
-	channel_t *chans = malloc(sizeof(channel_t) * MAX_CHANNELS);
-	
-	while (fgets(line, sizeof line, file) != NULL) { /* read a line */
+	while (j < MAX_CHANNELS && fgets(line, sizeof line, file) != NULL) { /* read a line */
 		if (line[0] == '#' || line[0] == '\n') continue; /* skip comments */
 
 		channel_t ch;
@@ -216,14 +225,16 @@ channel_t * parse_channels(char * filename, int * num_chans) {
 		char *tok = strtok(line, ";");
 			
 		for (int i = 0; i < 7 && tok != NULL; i++) {
+			size_t len = strlen(tok);
+			
 			switch(i) {
 				case 0: /* middleware */
-					ch.middleware = (char *) malloc(strlen(tok)+1);
+					ch.middleware = (char *) malloc(len+1); /* including string termination */
 					strcpy(ch.middleware, tok);
 					break;
 				
 				case 1: /* uuid */
-					ch.uuid = (char *) malloc(strlen(tok)+1);
+					ch.uuid = (char *) malloc(len+1); /* including string termination */
 					strcpy(ch.uuid, tok);
 					break;
 			
@@ -238,8 +249,9 @@ channel_t * parse_channels(char * filename, int * num_chans) {
 					break;
 			
 				case 4: /* options */
-					ch.options = (char *) malloc(strlen(tok)+1);
-					strcpy(ch.options, tok);
+					ch.options = (char *) malloc(len);
+					strncpy(ch.options, tok, len-1);
+					ch.options[len] = '\0'; /* replace \n by \0 */
 					break;
 			}
 	
@@ -248,14 +260,13 @@ channel_t * parse_channels(char * filename, int * num_chans) {
 		
 		ch.id = j;
 
-		print(1, "Parsed (on %s)", &ch, ch.middleware);
+		print(1, "Parsed %s (on %s)", &ch, ch.uuid, ch.middleware);
 		chans[j++] = ch;
 	}
 	
 	fclose(file);
-	*num_chans = j;
 	
-	return chans;
+	return j;
 }
 
 /**
@@ -271,7 +282,7 @@ void *log_thread(void *arg) {
 	
 	print(1, "Started logging thread", ch);
 	
-	while (TRUE) {
+	do {
 		pthread_mutex_lock(&ch->mutex);
 		while (queue_is_empty(&ch->queue)) { /* detect spurious wakeups */
 			pthread_cond_wait(&ch->condition, &ch->mutex); /* wait for new data */
@@ -291,13 +302,12 @@ void *log_thread(void *arg) {
 				pthread_mutex_unlock(&ch->mutex);
 			}
 			else {
-				print(1, "Delaying next transmission for 15 minutes due to pervious error", ch);
-				
+				print(1, "Delaying next transmission for %i seconds due to pervious error", ch, RETRY_PAUSE);
 				sleep(RETRY_PAUSE);
 			}
 		}
 		pthread_testcancel(); /* test for cancelation request */
-	}
+	} while (opts.daemon);
 	
 	return NULL;
 }
@@ -315,7 +325,7 @@ void *read_thread(void *arg) {
 	/* initalize channel */
 	ch->handle = ch->prot->init_func(ch->options); /* init sensor/meter */
 	
-	while (TRUE) {
+	do {
 		reading_t rd = ch->prot->read_func(ch->handle); /* aquire reading */
 		
 		pthread_mutex_lock(&ch->mutex);
@@ -329,7 +339,7 @@ void *read_thread(void *arg) {
 		
 		pthread_testcancel(); /* test for cancelation request */
 		sleep(ch->interval); /* else sleep and restart aquisition */
-	}
+	} while (opts.daemon);
 	
 	/* close channel */
 	ch->prot->close_func(ch->handle);
@@ -341,30 +351,32 @@ void *read_thread(void *arg) {
  * The main loop
  */
 int main(int argc, char * argv[]) {
-	int num_chans = 0;
+	int num_chans;
 	struct MHD_Daemon * d;
 	
-	opts = parse_options(argc, argv); /* parse command line arguments */
-	chans = parse_channels(opts.config, &num_chans); /* parse channels from configuration */
+	parse_options(argc, argv, &opts); /* parse command line arguments */
+	num_chans = parse_channels(opts.config, chans); /* parse channels from configuration */
 	
 	print(1, "Started %s with verbosity level %i", NULL, argv[0], opts.verbose);
 	
 	curl_global_init(CURL_GLOBAL_ALL); /* global intialization for all threads */
 	
-	/* start threads */
 	for (int i = 0; i < num_chans; i++) {
 		channel_t * ch = &chans[i];
 		
 		queue_init(&ch->queue, (BUFFER_LENGTH / ch->interval) + 1); /* initialize queue to buffer 10 minutes of data */
 	
+		/* initialize thread syncronization helpers */
 		pthread_mutex_init(&ch->mutex, NULL);
 		pthread_cond_init(&ch->condition, NULL);
 
+		/* start threads */
 		pthread_create(&ch->reading_thread, NULL, read_thread, (void *) ch);
 		pthread_create(&ch->logging_thread, NULL, log_thread, (void *) ch);
 	}
 	
-	if (opts.local) { /* start webserver */
+	/* start webserver for local interface */
+	if (opts.local) {
 		d = MHD_start_daemon(
 			MHD_USE_THREAD_PER_CONNECTION,
 			opts.port,
@@ -382,6 +394,12 @@ int main(int argc, char * argv[]) {
 		pthread_join(ch->reading_thread, NULL);
 		pthread_join(ch->logging_thread, NULL);
 		
+		free(ch->middleware);
+		free(ch->uuid);
+		free(ch->options);
+		
+		queue_free(&ch->queue);
+		
 		pthread_cond_destroy(&ch->condition);
 		pthread_mutex_destroy(&ch->mutex);
 	}
@@ -390,7 +408,5 @@ int main(int argc, char * argv[]) {
 		MHD_stop_daemon(d);
 	}
 	
-	free(chans);
-
 	return 0;
 }

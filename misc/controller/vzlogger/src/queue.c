@@ -58,3 +58,7 @@ void queue_print(queue_t *q) {
 	}
 	printf("]\n");
 }
+
+void queue_free(queue_t *q) {
+	free(q->buf);
+}
