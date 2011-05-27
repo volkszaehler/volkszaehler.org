@@ -68,7 +68,7 @@
 	{
 		"name"			: "power",
 		"required"		: ["title", "resolution"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "cost"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "cost", "public", "local"],
 		"icon"			: "bolt.png",
 		"unit"			: "W",
 		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
@@ -82,7 +82,7 @@
 	{
 		"name"			: "powersensor",
 		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "cost"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "cost", "public", "local"],
 		"icon"			: "bolt.png",
 		"unit"			: "W",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
@@ -96,7 +96,7 @@
 	{
 		"name"			: "gas",
 		"required"		: ["title", "resolution"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "cost"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "cost", "public", "local"],
 		"icon"			: "flame.png",
 		"unit"			: "m³/h",
 		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
@@ -110,7 +110,7 @@
 	{
 		"name"			: "water",
 		"required"		: ["title", "resolution"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "cost"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "cost", "public", "local"],
 		"icon"			: "waterdrop.png",
 		"unit"			: "l/h",
 		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
@@ -124,7 +124,7 @@
 	{
 		"name"			: "temperature",
 		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "local"],
 		"icon"			: "thermometer.png",
 		"unit"			: "°C",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
@@ -138,7 +138,7 @@
 	{
 		"name"			: "pressure",
 		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "local"],
 		"icon"			: "cloud.png",
 		"unit"			: "hPa",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
@@ -152,7 +152,7 @@
 	{
 		"name"			: "humidity",
 		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "local"],
 		"icon"			: "rain.png",
 		"unit"			: "%",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
@@ -166,7 +166,7 @@
 	{
 		"name"			: "windspeed",
 		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "local"],
 		"icon"			: "propeller.png",
 		"unit"			: "km/h",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
@@ -180,7 +180,7 @@
 	{
 		"name"			: "radiation",
 		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "resolution", "public"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "resolution", "public", "local"],
 		"icon"			: "radioactivity.png",
 		"unit"			: "μSv",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
@@ -194,7 +194,7 @@
 	{
 		"name"			: "luminosity",
 		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "local"],
 		"icon"			: "sun.png",
 		"unit"			: "cd",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
@@ -208,7 +208,7 @@
 	{
 		"name"			: "workinghours",
 		"required"		: ["title", "resolution"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "local"],
 		"icon"			: "clock.png",
 		"unit"			: "h",
 		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",

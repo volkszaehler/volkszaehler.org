@@ -41,7 +41,7 @@
 		"name"			: "description",
 		"type"			: "text",
 		"pattern"		: "/[a-z0-9\\s]/",
-		"max"			: 255,			// TODO use "text" type for unlimited descriptions => PropertyModel
+		"max"			: 255, // TODO use "text" type for unlimited descriptions => PropertyModel
 		"translation"		: {
 			"de" : "Beschreibung",
 			"en" : "Description"
@@ -61,6 +61,14 @@
 		"translation"		: {
 			"de" : "Aktiv",
 			"en" : "Active"
+		}
+	},
+	{
+		"name"			: "local",
+		"type"			: "string",
+		"translation"		: {
+			"de" : "Lokale Adresse",
+			"en" : "Local Address"
 		}
 	},
 	{
@@ -121,7 +129,7 @@
 		}
 	},
 	{
-		"name"			: "address:houseno",
+		"name"			: "address:house",
 		"type"			: "string",
 		"max"			: 5,
 		"translation"		: {
@@ -345,12 +353,19 @@
 		}
 	},
 	{
-		"name"			: "photo:url",
+		"name"			: "photo",
 		"type"			: "string",
-		"pattern"		: "",				// TODO add pattern
 		"translation"		: {
 			"de" : "Foto (URL)",
 			"en" : "Photo (URL)"
 		}
-	}
+	},
+	{
+		"name"			: "uri",
+		"type"			: "string",
+		"translation"		: {
+			"de" : "Hyperlink",
+			"en" : "Hyperlink"
+		}
+	}	
 ]
