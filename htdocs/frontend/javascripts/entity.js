@@ -203,6 +203,9 @@ Entity.prototype.loadData = function() {
 		},
 		success: function(json) {
 			this.data = json.data;
+			
+			var year = 60*60*24*365*1000; /* in seconds */
+			var delta = this.data.to - this.data.from;
 		
 			if (this.data.count > 0) {
 				if (this.data.min[1] < vz.options.plot.yaxis.min) { // allow negative values for temperature sensors
@@ -221,17 +224,16 @@ Entity.prototype.loadData = function() {
 				$('#entity-' + this.uuid + ' .last')
 					.text(vz.wui.formatNumber(this.data.tuples.last()[1]) + ' ' + this.definition.unit);
 				if (this.definition.interpreter == 'Volkszaehler\\Interpreter\\MeterInterpreter') { // sensors have no consumption
-					$('#entity-' + this.uuid + ' .consumption').text(
-						vz.wui.formatNumber((this.data.consumption > 1000) ? this.data.consumption / 1000 : this.data.consumption) +
-						((this.data.consumption > 1000) ? ' k' : ' ') + this.definition.unit + 'h'
-					);
+					$('#entity-' + this.uuid + ' .consumption')
+					.text(vz.wui.formatNumber((this.data.consumption > 1000) ? this.data.consumption / 1000 : this.data.consumption) +
+						((this.data.consumption > 1000) ? ' k' : ' ') + this.definition.unit + 'h')
+					.attr('title', vz.wui.formatNumber((this.data.consumption * (year/delta) > 1000) ? (this.data.consumption * (year/delta)) / 1000 : this.data.consumption * (year/delta)) +
+						((this.data.consumption * (year/delta) > 1000) ? ' k' : ' ') + this.definition.unit + 'h' + '/Jahr');
 				}
 				if (this.cost !== undefined) {
-					var delta = this.data.to - this.data.from;
-				
 					$('#entity-' + this.uuid + ' .cost')
 						.text(vz.wui.formatNumber(this.cost * this.data.consumption) + ' €')
-						.attr(vz.wui.formatNumber(this.cost * this.data.consumption * (60*60*24*265/delta)));
+						.attr('title', vz.wui.formatNumber(this.cost * this.data.consumption * (year/delta)) + ' €/Jahr');
 				}
 			}
 			else { // no data available, clear table
