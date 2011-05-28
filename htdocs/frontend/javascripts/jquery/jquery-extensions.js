@@ -4,7 +4,7 @@
  * @author Florian Ziegler <fz@f10-home.de>
  * @author Justin Otherguy <justin@justinotherguy.org>
  * @author Steffen Vogel <info@steffenvogel.de>
- * @copyright Copyright (c) 2010, The volkszaehler.org project
+ * @copyright Copyright (c) 2011, The volkszaehler.org project
  * @package default
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
@@ -31,8 +31,8 @@
 $.extend( {
 	getUrlParams : function() {
 		var vars = {}, hash;
-		var hashes = window.location.href.slice(
-				window.location.href.indexOf('?') + 1).split('&');
+		var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+		
 		for (var i = 0; i < hashes.length; i++) {
 			hash = hashes[i].split('=');
 			switch (typeof vars[hash[0]]) {

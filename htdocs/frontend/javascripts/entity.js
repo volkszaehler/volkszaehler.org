@@ -192,17 +192,13 @@ Entity.prototype.getRow = function() {
 };
 
 Entity.prototype.loadData = function() {
-	//var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
-	//var offset = delta * 0.1;
-	var offset = 1000*30*60; // load additional data to avoid paddings
-
 	return vz.load({
 		controller: 'data',
 		identifier: this.uuid,
 		context: this,
 		data: {
-			from: Math.floor(vz.options.plot.xaxis.min - offset), // TODO fuzy-logic to get enough data
-			to: Math.ceil(vz.options.plot.xaxis.max + offset),
+			from: Math.floor(vz.options.plot.xaxis.min),
+			to: Math.ceil(vz.options.plot.xaxis.max),
 			tuples: vz.options.tuples
 		},
 		success: function(json) {
@@ -231,7 +227,11 @@ Entity.prototype.loadData = function() {
 					);
 				}
 				if (this.cost !== undefined) {
-					$('#entity-' + this.uuid + ' .cost').text(vz.wui.formatNumber(this.cost * this.data.consumption) + ' €');
+					var delta = this.data.to - this.data.from;
+				
+					$('#entity-' + this.uuid + ' .cost')
+						.text(vz.wui.formatNumber(this.cost * this.data.consumption) + ' €')
+						.attr(vz.wui.formatNumber(this.cost * this.data.consumption * (60*60*24*265/delta)));
 				}
 			}
 			else { // no data available, clear table
