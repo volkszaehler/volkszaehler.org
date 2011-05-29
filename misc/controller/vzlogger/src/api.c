@@ -36,26 +36,30 @@ extern options_t opts;
 /**
  * Reformat CURLs debugging output
  */
-int curl_custom_debug_callback(CURL *curl, curl_infotype type, char *data, size_t size, void *custom) {
+int curl_custom_debug_callback(CURL *curl, curl_infotype type, char *data, size_t size, void *ch) {
+	char *end = strchr(data, '\n');
+	
+	if (data == end) return 0; /* skip empty line */
+	
 	switch (type) {
 		case CURLINFO_TEXT:
 		case CURLINFO_END:
-			print(4, "%.*s", NULL, (int) size, data);
+			if (end) *end = '\0'; /* terminate without \n */
+			print(3, "%.*s", (channel_t *) ch, (int) size, data);
 			break;
 			
-		case CURLINFO_HEADER_IN:
-		case CURLINFO_HEADER_OUT:
-			//print(4, "Header: %.*s", NULL, size, data);
-			break;
-		
 		case CURLINFO_SSL_DATA_IN:
 		case CURLINFO_DATA_IN:
-			print(4, "Received %lu bytes\n", NULL, (unsigned long) size);
+			print(6, "Received %lu bytes", (channel_t *) ch, (unsigned long) size);
 			break;
 		
 		case CURLINFO_SSL_DATA_OUT:
 		case CURLINFO_DATA_OUT:
-			print(4, "Sent %lu bytes.. ", NULL, (unsigned long) size);
+			print(6, "Sent %lu bytes.. ", (channel_t *) ch, (unsigned long) size);
+			break;
+			
+		case CURLINFO_HEADER_IN:
+		case CURLINFO_HEADER_OUT:
 			break;
 	}
 	
@@ -92,7 +96,7 @@ CURLcode api_log(channel_t *ch, reading_t rd) {
 	
 	/* build request strings */
 	sprintf(url, "%s/data/%s.json", ch->middleware, ch->uuid); /* build url */
-	sprintf(useragent, "vzlogger/%s (%s)", VZ_VERSION, curl_version());
+	sprintf(useragent, "vzlogger/%s (%s)", "VZ_VERSION", curl_version());
 	sprintf(post, "?timestamp=%lu%lu&value=%f", rd.tv.tv_sec, rd.tv.tv_usec / 1000, rd.value);
  
 	curl = curl_easy_init();
@@ -103,6 +107,7 @@ CURLcode api_log(channel_t *ch, reading_t rd) {
 		curl_easy_setopt(curl, CURLOPT_USERAGENT, useragent);
 		curl_easy_setopt(curl, CURLOPT_VERBOSE, (int) opts.verbose);
 		curl_easy_setopt(curl, CURLOPT_DEBUGFUNCTION, curl_custom_debug_callback);
+		curl_easy_setopt(curl, CURLOPT_DEBUGDATA, (void *) ch);
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_custom_write_callback);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *) &chunk);
 

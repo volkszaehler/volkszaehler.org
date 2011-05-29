@@ -1,9 +1,6 @@
 /**
  * Wrapper to read Dallas 1-wire Sensors via the 1-wire Filesystem (owfs)
  *
- * This is our example protocol. Use this skeleton to add your own
- * protocols and meters.
- *
  * @package vzlogger
  * @copyright Copyright (c) 2011, The volkszaehler.org project
  * @license http://www.gnu.org/licenses/gpl.txt GNU Public License

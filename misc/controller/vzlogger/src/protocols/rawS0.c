@@ -1,5 +1,7 @@
 /**
- * Wrapper to read Dallas 1-wire Sensors via the 1-wire Filesystem (owfs)
+ * OBIS protocol parser
+ *
+ * 
  *
  * @package vzlogger
  * @copyright Copyright (c) 2011, The volkszaehler.org project
@@ -22,50 +24,53 @@
  * You should have received a copy of the GNU General Public License
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
- 
-#include <stdio.h>
-#include <stdlib.h>
+
+#include <fcntl.h>
+#include <termios.h> 
+
 
 #include "../main.h"
 #include "../protocol.h"
-#include "1wire.h"
+#include "rawS0.h"
 
-/**
- * Initialize sensor
- *
- * @param address path to the sensor in the owfs
- * @return pointer to file descriptor
- */
-void * onewire_init(char * address) {
-	FILE * fd  = fopen(address, "r");
+typedef struct {
+	int fd; /* file descriptor of port */
+	struct termios old_tio;
+	struct termios tio;
+} rawS0_state_t;
+
+void * rawS0_init(char * port) {
+	struct termios tio;
+	int *fd = malloc(sizeof(int));
 	
-	if (fd == NULL) {
-		perror(address);
-		print(-1, "Failed to open sensor: %s", NULL, address);
-		exit(EXIT_FAILURE);
-	}
+	memset(&tio, 0, sizeof(tio));
+	
+	tio.c_iflag = 0;
+	tio.c_oflag = 0;
+	tio.c_cflag = CS7|CREAD|CLOCAL; // 7n1, see termios.h for more information
+	tio.c_lflag = 0;
+	tio.c_cc[VMIN] = 1;
+	tio.c_cc[VTIME] = 5;
+
+	*fd = open(port, O_RDWR | O_NONBLOCK);
+	cfsetospeed(&tio, B9600); // 9600 baud
+	cfsetispeed(&tio, B9600); // 9600 baud
 	
 	return (void *) fd;
 }
 
-void onewire_close(void *handle) {
-	fclose((FILE *) handle);
+void obis_close(void *handle) {
+	// TODO close serial port
+
+	free(handle);
 }
 
-reading_t onewire_get(void *handle) {
+reading_t obis_get(void *handle) {
 	reading_t rd;
-	char buffer[16];
-	int bytes;
 	
-	rewind((FILE *) handle);
-	bytes = fread(buffer, 1, 16, (FILE *) handle);
-	
-	if (bytes) {
-		print(4, "Read from sensor file: %s", NULL, buffer);
-		
-		rd.value = strtof(buffer, NULL);
-		gettimeofday(&rd.tv, NULL);
-	}
+	read();
+	gettimeofday(&rd.tv, NULL);
 	
 	return rd;
 }
+

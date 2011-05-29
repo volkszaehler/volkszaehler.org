@@ -23,8 +23,6 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
  
-#define VZ_VERSION "0.2"
-
 #include <stdio.h>
 #include <getopt.h>
 #include <stdarg.h>
@@ -169,7 +167,7 @@ void parse_options(int argc, char * argv[], options_t * opts) {
 		/* getopt_long stores the option index here. */
 		int option_index = 0;
 
-		int c = getopt_long(argc, argv, "i:c:p:lhdv", long_options, &option_index);
+		int c = getopt_long(argc, argv, "i:c:p:lhdv::", long_options, &option_index);
 
 		/* detect the end of the options. */
 		if (c == -1)
@@ -218,34 +216,34 @@ int parse_channels(char * filename, channel_t * chans) {
 	int j = 0;
 	
 	while (j < MAX_CHANNELS && fgets(line, sizeof line, file) != NULL) { /* read a line */
-		if (line[0] == '#' || line[0] == '\n') continue; /* skip comments */
+		if (line[0] == ';' || line[0] == '\n') continue; /* skip comments */
 
 		channel_t ch;
 		protocol_t *prot;
-		char *tok = strtok(line, ";");
+		char *tok = strtok(line, " \t");
 			
 		for (int i = 0; i < 7 && tok != NULL; i++) {
 			size_t len = strlen(tok);
 			
 			switch(i) {
-				case 0: /* middleware */
-					ch.middleware = (char *) malloc(len+1); /* including string termination */
-					strcpy(ch.middleware, tok);
-					break;
-				
-				case 1: /* uuid */
-					ch.uuid = (char *) malloc(len+1); /* including string termination */
-					strcpy(ch.uuid, tok);
-					break;
-			
-				case 2: /* protocol */
+				case 0: /* protocol */
 					prot = protocols; /* reset pointer */
 					while (prot->name && strcmp(prot->name, tok) != 0) prot++; /* linear search */
 					ch.prot = prot;
 					break;
 			
-				case 3: /* interval */
+				case 1: /* interval */
 					ch.interval = atoi(tok);
+					break;
+					
+				case 2: /* uuid */
+					ch.uuid = (char *) malloc(len+1); /* including string termination */
+					strcpy(ch.uuid, tok);
+					break;
+					
+				case 3: /* middleware */
+					ch.middleware = (char *) malloc(len+1); /* including string termination */
+					strcpy(ch.middleware, tok);
 					break;
 			
 				case 4: /* options */
@@ -255,7 +253,7 @@ int parse_channels(char * filename, channel_t * chans) {
 					break;
 			}
 	
-			tok = strtok(NULL, ";");
+			tok = strtok(NULL, " \t");
 		}
 		
 		ch.id = j;
@@ -291,7 +289,7 @@ void *log_thread(void *arg) {
 		
 		while (!queue_is_empty(&ch->queue)) {
 			pthread_mutex_lock(&ch->mutex);
-			queue_first(&ch->queue, &rd);
+				queue_first(&ch->queue, &rd);
 			pthread_mutex_unlock(&ch->mutex);
 			
 			rc = api_log(ch, rd); /* log reading */
@@ -329,13 +327,12 @@ void *read_thread(void *arg) {
 		reading_t rd = ch->prot->read_func(ch->handle); /* aquire reading */
 		
 		pthread_mutex_lock(&ch->mutex);
-			if (opts.verbose > 4) queue_print(&ch->queue); /* Debugging */
-		
 			queue_enque(&ch->queue, rd);
 			pthread_cond_broadcast(&ch->condition);
 		pthread_mutex_unlock(&ch->mutex);
 		
 		print(1, "Value read: %.3f (next reading in %i secs)", ch, rd.value, ch->interval);
+		if (opts.verbose > 5) queue_print(&ch->queue); /* Debugging */
 		
 		pthread_testcancel(); /* test for cancelation request */
 		sleep(ch->interval); /* else sleep and restart aquisition */
@@ -394,11 +391,11 @@ int main(int argc, char * argv[]) {
 		pthread_join(ch->reading_thread, NULL);
 		pthread_join(ch->logging_thread, NULL);
 		
-		free(ch->middleware);
+		/*free(ch->middleware);
 		free(ch->uuid);
 		free(ch->options);
 		
-		queue_free(&ch->queue);
+		queue_free(&ch->queue);*/
 		
 		pthread_cond_destroy(&ch->condition);
 		pthread_mutex_destroy(&ch->mutex);

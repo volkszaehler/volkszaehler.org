@@ -1,5 +1,8 @@
 /**
- * Wrapper to read Dallas 1-wire Sensors via the 1-wire Filesystem (owfs)
+ * OBIS protocol parser
+ *
+ * This is our example protocol. Use this skeleton to add your own
+ * protocols and meters.
  *
  * @package vzlogger
  * @copyright Copyright (c) 2011, The volkszaehler.org project
@@ -23,49 +26,13 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
  
-#include <stdio.h>
-#include <stdlib.h>
+#ifndef _RAWS0_H_
+#define _RAWS0_H_
 
-#include "../main.h"
 #include "../protocol.h"
-#include "1wire.h"
 
-/**
- * Initialize sensor
- *
- * @param address path to the sensor in the owfs
- * @return pointer to file descriptor
- */
-void * onewire_init(char * address) {
-	FILE * fd  = fopen(address, "r");
-	
-	if (fd == NULL) {
-		perror(address);
-		print(-1, "Failed to open sensor: %s", NULL, address);
-		exit(EXIT_FAILURE);
-	}
-	
-	return (void *) fd;
-}
+void * rawS0_init(char * port);
+void rawS0_close(void *handle);
+reading_t rawS0_get(void *handle);
 
-void onewire_close(void *handle) {
-	fclose((FILE *) handle);
-}
-
-reading_t onewire_get(void *handle) {
-	reading_t rd;
-	char buffer[16];
-	int bytes;
-	
-	rewind((FILE *) handle);
-	bytes = fread(buffer, 1, 16, (FILE *) handle);
-	
-	if (bytes) {
-		print(4, "Read from sensor file: %s", NULL, buffer);
-		
-		rd.value = strtof(buffer, NULL);
-		gettimeofday(&rd.tv, NULL);
-	}
-	
-	return rd;
-}
+#endif /* _RAWS0_H_ */
