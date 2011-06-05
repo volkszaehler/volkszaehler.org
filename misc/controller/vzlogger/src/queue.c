@@ -54,7 +54,7 @@ bool_t queue_first(queue_t *q, reading_t *rd) {
 void queue_print(queue_t *q) {
 	printf("Queue dump: [%.1f", q->buf[0].value);
 	for (int i = 1; i < q->size; i++) {
-		printf("|%.1f", q->buf[i].value);
+		printf("|%.2f", q->buf[i].value);
 	}
 	printf("]\n");
 }

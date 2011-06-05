@@ -26,7 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <json/json.h>
+#include <unistd.h>
 
 #include "api.h"
 #include "main.h"
@@ -68,97 +68,169 @@ int curl_custom_debug_callback(CURL *curl, curl_infotype type, char *data, size_
 
 size_t curl_custom_write_callback(void *ptr, size_t size, size_t nmemb, void *data) {
 	size_t realsize = size * nmemb;
-	curl_response_t *response = (curl_response_t *) data;
+	CURLresponse *response = (CURLresponse *) data;
  
 	response->data = realloc(response->data, response->size + realsize + 1);
 	if (response->data == NULL) { /* out of memory! */ 
-		print(-1, "Not enough memory (realloc returned NULL)\n", NULL);
+		print(-1, "Not enough memory", NULL);
 		exit(EXIT_FAILURE);
 	}
  
 	memcpy(&(response->data[response->size]), ptr, realsize);
 	response->size += realsize;
 	response->data[response->size] = 0;
+	
+	print(1, "Addr: %lu", NULL, &(response->data));
  
 	return realsize;
 }
 
-/**
- * Log against the vz.org middleware with simple HTTP requests via CURL
- */
-CURLcode api_log(channel_t *ch, reading_t rd) {
+json_object * api_build_json(channel_t *ch) {
+	reading_t rd;
+
+	json_object *json_obj = json_object_new_object();
+	json_object *json_tuples = json_object_new_array();
+	
+	for (int j = 0; j < ch->queue.size; j++) {
+		queue_deque(&ch->queue, &rd);
+		
+		if (rd.tv.tv_sec) { /* skip empty readings */
+			json_object *json_tuple = json_object_new_array();
+			json_object_array_add(json_tuple, json_object_new_int(rd.tv.tv_sec * 1000 + rd.tv.tv_usec / 1000));
+			json_object_array_add(json_tuple, json_object_new_double(rd.value));
+			json_object_array_add(json_tuples, json_tuple);
+		}
+	}
+	
+	json_object_object_add(json_obj, "tuples", json_tuples);
+	
+	return json_obj;
+}
+
+CURL * api_curl_init(channel_t *ch) {
 	CURL *curl;
-	CURLcode rc = -1;
-	int curl_code;
-	curl_response_t chunk = {NULL, 0};
-
-	char url[255], useragent[255], post[255];
 	
-	/* build request strings */
-	sprintf(url, "%s/data/%s.json", ch->middleware, ch->uuid); /* build url */
-	sprintf(useragent, "vzlogger/%s (%s)", "VZ_VERSION", curl_version());
-	sprintf(post, "?timestamp=%lu%lu&value=%f", rd.tv.tv_sec, rd.tv.tv_usec / 1000, rd.value);
- 
+	char buffer[255];
+
 	curl = curl_easy_init();
+	if (!curl) {
+		print(-1, "Cannot create curl handle", ch);
+		exit(EXIT_FAILURE);
+	}
 	
-	if (curl) {
-		curl_easy_setopt(curl, CURLOPT_URL, url);
-		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post);
-		curl_easy_setopt(curl, CURLOPT_USERAGENT, useragent);
-		curl_easy_setopt(curl, CURLOPT_VERBOSE, (int) opts.verbose);
-		curl_easy_setopt(curl, CURLOPT_DEBUGFUNCTION, curl_custom_debug_callback);
-		curl_easy_setopt(curl, CURLOPT_DEBUGDATA, (void *) ch);
-		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_custom_write_callback);
-		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *) &chunk);
-
-		print(1, "Sending request: %s%s", ch, url, post);
-
-    		rc = curl_easy_perform(curl);
-    		
-    		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &curl_code);
-    		
-    		print((curl_code == 200) ? 1 : -1, "Request %s with code: %i", ch, (curl_code == 200) ? "succeded" : "failed", curl_code);
-    		
-    		if (rc != CURLE_OK) {
-			print(-1, "CURL error: %s", ch, curl_easy_strerror(rc));
-		}
-    		else if (chunk.size == 0 || chunk.data == NULL) {
-			print(-1, "No data received!", ch);
-			rc = -1;
-		}
-		else if (curl_code != 200) { /* parse exception */
-	    		struct json_tokener * json_tok;
-			struct json_object * json_obj;
+	sprintf(buffer, "%s/data/%s.json", ch->middleware, ch->uuid); /* build url */
+	curl_easy_setopt(curl, CURLOPT_URL, buffer);
 	
-	    		json_tok = json_tokener_new();
-			json_obj = json_tokener_parse_ex(json_tok, chunk.data, chunk.size);
+	sprintf(buffer, "vzlogger/%s (%s)", VZ_VERSION, curl_version()); /* build user agent */
+	curl_easy_setopt(curl, CURLOPT_USERAGENT, buffer);
+	
+	curl_easy_setopt(curl, CURLOPT_VERBOSE, (int) opts.verbose);
+	curl_easy_setopt(curl, CURLOPT_DEBUGFUNCTION, curl_custom_debug_callback);
+	curl_easy_setopt(curl, CURLOPT_DEBUGDATA, (void *) ch);
 
-			if (json_tok->err == json_tokener_success) {
-				json_obj = json_object_object_get(json_obj, "exception");
-			
-				if (json_obj) {
-					print(-1, "%s : %s", ch,
-						json_object_get_string(json_object_object_get(json_obj,  "type")),
-						json_object_get_string(json_object_object_get(json_obj,  "message"))
-					);
-				}
-				else {
-					print(-1, "Malformed middleware response: missing exception", ch);
-				}
-			}
-			else {
-				print(-1, "Malformed middleware response: %s", ch, json_tokener_errors[json_tok->err]);
-			}
-			
-			rc = -1;
+	return curl;
+}
+
+char * api_parse_exception(CURLresponse response) {
+	struct json_tokener * json_tok;
+	struct json_object * json_obj;
+	char *errstr;
+
+	json_tok = json_tokener_new();
+	json_obj = json_tokener_parse_ex(json_tok, response.data, response.size);
+	if (json_tok->err == json_tokener_success) {
+		json_obj = json_object_object_get(json_obj, "exception");
+	
+		if (json_obj) {
+			errstr = json_object_get_string(json_object_object_get(json_obj,  "message"));
 		}
-    
-		curl_easy_cleanup(curl); /* always cleanup */
-		free(chunk.data); /* free response */
+		else {
+			errstr = "missing exception";
+		}
 	}
 	else {
-		print(-1, "Failed to create CURL handle", ch);
+		errstr = json_tokener_errors[json_tok->err];
 	}
 	
-	return rc;
+	json_tokener_free(json_tok);
+	
+	return errstr;
+}
+
+
+/**
+ * Logging thread
+ *
+ * Logs buffered readings against middleware
+ */
+void *api_thread(void *arg) {
+	CURL *curl;
+	channel_t *ch = (channel_t *) arg; /* casting argument */
+	
+	print(1, "Started logging thread", ch);
+
+	curl = api_curl_init(ch);	
+	
+	do { /* start thread mainloop */
+		CURLresponse response;
+		int curl_code, http_code;
+		char *json_str;
+		
+		/* initialize response */
+		response.data = NULL;
+		response.size = 0;
+	
+		//pthread_mutex_lock(&ch->mutex);
+		//while (queue_is_empty(&ch->queue)) { /* detect spurious wakeups */
+		//	pthread_cond_wait(&ch->condition, &ch->mutex); /* sleep until new data has been read */
+		//}
+		//pthread_mutex_unlock(&ch->mutex);
+		
+		//if (opts.verbose > 5) queue_print(&ch->queue); /* Debugging */
+		
+		//pthread_mutex_lock(&ch->mutex);
+		//json_str = json_object_to_json_string(api_build_json(ch));
+		//pthread_mutex_unlock(&ch->mutex);
+		
+		//print(1, "JSON body: %s", ch, json_str);
+		
+		//curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json_str);
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_custom_write_callback);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *) &response);
+		
+		curl_code = curl_easy_perform(curl);
+		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+		
+		print(1, "Addr: %lu", ch, &(response.data));
+		print(1, "Response: %s", ch, response.data);
+		
+		if (curl_code == CURLE_OK && http_code == 200) { /* everything is ok */
+			print(1, "Request succeeded with code: %i", ch, http_code);
+			
+			// TODO clear queue
+		}
+		else { /* error */
+			if (curl_code != CURLE_OK) {
+				print(-1, "CURL failed: %s", ch, curl_easy_strerror(curl_code));
+			}
+			else if (http_code != 200) {
+				print(-1, "Invalid middlware response: %s", ch, api_parse_exception(response));
+			}
+			
+			print(2, "Sleeping %i seconds due to previous failure", ch, RETRY_PAUSE);
+			sleep(RETRY_PAUSE);
+		}
+
+		/* householding */
+		free(json_str);
+		// TODO free json objects
+		
+		//if (response.data) free(response.data);
+			
+		pthread_testcancel(); /* test for cancelation request */
+	} while (opts.daemon);
+	
+	curl_easy_cleanup(curl); /* always cleanup */
+	
+	return NULL;
 }

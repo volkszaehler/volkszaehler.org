@@ -29,7 +29,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <curl/curl.h>
-#include <unistd.h>
 #include <math.h>
 #include <stdint.h>
 #include <microhttpd.h>
@@ -268,49 +267,6 @@ int parse_channels(char * filename, channel_t * chans) {
 }
 
 /**
- * Logging thread
- *
- * Logs buffered readings against middleware
- */
-void *log_thread(void *arg) {
-	channel_t *ch = (channel_t *) arg; /* casting argument */
-	reading_t rd;
-	
-	CURLcode rc;
-	
-	print(1, "Started logging thread", ch);
-	
-	do {
-		pthread_mutex_lock(&ch->mutex);
-		while (queue_is_empty(&ch->queue)) { /* detect spurious wakeups */
-			pthread_cond_wait(&ch->condition, &ch->mutex); /* wait for new data */
-		}
-		pthread_mutex_unlock(&ch->mutex);
-		
-		while (!queue_is_empty(&ch->queue)) {
-			pthread_mutex_lock(&ch->mutex);
-				queue_first(&ch->queue, &rd);
-			pthread_mutex_unlock(&ch->mutex);
-			
-			rc = api_log(ch, rd); /* log reading */
-	
-			if (rc == CURLE_OK) {
-				pthread_mutex_lock(&ch->mutex);
-				queue_deque(&ch->queue, &rd); /* remove reading from buffer */
-				pthread_mutex_unlock(&ch->mutex);
-			}
-			else {
-				print(1, "Delaying next transmission for %i seconds due to pervious error", ch, RETRY_PAUSE);
-				sleep(RETRY_PAUSE);
-			}
-		}
-		pthread_testcancel(); /* test for cancelation request */
-	} while (opts.daemon);
-	
-	return NULL;
-}
-
-/**
  * Read thread
  * 
  * Aquires reading from meters/sensors
@@ -369,7 +325,7 @@ int main(int argc, char * argv[]) {
 
 		/* start threads */
 		pthread_create(&ch->reading_thread, NULL, read_thread, (void *) ch);
-		pthread_create(&ch->logging_thread, NULL, log_thread, (void *) ch);
+		pthread_create(&ch->logging_thread, NULL, api_thread, (void *) ch);
 	}
 	
 	/* start webserver for local interface */

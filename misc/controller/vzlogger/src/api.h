@@ -28,6 +28,7 @@
 
 #include <stddef.h>
 #include <curl/curl.h>
+#include <json/json.h>
 
 #include "main.h"
 #include "protocol.h"
@@ -35,10 +36,13 @@
 typedef struct {
 	char *data;
 	size_t size;
-}  curl_response_t;
+} CURLresponse;
 
+/* curl callbacks */
 int curl_custom_debug_callback(CURL *curl, curl_infotype type, char *data, size_t size, void *custom);
 size_t curl_custom_write_callback(void *ptr, size_t size, size_t nmemb, void *data);
-CURLcode api_log(channel_t *ch, reading_t read);
+
+json_object * api_build_json(channel_t *ch);
+void *api_thread(void *arg);
 
 #endif /* _API_H_ */

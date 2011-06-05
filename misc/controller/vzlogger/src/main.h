@@ -35,7 +35,7 @@
 #define VZ_VERSION "0.2"
 #define MAX_CHANNELS 16
 
-#define RETRY_PAUSE 600		/* seconds to wait after failed request */
+#define RETRY_PAUSE 10 //600		/* seconds to wait after failed request */
 #define BUFFER_LENGTH 600	/* in seconds */
 
 #ifndef TRUE

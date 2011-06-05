@@ -52,15 +52,15 @@ int handle_request(void *cls, struct MHD_Connection *connection, const char *url
 		
 		if (strcmp(url, "/") == 0 || strcmp(ch->uuid, url + 1) == 0) {
 			pthread_mutex_lock(&ch->mutex);
-			pthread_cond_wait(&ch->condition, &ch->mutex); /* wait for new data comet-like blocking of HTTP response */
+			/* wait for new data comet-like blocking of HTTP response */
+			pthread_cond_wait(&ch->condition, &ch->mutex); // TODO use pthread_cond_timedwait()
 			pthread_mutex_unlock(&ch->mutex);
 		
 			struct json_object * json_tuples = json_object_new_array();
 		
-			int j = ch->queue.write_p;
-			do {
+			for (int j = 0; j < ch->queue.size; j++) {
 				pthread_mutex_lock(&ch->mutex);
-				rd = ch->queue.buf[j];
+					queue_deque(&ch->queue, &rd);
 				pthread_mutex_unlock(&ch->mutex);
 		
 				if (rd.value != 0) { /* skip invalid / empty readings */
@@ -70,14 +70,10 @@ int handle_request(void *cls, struct MHD_Connection *connection, const char *url
 		
 					json_object_array_add(json_tuple, json_object_new_int(timestamp));
 					json_object_array_add(json_tuple, json_object_new_double(rd.value));
-					json_object_array_add(json_tuple, json_object_new_int(1)); /* just for middleware compability */
 		
 					json_object_array_add(json_tuples, json_tuple);
 				}
-			
-				j++;
-				j %= ch->queue.size;
-			} while (j != ch->queue.read_p);
+			}
 				
 			json_object_object_add(json_data, "uuid", json_object_new_string(ch->uuid));
 			json_object_object_add(json_data, "interval", json_object_new_int(ch->interval));
