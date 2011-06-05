@@ -212,13 +212,21 @@ int parse_channels(char * filename, channel_t * chans) {
 	}
 	
 	char line[256];
-	int j = 0;
+	int chan_num = 0, line_num = 1;
 	
-	while (j < MAX_CHANNELS && fgets(line, sizeof line, file) != NULL) { /* read a line */
+	while (chan_num < MAX_CHANNELS && fgets(line, sizeof line, file) != NULL) { /* read a line */
 		if (line[0] == ';' || line[0] == '\n') continue; /* skip comments */
 
-		channel_t ch;
-		protocol_t *prot;
+		channel_t ch = {
+			chan_num,
+			NULL,
+			NULL,
+			NULL,
+			0,
+			NULL,
+			protocols
+		};
+		
 		char *tok = strtok(line, " \t");
 			
 		for (int i = 0; i < 7 && tok != NULL; i++) {
@@ -226,21 +234,39 @@ int parse_channels(char * filename, channel_t * chans) {
 			
 			switch(i) {
 				case 0: /* protocol */
-					prot = protocols; /* reset pointer */
-					while (prot->name && strcmp(prot->name, tok) != 0) prot++; /* linear search */
-					ch.prot = prot;
+					while (ch.prot->name && strcmp(ch.prot->name, tok) != 0) ch.prot++; /* linear search */
+					
+					if (ch.prot == NULL) {
+						print(-1, "Invalid protocol: %s in %s:%i", NULL, tok, filename, line_num);
+						exit(EXIT_FAILURE);
+					}
 					break;
 			
 				case 1: /* interval */
-					ch.interval = atoi(tok);
+					ch.interval = strtol(tok, (char **) NULL, 10);
+					
+					if (errno == EINVAL || errno == ERANGE) {
+						print(-1, "Invalid interval: %s in %s:%i", NULL, tok, filename, line_num);
+						exit(EXIT_FAILURE);
+					}
 					break;
 					
 				case 2: /* uuid */
+					if (len == 0) { // TODO add uuid validation
+						print(-1, "Missing uuid in %s:%i", NULL, filename, line_num);
+						exit(EXIT_FAILURE);
+					}
+					
 					ch.uuid = (char *) malloc(len+1); /* including string termination */
 					strcpy(ch.uuid, tok);
 					break;
 					
 				case 3: /* middleware */
+					if (len == 0) { // TODO add uuid validation
+						print(-1, "Missing middleware in %s:%i", NULL, filename, line_num);
+						exit(EXIT_FAILURE);
+					}
+					
 					ch.middleware = (char *) malloc(len+1); /* including string termination */
 					strcpy(ch.middleware, tok);
 					break;
@@ -248,22 +274,23 @@ int parse_channels(char * filename, channel_t * chans) {
 				case 4: /* options */
 					ch.options = (char *) malloc(len);
 					strncpy(ch.options, tok, len-1);
-					ch.options[len] = '\0'; /* replace \n by \0 */
+					ch.options[len-1] = '\0'; /* replace \n by \0 */
 					break;
 			}
 	
 			tok = strtok(NULL, " \t");
 		}
-		
-		ch.id = j;
 
-		print(1, "Parsed %s (on %s)", &ch, ch.uuid, ch.middleware);
-		chans[j++] = ch;
+		print(1, "Parsed ch#%i (protocol=%s interval=%i uuid=%s middleware=%s options=%s)", &ch, ch.id, ch.prot->name, ch.interval, ch.uuid, ch.middleware, ch.options);
+		chans[chan_num] = ch;
+		
+		chan_num++;
+		line_num++;
 	}
 	
 	fclose(file);
 	
-	return j;
+	return chan_num;
 }
 
 /**
@@ -288,7 +315,7 @@ void *read_thread(void *arg) {
 		pthread_mutex_unlock(&ch->mutex);
 		
 		print(1, "Value read: %.3f (next reading in %i secs)", ch, rd.value, ch->interval);
-		if (opts.verbose > 5) queue_print(&ch->queue); /* Debugging */
+		//if (opts.verbose > 5) queue_print(&ch->queue); /* Debugging */
 		
 		pthread_testcancel(); /* test for cancelation request */
 		sleep(ch->interval); /* else sleep and restart aquisition */

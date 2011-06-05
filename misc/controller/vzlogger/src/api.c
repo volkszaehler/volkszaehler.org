@@ -45,17 +45,17 @@ int curl_custom_debug_callback(CURL *curl, curl_infotype type, char *data, size_
 		case CURLINFO_TEXT:
 		case CURLINFO_END:
 			if (end) *end = '\0'; /* terminate without \n */
-			print(3, "%.*s", (channel_t *) ch, (int) size, data);
+			print(3, "CURL: %.*s", (channel_t *) ch, (int) size, data);
 			break;
 			
 		case CURLINFO_SSL_DATA_IN:
 		case CURLINFO_DATA_IN:
-			print(6, "Received %lu bytes", (channel_t *) ch, (unsigned long) size);
+			print(6, "CURL: Received %lu bytes", (channel_t *) ch, (unsigned long) size);
 			break;
 		
 		case CURLINFO_SSL_DATA_OUT:
 		case CURLINFO_DATA_OUT:
-			print(6, "Sent %lu bytes.. ", (channel_t *) ch, (unsigned long) size);
+			print(6, "CURL: Sent %lu bytes.. ", (channel_t *) ch, (unsigned long) size);
 			break;
 			
 		case CURLINFO_HEADER_IN:
@@ -78,10 +78,8 @@ size_t curl_custom_write_callback(void *ptr, size_t size, size_t nmemb, void *da
  
 	memcpy(&(response->data[response->size]), ptr, realsize);
 	response->size += realsize;
-	response->data[response->size] = 0;
+	//response->data[response->size] = 0;
 	
-	print(1, "Addr: %lu", NULL, &(response->data));
- 
 	return realsize;
 }
 
@@ -109,8 +107,15 @@ json_object * api_build_json(channel_t *ch) {
 
 CURL * api_curl_init(channel_t *ch) {
 	CURL *curl;
+	struct curl_slist *header = NULL;
+	char url[255], agent[255];
 	
-	char buffer[255];
+	sprintf(agent, "User-Agent: vzlogger/%s (%s)", VZ_VERSION, curl_version());	/* build user agent */
+	sprintf(url, "%s/data/%s.json", ch->middleware, ch->uuid);			/* build url */
+ 
+	header = curl_slist_append(header, "Content-type: application/json");
+	header = curl_slist_append(header, "Accept: application/json");
+	header = curl_slist_append(header, agent);
 
 	curl = curl_easy_init();
 	if (!curl) {
@@ -118,12 +123,8 @@ CURL * api_curl_init(channel_t *ch) {
 		exit(EXIT_FAILURE);
 	}
 	
-	sprintf(buffer, "%s/data/%s.json", ch->middleware, ch->uuid); /* build url */
-	curl_easy_setopt(curl, CURLOPT_URL, buffer);
-	
-	sprintf(buffer, "vzlogger/%s (%s)", VZ_VERSION, curl_version()); /* build user agent */
-	curl_easy_setopt(curl, CURLOPT_USERAGENT, buffer);
-	
+	curl_easy_setopt(curl, CURLOPT_URL, url);
+	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, header);	
 	curl_easy_setopt(curl, CURLOPT_VERBOSE, (int) opts.verbose);
 	curl_easy_setopt(curl, CURLOPT_DEBUGFUNCTION, curl_custom_debug_callback);
 	curl_easy_setopt(curl, CURLOPT_DEBUGDATA, (void *) ch);
@@ -131,10 +132,9 @@ CURL * api_curl_init(channel_t *ch) {
 	return curl;
 }
 
-char * api_parse_exception(CURLresponse response) {
+void api_parse_exception(CURLresponse response, char *err) {
 	struct json_tokener * json_tok;
 	struct json_object * json_obj;
-	char *errstr;
 
 	json_tok = json_tokener_new();
 	json_obj = json_tokener_parse_ex(json_tok, response.data, response.size);
@@ -142,19 +142,20 @@ char * api_parse_exception(CURLresponse response) {
 		json_obj = json_object_object_get(json_obj, "exception");
 	
 		if (json_obj) {
-			errstr = json_object_get_string(json_object_object_get(json_obj,  "message"));
+			sprintf(err, "[%s] %s",
+				json_object_get_string(json_object_object_get(json_obj,  "type")),	
+				json_object_get_string(json_object_object_get(json_obj,  "message"))
+			);
 		}
 		else {
-			errstr = "missing exception";
+			strcpy(err, "missing exception");
 		}
 	}
 	else {
-		errstr = json_tokener_errors[json_tok->err];
+		strcpy(err, json_tokener_errors[json_tok->err]);
 	}
 	
 	json_tokener_free(json_tok);
-	
-	return errstr;
 }
 
 
@@ -173,36 +174,33 @@ void *api_thread(void *arg) {
 	
 	do { /* start thread mainloop */
 		CURLresponse response;
-		int curl_code, http_code;
+		int curl_code;
+		long int http_code;
 		char *json_str;
 		
 		/* initialize response */
 		response.data = NULL;
 		response.size = 0;
 	
-		//pthread_mutex_lock(&ch->mutex);
-		//while (queue_is_empty(&ch->queue)) { /* detect spurious wakeups */
-		//	pthread_cond_wait(&ch->condition, &ch->mutex); /* sleep until new data has been read */
-		//}
-		//pthread_mutex_unlock(&ch->mutex);
+		pthread_mutex_lock(&ch->mutex);
+		while (queue_is_empty(&ch->queue)) { /* detect spurious wakeups */
+			pthread_cond_wait(&ch->condition, &ch->mutex); /* sleep until new data has been read */
+		}
+		pthread_mutex_unlock(&ch->mutex);
 		
-		//if (opts.verbose > 5) queue_print(&ch->queue); /* Debugging */
+		pthread_mutex_lock(&ch->mutex);
+		json_str = json_object_to_json_string(api_build_json(ch));
+		pthread_mutex_unlock(&ch->mutex);
 		
-		//pthread_mutex_lock(&ch->mutex);
-		//json_str = json_object_to_json_string(api_build_json(ch));
-		//pthread_mutex_unlock(&ch->mutex);
+		print(1, "JSON request body: %s", ch, json_str);
 		
-		//print(1, "JSON body: %s", ch, json_str);
-		
-		//curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json_str);
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json_str);
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_custom_write_callback);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *) &response);
 		
 		curl_code = curl_easy_perform(curl);
-		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
 		
-		print(1, "Addr: %lu", ch, &(response.data));
-		print(1, "Response: %s", ch, response.data);
+		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
 		
 		if (curl_code == CURLE_OK && http_code == 200) { /* everything is ok */
 			print(1, "Request succeeded with code: %i", ch, http_code);
@@ -211,10 +209,12 @@ void *api_thread(void *arg) {
 		}
 		else { /* error */
 			if (curl_code != CURLE_OK) {
-				print(-1, "CURL failed: %s", ch, curl_easy_strerror(curl_code));
+				print(-1, "CURL: %s", ch, curl_easy_strerror(curl_code));
 			}
 			else if (http_code != 200) {
-				print(-1, "Invalid middlware response: %s", ch, api_parse_exception(response));
+				char err[255];
+				api_parse_exception(response, &err);
+				print(-1, "Invalid middlware response: %s", ch, err);
 			}
 			
 			print(2, "Sleeping %i seconds due to previous failure", ch, RETRY_PAUSE);
@@ -225,7 +225,7 @@ void *api_thread(void *arg) {
 		free(json_str);
 		// TODO free json objects
 		
-		//if (response.data) free(response.data);
+		if (response.data) free(response.data);
 			
 		pthread_testcancel(); /* test for cancelation request */
 	} while (opts.daemon);

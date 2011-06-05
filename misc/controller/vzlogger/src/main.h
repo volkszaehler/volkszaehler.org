@@ -28,6 +28,7 @@
 
 #include <sys/time.h>
 #include <pthread.h>
+#include <errno.h>
 
 #include "protocol.h"
 #include "queue.h"
@@ -50,16 +51,17 @@
  * Datatype for every channel
  */
 typedef struct {
-	char * middleware;
-	char * uuid;
-	unsigned int interval;
-	char * options;
-	
 	int id;				/* only for internal usage & debugging */
+
+	char *middleware;
+	char *uuid;
+	char *options;
 	
-	queue_t queue;			/* circular queue to buffer readings */
+	unsigned int interval;
+	
+	void *handle;			/* handle to store connection status */
 	protocol_t *prot;		/* pointer to protocol */
-	void * handle;			/* handle to store connection status */
+	queue_t queue;			/* circular queue to buffer readings */
 	
 	pthread_t reading_thread;	/* pthread for asynchronus reading */
 	pthread_t logging_thread;	/* pthread for asynchronus logging */
