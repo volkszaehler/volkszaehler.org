@@ -40,15 +40,17 @@
 
 #include "protocols/obis.h"
 #include "protocols/1wire.h"
+#include "protocols/rawS0.h"
 
 /**
  * List of available protocols
  * incl. function pointers
  */
 static protocol_t protocols[] = {
-	{"obis",	"Plaintext OBIS",			obis_get,	obis_init,	obis_close},
-//	{"fluksousb", 	"FluksoUSB board", 			flukso_get,	flukso_init,	flukso_close},
-	{"1wire",	"Dallas 1-Wire sensors (via OWFS)",	onewire_get,	onewire_init,	onewire_close},
+	{"obis",	"Plaintext OBIS",			obis_get,	obis_init,	obis_close,	MODE_SENSOR},
+//	{"fluksousb", 	"FluksoUSB board", 			flukso_get,	flukso_init,	flukso_close,	MODE_SENSOR},
+	{"rawS0",	"S0 on RS232",				rawS0_get, 	rawS0_init,	rawS0_close,	MODE_METER},
+	{"1wire",	"Dallas 1-Wire sensors (via OWFS)",	onewire_get,	onewire_init,	onewire_close,	MODE_SENSOR},
 	{NULL} /* stop condition for iterator */
 };
 
@@ -179,7 +181,6 @@ void parse_options(int argc, char * argv[], options_t * opts) {
 				
 			case 'l':
 				opts->local = TRUE;
-				opts->daemon = TRUE; /* implicates daemon mode */
 				break;
 				
 			case 'd':
@@ -310,16 +311,20 @@ void *read_thread(void *arg) {
 		reading_t rd = ch->prot->read_func(ch->handle); /* aquire reading */
 		
 		pthread_mutex_lock(&ch->mutex);
-			queue_enque(&ch->queue, rd);
-			pthread_cond_broadcast(&ch->condition);
+			queue_push(&ch->queue, rd);
+			pthread_cond_broadcast(&ch->condition); /* notify webserver and logging thread */
 		pthread_mutex_unlock(&ch->mutex);
 		
-		print(1, "Value read: %.3f (next reading in %i secs)", ch, rd.value, ch->interval);
-		//if (opts.verbose > 5) queue_print(&ch->queue); /* Debugging */
+		print(1, "Value read: %.1f", ch, rd.value);
+		if (opts.verbose > 5) queue_print(&ch->queue); /* Debugging */
+		
+		if (ch->prot->mode != MODE_METER) { /* for meters, the read_func call is blocking */
+			print(5, "Next reading in %i seconds", ch, ch->interval);
+			sleep(ch->interval); /* else sleep and restart aquisition */
+		}
 		
 		pthread_testcancel(); /* test for cancelation request */
-		sleep(ch->interval); /* else sleep and restart aquisition */
-	} while (opts.daemon);
+	} while (opts.daemon || opts.local);
 	
 	/* close channel */
 	ch->prot->close_func(ch->handle);
@@ -374,11 +379,11 @@ int main(int argc, char * argv[]) {
 		pthread_join(ch->reading_thread, NULL);
 		pthread_join(ch->logging_thread, NULL);
 		
-		/*free(ch->middleware);
+		free(ch->middleware);
 		free(ch->uuid);
 		free(ch->options);
 		
-		queue_free(&ch->queue);*/
+		queue_free(&ch->queue);
 		
 		pthread_cond_destroy(&ch->condition);
 		pthread_mutex_destroy(&ch->mutex);

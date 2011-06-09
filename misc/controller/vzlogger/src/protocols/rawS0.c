@@ -1,7 +1,5 @@
 /**
- * OBIS protocol parser
- *
- * 
+ * S0 Hutschienenzähler directly connected to an rs232 port
  *
  * @package vzlogger
  * @copyright Copyright (c) 2011, The volkszaehler.org project
@@ -27,7 +25,9 @@
 
 #include <fcntl.h>
 #include <termios.h> 
-
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "../main.h"
 #include "../protocol.h"
@@ -35,41 +35,70 @@
 
 typedef struct {
 	int fd; /* file descriptor of port */
-	struct termios old_tio;
-	struct termios tio;
+	struct termios oldtio; /* required to reset port */
 } rawS0_state_t;
 
+/**
+ * Setup serial port
+ */
 void * rawS0_init(char * port) {
-	struct termios tio;
-	int *fd = malloc(sizeof(int));
+	rawS0_state_t *state;
+	struct termios newtio;
 	
-	memset(&tio, 0, sizeof(tio));
+	/* initialize handle */
+	state = malloc(sizeof(rawS0_state_t));
 	
-	tio.c_iflag = 0;
-	tio.c_oflag = 0;
-	tio.c_cflag = CS7|CREAD|CLOCAL; // 7n1, see termios.h for more information
-	tio.c_lflag = 0;
-	tio.c_cc[VMIN] = 1;
-	tio.c_cc[VTIME] = 5;
+	state->fd = open(port, O_RDWR | O_NOCTTY); 
+        if (state->fd < 0) {
+        	char err[255];
+        	strerror_r(errno, err, 255);
+		print(-1, "%s: %s", NULL, port, err);
+        	exit(EXIT_FAILURE);
+        }
+	
+	tcgetattr(state->fd, &state->oldtio); /* save current port settings */
 
-	*fd = open(port, O_RDWR | O_NONBLOCK);
-	cfsetospeed(&tio, B9600); // 9600 baud
-	cfsetispeed(&tio, B9600); // 9600 baud
+
+	/* configure port */
+	memset(&newtio, 0, sizeof(struct termios));
 	
-	return (void *) fd;
+	newtio.c_cflag = B300 | CS8 | CLOCAL | CREAD;
+        newtio.c_iflag = IGNPAR;
+        newtio.c_oflag = 0;
+        newtio.c_lflag = 0; /* set input mode (non-canonical, no echo,...) */        
+        newtio.c_cc[VTIME] = 0;	/* inter-character timer unused */
+        newtio.c_cc[VMIN] = 1; 	/* blocking read until data is received */
+        
+        /* apply configuration */
+        tcsetattr(state->fd, TCSANOW, &newtio);
+        
+	return (void *) state;
 }
 
-void obis_close(void *handle) {
-	// TODO close serial port
+void rawS0_close(void *handle) {
+	rawS0_state_t *state = (rawS0_state_t *) handle;
 
+	tcsetattr(state->fd, TCSANOW, &state->oldtio);
+
+	close(state->fd);
 	free(handle);
 }
 
-reading_t obis_get(void *handle) {
+reading_t rawS0_get(void *handle) {
+	char buf[255];
+	
+	rawS0_state_t *state = (rawS0_state_t *) handle;
 	reading_t rd;
 	
-	read();
+	rd.value = 1;
+	
+        tcflush(state->fd, TCIOFLUSH);
+	
+	read(state->fd, buf, 255); /* blocking until one character/pulse is read */
 	gettimeofday(&rd.tv, NULL);
+	
+	/* wait some ms for debouncing */
+	usleep(30000);
 	
 	return rd;
 }

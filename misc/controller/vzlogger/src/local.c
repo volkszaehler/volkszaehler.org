@@ -43,8 +43,8 @@ int handle_request(void *cls, struct MHD_Connection *connection, const char *url
 	
 	struct MHD_Response *response;
 	
-	struct json_object * json_obj = json_object_new_object();
-	struct json_object * json_data = json_object_new_object();
+	struct json_object *json_obj = json_object_new_object();
+	struct json_object *json_data = json_object_new_object();
 
 	for (int i = 0; i < num_chans; i++) {
 		channel_t *ch = &chans[i];
@@ -56,25 +56,8 @@ int handle_request(void *cls, struct MHD_Connection *connection, const char *url
 			pthread_cond_wait(&ch->condition, &ch->mutex); // TODO use pthread_cond_timedwait()
 			pthread_mutex_unlock(&ch->mutex);
 		
-			struct json_object * json_tuples = json_object_new_array();
-		
-			for (int j = 0; j < ch->queue.size; j++) {
-				pthread_mutex_lock(&ch->mutex);
-					queue_deque(&ch->queue, &rd);
-				pthread_mutex_unlock(&ch->mutex);
-		
-				if (rd.value != 0) { /* skip invalid / empty readings */
-					struct json_object * json_tuple = json_object_new_array();
-			
-					int timestamp = rd.tv.tv_sec * 1000 + rd.tv.tv_usec / 1000;
-		
-					json_object_array_add(json_tuple, json_object_new_int(timestamp));
-					json_object_array_add(json_tuple, json_object_new_double(rd.value));
-		
-					json_object_array_add(json_tuples, json_tuple);
-				}
-			}
-				
+			struct json_object *json_tuples = api_json_tuples(ch, TRUE);
+
 			json_object_object_add(json_data, "uuid", json_object_new_string(ch->uuid));
 			json_object_object_add(json_data, "interval", json_object_new_int(ch->interval));
 			json_object_object_add(json_data, "tuples", json_tuples);

@@ -43,19 +43,18 @@ typedef struct {
 	
 	int read_p;
 	int write_p;
+	int fill_count;
 	
 	reading_t *buf;
 } queue_t;
 
-bool_t queue_init(queue_t *q, size_t size);
-bool_t queue_is_full(queue_t *q);
+queue_t * queue_init(queue_t *q, size_t size);
 bool_t queue_is_empty(queue_t *q);
-bool_t queue_enque(queue_t *q, reading_t rd);
-bool_t queue_deque(queue_t *q, reading_t *rd);
-bool_t queue_first(queue_t *q, reading_t *rd);
-size_t queue_size(queue_t *q);
-void queue_print(queue_t *q);
+void queue_push(queue_t *q, reading_t rd);
+void queue_clear(queue_t *q);
 void queue_free(queue_t *q);
+void queue_print(queue_t *q);
+
 
 #endif /* _QUEUE_H_ */
 

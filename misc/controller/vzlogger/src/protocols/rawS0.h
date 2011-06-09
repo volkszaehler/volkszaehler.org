@@ -1,8 +1,5 @@
 /**
- * OBIS protocol parser
- *
- * This is our example protocol. Use this skeleton to add your own
- * protocols and meters.
+ * S0 Hutschienenzähler directly connected to an rs232 port
  *
  * @package vzlogger
  * @copyright Copyright (c) 2011, The volkszaehler.org project

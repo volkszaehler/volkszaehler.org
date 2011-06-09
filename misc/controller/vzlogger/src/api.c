@@ -83,26 +83,31 @@ size_t curl_custom_write_callback(void *ptr, size_t size, size_t nmemb, void *da
 	return realsize;
 }
 
-json_object * api_build_json(channel_t *ch) {
+json_object * api_json_tuples(channel_t *ch, bool_t all) {
 	reading_t rd;
 
-	json_object *json_obj = json_object_new_object();
 	json_object *json_tuples = json_object_new_array();
 	
-	for (int j = 0; j < ch->queue.size; j++) {
-		queue_deque(&ch->queue, &rd);
+	int index = ch->queue.read_p;
+	do {
+		pthread_mutex_lock(&ch->mutex);
+			rd = ch->queue.buf[index];
+		pthread_mutex_unlock(&ch->mutex);
 		
-		if (rd.tv.tv_sec) { /* skip empty readings */
-			json_object *json_tuple = json_object_new_array();
-			json_object_array_add(json_tuple, json_object_new_int(rd.tv.tv_sec * 1000 + rd.tv.tv_usec / 1000));
-			json_object_array_add(json_tuple, json_object_new_double(rd.value));
-			json_object_array_add(json_tuples, json_tuple);
-		}
-	}
+		struct json_object *json_tuple = json_object_new_array();
+		
+		int timestamp = rd.tv.tv_sec * 1000 + rd.tv.tv_usec / 1000;
+		
+		json_object_array_add(json_tuple, json_object_new_int(timestamp));
+		json_object_array_add(json_tuple, json_object_new_double(rd.value));
+		
+		json_object_array_add(json_tuples, json_tuple);
+		
+		index++;
+		index %= ch->queue.size;
+	} while (index != (all) ? ch->queue.read_p : ch->queue.write_p);
 	
-	json_object_object_add(json_obj, "tuples", json_tuples);
-	
-	return json_obj;
+	return json_tuples;
 }
 
 CURL * api_curl_init(channel_t *ch) {
@@ -133,8 +138,8 @@ CURL * api_curl_init(channel_t *ch) {
 }
 
 void api_parse_exception(CURLresponse response, char *err) {
-	struct json_tokener * json_tok;
-	struct json_object * json_obj;
+	struct json_tokener *json_tok;
+	struct json_object *json_obj;
 
 	json_tok = json_tokener_new();
 	json_obj = json_tokener_parse_ex(json_tok, response.data, response.size);
@@ -188,9 +193,7 @@ void *api_thread(void *arg) {
 		}
 		pthread_mutex_unlock(&ch->mutex);
 		
-		pthread_mutex_lock(&ch->mutex);
-		json_str = json_object_to_json_string(api_build_json(ch));
-		pthread_mutex_unlock(&ch->mutex);
+		json_str = json_object_to_json_string(api_json_tuples(ch, FALSE));
 		
 		print(1, "JSON request body: %s", ch, json_str);
 		
@@ -205,7 +208,7 @@ void *api_thread(void *arg) {
 		if (curl_code == CURLE_OK && http_code == 200) { /* everything is ok */
 			print(1, "Request succeeded with code: %i", ch, http_code);
 			
-			// TODO clear queue
+			queue_clear(&ch->queue);
 		}
 		else { /* error */
 			if (curl_code != CURLE_OK) {
@@ -213,7 +216,7 @@ void *api_thread(void *arg) {
 			}
 			else if (http_code != 200) {
 				char err[255];
-				api_parse_exception(response, &err);
+				api_parse_exception(response, err);
 				print(-1, "Invalid middlware response: %s", ch, err);
 			}
 			
@@ -224,8 +227,7 @@ void *api_thread(void *arg) {
 		/* householding */
 		free(json_str);
 		// TODO free json objects
-		
-		if (response.data) free(response.data);
+		free(response.data);
 			
 		pthread_testcancel(); /* test for cancelation request */
 	} while (opts.daemon);
