@@ -6,10 +6,10 @@ TARGET=vzlogger
 all: $(TARGET)
 
 clean:
-	rm -rf *.o
+	rm -rf *.o $(TARGET)
 
-vzlogger: main.c api.c local.c queue.c 1wire.c obis.c
-	$(CC) $(LDFLAGS) main.o api.o local.o queue.o 1wire.o obis.o `curl-config --libs` -ljson -lpthread -o $(TARGET) -lmicrohttpd -lm
+vzlogger: main.c api.c local.c queue.c 1wire.c obis.c rawS0.c
+	$(CC) $(LDFLAGS) main.o api.o local.o queue.o 1wire.o obis.o rawS0.o `curl-config --libs` -ljson -lpthread -o $(TARGET) -lmicrohttpd -lm
 
 main.c:
 	$(CC) $(CFLAGS) src/main.c -o main.o
@@ -28,3 +28,6 @@ queue.c:
 	
 obis.c:
 	$(CC) $(CFLAGS) src/protocols/obis.c -o obis.o
+	
+rawS0.c:
+	$(CC) $(CFLAGS) src/protocols/rawS0.c -o rawS0.o

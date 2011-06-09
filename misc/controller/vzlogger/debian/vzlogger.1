@@ -1,0 +1,58 @@
+.\"                                      Hey, EMACS: -*- nroff -*-
+.\" First parameter, NAME, should be all caps
+.\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
+.\" other parameters are allowed: see man(7), man(1)
+.TH VZLOGGER 1 "June  9, 2011"
+.\" Please adjust this date whenever revising the manpage.
+.\"
+.\" Some roff macros, for reference:
+.\" .nh        disable hyphenation
+.\" .hy        enable hyphenation
+.\" .ad l      left justify
+.\" .ad b      justify to both left and right margins
+.\" .nf        disable filling
+.\" .fi        enable filling
+.\" .br        insert line break
+.\" .sp <n>    insert n+1 empty lines
+.\" for manpage-specific macros, see man(7)
+.SH NAME
+vzlogger \- program for logging measurements to an volkszaehler.org middelware
+.SH SYNOPSIS
+.B vzlogger
+.RI [ options ]
+.SH DESCRIPTION
+This manual page documents briefly the
+.B vzlogger
+command.
+.BR
+\fBvzlogger\fP is for
+	* is a tiny shell tool to log measurements of a wide variety of smartmeters, sensors & protocols against the volkszaehler.org middleware.
+	* can run as a daemon or can be invoked periodically by cron.
+	* includes a tiny onboard httpd to serve realtime readings to the ajax web frontend.
+	* is written in pure ansi c and should run on most embedded devices.
+.PP
+.\" TeX users may be more comfortable with the \fB<whatever>\fP and
+.\" \fI<whatever>\fP escape sequences to invode bold face and italics,
+.\" respectively.
+\fBvzlogger\fP is a program that...
+.SH OPTIONS
+These programs follow the usual GNU command line syntax, with long
+options starting with two dashes (`-').
+A summary of options is included below.
+For a complete description, see the Info files.
+.TP
+.B \-h, \-\-help
+Show summary of options.
+.TP
+.B \-v, \-\-version
+Show version of program.
+.SH BUGS
+Currenty there are no known bugs.
+Please report bugs to http://bugs.volkszaehler.org
+.SH SEE ALSO
+vzlogger is documented in more detail on the wiki page: http://wiki.volkszaehler.org/software/controller/vzlogger
+.SH AUTHOR
+vzlogger was written by Steffen Vogel <info@steffenvogel.de>.
+.PP
+This manual page was written by Steffen Vogel <info@steffenvogel.de>,
+for the Debian project (and may be used by others).
