@@ -31,11 +31,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
-#include <termios.h> 
+#include <unistd.h>
 
 #include "obis.h"
 
-void * obis_init(char * port) {
+void * obis_init(char *port) {
 	struct termios tio;
 	int *fd = malloc(sizeof(int));
 	
@@ -56,8 +56,9 @@ void * obis_init(char * port) {
 }
 
 void obis_close(void *handle) {
-	// TODO close serial port
-
+	int *fd = (int *) handle;
+	
+	close(*fd);
 	free(handle);
 }
 

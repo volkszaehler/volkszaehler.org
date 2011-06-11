@@ -28,7 +28,7 @@
 
 #include "../protocol.h"
 
-void * onewire_init(char * port);
+void * onewire_init(char *port);
 void onewire_close(void *handle);
 reading_t onewire_get(void *handle);
 

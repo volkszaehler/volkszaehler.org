@@ -36,7 +36,7 @@
  * @param address path to the sensor in the owfs
  * @return pointer to file descriptor
  */
-void * onewire_init(char * address) {
+void * onewire_init(char *address) {
 	FILE * fd  = fopen(address, "r");
 	
 	if (fd == NULL) {

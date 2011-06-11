@@ -29,9 +29,16 @@
 #ifndef _OBIS_H_
 #define _OBIS_H_
 
+#include <termios.h>
+
 #include "../protocol.h"
 
-void * obis_init(char * port);
+typedef struct {
+	int fd; /* file descriptor of port */
+	struct termios oldtio; /* required to reset port */
+} obis_state_t;
+
+void * obis_init(char *port);
 void obis_close(void *handle);
 reading_t obis_get(void *handle);
 

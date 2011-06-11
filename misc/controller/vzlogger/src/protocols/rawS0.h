@@ -26,9 +26,16 @@
 #ifndef _RAWS0_H_
 #define _RAWS0_H_
 
+#include <termios.h>
+
 #include "../protocol.h"
 
-void * rawS0_init(char * port);
+typedef struct {
+	int fd; /* file descriptor of port */
+	struct termios oldtio; /* required to reset port */
+} rawS0_state_t;
+
+void * rawS0_init(char *port);
 void rawS0_close(void *handle);
 reading_t rawS0_get(void *handle);
 

@@ -24,7 +24,6 @@ typedef struct {
 	ifp_t init_func;	/* function pointer to init a channel */
 	cfp_t close_func;	/* function pointer to close a channel */
 	mode_t mode;		/* should we wait for next pulse? */
-	
 }  protocol_t;
 
 #endif /* _PROTOCOL_H_ */

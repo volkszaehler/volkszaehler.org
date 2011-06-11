@@ -24,7 +24,6 @@
  */
 
 #include <fcntl.h>
-#include <termios.h> 
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -33,15 +32,10 @@
 #include "../protocol.h"
 #include "rawS0.h"
 
-typedef struct {
-	int fd; /* file descriptor of port */
-	struct termios oldtio; /* required to reset port */
-} rawS0_state_t;
-
 /**
  * Setup serial port
  */
-void * rawS0_init(char * port) {
+void * rawS0_init(char *port) {
 	rawS0_state_t *state;
 	struct termios newtio;
 	
