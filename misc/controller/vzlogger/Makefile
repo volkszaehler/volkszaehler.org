@@ -8,8 +8,8 @@ all: $(TARGET)
 clean:
 	rm -rf *.o $(TARGET)
 
-vzlogger: main.c api.c local.c queue.c 1wire.c obis.c rawS0.c
-	$(CC) $(LDFLAGS) main.o api.o local.o queue.o 1wire.o obis.o rawS0.o `curl-config --libs` -ljson -lpthread -o $(TARGET) -lmicrohttpd -lm
+vzlogger: main.c api.c local.c queue.c 1wire.c obis.c rawS0.c random.c ltqnorm.c
+	$(CC) $(LDFLAGS) main.o api.o local.o queue.o 1wire.o obis.o rawS0.o random.o ltqnorm.o `curl-config --libs` -ljson -lpthread -o $(TARGET) -lmicrohttpd -lm
 
 main.c:
 	$(CC) $(CFLAGS) src/main.c -o main.o
@@ -31,3 +31,9 @@ obis.c:
 	
 rawS0.c:
 	$(CC) $(CFLAGS) src/protocols/rawS0.c -o rawS0.o
+	
+random.c:
+	$(CC) $(CFLAGS) src/protocols/random.c -o random.o
+
+ltqnorm.c:
+	$(CC) $(CFLAGS) src/protocols/ltqnorm.c -o ltqnorm.o
