@@ -6,7 +6,7 @@ AC_INIT(vzlogger, 0.2, info@steffenvogel.de)
 AM_INIT_AUTOMAKE(vzlogger, 0.2)
 AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_FILES([Makefile src/Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile docs/Makefile])
 
 # Checks for programs.
 AC_PROG_CC

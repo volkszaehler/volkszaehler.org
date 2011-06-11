@@ -63,11 +63,11 @@ static protocol_t protocols[] = {
 static struct option long_options[] = {
 	{"config", 	required_argument,	0,	'c'},
 	{"daemon", 	required_argument,	0,	'd'},
-	{"interval", 	required_argument,	0,	'i'},
 	{"local", 	no_argument,		0,	'l'},
 	{"local-port",	required_argument,	0,	'p'},
-	{"help",	no_argument,		0,	'h'},
 	{"verbose",	optional_argument,	0,	'v'},
+	{"help",	no_argument,		0,	'h'},
+	{"version",	no_argument,		0,	'V'},
 	{NULL} /* stop condition for iterator */
 };
 
@@ -77,11 +77,11 @@ static struct option long_options[] = {
 static char * long_options_descs[] = {
 	"config file with channel -> uuid mapping",
 	"run as daemon",
-	"interval in seconds to read meters",
 	"activate local interface (tiny webserver)",
-	"TCP port for local interface"	
-	"show this help",
+	"TCP port for local interface",
 	"enable verbose output",
+	"show this help",
+	"show version of vzlogger",
 	NULL /* stop condition for iterator */
 };
 
@@ -107,7 +107,7 @@ void usage(char * argv[]) {
 	printf("  following options are available:\n");
 	
 	while (op->name && desc) {
-		printf("\t--%-12s\t-%c\t%s\n", op->name, op->val, *desc);
+		printf("\t-%c, --%-12s\t%s\n", op->val, op->name, *desc);
 		op++;
 		desc++;
 	}
@@ -170,7 +170,7 @@ void parse_options(int argc, char * argv[], options_t * opts) {
 		/* getopt_long stores the option index here. */
 		int option_index = 0;
 
-		int c = getopt_long(argc, argv, "i:c:p:lhdv::", long_options, &option_index);
+		int c = getopt_long(argc, argv, "i:c:p:lhVdv::", long_options, &option_index);
 
 		/* detect the end of the options. */
 		if (c == -1)
@@ -196,6 +196,11 @@ void parse_options(int argc, char * argv[], options_t * opts) {
 			case 'c': /* read config file */
 				opts->config = (char *) malloc(strlen(optarg)+1);
 				strcpy(opts->config, optarg);
+				break;
+				
+			case 'V':
+				printf("%s\n", VZ_VERSION);
+				exit(EXIT_SUCCESS);
 				break;
 
 			case 'h':

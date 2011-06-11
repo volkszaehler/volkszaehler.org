@@ -1,3 +1,10 @@
 *.o
-vzlogger
+src/vzlogger
+src/Makefile
 autom4te.cache/
+config.status
+config.h
+debian/vzlogger.1
+src/.deps
+stamp-h1
+Makefile
