@@ -53,19 +53,29 @@ class DataController extends Controller {
 	 * @todo replace by pluggable api parser
 	 */
 	public function add(Model\Channel $channel) {
-		$timestamp = $this->view->request->getParameter('ts');
-		$value = $this->view->request->getParameter('value');
+		$rawPost = file_get_contents('php://input');
+		
+		try { /* to parse new submission protocol */
+			$json = Util\JSON::decode($rawPost);
+			
+			foreach ($json as $tuple) {
+				$channel->addData(new Model\Data($channel, $tuple[0], $tuple[1]));
+			}
+		} catch (Util\JSONException $e) { /* fallback to old method */
+			$timestamp = $this->view->request->getParameter('ts');
+			$value = $this->view->request->getParameter('value');
 
-		if (is_null($timestamp)) {
-			$timestamp = round(microtime(TRUE) * 1000);
+			if (is_null($timestamp)) {
+				$timestamp = (double) round(microtime(TRUE) * 1000);
+			}
+			
+			if (is_null($value)) {
+				$value = 1;
+			}
+		
+			$channel->addData(new Model\Data($channel, $timestamp, $value));
 		}
 
-		if (is_null($value)) {
-			$value = 1;
-		}
-
-		$data = new Model\Data($channel, $timestamp, $value);
-		$channel->addData($data);
 		$this->em->flush();
 	}
 
