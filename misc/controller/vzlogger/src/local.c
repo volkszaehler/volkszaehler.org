@@ -52,8 +52,8 @@ int handle_request(void *cls, struct MHD_Connection *connection, const char *url
 		
 		if (strcmp(url, "/") == 0 || strcmp(ch->uuid, url + 1) == 0) {
 			pthread_mutex_lock(&ch->mutex);
-			/* wait for new data comet-like blocking of HTTP response */
-			pthread_cond_wait(&ch->condition, &ch->mutex); // TODO use pthread_cond_timedwait()
+				/* wait for new data comet-like blocking of HTTP response */
+				pthread_cond_wait(&ch->condition, &ch->mutex); // TODO use pthread_cond_timedwait()
 			pthread_mutex_unlock(&ch->mutex);
 		
 			struct json_object *json_tuples = api_json_tuples(ch, TRUE);

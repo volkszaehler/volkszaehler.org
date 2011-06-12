@@ -78,7 +78,7 @@ size_t curl_custom_write_callback(void *ptr, size_t size, size_t nmemb, void *da
  
 	memcpy(&(response->data[response->size]), ptr, realsize);
 	response->size += realsize;
-	//response->data[response->size] = 0;
+	response->data[response->size] = 0;
 	
 	return realsize;
 }
@@ -88,24 +88,28 @@ json_object * api_json_tuples(channel_t *ch, bool_t all) {
 
 	json_object *json_tuples = json_object_new_array();
 	
-	int index = ch->queue.read_p;
+	size_t index = ch->queue.read_p;
+	size_t end = (all) ? ch->queue.read_p : ch->queue.write_p;
 	do {
 		pthread_mutex_lock(&ch->mutex);
-			rd = ch->queue.buf[index];
+			queue_get(&ch->queue, index, &rd);
 		pthread_mutex_unlock(&ch->mutex);
 		
-		struct json_object *json_tuple = json_object_new_array();
+		if (rd.tv.tv_sec) { /* skip empty buffers */
+			struct json_object *json_tuple = json_object_new_array();
 		
-		int timestamp = rd.tv.tv_sec * 1000 + rd.tv.tv_usec / 1000;
+			unsigned long timestamp = rd.tv.tv_sec * 1000 + rd.tv.tv_usec / 1000;
 		
-		json_object_array_add(json_tuple, json_object_new_int(timestamp));
-		json_object_array_add(json_tuple, json_object_new_double(rd.value));
+			json_object_array_add(json_tuple, json_object_new_double(timestamp));
+			json_object_array_add(json_tuple, json_object_new_double(rd.value));
 		
-		json_object_array_add(json_tuples, json_tuple);
+			json_object_array_add(json_tuples, json_tuple);
+		}
 		
 		index++;
-		index %= ch->queue.size;
-	} while (index != (all) ? ch->queue.read_p : ch->queue.write_p);
+		index %= ch->queue.size; /* increment pointer */
+			
+	} while (index != end);
 	
 	return json_tuples;
 }
@@ -115,6 +119,7 @@ CURL * api_curl_init(channel_t *ch) {
 	struct curl_slist *header = NULL;
 	char url[255], agent[255];
 	
+	/* prepare header & url */
 	sprintf(agent, "User-Agent: vzlogger/%s (%s)", VZ_VERSION, curl_version());	/* build user agent */
 	sprintf(url, "%s/data/%s.json", ch->middleware, ch->uuid);			/* build url */
  
@@ -124,7 +129,7 @@ CURL * api_curl_init(channel_t *ch) {
 
 	curl = curl_easy_init();
 	if (!curl) {
-		print(-1, "Cannot create curl handle", ch);
+		print(-1, "CURL: cannot create handle", ch);
 		exit(EXIT_FAILURE);
 	}
 	
@@ -169,7 +174,7 @@ void api_parse_exception(CURLresponse response, char *err) {
  *
  * Logs buffered readings against middleware
  */
-void *api_thread(void *arg) {
+void * api_thread(void *arg) {
 	CURL *curl;
 	channel_t *ch = (channel_t *) arg; /* casting argument */
 	
@@ -179,14 +184,13 @@ void *api_thread(void *arg) {
 	
 	do { /* start thread mainloop */
 		CURLresponse response;
-		int curl_code;
-		long int http_code;
+		long int http_code, curl_code;
 		char *json_str;
 		
 		/* initialize response */
 		response.data = NULL;
 		response.size = 0;
-	
+		
 		pthread_mutex_lock(&ch->mutex);
 		while (queue_is_empty(&ch->queue)) { /* detect spurious wakeups */
 			pthread_cond_wait(&ch->condition, &ch->mutex); /* sleep until new data has been read */
@@ -194,7 +198,6 @@ void *api_thread(void *arg) {
 		pthread_mutex_unlock(&ch->mutex);
 		
 		json_str = json_object_to_json_string(api_json_tuples(ch, FALSE));
-		
 		print(1, "JSON request body: %s", ch, json_str);
 		
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json_str);
@@ -202,12 +205,10 @@ void *api_thread(void *arg) {
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *) &response);
 		
 		curl_code = curl_easy_perform(curl);
-		
 		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
 		
 		if (curl_code == CURLE_OK && http_code == 200) { /* everything is ok */
 			print(1, "Request succeeded with code: %i", ch, http_code);
-			
 			queue_clear(&ch->queue);
 		}
 		else { /* error */

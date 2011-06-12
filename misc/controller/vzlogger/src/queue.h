@@ -41,20 +41,19 @@ typedef char bool_t;
 typedef struct {
 	size_t size;
 	
-	int read_p;
-	int write_p;
-	int fill_count;
+	size_t read_p;
+	size_t write_p;
 	
 	reading_t *buf;
 } queue_t;
 
-queue_t * queue_init(queue_t *q, size_t size);
+bool_t queue_init(queue_t *q, size_t size);
 bool_t queue_is_empty(queue_t *q);
-void queue_push(queue_t *q, reading_t rd);
+bool_t queue_get(queue_t *q, size_t index, reading_t *rd);
+bool_t queue_push(queue_t *q, reading_t rd);
 void queue_clear(queue_t *q);
 void queue_free(queue_t *q);
-void queue_print(queue_t *q);
-
+char * queue_print(queue_t *q);
 
 #endif /* _QUEUE_H_ */
 

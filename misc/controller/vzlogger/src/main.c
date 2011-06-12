@@ -74,7 +74,7 @@ static struct option long_options[] = {
 /**
  * Descriptions vor command line options
  */
-static char * long_options_descs[] = {
+static char *long_options_descs[] = {
 	"config file with channel -> uuid mapping",
 	"run as daemon",
 	"activate local interface (tiny webserver)",
@@ -85,10 +85,12 @@ static char * long_options_descs[] = {
 	NULL /* stop condition for iterator */
 };
 
-/* Global variables */
+/*
+ * Global variables
+ */
 channel_t chans[MAX_CHANNELS]; // TODO use dynamic allocation
 options_t opts = { /* setting default options */
-	"vzlogger.conf",	/* config file */
+	NULL,	/* config file */
 	8080,			/* port for local interface */
 	0,			/* debug level / verbosity */
 	FALSE,			/* daemon mode */
@@ -209,14 +211,40 @@ void parse_options(int argc, char * argv[], options_t * opts) {
 				exit((c == '?') ? EXIT_FAILURE : EXIT_SUCCESS);
 		}
 	}
+	
+	if (opts->config == NULL) { /* search for config file */
+		if (access("vzlogger.conf", R_OK) == 0) {
+			opts->config = "vzlogger.conf";
+		}
+		else if (access("/etc/vzlogger.conf", R_OK) == 0) {
+			opts->config = "/etc/vzlogger.conf";
+		}
+		else { /* search in home directory */
+			char *home_config = malloc(255);
+			strcat(home_config, getenv("HOME")); /* get home dir */
+			strcat(home_config, "/.vzlogger.conf"); /* append my filename */
+		
+			if (access(home_config, R_OK) == 0) {
+				opts->config = home_config;
+			}
+		}
+	}
 }
 
-int parse_channels(char * filename, channel_t * chans) {
+int parse_channels(char *filename, channel_t *chans) {
+	if (filename == NULL) {
+		fprintf(stderr, "No config file found! Please specify with --config!\n");
+		exit(EXIT_FAILURE);
+	}
+	
 	FILE *file = fopen(filename, "r"); /* open configuration */
 
 	if (file == NULL) {
 		perror(filename); /* why didn't the file open? */
 		exit(EXIT_FAILURE);
+	}
+	else {
+		print(2, "Start parsing configuration from %s", NULL, filename);
 	}
 	
 	char line[256];
@@ -308,22 +336,33 @@ int parse_channels(char * filename, channel_t * chans) {
  */
 void *read_thread(void *arg) {
 	channel_t *ch = (channel_t *) arg; /* casting argument */
-	
 	print(1, "Started reading thread", ch);
 
 	/* initalize channel */
 	ch->handle = ch->prot->init_func(ch->options); /* init sensor/meter */
 	
 	do {
-		reading_t rd = ch->prot->read_func(ch->handle); /* aquire reading */
+		/**
+		 * Aquire reading,
+		 * may be blocking if mode == MODE_METER
+		 */
+		reading_t rd = ch->prot->read_func(ch->handle);
 		
 		pthread_mutex_lock(&ch->mutex);
-			queue_push(&ch->queue, rd);
+			if (!queue_push(&ch->queue, rd)) {
+				print(6, "Warning queue is full, discarding first tuple!", ch);
+			}
 			pthread_cond_broadcast(&ch->condition); /* notify webserver and logging thread */
 		pthread_mutex_unlock(&ch->mutex);
 		
 		print(1, "Value read: %.1f", ch, rd.value);
-		if (opts.verbose > 5) queue_print(&ch->queue); /* Debugging */
+		
+		/* Debugging */
+		if (opts.verbose >= 10) {
+			char *queue_str = queue_print(&ch->queue);
+			print(10, "Queue dump: %s write_p = %lu\t read_p = %lu", ch, queue_str, ch->queue.write_p, ch->queue.read_p);
+			free(queue_str);
+		}
 		
 		if (ch->prot->mode != MODE_METER) { /* for meters, the read_func call is blocking */
 			print(5, "Next reading in %i seconds", ch, ch->interval);
@@ -342,9 +381,9 @@ void *read_thread(void *arg) {
 /**
  * The main loop
  */
-int main(int argc, char * argv[]) {
+int main(int argc, char *argv[]) {
 	int num_chans;
-	struct MHD_Daemon * d;
+	struct MHD_Daemon *httpd_handle = NULL;
 	
 	parse_options(argc, argv, &opts); /* parse command line arguments */
 	num_chans = parse_channels(opts.config, chans); /* parse channels from configuration */
@@ -354,9 +393,10 @@ int main(int argc, char * argv[]) {
 	curl_global_init(CURL_GLOBAL_ALL); /* global intialization for all threads */
 	
 	for (int i = 0; i < num_chans; i++) {
-		channel_t * ch = &chans[i];
+		channel_t *ch = &chans[i];
 		
-		queue_init(&ch->queue, (BUFFER_LENGTH / ch->interval) + 1); /* initialize queue to buffer 10 minutes of data */
+		/* initialize queue to buffer data */
+		queue_init(&ch->queue, (BUFFER_LENGTH / ch->interval) + 1);
 	
 		/* initialize thread syncronization helpers */
 		pthread_mutex_init(&ch->mutex, NULL);
@@ -369,7 +409,7 @@ int main(int argc, char * argv[]) {
 	
 	/* start webserver for local interface */
 	if (opts.local) {
-		d = MHD_start_daemon(
+		httpd_handle = MHD_start_daemon(
 			MHD_USE_THREAD_PER_CONNECTION,
 			opts.port,
 			NULL, NULL,
@@ -380,25 +420,28 @@ int main(int argc, char * argv[]) {
 	}
 	
 	/* wait for all threads to terminate */
+	// TODO bind signal for termination
 	for (int i = 0; i < num_chans; i++) {
 		channel_t * ch = &chans[i];
 		
 		pthread_join(ch->reading_thread, NULL);
 		pthread_join(ch->logging_thread, NULL);
 		
+		// TODO close protocol handles
+		
 		free(ch->middleware);
 		free(ch->uuid);
 		free(ch->options);
-		
 		queue_free(&ch->queue);
 		
 		pthread_cond_destroy(&ch->condition);
 		pthread_mutex_destroy(&ch->mutex);
 	}
 	
-	if (opts.local) { /* stop webserver */
-		MHD_stop_daemon(d);
+	/* stop webserver */
+	if (httpd_handle) {
+		MHD_stop_daemon(httpd_handle);
 	}
 	
-	return 0;
+	return EXIT_SUCCESS;
 }

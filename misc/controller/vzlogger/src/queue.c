@@ -3,17 +3,17 @@
 
 #include "queue.h"
 
-queue_t * queue_init(queue_t *q, size_t size) {
+bool_t queue_init(queue_t *q, size_t size) {
 	q->buf = malloc(sizeof(reading_t) * size); /* keep one slot open */
 
 	if (q->buf) {
 		q->size = size;
 		q->read_p = q->write_p = 0; /* queue is empty */
 		
-		return q;
+		return TRUE;
 	}
-	else { /* cannot allocat memory */
-		return NULL;
+	else { /* cannot allocate memory */
+		return FALSE;
 	}
 }
 
@@ -30,16 +30,34 @@ void queue_clear(queue_t *q) {
 	q->read_p = q->write_p;
 }
 
-void queue_push(queue_t *q, reading_t rd) {
-	q->buf[q->write_p] = rd;
-	q->write_p++;
+bool_t queue_push(queue_t *q, reading_t rd) {
+	q->buf[q->write_p] = rd; /* copy data to buffer */
+	q->write_p++; /* increment write pointer */
 	q->write_p %= q->size;
+	
+	if (q->read_p == q->write_p) { /* queue full */
+		q->read_p++; /* discarding first tuple */
+		return FALSE;
+	}
+	
+	return TRUE;
+}
+
+bool_t queue_get(queue_t *q, size_t index, reading_t *rd) {
+	*rd = q->buf[index];
+	
+	return (index < q->size);
 }
  
-void queue_print(queue_t *q) {
-	printf("Queue dump: [%.1f", q->buf[0].value);
+char * queue_print(queue_t *q) {
+	char *buf = malloc(q->size * 6);
+	char *ret = buf;
+
+	buf += sprintf(buf, "[%.1f", q->buf[0].value);
 	for (int i = 1; i < q->size; i++) {
-		printf("|%.2f", q->buf[i].value);
+		buf += sprintf(buf, "|%.2f", q->buf[i].value);
 	}
-	printf("] write_p = %i\t read_p = %i\n", q->write_p, q->read_p);
+	buf += sprintf(buf, "]");
+	
+	return ret;
 }
