@@ -33,9 +33,6 @@ use Volkszaehler\Util;
 
 class SensorInterpreter extends Interpreter {
 
-	/**
-	 * @param string|integer $groupBy
-	 */
 	public function processData($callback) {
 		$data = parent::getData();
 

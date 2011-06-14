@@ -36,7 +36,9 @@ use Doctrine\ORM;
 abstract class Interpreter {
 	protected $channel;
 
-	/** @var Database connection */
+	/**
+	 * @var Database connection
+	 */
 	protected $conn;
 
 	protected $from;
@@ -84,27 +86,37 @@ abstract class Interpreter {
 	 */
 	protected function getData() {
 		// prepare sql
-		$sql['from']	= ' FROM data';
-		$sql['where']	= ' WHERE channel_id = ?' . self::buildDateTimeFilterSQL($this->from, $this->to);
-		$sql['orderBy']	= ' ORDER BY timestamp ASC';
+		$sqlWhere	= ' WHERE channel_id = ?';
 
-		if ($this->groupBy && $sql['groupFields'] = self::buildGroupBySQL($this->groupBy)) {
-			$sql['rowCount']	= 'SELECT COUNT(DISTINCT ' . $sql['groupFields'] . ')' . $sql['from'] . $sql['where'];
-			$sql['fields']		= ' MAX(timestamp) AS timestamp, SUM(value) AS value, COUNT(timestamp) AS count';
-			$sql['groupBy']		= ' GROUP BY ' . $sql['groupFields'];
+		if ($this->groupBy && $sqlGroupFields = self::buildGroupBySQL($this->groupBy)) {
+			$sqlRowCount	= 'SELECT COUNT(DISTINCT ' . $sqlGroupFields . ') FROM data' . $sqlWhere;
+			$sqlFields	= ' MAX(timestamp) AS timestamp, SUM(value) AS value, COUNT(timestamp) AS count';
+			
+			$sql		= 'SELECT' . $sqlFields . '
+						FROM data' .
+						$sqlWhere .
+						self::buildDateTimeFilterSQL($this->from, $this->to) .
+						' GROUP BY ' . $sqlGroupFields;
+						
+			$sqlParameters	= array($this->channel->getId());
 		}
 		else {
-			$sql['rowCount']	= 'SELECT COUNT(*)' . $sql['from'] . $sql['where'];
-			$sql['fields']		= ' timestamp, value, 1';
-			$sql['groupBy']		= '';
+			$sqlRowCount	= 'SELECT COUNT(*) FROM data' . $sqlWhere . self::buildDateTimeFilterSQL($this->from, $this->to);
+			$sqlComon	= 'SELECT timestamp, value, 1 FROM data' . $sqlWhere;
+			
+			$sqlFirst	= '(' . $sqlComon  . ' AND timestamp <= ' . $this->from . ' ORDER BY timestamp DESC LIMIT 1) UNION ';
+			$sqlMiddle	= '(' . $sqlComon . self::buildDateTimeFilterSQL($this->from, $this->to) . ' ORDER BY timestamp ASC)';
+			$sqlLast	= ' UNION (' . $sqlComon . ' AND timestamp >= ' . $this->to . ' ORDER BY timestamp ASC LIMIT 2)'; // we need 2 tuples in MeterInterpreter
+			
+			$sql = ((isset($this->from)) ? $sqlFirst : '') . $sqlMiddle . ((isset($this->to)) ? $sqlLast : '');
+			$sqlParameters	= array_fill(0, 1 + isset($this->from) + isset($this->to), $this->channel->getId());
 		}
-
+		
 		// get total row count for grouping
-		$this->rowCount = $this->conn->fetchColumn($sql['rowCount'], array($this->channel->getId()), 0);
+		$this->rowCount = $this->conn->fetchColumn($sqlRowCount, array($this->channel->getId()), 0);
 		
 		if ($this->rowCount > 0) {
-			// query for data
-			$stmt = $this->conn->executeQuery('SELECT ' . $sql['fields'] . $sql['from'] . $sql['where'] . $sql['groupBy'] . $sql['orderBy'], array($this->channel->getId()));
+			$stmt = $this->conn->executeQuery($sql, $sqlParameters); // query for data
 
 			return new DataIterator($stmt, $this->rowCount, $this->tupleCount);
 		}

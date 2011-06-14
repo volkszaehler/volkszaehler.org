@@ -37,6 +37,9 @@ class MeterInterpreter extends Interpreter {
 
 	protected $min = NULL;
 	protected $max = NULL;
+	protected $first = NULL;
+	protected $last = NULL;
+	
 	protected $pulseCount = NULL;
 	protected $resolution;
 	
@@ -73,7 +76,8 @@ class MeterInterpreter extends Interpreter {
 	 * @return float 3600: 3600 s/h; 1000: ms -> s
 	 */
 	public function getAverage() {
-		return (3600 * 1000 * $this->getConsumption()) / ($this->to - $this->from);
+		$delta = ($this->getConsumption()) ? $this->last[0] - $this->first[0] : 1; // prevent division by zero
+		return (3600 * 1000 * $this->getConsumption()) / $delta;
 	}
 
 	/**
@@ -109,6 +113,9 @@ class MeterInterpreter extends Interpreter {
 			$last = $next;			
 			$next = $pulses->next();
 		}
+		
+		$this->first = reset($tuples);
+		$this->last = end($tuples);
 
 		return $tuples;
 	}

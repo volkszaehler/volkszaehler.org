@@ -71,6 +71,7 @@ class DataIterator implements \Iterator, \Countable {
 
 	/**
 	 * Aggregate data
+	 * @return next aggregated tuple
 	 */
 	public function next() {
 		if ( $this->packageSize == 1) { // return each row as single tuple
@@ -78,9 +79,7 @@ class DataIterator implements \Iterator, \Countable {
 		}
 		else { // summarize rows
 			$package = array(0, 0, 0);
-			for ($i = 0; $i < $this->packageSize && $this->rowKey < $this->rowCount; $i++) {
-				$tuple = $this->stmt->fetch();
-
+			for ($i = 0; $i < $this->packageSize && $tuple = $this->stmt->fetch(); $i++) {
 				$package[0] = $tuple[0];
 				$package[1] += $tuple[1];
 				$package[2] += $tuple[2];
@@ -96,8 +95,7 @@ class DataIterator implements \Iterator, \Countable {
 	/**
 	 * Rewind the iterator
 	 *
-	 * Should only be called once
-	 * PDOStatement hasn't a rewind()
+	 * @internal Should only be called once: PDOStatement hasn't a rewind()
 	 */
 	public function rewind() {
 		$this->key = $this->rowKey = 0;
@@ -105,7 +103,7 @@ class DataIterator implements \Iterator, \Countable {
 	}
 
 	public function valid() {
-		return $this->key <= $this->tupleCount;
+		return ($this->current[2] > 0); // current package contains at least 1 tuple
 	}
 
 	/**
