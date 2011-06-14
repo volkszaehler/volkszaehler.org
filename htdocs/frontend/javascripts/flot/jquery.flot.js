@@ -1238,6 +1238,8 @@
                 };
 
                 formatter = function (v, axis) {
+                    if (opts.useLocalTime)
+                        v -= new Date(v).getTimezoneOffset()*60000;
                     var d = new Date(v);
 
                     // first check global format
