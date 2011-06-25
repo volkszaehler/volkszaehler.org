@@ -65,11 +65,11 @@ get_db_name() {
 
 ############
 # check prerequisites
-if [ ${PHP_MAJOR }-lt "5" ] ; then
+if [ "${PHP_MAJOR}" -lt "5" ] ; then
   echo you need PHP version 5.3+ to run volkszaehler
   exit
-elif [ ${PHP_MAJOR} == "5" ]
-  if [ ${PHP_MINOR }-lt "3" ] ; then
+elif [ "${PHP_MAJOR}" == "5" ] ; then
+  if [ "${PHP_MINOR}" -lt "3" ] ; then
     echo you need PHP version 5.3+ to run volkszaehler
     exit
   fi
@@ -90,7 +90,6 @@ if [ "$REPLY" == 'y' ]; then
 
 #	wget -O - $doctrine_tar | tar xz -C $dtdir
 
-	mkdir -p $dtdir
 	git clone $doctrine_git $dtdir
 	pushd $dtdir
 	git submodule init
@@ -113,7 +112,6 @@ REPLY=y
 test -e "$vzdir" && ask "$vzdir already exists. overwrite?" n
 if [ "$REPLY" == 'y' ]; then
 	echo "installing volkszaehler.org into $vzdir"
-	mkdir -p $vzdir
 	git clone $vz_git $vzdir
 
 	pushd $vzdir/lib/vendor
