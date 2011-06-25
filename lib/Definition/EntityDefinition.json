@@ -82,7 +82,7 @@
 	{
 		"name"			: "powersensor",
 		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "cost", "public", "local"],
+		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "local"],
 		"icon"			: "bolt.png",
 		"unit"			: "W",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
