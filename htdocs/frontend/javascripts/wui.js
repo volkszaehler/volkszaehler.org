@@ -409,8 +409,8 @@ vz.wui.formatNumber = function(number) {
 }
 
 vz.wui.updateHeadline = function() {
-	var from = $.plot.formatDate(new Date(vz.options.plot.xaxis.min + vz.options.timezoneOffset), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames);
-	var to = $.plot.formatDate(new Date(vz.options.plot.xaxis.max + vz.options.timezoneOffset), '%d. %b %h:%M:%S', vz.options.plot.xaxis.monthNames);
+	var from = $.plot.formatDate(new Date(vz.options.plot.xaxis.min + vz.options.timezoneOffset), '%d. %b %y %h:%M', vz.options.plot.xaxis.monthNames);
+	var to = $.plot.formatDate(new Date(vz.options.plot.xaxis.max + vz.options.timezoneOffset), '%d. %b %y %h:%M', vz.options.plot.xaxis.monthNames);
 	$('#title').html(from + ' - ' + to);
 }
 
