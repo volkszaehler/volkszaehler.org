@@ -27,9 +27,9 @@
 	<script type="text/javascript" src="javascripts/init.js"></script>
 	<script type="text/javascript" src="javascripts/options.js"></script>
 	<script type="text/javascript" src="javascripts/functions.js"></script>
-	<script type="text/javascript" src="javascripts/uuid.js"></script>
-	<script type="text/javascript" src="javascripts/wui.js"></script>
 	<script type="text/javascript" src="javascripts/entity.js"></script>
+	<script type="text/javascript" src="javascripts/entities.js"></script>
+	<script type="text/javascript" src="javascripts/wui.js"></script>
 	
 	<link rel="stylesheet" type="text/css" href="stylesheets/ui-lightness/jquery-ui-1.8.10.css" />
 	<link rel="stylesheet" type="text/css" href="stylesheets/jquery.treeTable.css">
@@ -54,16 +54,16 @@
 
 <div id="accordion">
 	<div id="controls">
-		<button value="move-back"><img src="images/control_rewind_blue.png" title="move back" /></button>
-		<button value="zoom-in"><img src="images/zoom_in.png" title="zoom in" /></button>
-		<button value="zoom-out"><img src="images/zoom_out.png" title="zoom out" /></button>
+		<button value="move-back" title="scroll backward" ><img src="images/control_rewind_blue.png" /></button>
+		<button value="zoom-in" title="zoom in" ><img src="images/zoom_in.png" /></button>
+		<button value="zoom-out" title="zoom out" ><img src="images/zoom_out.png" /></button>
 		<button value="zoom-hour">Stunde</button>
 		<button value="zoom-day">Tag</button>
 		<button value="zoom-week">Woche</button>
 		<button value="zoom-month">Monat</button>
 		<button value="zoom-year">Jahr</button>
-		<button value="move-last">Jetzt&nbsp;<img src="images/control_end_blue.png" title="move to present" /></button>
-		<button value="move-forward"><img src="images/control_fastforward_blue.png" title="move forward" /></button>
+		<button value="move-last" title="scroll to presence" >Jetzt&nbsp;<img src="images/control_end_blue.png" /></button>
+		<button value="move-forward" title="scroll forward" ><img src="images/control_fastforward_blue.png" /></button>
 	</div>
 	
 		<h3><img src="images/table.png" alt="" /> Kanäle</h3>
@@ -109,14 +109,6 @@
 							<label for="render-lines"><input type="radio" id="render-lines" name="render" value="lines" /> Linien</label>
 						</td>
 					</tr>
-					<tr>
-						<td><label for="middleware-url"><img src="images/server.png" alt="" /> Adresse der Middleware</label></td>
-						<td><input type="text" id="middleware-url" /></td>
-					</tr>
-					<!-- <tr>
-						<td><label for="tuples"><img src="images/shading.png" alt="" /> Tuples (Auflösung)</label></td>
-						<td><input type="text" id="tuples" size="5" /></td>
-					</tr> -->
 				</tbody>
 			</table>
 			<div><button name="options-save"><img src="images/save.png" alt="save" /> Einstellungen speichern</button></div>
@@ -144,16 +136,19 @@
 		</ul>
 		<div id="entity-subscribe">
 			<p>Hier k&ouml;nnen Sie einen existierenden Kanal über seine UUID hinzuf&uuml;gen</p>
-			<p><label for="uuid">UUID:</label> <input id="uuid" type="text" size="36" maxlength="36" /></p>
-			<!-- <p><label for="middleware">Middleware: </label> <input id="middleware" type="text" /></p> -->
-			<p><label for="cookie">Cookie:</label> <input class="cookie" type="checkbox" /></p>
-			<input type="button" value="abonnieren" />
+			<table>
+				<tr><td><label for="middleware">Middleware:</label></td><td><input id="middleware" type="text" size="36" /></td></tr>
+				<tr><td><label for="uuid">UUID:</label></td><td><input id="uuid" type="text" size="36" maxlength="36" /></td></tr>
+			</table>
+			<p><input type="button" value="Abonnieren" /> <label for="cookie">Cookie:</label> <input class="cookie" type="checkbox" /></p>
 		</div>
 		<div id="entity-subscribe-public">
 			<p>Hier k&ouml;nnen Sie &ouml;ffentliche Kan&auml;le abonnieren.</p>
-			<p><label for="uuid">Kanal:</label> <select id="public" size="1"></select></p>
-			<p><label for="cookie">Cookie:</label> </td><td><input class="cookie" type="checkbox" /></p>
-			<input type="button" value="abonnieren" />
+			<table>
+				<tr><td><label for="middleware">Middleware:</label></td><td><select id="middleware" /></td></tr>
+				<tr><td><label for="uuid">Kanal:</label></td><td><select id="public" size="1"></select></td></tr>
+			</table>
+			<p><input type="button" value="Abonnieren" /> <label for="cookie">Cookie:</label> <input class="cookie" type="checkbox" /></p>
 		</div>
 		<div id="entity-create">
 			<form method="post" target="_blank">
@@ -166,7 +161,7 @@
 					<tr><td>Kosten:<br /><p style="font-size: small">pro Wh</p></td><td><input type="text" name="cost" value="0.00025" /> €</td></tr>
 					<tr><td>Beschreibung:</td><td><input type="text" name="description" value="Swissnox 1-phasig" /></td></tr>
 				</table>
-				<p><input type="submit" value="erstellen" /></p>
+				<p><input type="submit" value="Erstellen" /></p>
 				<p>Es wird ein neuer Kanal erstellt. Die Antwort der Middlewarenthält dann die UUID.<br />
 				Diese muss dann im Controller angegeben werden (z.B. AVR Net-IO).</p>
 			</form>
