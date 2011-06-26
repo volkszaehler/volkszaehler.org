@@ -98,9 +98,9 @@ vz.entities.showTable = function() {
 	vz.entities.sort(Entity.compare);
 	
 	var c = 0; // for colors
-	this.each(function(entity) {
+	this.each(function(entity, parent) {
 		entity.color = vz.options.plot.colors[c++ % vz.options.plot.colors.length];
-		$('#entity-list tbody').append(entity.getDOMRow());
+		$('#entity-list tbody').append(entity.getDOMRow(parent));
 	}, true); // recursive!
 
 	/*
@@ -143,15 +143,15 @@ vz.entities.showTable = function() {
 									queue.push(from.removeChild(child)); // remove from aggregator
 								}
 								else {
-									vz.uuids.remove(child.uuid); // remove from cookies
-									vz.uuids.save();
+									child.cookie = false; // remove from cookies
+									vz.entities.saveCookie();
 								}
 							} catch (e) {
 								vz.wui.dialogs.exception(e);
 							} finally {
 								$.when(queue).done(function() {
 									// wait for middleware
-									vz.entities.loadDetails().done(vz.entities.showTable);
+									$.when(from.loadDetails(), to.loadDetails).done(vz.entities.showDetails);
 								});
 								$(this).dialog('close');
 							}

@@ -199,9 +199,9 @@ Entity.prototype.getDOMDetails = function(edit) {
 	return table.append(data);
 };
 
-Entity.prototype.getDOMRow = function() {
+Entity.prototype.getDOMRow = function(parent) {
 	var row =  $('<tr>')
-		.addClass((this.parent) ? 'child-of-entity-' + this.parent.uuid : '')
+		.addClass((parent) ? 'child-of-entity-' + parent.uuid : '')
 		.addClass((this.definition.model == 'Volkszaehler\\Model\\Aggregator') ? 'aggregator' : 'channel')
 		.addClass('entity')
 		.attr('id', 'entity-' + this.uuid)
@@ -251,18 +251,20 @@ Entity.prototype.getDOMRow = function() {
 			)
 		)
 		.data('entity', this);
-			
-	$('td.ops', row).prepend($('<input>')
-		.attr('type', 'image')
-		.attr('src', 'images/delete.png')
-		.attr('alt', 'delete')
-		.bind('click', this, function(event) {
-			vz.entities.remove(event.data);
-			vz.entities.saveCookie();
-			vz.entities.showTable();
-			vz.wui.drawPlot();
-		})
-	);
+	
+	if (this.cookie) {		
+		$('td.ops', row).prepend($('<input>')
+			.attr('type', 'image')
+			.attr('src', 'images/delete.png')
+			.attr('alt', 'delete')
+			.bind('click', this, function(event) {
+				vz.entities.remove(event.data);
+				vz.entities.saveCookie();
+				vz.entities.showTable();
+				vz.wui.drawPlot();
+			})
+		);
+	}
 		
 	return row;
 };
@@ -314,10 +316,11 @@ Entity.prototype.addChild = function(child) {
 	if (this.definition.model != 'Volkszaehler\\Model\\Aggregator') {
 		throw new Exception('EntityException', 'Entity is not an Aggregator');
 	}
-
+	
 	return vz.load({
 		controller: 'group',
 		identifier: this.uuid,
+		url: this.middleware,
 		data: {
 			uuid: child.uuid
 		},
@@ -332,6 +335,7 @@ Entity.prototype.removeChild = function(child) {
 	return vz.load({
 		controller: 'group',
 		identifier: this.uuid,
+		url: this.middleware,
 		data: {
 			uuid: child.uuid,
 			operation: 'delete'
