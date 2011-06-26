@@ -21,8 +21,7 @@ volkszaehler.org/
      |   \_ demo/		demo data
      |
      |_ tools/			scripts for imports, installation etc.
-     |_ tests/			simple tests for middleware classes
-     \_ website/		our main webpage on http://volkszaehler.org
+     \_ tests/			simple tests for middleware classes
 
 Wiki: http://wiki.volkszaehler.org
 Other: http://volkszaehler.org
