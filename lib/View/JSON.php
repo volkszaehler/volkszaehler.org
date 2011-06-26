@@ -94,7 +94,7 @@ class JSON extends View {
 		$json = $this->json->encode((Util\Debug::isActivated()) ? JSON_PRETTY : 0);
 
 		if ($this->padding) {
-			$json = 'if (' . $this->padding . ') { ' . $this->padding  . '(' . $json . '); }';
+			$json = $this->padding  . '(' . $json . ');';
 		}
 		echo $json;
 	}

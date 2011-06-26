@@ -28,6 +28,8 @@
  * Initialize the WUI (Web User Interface)
  */
 vz.wui.init = function() {
+	vz.options.tuples = Math.round($('#flot').width() / 3);
+	
 	// initialize dropdown accordion
 	$('#accordion h3').click(function() {
 		$(this).next().toggle('fast');
@@ -37,7 +39,7 @@ vz.wui.init = function() {
 	
 	// buttons
 	$('button, input[type=button],[type=image],[type=submit]').button();
-	$('button[name=options-save]').click(vz.options.save);
+	$('button[name=options-save]').click(vz.options.saveCookies);
 	$('button[name=entity-add]').click(this.dialogs.init);
 	$('#permalink').click(function() { window.location = vz.wui.getPermalink(); });
 	$('#snapshot').click(function() { window.location = vz.wui.getSnaplink(); }).hide();
@@ -46,20 +48,6 @@ vz.wui.init = function() {
 	$('#controls button').click(this.handleControls);
 	$('#controls').buttonset();
 	
-	// tuple resolution
-	vz.options.tuples = Math.round($('#flot').width() / 4);
-	$('#tuples').val(vz.options.tuples).change(function() {
-		vz.options.tuples = $(this).val();
-		vz.entities.loadData().done(vz.wui.drawPlot);
-	});
-
-	// middleware address
-	$('#middleware-url')
-		.val(vz.options.middlewareUrl)
-		.change(function() {
-			vz.options.middlewareUrl = $(this).val();
-		});
-
 	// auto refresh
 	if (vz.options.refresh) {
 		$('#refresh').attr('checked', true);
@@ -102,7 +90,8 @@ vz.wui.dialogs.init = function() {
 		controller: 'entity',
 		success: function(json) {
 			if (json.entities.length > 0) {
-				json.entities.each(function(index, entity) {
+				json.entities.each(function(index, json) {
+					var entity = new Entity(json);
 					$('#entity-subscribe-public select#public').append(
 						$('<option>').html(entity.title).data('entity', entity)
 					);
@@ -119,25 +108,20 @@ vz.wui.dialogs.init = function() {
 	});
 	$('#entity-create option[value=power]').attr('selected', 'selected');
 
-	/*$('#entity-create select[name=type] option:selected').data('definition').required.each(function(index, property) {
-		$('#entity-create #properties').append(
-			vz.capabilities.definitions.get('properties', property).getDOM()
-		)
-	});*/
-	
-	$('#entity-create-middlware').val(vz.options.middlewareUrl);
+	$('#entity-create-middleware').val(vz.middleware[0].url);
 	
 	// actions
 	$('#entity-subscribe input[type=button]').click(function() {
 		try {
-			var uuid = $('#entity-subscribe input#uuid');
-			vz.uuids.add(uuid.val());
-
-			if ($('#entity-subscribe input.cookie').attr('checked')) {
-				vz.uuids.save();
-			}
+			var entity = new Entity({
+				uuid: $('#entity-subscribe input#uuid').val(),
+				middleware: $('#entity-subscribe input#middleware').val(),
+				cookie: Boolean($('#entity-subscribe input.cookie').attr('checked'))
+			});
 			
-			vz.entities.loadDetails().done(function() {
+			entity.loadDetails().done(function() {
+				vz.entities.push(entity);
+				vz.entities.saveCookie();
 				vz.entities.showTable();
 				vz.entities.loadData().done(vz.wui.drawPlot);
 			}); // reload entity details and load data
@@ -147,8 +131,6 @@ vz.wui.dialogs.init = function() {
 		}
 		finally {
 			$('#entity-add').dialog('close');
-			$('#entity-add input[type!=button]').val(''); // reset form
-			$('#entity-add input.cookie').attr('checked', false); // reset form
 		}
 	});
 	
@@ -156,24 +138,19 @@ vz.wui.dialogs.init = function() {
 		var entity = $('#entity-subscribe-public select#public option:selected').data('entity');
 	
 		try {
-			vz.uuids.add(entity.uuid);
-
-			if ($('#entity-subscribe-public input.cookie').attr('checked')) {
-				vz.uuids.save();
-			}
+			entity.cookie = Boolean($('#entity-subscribe-public input.cookie').attr('checked'));
+			entity.middleware = vz.middleware[0].url;
 			
-			vz.entities.loadDetails().done(function() {
-				vz.entities.showTable();
-				vz.entities.loadData().done(vz.wui.drawPlot);
-			}); // reload entity details and load data
+			vz.entities.push(entity);
+			vz.entities.saveCookie();
+			vz.entities.showTable();
+			vz.entities.loadData().done(vz.wui.drawPlot);
 		}
 		catch (e) {
 			vz.wui.dialogs.exception(e);
 		}
 		finally {
 			$('#entity-add').dialog('close');
-			$('#entity-add input[type!=button]').val(''); // reset form
-			$('#entity-add input.cookie').attr('checked', false); // reset form
 		}
 	});
 	
@@ -200,7 +177,7 @@ vz.wui.getPermalink = function() {
 		if (entity.active && entity.definition.model == 'Volkszaehler\\Model\\Channel') {
 			uuids.push(entity.uuid);
 		}
-	});
+	}, true); // recursive!
 	
 	var params = $.param({
 		from: Math.floor(vz.options.plot.xaxis.min),
@@ -222,7 +199,7 @@ vz.wui.getSnaplink = function() {
 		if (entity.active) {
 			uuids.push(entity.uuid);
 		}
-	});
+	}, true); // recursive!
 	
 	return vz.options.middlewareUrl + '/data/' + uuids[0] + '.png?' + $.param({
 		from: Math.floor(vz.options.plot.xaxis.min),
@@ -404,168 +381,29 @@ vz.wui.clearTimeout = function(text) {
  * therefore "vz.options.precision" needs
  * to be set to 1 (for 1 decimal) in that case
  */
-vz.wui.formatNumber = function(number) {
-	return Math.round(number * Math.pow(10, vz.options.precision)) / Math.pow(10, vz.options.precision);
+vz.wui.formatNumber = function(number, prefix) {
+	var siPrefixes = ['k', 'M', 'G', 'T'];
+	var siIndex = 0;
+	
+	while (prefix && number > 1000 && siIndex < siPrefixes.length-1) {
+		number /= 1000;
+		siIndex++;
+	}
+	
+	number = Math.round(number * Math.pow(10, vz.options.precision)) / Math.pow(10, vz.options.precision); // rounding
+	
+	if (prefix) {
+		number += (siIndex > 0) ? ' ' + siPrefixes[siIndex-1] : ' ';
+	}
+
+	return number;
 }
 
 vz.wui.updateHeadline = function() {
-	var from = $.plot.formatDate(new Date(vz.options.plot.xaxis.min + vz.options.timezoneOffset), '%d. %b %y %h:%M', vz.options.plot.xaxis.monthNames);
-	var to = $.plot.formatDate(new Date(vz.options.plot.xaxis.max + vz.options.timezoneOffset), '%d. %b %y %h:%M', vz.options.plot.xaxis.monthNames);
+	var from = $.plot.formatDate(new Date(vz.options.plot.xaxis.min), '%d. %b %y %h:%M', vz.options.plot.xaxis.monthNames);
+	var to = $.plot.formatDate(new Date(vz.options.plot.xaxis.max), '%d. %b %y %h:%M', vz.options.plot.xaxis.monthNames);
 	$('#title').html(from + ' - ' + to);
 }
-
-/**
- * Overwritten each iterator to iterate recursively throug all entities
- */
-vz.entities.each = function(cb) {
-	for (var i = 0; i < this.length; i++) {
-		this[i].each(cb);
-	}
-}
-
-/**
- * Get all entity information from middleware
- */
-vz.entities.loadDetails = function() {
-	this.clear();
-	
-	var queue = new Array;
-	
-	vz.uuids.each(function(index, uuid) {
-		queue.push(vz.load({
-			controller: 'entity',
-			identifier: uuid,
-			success: function(json) {
-				vz.entities.push(new Entity(json.entity));
-			}
-		}));
-	});
-	
-	return $.when.apply($, queue);
-};
-
-/**
- * Create nested entity list
- *
- * @todo move to Entity class
- */
-vz.entities.showTable = function() {
-	$('#entity-list tbody').empty();
-
-	vz.entities.sort(Entity.compare);
-	
-	var c = 0; // for colors
-	vz.entities.each(function(entity, parent) {
-		entity.color = vz.options.plot.colors[c++ % vz.options.plot.colors.length];
-		
-		$('#entity-list tbody').append(entity.getRow());
-	});
-
-	/*
-	 * Initialize treeTable
-	 * 
-	 * http://ludo.cubicphuse.nl/jquery-plugins/treeTable/doc/index.html
-	 * https://github.com/ludo/jquery-plugins/tree/master/treeTable
-	 */
-	// configure entities as draggable
-	$('#entity-list tr.channel span.indicator, #entity-list tr.aggregator span.indicator').draggable({
-		helper:  'clone',
-		opacity: .75,
-		refreshPositions: true, // Performance?
-		revert: 'invalid',
-		revertDuration: 300,
-		scroll: true
-	});
-
-	// configure aggregators as droppable
-	$('#entity-list tr.aggregator span.indicator').each(function() {
-		$(this).parents('tr').droppable({
-			//accept: 'tr.channel span.indicator, tr.aggregator span.indicator', // TODO
-			drop: function(event, ui) {
-				var child = $(ui.draggable.parents('tr')[0]).data('entity');
-				var from = child.parent;
-				var to = $(this).data('entity');
-				
-				$('#entity-move').dialog({ // confirm prompt
-					resizable: false,
-					modal: true,
-					title: 'Verschieben',
-					width: 400,
-					buttons: {
-						'Verschieben': function() {
-							try {
-								var queue = new Array;
-								queue.push(to.addChild(child)); // add to new aggregator
-					
-								if (from !== undefined) {
-									queue.push(from.removeChild(child)); // remove from aggregator
-								}
-								else {
-									vz.uuids.remove(child.uuid); // remove from cookies
-									vz.uuids.save();
-								}
-							} catch (e) {
-								vz.wui.dialogs.exception(e);
-							} finally {
-								$.when(queue).done(function() {
-									// wait for middleware
-									vz.entities.loadDetails().done(vz.entities.showTable);
-								});
-								$(this).dialog('close');
-							}
-						},
-						'Abbrechen': function() {
-							$(this).dialog('close');
-						}
-					}
-				});
-			},
-			hoverClass: 'accept',
-			over: function(event, ui) {
-				// make the droppable branch expand when a draggable node is moved over it
-				if (this.id != $(ui.draggable.parents('tr')[0]).id && !$(this).hasClass('expanded')) {
-					$(this).expand();
-				}
-			}
-		});
-	});
-
-	// make visible that a row is clicked
-	$('#entity-list table tbody tr').mousedown(function() {
-		$('tr.selected').removeClass('selected'); // deselect currently selected rows
-		$(this).addClass('selected');
-	});
-
-	// make sure row is selected when span is clicked
-	$('#entity-list table tbody tr span').mousedown(function() {
-		$($(this).parents('tr')[0]).trigger('mousedown');
-	});
-	
-	$('#entity-list table').treeTable({
-		treeColumn: 2,
-		clickableNodeNames: true,
-		initialState: 'expanded'
-	});
-};
-
-/**
- * Load json data from the middleware
- *
- * @todo move to Entity class
- */
-vz.entities.loadData = function() {
-	$('#overlay').html('<img src="images/loading.gif" alt="loading..." /><p>loading...</p>');
-
-	var queue = new Array;
-
-	vz.entities.each(function(entity) {
-		if (entity.active && entity.definition.model == 'Volkszaehler\\Model\\Channel') {
-			queue.push(entity.loadData());
-		}
-	});
-	
-	return $.when.apply($, queue);
-};
 
 /**
  * Draws plot to container
@@ -588,7 +426,7 @@ vz.wui.drawPlot = function () {
 			
 			series.push(serie);
 		}
-	});
+	}, true); // recursive!
 	
 	if (series.length == 0) {
 		$('#overlay').html('<img src="images/empty.png" alt="no data..." /><p>nothing to plot...</p>');
@@ -612,14 +450,6 @@ vz.wui.drawPlot = function () {
 /*
  * Error & Exception handling
  */
- 
-var Exception = function(type, message, code) {
-	return {
-		type: type,
-		message: message,
-		code: code
-	};
-}
 
 vz.wui.dialogs.error = function(error, description, code) {
 	if (code !== undefined) {
