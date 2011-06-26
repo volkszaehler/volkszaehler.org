@@ -243,6 +243,7 @@ class XML extends View {
 		$min = $interpreter->getMin();
 		$max = $interpreter->getMax();
 		$average = $interpreter->getAverage();
+		$consumption = $interpreter->getConsumption();
 		
 		$from = $interpreter->getFrom();
 		$to = $interpreter->getTo();
@@ -258,8 +259,8 @@ class XML extends View {
 			$xmlData->appendChild($this->xmlDoc->createElement('max', $max));
 		if (isset($average)) 
 			$xmlData->appendChild($this->xmlDoc->createElement('average', View::formatNumber($average)));
-		if ($interpreter instanceof Interpreter\MeterInterpreter)
-			$xmlData->appendChild($this->xmlDoc->createElement('consumption', View::formatNumber($interpreter->getConsumption())));
+		if (isset($consumption))
+			$xmlData->appendChild($this->xmlDoc->createElement('consumption', View::formatNumber($consumption)));
 		$xmlData->appendChild($this->xmlDoc->createElement('count', count($data)));
 		if (($interpreter->getTupleCount() > 0 || is_null($interpreter->getTupleCount())) && count($data) > 0)
 			$xmlData->appendChild($xmlTuples);

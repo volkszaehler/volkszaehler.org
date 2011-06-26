@@ -33,48 +33,83 @@ use Volkszaehler\Util;
 
 class SensorInterpreter extends Interpreter {
 
-	public function processData($callback) {
-		$data = parent::getData();
-
-		$values = array();
-		foreach ($data as $reading) {
-			$values[] = $callback(array(
-				(float) $reading[0],
-				(float) $reading[1] / $reading[2],
-				(int) $reading[2]
-			));
-		}
-
-		return $values;
+	protected $consumption = NULL; // in Wms (Watt milliseconds)
+	protected $min = NULL;
+	protected $max = NULL;
+	protected $first = NULL;
+	protected $last = NULL;
+	
+	/**
+	 * Calculates the consumption
+	 *
+	 * @return float total consumption in Wh
+	 */
+	public function getConsumption() {
+		return $this->consumption / 3600000; // convert to Wh
 	}
 
 	/**
-	 * Fetch the smallest value from database
-	 * @internal doesn't fits the SQL standard
+	 * Get minimum
+	 *
 	 * @return array (0 => timestamp, 1 => value)
 	 */
 	public function getMin() {
-		$min = $this->conn->fetchArray('SELECT timestamp, value FROM data WHERE channel_id = ?' . parent::buildDateTimeFilterSQL($this->from, $this->to) . ' ORDER BY value ASC LIMIT 1',  array($this->channel->getId()));
-		return ($min) ? array_map('floatval', $min) : NULL;
+		return ($this->min) ? array_map('floatval', array_slice($this->min, 0 , 2)) : NULL;
 	}
 
 	/**
-	 * Fetch the greatest value from the database
-	 * @internal doesn't fits the SQL standard
+	 * Get maximum
+	 *
 	 * @return array (0 => timestamp, 1 => value)
 	 */
 	public function getMax() {
-		$max = $this->conn->fetchArray('SELECT timestamp, value FROM data WHERE channel_id = ?' . parent::buildDateTimeFilterSQL($this->from, $this->to) . ' ORDER BY value DESC LIMIT 1', array($this->channel->getId()));
-		return ($max) ? array_map('floatval', $max) : NULL;
+		return ($this->max) ? array_map('floatval', array_slice($this->max, 0 , 2)) : NULL;
 	}
 
 	/**
-	 * Fetch the average value from the database
-	 * @internal doesn't fits the SQL standard
-	 * @return float
+	 * Get Average
+	 *
+	 * @return float 3600: 3600 s/h; 1000: ms -> s
 	 */
 	public function getAverage() {
-		return (float) $this->conn->fetchColumn('SELECT AVG(value) FROM data WHERE channel_id = ?' . parent::buildDateTimeFilterSQL($this->from, $this->to), array($this->channel->getId()), 0);
+		if ($consumption = $this->getConsumption()) {
+			return (3600 * 1000 * $consumption) / ($this->last[0] - $this->first[0]);
+		}
+		else { // prevents division by zero
+			return 0;
+		}
+	}
+
+	public function processData($callback) {
+		$data = parent::getData();
+		$tuples = array();
+		
+		$last = $data->rewind();
+		$next = $data->next();
+		
+		while ($data->valid()) {
+			$tuple = $callback(array(
+				(float) $next[0],
+				(float) $next[1] / $next[2],
+				(int) $next[2]
+			));
+			
+			if (is_null($this->max) || $tuple[1] > $this->max[1]) {
+				$this->max = $tuple;
+			}
+			
+			if (is_null($this->min) || $tuple[1] < $this->min[1]) {
+				$this->min = $tuple;
+			}
+			
+			$this->consumption += $next[1] * ($next[0] - $last[0]);
+				
+			$tuples[] = $tuple;
+			$last = $next;			
+			$next = $data->next();
+		}
+
+		return $tuples;
 	}
 }
 
