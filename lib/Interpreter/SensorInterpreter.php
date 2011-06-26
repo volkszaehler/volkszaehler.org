@@ -73,7 +73,8 @@ class SensorInterpreter extends Interpreter {
 	 */
 	public function getAverage() {
 		if ($consumption = $this->getConsumption()) {
-			return (3600 * 1000 * $consumption) / ($this->last[0] - $this->first[0]);
+			$delta = $this->last[0] - $this->first[0];
+			return (3600 * 1000 * $consumption) / $delta;
 		}
 		else { // prevents division by zero
 			return 0;
@@ -108,6 +109,9 @@ class SensorInterpreter extends Interpreter {
 			$last = $next;			
 			$next = $data->next();
 		}
+		
+		$this->first = reset($tuples);
+		$this->last = end($tuples);
 
 		return $tuples;
 	}

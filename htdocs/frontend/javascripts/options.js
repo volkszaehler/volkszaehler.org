@@ -66,7 +66,7 @@ vz.options.plot = {
 		hoverable: true,
 		autoHighlight: false
 	}
-}
+};
 
 vz.options.saveCookies = function() {
 	for (var key in vz.options) {

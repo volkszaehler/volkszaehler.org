@@ -218,7 +218,7 @@ Entity.prototype.getDOMRow = function(parent) {
 						$('#entity-' + entity.uuid + ((parent) ? '.child-of-entity-' + parent.uuid : '') + ' input[type=checkbox]')
 						.attr('checked', state);
 						entity.active = state;
-					});
+					}, true); // recursive!
 					
 					vz.wui.drawPlot();
 				})
@@ -287,11 +287,9 @@ Entity.prototype.updateDOMRow = function() {
 		$('.last', row)
 			.text(vz.wui.formatNumber(this.data.tuples.last()[1], true) + this.definition.unit);
 		
-		if (this.definition.interpreter == 'Volkszaehler\\Interpreter\\MeterInterpreter') { // sensors have no consumption
-			$('.consumption', row)
-				.text(vz.wui.formatNumber(this.data.consumption, true) + this.definition.unit + 'h')
-				.attr('title', vz.wui.formatNumber(this.data.consumption * (year/delta), true) + this.definition.unit + 'h' + '/Jahr');
-		}
+		$('.consumption', row)
+			.text(vz.wui.formatNumber(this.data.consumption, true) + this.definition.unit + 'h')
+			.attr('title', vz.wui.formatNumber(this.data.consumption * (year/delta), true) + this.definition.unit + 'h' + '/Jahr');
 		
 		if (this.cost) {
 			$('.cost', row)
