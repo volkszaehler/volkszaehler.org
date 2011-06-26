@@ -24,13 +24,20 @@
  * volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
  
+var Exception = function(type, message, code) {
+	return {
+		type: type,
+		message: message,
+		code: code
+	};
+}
+ 
 /**
  * Universal helper for middleware ajax requests with error handling
  */
 vz.load = function(args) {
 	$.extend(args, {
-		url: this.options.middlewareUrl,
-		dataType: 'json',
+		accepts: 'application/json',
 		error: function(xhr) {
 			try {
 				if (xhr.getResponseHeader('Content-type') == 'application/json') {
@@ -40,8 +47,9 @@ vz.load = function(args) {
 						throw new Exception(json.exception.type, json.exception.message, (json.exception.code) ? json.exception.code : xhr.status);
 					}
 				}
-				
-				throw new Exception(xhr.statusText, 'Unknown middleware response', xhr.status)
+				else {
+					throw new Exception(xhr.statusText, 'Unknown middleware response', xhr.status)
+				}
 			}
 			catch (e) {
 				vz.wui.dialogs.exception(e);
@@ -49,14 +57,28 @@ vz.load = function(args) {
 		}
 	});
 	
-	if (args.controller) {
+	if (args.url === undefined) { // local middleware by default
+		args.url = vz.middleware[0].url;
+	}
+	
+	if (args.url == vz.middleware[0].url) { // local request
+		args.dataType = 'json';
+	}
+	else { // remote request
+		args.dataType = 'jsonp';
+		args.jsonp = 'padding';
+	}
+	
+	if (args.controller !== undefined) {
 		args.url += '/' + args.controller;
 	}
-	if (args.identifier) {
+	
+	if (args.identifier !== undefined) {
 		args.url += '/' + args.identifier;
 	}
+	
 	args.url += '.json';
-
+	
 	return $.ajax(args);
 };
 
@@ -65,14 +87,18 @@ vz.load = function(args) {
  */
 vz.parseUrlParams = function() {
 	var vars = $.getUrlParams();
+	var uuids = new Array;
+	var save = false;
+	
 	for (var key in vars) {
 		if (vars.hasOwnProperty(key)) {
 			switch (key) {
 				case 'uuid': // add optional uuid from url
-					var uuids = (typeof vars[key] == 'string') ? [vars[key]] : vars[key]; // handle multiple uuids
-					uuids.each(function(index, uuid) {
-						try { vz.uuids.add(uuid); } catch (exception) { /* ignore exception */ }
-					});
+					uuids = (typeof vars[key] == 'string') ? [vars[key]] : vars[key]; // handle multiple uuids
+					break;
+					
+				case 'save': // save new uuids in cookie
+					save = true;
 					break;
 					
 				case 'from':
@@ -84,6 +110,22 @@ vz.parseUrlParams = function() {
 					break;
 			}
 		}
+	}
+	
+	uuids.each(function(index, uuid) {
+		try {
+			vz.entities.push(new Entity({
+				middleware: vz.middleware[0].url,
+				uuid: uuid,
+				cookie: save
+			}));
+		} catch (exception) {
+			/* ignore exception */
+		}
+	});
+	
+	if (save) {
+		vz.entities.saveCookie();
 	}
 };
 

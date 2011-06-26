@@ -27,9 +27,8 @@
 // default time interval to show
 vz.options = {
 	language: 'de',
-	middlewareUrl: '../middleware.php', // TODO default middleware, store middleware urls in cookies
-	tuples: 300,
 	precision: 2, // TODO update from middleware capabilities?
+	tuples: null, // automatically determined by plot size
 	render: 'lines',
 	refresh: false,
 	minTimeout: 3000, // minimum refresh time in ms
@@ -43,7 +42,6 @@ vz.options.plot = {
 		shadowSize: 0,
 		points: {
 			radius: 1,
-			//symbol: 'square'
 			symbol: function(ctx, x, y, radius, shadow) { // just draw simple pixels
 				ctx.lineWidth = 1;
 				ctx.strokeRect(x-1, y-1, 2, 2);
@@ -70,7 +68,7 @@ vz.options.plot = {
 	}
 }
 
-vz.options.save = function() {
+vz.options.saveCookies = function() {
 	for (var key in vz.options) {
 		if (vz.options.hasOwnProperty(key) &&
 			typeof vz.options[key] != 'function' &&
@@ -82,7 +80,7 @@ vz.options.save = function() {
 	}
 };
 
-vz.options.load = function() {
+vz.options.loadCookies = function() {
 	for (var key in this) {
 		var value = $.getCookie('vz_' + key);
 		if (value !== undefined) {

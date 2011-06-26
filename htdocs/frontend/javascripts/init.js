@@ -32,8 +32,10 @@
  * we dont want to pollute the global namespace
  */
 var vz = {
-	// entity properties + data
-	entities: new Array, // TODO new Entity?
+	entities: new Array, // entity properties + data
+	middleware: [{ // default middleware
+		url: '../middleware.php',
+	}],
 
 	// web user interface
 	wui: {
@@ -41,17 +43,14 @@ var vz = {
 		timeout: null
 	},
 	
-	// known UUIDs in the browser
-	uuids: new Array,
-	
-	// flot instance
-	plot: { },
-	
 	// debugging and runtime information from middleware
 	capabilities: {
 		definitions: { } // definitions of entities & properties
 	},
-
+	
+	// flot instance
+	plot: { },
+	
 	// options loaded from cookies in options.js
 	options: { }
 };
@@ -72,15 +71,15 @@ $(document).ready(function() {
 		vz.wui.dialogs.error('Javascript Runtime Error', errorMsg);
 	};
 
-	vz.uuids.load(); // load uuids from cookie
-	vz.options.load(); // load options from cookie
+	vz.entities.loadCookie(); // load uuids from cookie
+	vz.options.loadCookies(); // load options from cookie
 	vz.parseUrlParams(); // parse additional url params (new uuid etc..)
 
 	// initialize user interface
 	vz.wui.init();
 	vz.wui.initEvents();
 
-	if (vz.uuids.length == 0) {
+	if (vz.entities.length == 0) {
 		$('#entity-add').dialog('open');
 	}
 	
@@ -90,7 +89,12 @@ $(document).ready(function() {
 			$('#snapshot').show();
 		}
 		
-		vz.entities.loadDetails().done(function(a, b, c, d) {
+		var queue = new Array;
+		vz.entities.each(function(entity) {
+			queue.push(entity.loadDetails());
+		}, true);
+		
+		$.when.apply($, queue).done(function() {
 			vz.entities.showTable();
 			vz.entities.loadData().done(vz.wui.drawPlot);
 		});

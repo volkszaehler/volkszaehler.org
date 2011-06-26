@@ -11,14 +11,18 @@ table {
 	width: 100%;
 }
 
-thead tr th {
+tr th {
 	border-bottom: 2px solid grey;
 	
 	text-align: left;
 	font-size: 0.9em;
 }
 
-tbody tr td {
+tr.property td {
+	border-top: 1px solid #A7A7A7;
+}
+
+tr.entity td {
 	border-top: 1px solid #A7A7A7;
 }
 
