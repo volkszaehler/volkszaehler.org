@@ -214,6 +214,7 @@ class JSON extends View {
 		$min = $interpreter->getMin();
 		$max = $interpreter->getMax();
 		$average = $interpreter->getAverage();
+		$consumption = $interpreter->getConsumption();
 		
 		$from = $interpreter->getFrom();
 		$to = $interpreter->getTo();
@@ -229,8 +230,8 @@ class JSON extends View {
 			$this->json['data']['max']	= $max;
 		if (isset($average)) 
 			$this->json['data']['average']	= View::formatNumber($average);
-		if ($interpreter instanceof Interpreter\MeterInterpreter)
-			$this->json['data']['consumption'] = View::formatNumber($interpreter->getConsumption());
+		if (isset($consumption))
+			$this->json['data']['consumption'] = View::formatNumber($consumption);
 		$this->json['data']['count']		= count($data);
 		if (($interpreter->getTupleCount() > 0 || is_null($interpreter->getTupleCount())) && count($data) > 0)
 			$this->json['data']['tuples']	= $data;

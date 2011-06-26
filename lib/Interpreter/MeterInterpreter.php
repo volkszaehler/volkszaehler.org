@@ -76,8 +76,12 @@ class MeterInterpreter extends Interpreter {
 	 * @return float 3600: 3600 s/h; 1000: ms -> s
 	 */
 	public function getAverage() {
-		$delta = ($this->getConsumption()) ? $this->last[0] - $this->first[0] : 1; // prevent division by zero
-		return (3600 * 1000 * $this->getConsumption()) / $delta;
+		if ($consumption = $this->getConsumption()) {
+			return (3600 * 1000 * $consumption) / ($this->last[0] - $this->first[0]);
+		}
+		else { // prevents division by zero
+			return 0;
+		}
 	}
 
 	/**
