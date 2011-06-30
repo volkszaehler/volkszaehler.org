@@ -213,7 +213,7 @@ vz.wui.zoom = function(from, to) {
 
 	// we dont want to zoom/pan into the future
 	if (vz.options.plot.xaxis.max > new Date().getTime()) {
-		delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
+		var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
 		vz.options.plot.xaxis.max = new Date().getTime();
 		vz.options.plot.xaxis.min = new Date().getTime() - delta;
 	}
