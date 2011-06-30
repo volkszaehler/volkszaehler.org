@@ -92,7 +92,7 @@ vz.wui.dialogs.init = function() {
 			if (json.entities.length > 0) {
 				json.entities.each(function(index, json) {
 					var entity = new Entity(json);
-					$('#entity-subscribe-public select#public').append(
+					$('#entity-public-entity').append(
 						$('<option>').html(entity.title).data('entity', entity)
 					);
 				});
@@ -108,16 +108,25 @@ vz.wui.dialogs.init = function() {
 	});
 	$('#entity-create option[value=power]').attr('selected', 'selected');
 
+	// set defaults
+	$('#entity-subscribe-middleware').val(vz.middleware[0].url);
+	$('#entity-public-middleware').append($('<option>').val(vz.middleware[0].url).text('Local (default)'));
 	$('#entity-create-middleware').val(vz.middleware[0].url);
+	$('#entity-subscribe-cookie').attr('checked', 'checked');
+	$('#entity-public-cookie').attr('checked', 'checked');
+
 	
 	// actions
 	$('#entity-subscribe input[type=button]').click(function() {
 		try {
 			var entity = new Entity({
-				uuid: $('#entity-subscribe input#uuid').val(),
-				middleware: $('#entity-subscribe input#middleware').val(),
-				cookie: Boolean($('#entity-subscribe input.cookie').attr('checked'))
+				uuid: $('#entity-subscribe-uuid').val(),
+				cookie: Boolean($('#entity-subscribe-cookie').attr('checked'))
 			});
+			
+			if (middleware = $('#entity-subscribe-middleware').val()) {
+				entity.middleware = middleware;
+			}
 			
 			entity.loadDetails().done(function() {
 				vz.entities.push(entity);
@@ -135,11 +144,10 @@ vz.wui.dialogs.init = function() {
 	});
 	
 	$('#entity-subscribe-public input[type=button]').click(function() {
-		var entity = $('#entity-subscribe-public select#public option:selected').data('entity');
+		var entity = $('#entity-public-entity:selected').data('entity');
 	
 		try {
-			entity.cookie = Boolean($('#entity-subscribe-public input.cookie').attr('checked'));
-			entity.middleware = vz.middleware[0].url;
+			entity.cookie = Boolean($('#entity-public-cookie').attr('checked'));
 			
 			vz.entities.push(entity);
 			vz.entities.saveCookie();

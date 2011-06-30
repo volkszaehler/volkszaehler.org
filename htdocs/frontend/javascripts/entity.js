@@ -214,6 +214,9 @@ Entity.prototype.getDOMRow = function(parent) {
 				.bind('change', this, function(event) {
 					var state = $(this).attr('checked');
 					
+					event.data.active = state;
+					$('#entity-' + event.data.uuid + ((parent) ? '.child-of-entity-' + parent.uuid : '') + ' input[type=checkbox]');
+					
 					event.data.each(function(entity, parent) {
 						$('#entity-' + entity.uuid + ((parent) ? '.child-of-entity-' + parent.uuid : '') + ' input[type=checkbox]')
 						.attr('checked', state);
