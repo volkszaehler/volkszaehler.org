@@ -42,6 +42,7 @@ Entity.prototype.parseJSON = function(json) {
 
 	if (this.children) {
 		for (var i = 0; i < this.children.length; i++) {
+			this.children[i].middleware = this.middleware; // children inherit parent middleware		
 			this.children[i] = new Entity(this.children[i]);
 		}
 		
