@@ -545,7 +545,7 @@
                 ps = s.datapoints.pointsize;
                 points = s.datapoints.points;
 
-                insertSteps = s.lines.show && s.lines.steps;
+                var insertSteps = s.lines.show && s.lines.steps;
                 s.xaxis.used = s.yaxis.used = true;
                 
                 for (j = k = 0; j < data.length; ++j, k += ps) {
@@ -1249,6 +1249,7 @@
                     var t = axis.tickSize[0] * timeUnitSize[axis.tickSize[1]];
                     var span = axis.max - axis.min;
                     var suffix = (opts.twelveHourClock) ? " %p" : "";
+		    var fmt;
                     
                     if (t < timeUnitSize.minute)
                         fmt = "%h:%M:%S" + suffix;
