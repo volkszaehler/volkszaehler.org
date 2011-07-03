@@ -71,7 +71,7 @@ class JSON extends View {
 			$this->addData($data);
 		}
 		elseif ($data instanceof Model\Entity) {
-			$this->addEntity($data);
+			$this->json['entity'] = self::convertEntity($entity);
 		}
 		elseif ($data instanceof \Exception) {
 			$this->addException($data);
@@ -100,20 +100,6 @@ class JSON extends View {
 	}
 
 	/**
-	 * Add Entity to output queue
-	 *
-	 * @param Model\Entity $entity
-	 */
-	protected function addEntity(Model\Entity $entity) {
-		if ($entity instanceof Model\Aggregator) {
-			$this->json['entity'] = self::convertAggregator($entity);
-		}
-		else {
-			$this->json['entity'] = self::convertEntity($entity);
-		}
-	}
-
-	/**
 	 * Converts entity to array for json_encode()
 	 *
 	 * @param Model\Entity $entity
@@ -124,33 +110,17 @@ class JSON extends View {
 		$jsonEntity['uuid'] = (string) $entity->getUuid();
 		$jsonEntity['type'] = $entity->getType();
 
-
 		foreach ($entity->getProperties() as $key => $value) {
 			$jsonEntity[$key] = $value;
 		}
-
-		return $jsonEntity;
-	}
-
-	/**
-	 * Converts aggregator to array for json_encode
-	 *
-	 * @param Model\Aggregator $aggregator
-	 * @return array
-	 */
-	protected static function convertAggregator(Model\Aggregator $aggregator) {
-		$jsonAggregator = self::convertEntity($aggregator);
-
-		foreach ($aggregator->getChildren() as $entity) {
-			if ($entity instanceof Model\Channel) {
-				$jsonAggregator['children'][] = self::convertEntity($entity);
-			}
-			elseif ($entity instanceof Model\Aggregator) {
-				$jsonAggregator['children'][] = self::convertAggregator($entity);
+		
+		if ($entity instanceof Model\Aggregator) {
+			foreach ($entity->getChildren() as $child) {
+				$jsonEntity['children'][] = self::convertEntity($child);
 			}
 		}
 
-		return $jsonAggregator;
+		return $jsonEntity;
 	}
 
 	/**

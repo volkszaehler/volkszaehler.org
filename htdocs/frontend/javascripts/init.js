@@ -74,14 +74,10 @@ $(document).ready(function() {
 	vz.entities.loadCookie(); // load uuids from cookie
 	vz.options.loadCookies(); // load options from cookie
 	vz.parseUrlParams(); // parse additional url params (new uuid etc..)
-
+	
 	// initialize user interface
 	vz.wui.init();
 	vz.wui.initEvents();
-
-	if (vz.entities.length == 0) {
-		$('#entity-add').dialog('open');
-	}
 	
 	// chaining ajax request with jquery deferred object
 	vz.capabilities.load().done(function() {
@@ -95,6 +91,10 @@ $(document).ready(function() {
 		}, true);
 		
 		$.when.apply($, queue).done(function() {
+			if (vz.entities.length == 0) {
+				vz.wui.dialogs.init();
+			}
+		
 			vz.entities.showTable();
 			vz.entities.loadData().done(vz.wui.drawPlot);
 		});

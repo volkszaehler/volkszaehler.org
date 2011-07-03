@@ -114,7 +114,6 @@ vz.wui.dialogs.init = function() {
 	$('#entity-create-middleware').val(vz.middleware[0].url);
 	$('#entity-subscribe-cookie').attr('checked', 'checked');
 	$('#entity-public-cookie').attr('checked', 'checked');
-
 	
 	// actions
 	$('#entity-subscribe input[type=button]').click(function() {
@@ -148,6 +147,7 @@ vz.wui.dialogs.init = function() {
 	
 		try {
 			entity.cookie = Boolean($('#entity-public-cookie').attr('checked'));
+			entity.middleware = $('#entity-public-middleware option:selected').val();
 			
 			vz.entities.push(entity);
 			vz.entities.saveCookie();
@@ -167,7 +167,7 @@ vz.wui.dialogs.init = function() {
 		$('#entity-add').dialog('close');
 	});
 	
-	// update event handler
+	// update event handler after lazy loading
 	$('button[name=entity-add]').unbind('click', this.init);
 	$('button[name=entity-add]').click(function() {
 		$('#entity-add.dialog').dialog('open');
