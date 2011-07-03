@@ -71,7 +71,7 @@ class JSON extends View {
 			$this->addData($data);
 		}
 		elseif ($data instanceof Model\Entity) {
-			$this->json['entity'] = self::convertEntity($entity);
+			$this->json['entity'] = self::convertEntity($data);
 		}
 		elseif ($data instanceof \Exception) {
 			$this->addException($data);

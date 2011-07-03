@@ -35,6 +35,8 @@ var vz = {
 	entities: new Array, // entity properties + data
 	middleware: [{ // default middleware
 		url: '../middleware.php',
+		public: [ ] // public entities
+		/* capabilities: { } */
 	}],
 
 	// web user interface

@@ -89,14 +89,19 @@ vz.wui.dialogs.init = function() {
 	vz.load({
 		controller: 'entity',
 		success: function(json) {
-			if (json.entities.length > 0) {
-				json.entities.each(function(index, json) {
-					var entity = new Entity(json);
-					$('#entity-public-entity').append(
-						$('<option>').html(entity.title).val(entity.uuid).data('entity', entity)
-					);
-				});
-			}
+			var entities = new Array;
+			json.entities.each(function(index, json) {
+				entities.push(new Entity(json));
+			});
+
+			entities.sort(Entity.compare);
+			entities.each(function(index, entity) {
+				$('#entity-public-entity').append(
+					$('<option>').html(entity.title).val(entity.uuid).data('entity', entity)
+				);
+			});
+			
+			vz.middleware[0].public = entities; /* store */
 		}
 	});
 	
