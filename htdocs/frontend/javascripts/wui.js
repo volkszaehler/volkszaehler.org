@@ -144,7 +144,7 @@ vz.wui.dialogs.init = function() {
 	});
 	
 	$('#entity-public input[type=button]').click(function() {
-		var entity = $('#entity-public-entity:selected').data('entity');
+		var entity = $('#entity-public-entity option:selected').data('entity');
 	
 		try {
 			entity.cookie = Boolean($('#entity-public-cookie').attr('checked'));
