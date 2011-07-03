@@ -93,7 +93,7 @@ vz.wui.dialogs.init = function() {
 				json.entities.each(function(index, json) {
 					var entity = new Entity(json);
 					$('#entity-public-entity').append(
-						$('<option>').html(entity.title).data('entity', entity)
+						$('<option>').html(entity.title).val(entity.uuid).data('entity', entity)
 					);
 				});
 			}
@@ -143,7 +143,7 @@ vz.wui.dialogs.init = function() {
 		}
 	});
 	
-	$('#entity-subscribe-public input[type=button]').click(function() {
+	$('#entity-public input[type=button]').click(function() {
 		var entity = $('#entity-public-entity:selected').data('entity');
 	
 		try {
