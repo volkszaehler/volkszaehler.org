@@ -11,8 +11,8 @@ volkszaehler.org/
  |_ lib/			middleware libraries
  |_ misc/
      |_ controller/
-     |   |_ php/		simple reference implemenation of controllers
-     |   \_ ethersex		ethersex fork optimized for volkszaehler.org
+     |   |_ vzlogger/		command line tool to log meters/sensors
+     |   \_ batch/		batch scripts for logging (prototypes)
      |
      |_ docs/			documentation
      |_ frontend/		
