@@ -125,16 +125,23 @@ class EntityController extends Controller {
 	 * Update/set/delete properties of entities
 	 */
 	protected function setProperties(Model\Entity $entity, $parameters) {
-		foreach ($parameters as $parameter => $value) {
-			if (Definition\PropertyDefinition::exists($parameter)) {
-				if ($value == '') {
-					$entity->unsetProperty($parameter, $this->em);
-				}
-				else {
-					$entity->setProperty($parameter, $value);
-				}
+		foreach ($parameters as $key => $value) {
+			if (in_array($key, array('operation', 'type'))) {
+				continue; // skip generic parameters
+			}		
+			else if (!Definition\PropertyDefinition::exists($key)) {
+				throw new \Exception('Unknown property');
+			}
+
+			if ($value == '') { // dont use empty() because it also matches 0
+				$entity->deleteProperty($key);
+			}
+			else {
+				$entity->setProperty($key, $value);
 			}
 		}
+		
+		$entity->checkProperties();
 	}
 
 	/**
@@ -152,8 +159,8 @@ class EntityController extends Controller {
 		$i = 0;
 		$sqlWhere = array();
 		$sqlParams = array();
-		foreach ($properties as $property => $value) {
-			switch (Definition\PropertyDefinition::get($property)->getType()) {
+		foreach ($properties as $key => $value) {
+			switch (Definition\PropertyDefinition::get($key)->getType()) {
 				case 'string':
 				case 'text':
 				case 'multiple':
@@ -165,7 +172,7 @@ class EntityController extends Controller {
 			}
 			$sqlWhere[] = 'EXISTS (SELECT p' . $i . ' FROM \Volkszaehler\Model\Property p' . $i . ' WHERE p' . $i . '.key = :key' . $i . ' AND p' . $i . '.value = :value' . $i . ' AND p' . $i . '.entity = a)';
 			$sqlParams += array(
-				'key' . $i => $property,
+				'key' . $i => $key,
 				'value' . $i => $value
 			);
 			$i++;

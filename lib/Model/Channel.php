@@ -35,7 +35,7 @@ use Doctrine\Common\Collections\ArrayCollection;
  */
 class Channel extends Entity {
 	/**
-	 * @OneToMany(targetEntity="Data", mappedBy="channel", cascade={"remove", "persist"})
+	 * @OneToMany(targetEntity="Data", mappedBy="channel", cascade={"persist"}, orphanRemoval=true)
 	 * @OrderBy({"timestamp" = "ASC"})
 	 */
 	protected $data = NULL;
@@ -43,8 +43,8 @@ class Channel extends Entity {
 	/**
 	 * Constructor
 	 */
-	public function __construct($type, $properties = array()) {
-		parent::__construct($type, $properties);
+	public function __construct($type) {
+		parent::__construct($type);
 
 		$this->data = new ArrayCollection();
 		$this->groups = new ArrayCollection();

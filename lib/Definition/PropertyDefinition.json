@@ -41,7 +41,7 @@
 		"name"			: "description",
 		"type"			: "text",
 		"pattern"		: "/[a-z0-9\\s]/",
-		"max"			: 255, // TODO use "text" type for unlimited descriptions => PropertyModel
+		"min"			: "3",
 		"translation"		: {
 			"de" : "Beschreibung",
 			"en" : "Description"

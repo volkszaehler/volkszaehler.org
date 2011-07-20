@@ -50,10 +50,10 @@ class Aggregator extends Entity {
 	protected $children = NULL;
 
 	/**
-	 * Construct
+	 * Constructor
 	 */
-	public function __construct($properties = array()) {
-		parent::__construct($properties);
+	public function __construct($type) {
+		parent::__construct($type);
 
 		$this->children = new ArrayCollection();
 	}

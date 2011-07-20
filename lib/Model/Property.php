@@ -58,7 +58,7 @@ class Property {
 	 */
 	protected $key;
 
-	/** @Column(type="string", nullable=false) */
+	/** @Column(type="text", nullable=false) */
 	protected $value;
 
 	/** @ManyToOne(targetEntity="Entity", inversedBy="properties") */
@@ -74,6 +74,8 @@ class Property {
 		$this->entity = $entity;
 		$this->key = $key;
 		$this->value = $value;
+		
+		$this->validate();
 	}
 
 	/**
@@ -104,32 +106,13 @@ class Property {
 	 */
 	public function validate() {
 		if (!Definition\PropertyDefinition::exists($this->key)) {
-			throw new \Exception('Invalid property key: ' . $this->key);
+			throw new \Exception('Invalid property');
 		}
 
 		$this->cast();	// TODO not safe
 
 		if (!$this->getDefinition()->validateValue($this->value)) {
-			throw new \Exception('Invalid property value: ' . $this->value);
-		}
-	}
-
-	/**
-	 * @PreRemove
-	 * @todo blocks removal of entity
-	 */
-	public function checkRemove() {
-		if (in_array($this->key, $this->entity->getDefinition()->getRequiredProperties())) {
-			throw new \Exception($this->key . ' is a required property for the entity: ' . $this->entity->getType());
-		}
-	}
-
-	/**
-	 * @PrePersist
-	 */
-	public function checkPersist() {
-		if (!in_array($this->key, $this->entity->getDefinition()->getValidProperties())) {
-			throw new \Exception($this->key . ' is not a valid property for the entity: ' . $this->entity->getType());
+			throw new \Exception('Invalid property value');
 		}
 	}
 
