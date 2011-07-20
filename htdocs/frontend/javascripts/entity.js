@@ -98,13 +98,32 @@ Entity.prototype.loadData = function() {
  * Show and edit entity details
  */
 Entity.prototype.showDetails = function() {
+	var entity = this;
+
 	$('<div>')
 	.addClass('details')
 	.append(this.getDOMDetails())
 	.dialog({
 		title: 'Details f&uuml;r ' + this.title,
 		width: 480,
-		resizable: false
+		resizable: false,
+		buttons : {
+			'Schließen': function() {
+				$(this).dialog('close');
+			},
+			'Löschen' : function() {
+				vz.load({ // TODO encapsulate in own method
+					controller: 'entity',
+					context: this,
+					identifier: entity.uuid,
+					url: entity.middleware,
+					type: 'DELETE',
+					success: function() {
+						$(this).dialog('close');
+					}
+				});
+			}
+		}
 	});
 };
 

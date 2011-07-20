@@ -79,6 +79,14 @@ vz.load = function(args) {
 	
 	args.url += '.json';
 	
+	if (args.data === undefined) {
+		args.data = { };
+	}
+	
+	if (args.type) {
+		args.data.operation = args.type.toLowerCase();
+	}
+	
 	return $.ajax(args);
 };
 
