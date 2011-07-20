@@ -74,7 +74,7 @@ class Router {
 	public static $controllerMapping = array(
 		'channel'		=> 'Volkszaehler\Controller\ChannelController',
 		'group'			=> 'Volkszaehler\Controller\AggregatorController',
-		'group'			=> 'Volkszaehler\Controller\AggregatorController',
+		'aggregator'		=> 'Volkszaehler\Controller\AggregatorController',
 		'entity'		=> 'Volkszaehler\Controller\EntityController',
 		'data'			=> 'Volkszaehler\Controller\DataController',
 		'capabilities'		=> 'Volkszaehler\Controller\CapabilitiesController'
