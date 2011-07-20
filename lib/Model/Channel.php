@@ -49,13 +49,24 @@ class Channel extends Entity {
 		$this->data = new ArrayCollection();
 		$this->groups = new ArrayCollection();
 	}
-
+	
 	/**
 	 * Add a new data to the database
-	 * @todo move to Logger\Logger?
 	 */
 	public function addData(\Volkszaehler\Model\Data $data) {
 		$this->data->add($data);
+	}
+	
+	
+	/**
+	 * Purge data
+	 *
+	 * prevents doctrine of using single delete statements
+	 * @todo filter from & to
+	 */
+	public function clearData(\Doctrine\ORM\EntityManager $em) {
+		$sql = 'DELETE FROM data WHERE channel_id = ?';
+		return $em->getConnection()->executeQuery($sql, array($this->id));
 	}
 }
 

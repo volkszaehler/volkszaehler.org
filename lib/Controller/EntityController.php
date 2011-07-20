@@ -71,6 +71,10 @@ class EntityController extends Controller {
 	 */
 	public function delete($identifier) {
 		$entity = $this->get($identifier);
+		
+		if ($entity instanceof Model\Channel) {
+			$entity->clearData($this->em);
+		}
 
 		$this->em->remove($entity);
 		$this->em->flush();
