@@ -88,40 +88,6 @@ class EntityController extends Controller {
 	}
 
 	/**
-	 * Adds an entity to the uuids cookie
-	 *
-	 * @todo add to Model\Entity?
-	 * @param Model\Entity $entity
-	 */
-	protected function setCookie(Model\Entity $entity) {
-		$uuids = ($uuids = $this->view->request->getParameter('vz_uuids', 'cookies')) ? explode(';', $uuids) : array();
-
-		// add new UUID
-		$uuids[] = $entity->getUuid();
-
-		// send new cookie to browser
-		setcookie('vz_uuids', implode(';', array_unique($uuids)), 0, '/');	// TODO correct path
-	}
-
-	/**
-	 * Removes an entity from the uuids cookie
-	 *
-	 * @param Model\Entity $entity
-	 * @todo add to Model\Entity?
-	 */
-	protected function unsetCookie(Model\Entity $entity) {
-		$uuids = ($uuids = $this->view->request->getParameter('vz_uuids', 'cookies')) ? explode(';', $uuids) : array();
-
-		// remove old UUID
-		$uuids = array_filter($uuids, function($uuid) use ($entity) {
-			return $uuid != $entity->getUuid();
-		});
-
-		// send new cookie to browser
-		setcookie('vz_uuids', implode(';', array_unique($uuids)), 0, '/'); // TODO correct path
-	}
-
-	/**
 	 * Update/set/delete properties of entities
 	 */
 	protected function setProperties(Model\Entity $entity, $parameters) {

@@ -78,10 +78,6 @@ class AggregatorController extends EntityController {
 			$aggregator = new Model\Aggregator($type);
 			$this->setProperties($aggregator, $this->view->request->getParameters());
 			$this->em->persist($aggregator);
-
-			if ($this->view->request->getParameter('setcookie')) {
-				$this->setCookie($channel);
-			}
 		}
 
 		$this->em->flush();

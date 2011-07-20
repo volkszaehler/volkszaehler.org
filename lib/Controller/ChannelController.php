@@ -68,10 +68,6 @@ class ChannelController extends EntityController {
 		$this->em->persist($channel);
 		$this->em->flush();
 
-		if ($this->view->request->getParameter('setcookie')) {
-			$this->setCookie($channel);
-		}
-
 		return $channel;
 	}
 }
