@@ -39,8 +39,13 @@ class AggregatorController extends EntityController {
 	 */
 	public function get($identifier = NULL) {
 		$aggregator = parent::get($identifier);
-
-		if ($aggregator instanceof Model\Aggregator) {
+		
+		if (is_array($aggregator)) { // filter public entities
+			return array('channels' => array_values(array_filter($aggregator['entities'], function($agg) {
+				return ($agg instanceof Model\Aggregator);
+			})));
+		}
+		else if ($aggregator instanceof Model\Aggregator) {
 			return $aggregator;
 		}
 		else {
@@ -64,13 +69,15 @@ class AggregatorController extends EntityController {
 			}
 		}
 		else {	// create new aggregator
-			$aggregator = new Model\Aggregator('group');	// TODO support for other aggregator types
+			$type = $this->view->request->getParameter('type');
+
+			if (!isset($ype)) {
+				$type = 'group';
+			}
+		
+			$aggregator = new Model\Aggregator($type);
 			$this->setProperties($aggregator, $this->view->request->getParameters());
 			$this->em->persist($aggregator);
-
-			if ($this->view->request->getParameter('setcookie')) {
-				$this->setCookie($channel);
-			}
 		}
 
 		$this->em->flush();

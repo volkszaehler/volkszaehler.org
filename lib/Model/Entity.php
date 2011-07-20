@@ -59,7 +59,7 @@ abstract class Entity {
 	protected $type;
 
 	/**
-	 * @OneToMany(targetEntity="Property", mappedBy="entity", cascade={"remove", "persist"})
+	 * @OneToMany(targetEntity="Property", mappedBy="entity", cascade={"remove", "persist"}, orphanRemoval=true)
 	 * @OrderBy({"key" = "ASC"})
 	 */
 	protected $properties = NULL;
@@ -80,7 +80,7 @@ abstract class Entity {
 		}
 
 		$this->type = $type;
-		$this->uuid = (string) Util\UUID::mint();
+		$this->uuid = (string) Util\UUID::mint(); // generate random UUID
 
 		$this->properties = new Collections\ArrayCollection();
 		$this->parents = new Collections\ArrayCollection();
@@ -101,7 +101,7 @@ abstract class Entity {
 		}
 
 		if (count($invalidProperties) > 0) {
-			throw new \Exception('Propert' . ((count($invalidProperties) == 1) ? 'y' : 'ies') . ' "' . implode(', ', $invalidProperties) . '" ' . ((count($invalidProperties) == 1) ? 'is' : 'are') . ' not allowed for entity "' . $this->getType() . '"');
+			throw new \Exception('Propert' . ((count($invalidProperties) == 1) ? 'y' : 'ies') . ' \'' . implode(', ', $invalidProperties) . '\' ' . ((count($invalidProperties) == 1) ? 'is' : 'are') . ' not valid for entity \'' . $this->getType() . '\'');
 		}
 	}
 
@@ -122,10 +122,6 @@ abstract class Entity {
 	 * @return array
 	 */
 	public function getProperties($prefix = NULL) {
-		/*$this->properties->filter(function($property) {
-			return substr($property->getKey(), 0, strlen($prefix)) == $prefix;
-		})->toArray();*/
-
 		$properties = array();
 		foreach ($this->properties as $property) {
 			if (substr($property->getKey(), 0, strlen($prefix)) == $prefix) {
@@ -137,6 +133,7 @@ abstract class Entity {
 	}
 
 	/**
+	 * Find property by key
 	 *
 	 * @param string $key
 	 * @return Model\Property
@@ -147,10 +144,12 @@ abstract class Entity {
 				return $property;
 			}
 		}
+		
+		return FALSE; // not found
 	}
 
 	/**
-	 * Set property
+	 * Set property by key/value
 	 *
 	 * @param string $key name of the property
 	 * @param mixed $value of the property
@@ -171,9 +170,13 @@ abstract class Entity {
 	 * @param string $name of the property
 	 * @param Doctrine\EntityManager $em
 	 */
-	public function unsetProperty($key, ORM\EntityManager $em) {
+	public function deleteProperty($key) {
 		$property = $this->findProperty($key);
-		$em->remove($property);
+
+		if (!$property) {
+			throw new \Exception('Property not found');
+		}
+		
 		$this->properties->removeElement($property);
 	}
 

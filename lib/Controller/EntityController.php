@@ -71,6 +71,10 @@ class EntityController extends Controller {
 	 */
 	public function delete($identifier) {
 		$entity = $this->get($identifier);
+		
+		if ($entity instanceof Model\Channel) {
+			$entity->clearData($this->em);
+		}
 
 		$this->em->remove($entity);
 		$this->em->flush();
@@ -88,53 +92,26 @@ class EntityController extends Controller {
 	}
 
 	/**
-	 * Adds an entity to the uuids cookie
-	 *
-	 * @todo add to Model\Entity?
-	 * @param Model\Entity $entity
-	 */
-	protected function setCookie(Model\Entity $entity) {
-		$uuids = ($uuids = $this->view->request->getParameter('vz_uuids', 'cookies')) ? explode(';', $uuids) : array();
-
-		// add new UUID
-		$uuids[] = $entity->getUuid();
-
-		// send new cookie to browser
-		setcookie('vz_uuids', implode(';', array_unique($uuids)), 0, '/');	// TODO correct path
-	}
-
-	/**
-	 * Removes an entity from the uuids cookie
-	 *
-	 * @param Model\Entity $entity
-	 * @todo add to Model\Entity?
-	 */
-	protected function unsetCookie(Model\Entity $entity) {
-		$uuids = ($uuids = $this->view->request->getParameter('vz_uuids', 'cookies')) ? explode(';', $uuids) : array();
-
-		// remove old UUID
-		$uuids = array_filter($uuids, function($uuid) use ($entity) {
-			return $uuid != $entity->getUuid();
-		});
-
-		// send new cookie to browser
-		setcookie('vz_uuids', implode(';', array_unique($uuids)), 0, '/'); // TODO correct path
-	}
-
-	/**
 	 * Update/set/delete properties of entities
 	 */
 	protected function setProperties(Model\Entity $entity, $parameters) {
-		foreach ($parameters as $parameter => $value) {
-			if (Definition\PropertyDefinition::exists($parameter)) {
-				if ($value == '') {
-					$entity->unsetProperty($parameter, $this->em);
-				}
-				else {
-					$entity->setProperty($parameter, $value);
-				}
+		foreach ($parameters as $key => $value) {
+			if (in_array($key, array('operation', 'type'))) {
+				continue; // skip generic parameters
+			}		
+			else if (!Definition\PropertyDefinition::exists($key)) {
+				throw new \Exception('Unknown property');
+			}
+
+			if ($value == '') { // dont use empty() because it also matches 0
+				$entity->deleteProperty($key);
+			}
+			else {
+				$entity->setProperty($key, $value);
 			}
 		}
+		
+		$entity->checkProperties();
 	}
 
 	/**
@@ -152,8 +129,8 @@ class EntityController extends Controller {
 		$i = 0;
 		$sqlWhere = array();
 		$sqlParams = array();
-		foreach ($properties as $property => $value) {
-			switch (Definition\PropertyDefinition::get($property)->getType()) {
+		foreach ($properties as $key => $value) {
+			switch (Definition\PropertyDefinition::get($key)->getType()) {
 				case 'string':
 				case 'text':
 				case 'multiple':
@@ -165,7 +142,7 @@ class EntityController extends Controller {
 			}
 			$sqlWhere[] = 'EXISTS (SELECT p' . $i . ' FROM \Volkszaehler\Model\Property p' . $i . ' WHERE p' . $i . '.key = :key' . $i . ' AND p' . $i . '.value = :value' . $i . ' AND p' . $i . '.entity = a)';
 			$sqlParams += array(
-				'key' . $i => $property,
+				'key' . $i => $key,
 				'value' . $i => $value
 			);
 			$i++;
