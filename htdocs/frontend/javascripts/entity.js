@@ -83,7 +83,7 @@ Entity.prototype.loadData = function() {
 		success: function(json) {
 			this.data = json.data;
 		
-			if (this.data.count > 0) {
+			if (this.data.tuples.length > 0) {
 				if (this.data.min[1] < vz.options.plot.yaxis.min) { // allow negative values for temperature sensors
 					vz.options.plot.yaxis.min = null;
 				}
@@ -298,7 +298,7 @@ Entity.prototype.updateDOMRow = function() {
 	var delta = this.data.to - this.data.from;
 	var year = 365*24*60*60*1000;
 
-	if (this.data.count > 0) { // update statistics if data available
+	if (this.data.rows > 0) { // update statistics if data available
 		$('.min', row)
 			.text(vz.wui.formatNumber(this.data.min[1], true) + this.definition.unit)
 			.attr('title', $.plot.formatDate(new Date(this.data.min[0]), '%d. %b %y %h:%M:%S', vz.options.plot.xaxis.monthNames));

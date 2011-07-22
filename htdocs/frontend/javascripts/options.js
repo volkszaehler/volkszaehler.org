@@ -33,7 +33,6 @@ vz.options = {
 	refresh: false,
 	minTimeout: 3000, // minimum refresh time in ms
 	defaultInterval: 24*60*60*1000, // 1 day
-	timezoneOffset: -(new Date().getTimezoneOffset() * 60000) // TODO add option with timezone dropdown
 };
 
 vz.options.plot = {

@@ -1238,13 +1238,9 @@
                 };
 
                 formatter = function (v, axis) {
-                    if (opts.useLocalTime)
-                        v -= new Date(v).getTimezoneOffset()*60000;
-                    var d = new Date(v);
-
                     // first check global format
                     if (opts.timeformat != null)
-                        return $.plot.formatDate(d, opts.timeformat, opts.monthNames);
+                        return $.plot.formatDate(v, opts.timeformat, opts.monthNames, opts.useLocalTime);
                     
                     var t = axis.tickSize[0] * timeUnitSize[axis.tickSize[1]];
                     var span = axis.max - axis.min;
@@ -1270,7 +1266,7 @@
                     else
                         fmt = "%y";
                     
-                    return $.plot.formatDate(d, fmt, opts.monthNames);
+                    return $.plot.formatDate(v, fmt, opts.monthNames, opts.useLocalTime);
                 };
             }
             else {
@@ -2539,7 +2535,12 @@
     $.plot.plugins = [];
 
     // returns a string with the date d formatted according to fmt
-    $.plot.formatDate = function(d, fmt, monthNames) {
+    $.plot.formatDate = function(v, fmt, monthNames, tzOffset) {
+    	if (tzOffset)
+            v -= new Date(v).getTimezoneOffset()*60000;
+            
+        var d = new Date(v);
+    
         var leftPad = function(n) {
             n = "" + n;
             return n.length == 1 ? "0" + n : n;

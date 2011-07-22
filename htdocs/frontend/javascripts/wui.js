@@ -413,8 +413,8 @@ vz.wui.formatNumber = function(number, prefix) {
 }
 
 vz.wui.updateHeadline = function() {
-	var from = $.plot.formatDate(new Date(vz.options.plot.xaxis.min), '%d. %b %y %h:%M', vz.options.plot.xaxis.monthNames);
-	var to = $.plot.formatDate(new Date(vz.options.plot.xaxis.max), '%d. %b %y %h:%M', vz.options.plot.xaxis.monthNames);
+	var from = $.plot.formatDate(new Date(vz.options.plot.xaxis.min), '%d. %b %y %h:%M', vz.options.plot.xaxis.monthNames, true);
+	var to = $.plot.formatDate(new Date(vz.options.plot.xaxis.max), '%d. %b %y %h:%M', vz.options.plot.xaxis.monthNames, true);
 	$('#title').html(from + ' - ' + to);
 }
 
