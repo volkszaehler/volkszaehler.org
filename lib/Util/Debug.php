@@ -153,11 +153,14 @@ class Debug {
 	 * @return array average load (1min, 5min, 15min)
 	 */
 	public static function getLoadAvg() { 
-		if (file_exists("/proc/loadavg")) {
-			$load = file_get_contents("/proc/loadavg");
+		if (function_exists('sys_getloadvg')) {
+			$load = sys_getloadvg();
+		}
+		elseif (file_exists('/proc/loadavg')) {
+			$load = file_get_contents('/proc/loadavg');
 			$load = array_slice(explode(' ', $load), 0, 3);
 		}
-		elseif (function_exists("shell_exec")) {
+		elseif (function_exists('shell_exec')) {
 			$load = explode(', ', substr(shell_exec('uptime'), -16));
 		}
 		

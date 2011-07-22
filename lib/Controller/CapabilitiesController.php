@@ -60,6 +60,7 @@ class CapabilitiesController extends Controller {
 			if ($load = Util\Debug::getLoadAvg()) $statistics['load'] = $load;
 			if ($uptime = Util\Debug::getUptime()) $statistics['uptime'] = $uptime*1000;
 			if ($commit = Util\Debug::getCurrentCommit()) $statistics['commit-hash'] = $commit;
+			if ($version = phpversion()) $statistics['php-version'] = $version;
 
 			$capabilities['statistics'] = $statistics;
 		}
