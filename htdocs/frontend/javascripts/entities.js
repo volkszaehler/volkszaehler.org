@@ -81,7 +81,7 @@ vz.entities.each = function(cb, recursive) {
 	for (var i = 0; i < this.length; i++) {
 		cb(this[i]);
 		
-		if (recursive) {
+		if (recursive && this[i] !== undefined) {
 			this[i].each(cb, true);
 		}
 	}
@@ -151,7 +151,7 @@ vz.entities.showTable = function() {
 							} finally {
 								$.when(queue).done(function() {
 									// wait for middleware
-									$.when(from.loadDetails(), to.loadDetails).done(vz.entities.showDetails);
+									$.when(from.loadDetails(), to.loadDetails).done(vz.entities.showTable);
 								});
 								$(this).dialog('close');
 							}

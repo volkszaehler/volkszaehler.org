@@ -41,8 +41,21 @@ vz.wui.init = function() {
 	$('button, input[type=button],[type=image],[type=submit]').button();
 	$('button[name=options-save]').click(vz.options.saveCookies);
 	$('button[name=entity-add]').click(this.dialogs.init);
-	$('#permalink').click(function() { window.location = vz.wui.getPermalink(); });
-	$('#snapshot').click(function() { window.location = vz.wui.getSnaplink(); }).hide();
+	
+	$('#export select').change(function(event) {
+		switch ($(this).val()) {
+			case 'permalink':
+				window.location = vz.wui.getPermalink();
+				break;
+			case 'png':
+			case 'csv':
+			case 'xml':
+				window.location = vz.wui.getLink($(this).val());
+				break;
+				
+		}
+		$('#export option[value=default]').attr('selected', true);
+	});
 	
 	// bind plot actions
 	$('#controls button').click(this.handleControls);
@@ -83,25 +96,31 @@ vz.wui.dialogs.init = function() {
 		width: 530,
 		resizable: false
 	});
-	$('#entity-add.dialog > div').tabs();
-	
-	// load public entities
-	vz.load({
-		controller: 'entity',
-		success: function(json) {
-			var entities = new Array;
-			json.entities.each(function(index, json) {
-				entities.push(new Entity(json));
-			});
+	$('#entity-add.dialog > div').tabs({
+		show: function(event, ui) { // lazy loading public entities
+			if (ui.index != 1) {
+				return; // abort, we are not in public tab
+			}
+		
+			vz.load({
+				controller: 'entity',
+				success: function(json) {
+					var public = new Array;
+					json.entities.each(function(index, json) {
+						public.push(new Entity(json));
+					});
 
-			entities.sort(Entity.compare);
-			entities.each(function(index, entity) {
-				$('#entity-public-entity').append(
-					$('<option>').html(entity.title).val(entity.uuid).data('entity', entity)
-				);
-			});
+					public.sort(Entity.compare);
+					vz.middleware[0].public = public;
 			
-			vz.middleware[0].public = entities; /* store */
+					$('#entity-public-entity').empty();
+					public.each(function(index, entity) {
+						$('#entity-public-entity').append(
+							$('<option>').html(entity.title).val(entity.uuid).data('entity', entity)
+						);
+					});
+				}
+			});
 		}
 	});
 	
@@ -168,7 +187,7 @@ vz.wui.dialogs.init = function() {
 	});
 	
 	$('#entity-create form').submit(function() {
-		$(this).attr('action', $('#entity-create-middlware').val() + '/channel.json');
+		$(this).attr('action', $('#entity-create-middleware').val() + '/channel.json');
 		$('#entity-add').dialog('close');
 	});
 	
@@ -206,15 +225,17 @@ vz.wui.getPermalink = function() {
  *
  * @return string url
  */
-vz.wui.getSnaplink = function() {
-	var uuids = new Array;
+vz.wui.getLink = function(format) {
+	var entities = new Array;
 	vz.entities.each(function(entity, parent) {
 		if (entity.active) {
-			uuids.push(entity.uuid);
+			entities.push(entity);
 		}
 	}, true); // recursive!
 	
-	return vz.options.middlewareUrl + '/data/' + uuids[0] + '.png?' + $.param({
+	var entity = entities[0]; // TODO handle other entities
+	
+	return entity.middleware + '/data/' + entity.uuid + '.' + format + '?' + $.param({
 		from: Math.floor(vz.options.plot.xaxis.min),
 		to: Math.ceil(vz.options.plot.xaxis.max)
 	});

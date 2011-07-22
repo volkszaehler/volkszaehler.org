@@ -84,7 +84,7 @@ $(document).ready(function() {
 	// chaining ajax request with jquery deferred object
 	vz.capabilities.load().done(function() {
 		if (vz.capabilities.formats.contains('png')) {
-			$('#snapshot').show();
+			$('#export option[value=png]').removeAttr('disabled');
 		}
 		
 		var queue = new Array;

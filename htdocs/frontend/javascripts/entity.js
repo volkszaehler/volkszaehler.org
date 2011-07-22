@@ -83,7 +83,7 @@ Entity.prototype.loadData = function() {
 		success: function(json) {
 			this.data = json.data;
 		
-			if (this.data.tuples.length > 0) {
+			if (this.data.tuples && this.data.tuples.length > 0) {
 				if (this.data.min[1] < vz.options.plot.yaxis.min) { // allow negative values for temperature sensors
 					vz.options.plot.yaxis.min = null;
 				}
@@ -112,16 +112,22 @@ Entity.prototype.showDetails = function() {
 				$(this).dialog('close');
 			},
 			'Löschen' : function() {
-				vz.load({ // TODO encapsulate in own method
-					controller: 'entity',
-					context: this,
-					identifier: entity.uuid,
-					url: entity.middleware,
-					type: 'DELETE',
-					success: function() {
-						$(this).dialog('close');
-					}
+				entity.cookie = false;
+				vz.entities.saveCookie();
+				
+				entity.delete().done(function() {
+					vz.entities.each(function(it, parent) {
+						if (entity == it) {
+							var array = (parent) ? parent.children : vz.entities;
+							array.remove(it);
+						}
+					}, true);
+		
+					vz.entities.showTable();
+					vz.wui.drawPlot();
 				});
+				
+				$(this).dialog('close');
 			}
 		}
 	});
@@ -331,6 +337,19 @@ Entity.prototype.updateDOMRow = function() {
 };
 
 /**
+ * Permanently deletes this entity and its data from the middleware
+ */
+Entity.prototype.delete = function() {
+	return vz.load({
+		controller: 'entity',
+		context: this,
+		identifier: this.uuid,
+		url: this.middleware,
+		type: 'DELETE'
+	});
+}
+
+/**
  * Add entity as child
  */
 Entity.prototype.addChild = function(child) {
@@ -345,7 +364,7 @@ Entity.prototype.addChild = function(child) {
 		data: {
 			uuid: child.uuid
 		},
-		type: 'post'
+		type: 'POST'
 	});
 }
 
@@ -353,13 +372,17 @@ Entity.prototype.addChild = function(child) {
  * Remove entity from children
  */
 Entity.prototype.removeChild = function(child) {
+	if (this.definition.model != 'Volkszaehler\\Model\\Aggregator') {
+		throw new Exception('EntityException', 'Entity is not an Aggregator');
+	}
+
 	return vz.load({
 		controller: 'group',
 		identifier: this.uuid,
 		url: this.middleware,
 		data: {
 			uuid: child.uuid,
-			operation: 'delete'
+			type: 'DELETE'
 		}
 	});
 };
@@ -374,7 +397,7 @@ Entity.prototype.each = function(cb, recursive) {
 		for (var i = 0; i < this.children.length; i++) {
 			cb(this.children[i], this);
 			
-			if (recursive) {
+			if (recursive && this.children[i] !== undefined) {
 				this.children[i].each(cb, true); // call recursive
 			}
 		}
