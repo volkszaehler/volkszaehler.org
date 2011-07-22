@@ -46,11 +46,10 @@ class CSV extends View {
 	public function __construct(HTTP\Request  $request, HTTP\Response $response) {
 		parent::__construct($request, $response);
 
-		echo 'source: volkszaehler.org' . PHP_EOL;
-		echo 'version: ' . VZ_VERSION . PHP_EOL;
+		echo '# source: volkszaehler.org' . PHP_EOL;
+		echo '# version: ' . VZ_VERSION . PHP_EOL;
 
 		$this->response->setHeader('Content-type', 'text/csv');
-		$this->response->setHeader('Content-Disposition', 'attachment; filename="data.csv"');
 	}
 	
 	/**
@@ -79,17 +78,17 @@ class CSV extends View {
 	 * @param Util\Debug $debug
 	 */
 	protected function addDebug(Util\Debug $debug) {
-		echo 'time: ' . $debug->getExecutionTime() . PHP_EOL;
-		echo 'database: ' . Util\Configuration::read('db.driver') . PHP_EOL;
+		echo '# time: ' . $debug->getExecutionTime() . PHP_EOL;
+		echo '# database: ' . Util\Configuration::read('db.driver') . PHP_EOL;
 
 		foreach ($debug->getMessages() as $message) {
-			echo 'message: ' . $message['message'] . PHP_EOL;	// TODO add more information
+			echo '# message: ' . $message['message'] . PHP_EOL;	// TODO add more information
 		}
 
 		foreach ($debug->getQueries() as $query) {
-			echo 'query: ' . $query['sql'] . PHP_EOL;
+			echo '# query: ' . $query['sql'] . PHP_EOL;
 			if (isset($query['parameters'])) {
-				echo "\tparameters: " . implode(', ', $query['parameters']) . PHP_EOL;
+				echo "# \tparameters: " . implode(', ', $query['parameters']) . PHP_EOL;
 			}
 		}
 	}
@@ -101,11 +100,11 @@ class CSV extends View {
 	 * @param boolean $debug
 	 */
 	protected function addException(\Exception $exception) {
-		echo get_class($exception) . '[' . $exception->getCode() . ']' . ':' . $exception->getMessage() . PHP_EOL;
+		echo get_class($exception) . '# [' . $exception->getCode() . ']' . ':' . $exception->getMessage() . PHP_EOL;
 
 		if (Util\Debug::isActivated()) {
-			echo "\tfile: " . $exception->getFile() . PHP_EOL;
-			echo "\tline: " . $exception->getLine() . PHP_EOL;
+			echo "#\tfile: " . $exception->getFile() . PHP_EOL;
+			echo "#\tline: " . $exception->getLine() . PHP_EOL;
 		}
 	}
 	
@@ -115,19 +114,56 @@ class CSV extends View {
 	 * @param Interpreter\InterpreterInterface $interpreter
 	 */
 	protected function addData(Interpreter\Interpreter $interpreter) {
-		//$this->response->setHeader('Content-Disposition', 'attachment; filename="' . strtolower($interpreter->getEntity()->getProperty('title')) . '.csv"'); // TODO add time?
+		$this->response->setHeader(
+			'Content-Disposition',
+			'attachment; ' .
+			'filename="' . strtolower($interpreter->getEntity()->getProperty('title')) . '.csv" ' .
+			'creation-date="' .  date(DATE_RFC2822, $interpreter->getTo()/1000). '"'
+		);
 		
 		$tuples = $interpreter->processData(
-			$this->request->getParameter('tuples'),
-			$this->request->getParameter('group'), 
 			function($tuple) {
-				echo implode(CSV::DELIMITER, array(
+				return array(
 					$tuple[0],
 					View::formatNumber($tuple[1]),
 					$tuple[2]
-				)) . PHP_EOL; 
+				); 
 			}
 		);
+		
+		$min = $interpreter->getMin();
+		$max = $interpreter->getMax();
+		$average = $interpreter->getAverage();
+		$consumption = $interpreter->getConsumption();
+		
+		$from = $interpreter->getFrom();
+		$to = $interpreter->getTo();
+
+		echo '# uuid: ' . $interpreter->getEntity()->getUuid() . PHP_EOL;
+		
+		if (isset($from))
+			echo '# from: ' . $from . PHP_EOL;
+			
+		if (isset($to))
+			echo '# to: ' . $to . PHP_EOL;
+			
+		if (isset($min))
+			echo '# min: ' . $min[0] . ' => ' . $min[1] . PHP_EOL;
+			
+		if (isset($max))
+			echo '# max: ' . $max[0] . ' => ' . $max[1] . PHP_EOL;
+			
+		if (isset($average)) 
+			echo '# average: ' . View::formatNumber($average) . PHP_EOL;
+			
+		if (isset($consumption))
+			echo '# consumption: ' . View::formatNumber($consumption) . PHP_EOL;
+			
+		echo '# rows: ' . $interpreter->getRowCount() . PHP_EOL;
+		
+		foreach ($tuples as $tuple) {
+			echo implode(CSV::DELIMITER, $tuple) . PHP_EOL;
+		}
 	}
 
 	/**

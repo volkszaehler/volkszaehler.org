@@ -237,31 +237,47 @@ class XML extends View {
 				$xmlTuple->setAttribute('value', View::formatNumber($tuple[1]));
 				$xmlTuple->setAttribute('count', $tuple[2]);
 				$xmlTuples->appendChild($xmlTuple);
+				
+				return $tuple;
 			}
 		);
 		
+		$from = $interpreter->getFrom();
+		$to = $interpreter->getTo();
 		$min = $interpreter->getMin();
 		$max = $interpreter->getMax();
 		$average = $interpreter->getAverage();
 		$consumption = $interpreter->getConsumption();
 		
-		$from = $interpreter->getFrom();
-		$to = $interpreter->getTo();
-		
 		$xmlData->appendChild($this->xmlDoc->createElement('uuid', $interpreter->getEntity()->getUuid()));
 		if (isset($from)) 
 			$xmlData->appendChild($this->xmlDoc->createElement('from', $from));
+			
 		if (isset($to)) 
 			$xmlData->appendChild($this->xmlDoc->createElement('to', $to));
-		if (isset($min)) 
-			$xmlData->appendChild($this->xmlDoc->createElement('min', $min));
-		if (isset($max)) 
-			$xmlData->appendChild($this->xmlDoc->createElement('max', $max));
+			
+		if (isset($min)) {
+			$xmlMin = $this->xmlDoc->createElement('min');
+			$xmlMin->setAttribute('timestamp', $min[0]);
+			$xmlMin->setAttribute('value', $min[1]);
+			$xmlData->appendChild($xmlMin);
+		}
+			
+		if (isset($max)) {
+			$xmlMax = $this->xmlDoc->createElement('max');
+			$xmlMax->setAttribute('timestamp', $max[0]);
+			$xmlMax->setAttribute('value', $max[1]);
+			$xmlData->appendChild($xmlMax);
+		}
+			
 		if (isset($average)) 
 			$xmlData->appendChild($this->xmlDoc->createElement('average', View::formatNumber($average)));
+			
 		if (isset($consumption))
 			$xmlData->appendChild($this->xmlDoc->createElement('consumption', View::formatNumber($consumption)));
-		$xmlData->appendChild($this->xmlDoc->createElement('count', count($data)));
+			
+		$xmlData->appendChild($this->xmlDoc->createElement('rows', $interpreter->getRowCount()));
+		
 		if (($interpreter->getTupleCount() > 0 || is_null($interpreter->getTupleCount())) && count($data) > 0)
 			$xmlData->appendChild($xmlTuples);
 	

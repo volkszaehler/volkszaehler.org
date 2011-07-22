@@ -192,24 +192,28 @@ class JSON extends View {
 		$this->json['data']['uuid']		= $interpreter->getEntity()->getUuid();
 		if (isset($from))
 			$this->json['data']['from']	= $from;
+			
 		if (isset($to))
 			$this->json['data']['to']	= $to;
+			
 		if (isset($min))
 			$this->json['data']['min']	= $min;
+			
 		if (isset($max))
 			$this->json['data']['max']	= $max;
+			
 		if (isset($average)) 
 			$this->json['data']['average']	= View::formatNumber($average);
+			
 		if (isset($consumption))
 			$this->json['data']['consumption'] = View::formatNumber($consumption);
-		$this->json['data']['count']		= count($data);
+			
+		$this->json['data']['rows']		= $interpreter->getRowCount();
+		
 		if (($interpreter->getTupleCount() > 0 || is_null($interpreter->getTupleCount())) && count($data) > 0)
 			$this->json['data']['tuples']	= $data;
 	}
 
-	/**
-	 *
-	 */
 	protected function addArray($data, &$refNode) {
 		if (is_null($refNode)) {
 			$refNode = array();
