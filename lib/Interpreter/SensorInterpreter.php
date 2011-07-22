@@ -72,9 +72,9 @@ class SensorInterpreter extends Interpreter {
 	 * @return float 3600: 3600 s/h; 1000: ms -> s
 	 */
 	public function getAverage() {
-		if ($consumption = $this->getConsumption()) {
+		if ($this->consumption) {
 			$delta = $this->last[0] - $this->first[0];
-			return (3600 * 1000 * $consumption) / $delta;
+			return $this->consumption / $delta;
 		}
 		else { // prevents division by zero
 			return 0;
@@ -103,7 +103,13 @@ class SensorInterpreter extends Interpreter {
 				$this->min = $tuple;
 			}
 			
-			$this->consumption += $next[1] * ($next[0] - $last[0]);
+			/*
+			 * Workaround for #73
+			 * Due to the "overfetching"" at the boundary regions
+			 */
+			if ($last[0] > $this->from && $next[0] < $this->to) {
+				$this->consumption += $next[1] * ($next[0] - $last[0]);
+			}
 				
 			$tuples[] = $tuple;
 			$last = $next;			
