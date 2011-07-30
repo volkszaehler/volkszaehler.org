@@ -29,7 +29,7 @@
 	{
 		"name"			: "title",
 		"type"			: "string",
-		"pattern"		: "/^[a-z0-9_/- ]*$/i",
+		"pattern"		: "\/^[a-z0-9_\/- ]*$\/i",
 		"max"			: 255,
 		"translation"		: {
 			"de" : "Titel",
@@ -119,7 +119,7 @@
 	{
 		"name"			: "address:city",
 		"type"			: "string",
-		"pattern"		: "/^[a-z.- ]*$/i",
+		"pattern"		: "\/^[a-z.- ]*$\/i",
 		"translation"		: {
 			"de" : "Stadt",
 			"en" : "City"
@@ -352,7 +352,7 @@
 	{
 		"name"			: "photo",
 		"type"			: "string",
-		"pattern"		: "/^(http?|ftp)://[a-z0-9-.]+\\.[a-z]{2,6}(/\\S*)?$/i",
+		"pattern"		: "\/^(http?|ftp):\/\/[a-z0-9-.]+\\.[a-z]{2,6}(\/\\S*)?$\/i", // url
 		"translation"		: {
 			"de" : "Foto (URL)",
 			"en" : "Photo (URL)"
@@ -361,7 +361,7 @@
 	{
 		"name"			: "link",
 		"type"			: "string",
-		"pattern"		: "/^(http?|ftp)://[a-z0-9-.]+\\.[a-z]{2,6}(/\\S*)?$/i",
+		"pattern"		: "\/^(http?|ftp):\/\/[a-z0-9-.]+\\.[a-z]{2,6}(\/\\S*)?$\/i", // url		
 		"translation"		: {
 			"de" : "Hyperlink",
 			"en" : "Hyperlink"
