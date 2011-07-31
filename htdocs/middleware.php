@@ -43,7 +43,7 @@ require_once VZ_DIR . '/lib/Util/Configuration.php';
 Util\Configuration::load(VZ_DIR . '/etc/volkszaehler.conf');
 
 // set timezone
-$tz = (Util\Configuration::read('timezone')) ? Util\Configuration::read('timezone') : @date_default_timezone_get()
+$tz = (Util\Configuration::read('timezone')) ? Util\Configuration::read('timezone') : @date_default_timezone_get();
 date_default_timezone_set($tz);
 
 // define include dirs for vendor libs
