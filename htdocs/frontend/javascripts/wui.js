@@ -434,8 +434,14 @@ vz.wui.formatNumber = function(number, prefix) {
 }
 
 vz.wui.updateHeadline = function() {
-	var from = $.plot.formatDate(new Date(vz.options.plot.xaxis.min), '%d. %b %y %h:%M', vz.options.plot.xaxis.monthNames, true);
-	var to = $.plot.formatDate(new Date(vz.options.plot.xaxis.max), '%d. %b %y %h:%M', vz.options.plot.xaxis.monthNames, true);
+	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
+	var format = '%d. %b %y';
+	
+	if (delta < 3*24*3600*1000) format += ' %h:%M'; // under 3 days
+	if (delta < 5*60*1000) format += ':%S'; // under 5 minutes
+	
+	var from = $.plot.formatDate(new Date(vz.options.plot.xaxis.min), format, vz.options.plot.xaxis.monthNames, true);
+	var to = $.plot.formatDate(new Date(vz.options.plot.xaxis.max), format, vz.options.plot.xaxis.monthNames, true);
 	$('#title').html(from + ' - ' + to);
 }
 
