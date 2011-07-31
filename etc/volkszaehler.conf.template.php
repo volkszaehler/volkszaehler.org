@@ -77,18 +77,28 @@ $config['db']['dbname']				= 'volkszaehler';
  * @link http://www.php.net/manual/en/ini.core.php#ini.include-path
  */
 $config['lib']['doctrine']			= VZ_DIR . '/lib/vendor/Doctrine';
-$config['lib']['jpgraph']			= VZ_DIR . '/lib/vendor/JpGraph';
+//$config['lib']['jpgraph']			= VZ_DIR . '/lib/vendor/JpGraph';
 
 /**
- * Plot colors
+ * @var string timezone for the middleware
+ * @link http://www.php.net/manual/de/timezones.php
+ * @link http://www.php.net/manual/de/datetime.configuration.php#ini.date.timezone
+ */
+//$config['timezone']				= 'Europe/Berlin';
+
+/**
  * @var array of colors for plot series
  */
 $config['colors'] = array('#83CAFF', '#7E0021', '#579D1C', '#FFD320', '#FF420E', '#004586', '#0084D1', '#C5000B', '#FF950E', '#4B1F6F', '#AECF00', '#314004');
 
-/** @var boolean disables some optimizations. Only use it when you exactly know what you are doing. */
+/**
+ * @var boolean disables some optimizations. Only use it when you exactly know what you are doing.
+ */
 $config['devmode']				= FALSE;
 
-/** @var integer set to > 0 to show debugging messages */
+/**
+ * @var integer set to > 0 to show debugging messages
+ */
 $config['debug']				= 0;
 
 ?>

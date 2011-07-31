@@ -42,6 +42,10 @@ require_once VZ_DIR . '/lib/Util/Configuration.php';
 // load configuration
 Util\Configuration::load(VZ_DIR . '/etc/volkszaehler.conf');
 
+// set timezone
+$tz = (Util\Configuration::read('timezone')) ? Util\Configuration::read('timezone') : @date_default_timezone_get()
+date_default_timezone_set($tz);
+
 // define include dirs for vendor libs
 define('DOCTRINE_DIR', Util\Configuration::read('lib.doctrine') ? Util\Configuration::read('lib.doctrine') : 'Doctrine');
 define('JPGRAPH_DIR', Util\Configuration::read('lib.jpgraph') ? Util\Configuration::read('lib.jpgraph') : 'JpGraph');
