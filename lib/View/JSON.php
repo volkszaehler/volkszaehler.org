@@ -129,8 +129,15 @@ class JSON extends View {
 	 * @param Util\Debug $debug
 	 */
 	protected function addDebug(Util\Debug $debug) {
-		$jsonDebug['time'] = $debug->getExecutionTime();
 		$jsonDebug['level'] = $debug->getLevel();
+		if ($dbDriver = Util\Configuration::read('db.driver')) $jsonDebug['database'] = $dbDriver;
+		$jsonDebug['time'] = $debug->getExecutionTime();
+			
+		if ($uptime = Util\Debug::getUptime()) $jsonDebug['uptime'] = $uptime*1000;		
+		if ($load = Util\Debug::getLoadAvg()) $jsonDebug['load'] = $load;
+		if ($commit = Util\Debug::getCurrentCommit()) $jsonDebug['commit-hash'] = $commit;
+		if ($version = Util\Debug::getPhpVersion()) $jsonDebug['php-version'] = $version;
+		
 		$jsonDebug['messages'] = $debug->getMessages();
 		$jsonDebug['queries'] = array_values($debug->getQueries());
 
@@ -189,26 +196,15 @@ class JSON extends View {
 		$from = $interpreter->getFrom();
 		$to = $interpreter->getTo();
 
-		$this->json['data']['uuid']		= $interpreter->getEntity()->getUuid();
-		if (isset($from))
-			$this->json['data']['from']	= $from;
+		$this->json['data']['uuid'] = $interpreter->getEntity()->getUuid();
+		if (isset($from)) $this->json['data']['from'] = $from;
+		if (isset($to)) $this->json['data']['to'] = $to;
+		if (isset($min)) $this->json['data']['min'] = $min;
+		if (isset($max)) $this->json['data']['max'] = $max;
+		if (isset($average)) $this->json['data']['average'] = View::formatNumber($average);
+		if (isset($consumption)) $this->json['data']['consumption'] = View::formatNumber($consumption);
 			
-		if (isset($to))
-			$this->json['data']['to']	= $to;
-			
-		if (isset($min))
-			$this->json['data']['min']	= $min;
-			
-		if (isset($max))
-			$this->json['data']['max']	= $max;
-			
-		if (isset($average)) 
-			$this->json['data']['average']	= View::formatNumber($average);
-			
-		if (isset($consumption))
-			$this->json['data']['consumption'] = View::formatNumber($consumption);
-			
-		$this->json['data']['rows']		= $interpreter->getRowCount();
+		$this->json['data']['rows'] = $interpreter->getRowCount();
 		
 		if (($interpreter->getTupleCount() > 0 || is_null($interpreter->getTupleCount())) && count($data) > 0)
 			$this->json['data']['tuples']	= $data;

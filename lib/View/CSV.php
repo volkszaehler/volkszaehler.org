@@ -78,8 +78,14 @@ class CSV extends View {
 	 * @param Util\Debug $debug
 	 */
 	protected function addDebug(Util\Debug $debug) {
-		echo '# time: ' . $debug->getExecutionTime() . PHP_EOL;
+		echo '# level: ' . $debug->getLevel() . PHP_EOL;
 		echo '# database: ' . Util\Configuration::read('db.driver') . PHP_EOL;
+		echo '# time: ' . $debug->getExecutionTime() . PHP_EOL;
+		
+		if ($uptime = Util\Debug::getUptime()) echo '# uptime: ' . $uptime*1000;		
+		if ($load = Util\Debug::getLoadAvg()) echo '# load: ' . implode(', ', $load) . PHP_EOL;
+		if ($commit = Util\Debug::getCurrentCommit()) echo '# commit-hash: ' . $commit;
+		if ($version = Util\Debug::getPhpVersion()) echo '# php-version: ' . $version;
 
 		foreach ($debug->getMessages() as $message) {
 			echo '# message: ' . $message['message'] . PHP_EOL;	// TODO add more information
@@ -141,23 +147,12 @@ class CSV extends View {
 
 		echo '# uuid: ' . $interpreter->getEntity()->getUuid() . PHP_EOL;
 		
-		if (isset($from))
-			echo '# from: ' . $from . PHP_EOL;
-			
-		if (isset($to))
-			echo '# to: ' . $to . PHP_EOL;
-			
-		if (isset($min))
-			echo '# min: ' . $min[0] . ' => ' . $min[1] . PHP_EOL;
-			
-		if (isset($max))
-			echo '# max: ' . $max[0] . ' => ' . $max[1] . PHP_EOL;
-			
-		if (isset($average)) 
-			echo '# average: ' . View::formatNumber($average) . PHP_EOL;
-			
-		if (isset($consumption))
-			echo '# consumption: ' . View::formatNumber($consumption) . PHP_EOL;
+		if (isset($from)) echo '# from: ' . $from . PHP_EOL;
+		if (isset($to)) echo '# to: ' . $to . PHP_EOL;
+		if (isset($min)) echo '# min: ' . $min[0] . ' => ' . $min[1] . PHP_EOL;
+		if (isset($max)) echo '# max: ' . $max[0] . ' => ' . $max[1] . PHP_EOL;
+		if (isset($average))  echo '# average: ' . View::formatNumber($average) . PHP_EOL;
+		if (isset($consumption)) echo '# consumption: ' . View::formatNumber($consumption) . PHP_EOL;
 			
 		echo '# rows: ' . $interpreter->getRowCount() . PHP_EOL;
 		

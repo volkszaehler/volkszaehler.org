@@ -147,6 +147,10 @@ class Debug {
 		}
 	}
 	
+	public static function getPhpVersion() {
+		return phpversion();
+	}
+	
 	/**
 	 * Get average server load
 	 *
