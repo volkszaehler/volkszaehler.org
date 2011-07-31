@@ -97,9 +97,7 @@ vz.entities.showTable = function() {
 
 	vz.entities.sort(Entity.compare);
 	
-	var c = 0; // for colors
 	this.each(function(entity, parent) {
-		entity.color = vz.options.plot.colors[c++ % vz.options.plot.colors.length];
 		$('#entity-list tbody').append(entity.getDOMRow(parent));
 	}, true); // recursive!
 

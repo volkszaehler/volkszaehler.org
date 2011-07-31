@@ -42,46 +42,72 @@ class EntityDefinition extends Definition {
 	 *
 	 * @var array
 	 */
-	protected $required = array();
+	public $required = array();
 
 	/**
 	 * List of optional properties
 	 *
 	 * @var array
 	 */
-	protected $optional = array();
+	public $optional = array();
 
 	/**
 	 * Classname of intepreter (see lib/Interpreter/)
 	 *
 	 * @var string
 	 */
-	protected $interpreter;
+	public $interpreter;
+	
+	/**
+	 * Style for plotting
+	 *
+	 * @var string (lines|points|steps)
+	 */
+	 public $style;
 
 	/**
 	 * Classname of model (see lib/Model/)
 	 *
 	 * @var string
 	 */
-	protected $model;
+	public $model;
 
 	/**
 	 * Optional for Aggregator class entities
 	 *
 	 * @var string
 	 */
-	protected $unit;
+	public $unit;
 
 	/**
 	 * Relative url to an icon
 	 * @var string
 	 */
-	protected $icon;
+	public $icon;
 
 	/**
 	 * @var array holds definitions
 	 */
 	protected static $definitions = NULL;
+	
+	/**
+	 * Properties required/optional by default for all Entity types
+	 * @var array
+	 */
+	static protected $defaultRequired = array('title');
+	static protected $defaultOptional = array('description', 'public', 'color', 'active', 'style', 'details:', 'owner:', 'address:', 'link');
+	
+	/**
+	 * Constructor
+	 * 
+	 * Adding default properties
+	 */
+	 protected function __construct($object) {
+	 	parent::__construct($object);
+	 	
+	 	$this->required = array_merge($this->required, self::$defaultRequired);
+	 	$this->optional = array_merge($this->optional, self::$defaultOptional);
+	 }
 
 	/*
 	 * Setter & Getter

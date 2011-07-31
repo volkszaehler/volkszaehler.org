@@ -458,10 +458,12 @@ vz.wui.drawPlot = function () {
 				data: entity.data.tuples,
 				color: entity.color,
 				lines: {
-					show: (vz.options.render == 'lines'),
-					steps: (entity.definition.interpreter == 'Volkszaehler\\Interpreter\\MeterInterpreter')
+					show: (entity.style == 'lines' || entity.style == 'steps'),
+					steps: (entity.style == 'steps')
 				},
-				points: { show: (vz.options.render == 'points') }
+				points: {
+					show: (entity.style == 'points')
+				}
 			};
 			
 			series.push(serie);

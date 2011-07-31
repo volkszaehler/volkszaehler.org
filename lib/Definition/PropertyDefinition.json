@@ -53,22 +53,6 @@
 		}
 	},
 	{
-		"name"			: "active",
-		"type"			: "boolean",
-		"translation"		: {
-			"de" : "Aktiv",
-			"en" : "Active"
-		}
-	},
-	{
-		"name"			: "local",
-		"type"			: "string",
-		"translation"		: {
-			"de" : "Lokale Adresse",
-			"en" : "Local Address"
-		}
-	},
-	{
 		"name"			: "cost",
 		"type"			: "float",
 		"min"			: 0,
@@ -365,6 +349,63 @@
 		"translation"		: {
 			"de" : "Hyperlink",
 			"en" : "Hyperlink"
+		}
+	},
+	{
+		"name"			: "active",
+		"type"			: "boolean",
+		"translation"		: {
+			"de" : "Aktiv",
+			"en" : "Active"
+		}
+	},
+	{
+		"name"			: "color",
+		"type"			: "multiple",
+		"options" : [
+			"aqua",
+			"black",
+			"blue",
+			"fuchsia",
+			"gray",
+			"grey",
+			"green",
+			"lime",
+			"maroon",
+			"navy",
+			"olive",
+			"purple",
+			"red",
+			"silver",
+			"teal",
+			"white",
+			"yellow"
+		],
+		"translation"		: {
+			"de" : "Farbe",
+			"en" : "color"
+		}
+	},
+	{
+		"name"			: "style",
+		"type"			: "multiple",
+		"options" : [
+			"lines",
+			"steps",
+			"points"
+		],
+		"translation"		: {
+			"de" : "Style",
+			"en" : "Plotting style"
+		}
+	},
+	{
+		"name"			: "local",
+		"type"			: "string",
+		"pattern"		: "\/^(http?|ftp):\/\/[a-z0-9-.]+\\.[a-z]{2,6}(\/\\S*)?$\/i", // url		
+		"translation"		: {
+			"de" : "Lokale Adresse",
+			"en" : "Local Address"
 		}
 	}	
 ]

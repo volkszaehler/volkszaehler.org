@@ -40,14 +40,14 @@ class PropertyDefinition extends Definition {
 	 *
 	 * @var string
 	 */
-	protected $type;
+	public $type;
 
 	/**
 	 * Regex pattern to match if type == string
 	 *
 	 * @var string
 	 */
-	protected $pattern;
+	public $pattern;
 
 	/**
 	 * Minimal value if type == integer or type == float
@@ -55,7 +55,7 @@ class PropertyDefinition extends Definition {
 	 *
 	 * @var integer|float
 	 */
-	protected $min;
+	public $min;
 
 	/**
 	 * Maximal value if type == integer or type == float
@@ -63,7 +63,7 @@ class PropertyDefinition extends Definition {
 	 *
 	 * @var integer|float
 	 */
-	protected $max;
+	public $max;
 
 	/**
 	 * List of possible choices if type == multiple
@@ -71,7 +71,7 @@ class PropertyDefinition extends Definition {
 	 *
 	 * @var array
 	 */
-	protected $options = array();
+	public $options = array();
 
 	/**
 	 * @var array holds definitions

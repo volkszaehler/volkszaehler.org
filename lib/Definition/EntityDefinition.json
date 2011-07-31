@@ -28,8 +28,6 @@
 [
 	{
 		"name"			: "group",
-		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "tolerance", "public"],
 		"icon"			: "folder.png",
 		"interpreter"		: "Volkszaehler\\Interpreter\\AggregatorInterpreter",
 		"model"			: "Volkszaehler\\Model\\Aggregator",
@@ -41,8 +39,6 @@
 	},
 	{
 		"name"			: "user",
-		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "tolerance", "public"],
 		"icon"			: "user.png",
 		"interpreter"		: "Volkszaehler\\Interpreter\\AggregatorInterpreter",
 		"model"			: "Volkszaehler\\Model\\Aggregator",
@@ -54,8 +50,6 @@
 	},
 	{
 		"name"			: "building",
-		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "tolerance", "public"],
 		"icon"			: "house.png",
 		"interpreter"		: "Volkszaehler\\Interpreter\\AggregatorInterpreter",
 		"model"			: "Volkszaehler\\Model\\Aggregator",
@@ -67,8 +61,8 @@
 	},
 	{
 		"name"			: "power",
-		"required"		: ["title", "resolution"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "cost", "public", "local"],
+		"required"		: ["resolution"],
+		"optional"		: ["tolerance", "cost", "local"],
 		"icon"			: "bolt.png",
 		"unit"			: "W",
 		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
@@ -81,11 +75,11 @@
 	},
 	{
 		"name"			: "powersensor",
-		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "local"],
+		"optional"		: ["tolerance", "cost", "local"],
 		"icon"			: "bolt.png",
 		"unit"			: "W",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"style"			: "steps",
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"translation"		: {
 			"de" : "Stromsensor",
@@ -95,8 +89,8 @@
 	},
 	{
 		"name"			: "gas",
-		"required"		: ["title", "resolution"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "cost", "public", "local"],
+		"required"		: ["resolution"],
+		"optional"		: ["tolerance", "cost", "local"],
 		"icon"			: "flame.png",
 		"unit"			: "m³/h",
 		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
@@ -109,8 +103,8 @@
 	},
 	{
 		"name"			: "water",
-		"required"		: ["title", "resolution"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "cost", "public", "local"],
+		"required"		: ["resolution"],
+		"optional"		: ["tolerance", "cost", "local"],
 		"icon"			: "waterdrop.png",
 		"unit"			: "l/h",
 		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
@@ -123,8 +117,7 @@
 	},
 	{
 		"name"			: "temperature",
-		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "local"],
+		"optional"		: ["tolerance", "local"],
 		"icon"			: "thermometer.png",
 		"unit"			: "°C",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
@@ -137,8 +130,7 @@
 	},
 	{
 		"name"			: "pressure",
-		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "local"],
+		"optional"		: ["tolerance", "local"],
 		"icon"			: "cloud.png",
 		"unit"			: "hPa",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
@@ -151,8 +143,7 @@
 	},
 	{
 		"name"			: "humidity",
-		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "local"],
+		"optional"		: ["tolerance", "local"],
 		"icon"			: "rain.png",
 		"unit"			: "%",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
@@ -165,8 +156,7 @@
 	},
 	{
 		"name"			: "windspeed",
-		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "local"],
+		"optional"		: ["tolerance", "local"],
 		"icon"			: "propeller.png",
 		"unit"			: "km/h",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
@@ -179,8 +169,7 @@
 	},
 	{
 		"name"			: "radiation",
-		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "resolution", "public", "local"],
+		"optional"		: ["tolerance", "local", "resolution"],
 		"icon"			: "radioactivity.png",
 		"unit"			: "μSv",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
@@ -193,8 +182,7 @@
 	},
 	{
 		"name"			: "luminosity",
-		"required"		: ["title"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "local"],
+		"optional"		: ["tolerance", "local"],
 		"icon"			: "sun.png",
 		"unit"			: "cd",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
@@ -207,8 +195,8 @@
 	},
 	{
 		"name"			: "workinghours",
-		"required"		: ["title", "resolution"],
-		"optional"		: ["description", "details:", "owner:", "address:", "tolerance", "public", "local"],
+		"required"		: ["resolution"],
+		"optional"		: ["tolerance", "local"],
 		"icon"			: "clock.png",
 		"unit"			: "h",
 		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",

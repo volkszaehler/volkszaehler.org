@@ -33,12 +33,12 @@ abstract class Definition {
 	/**
 	 * @var string discriminator for database column
 	 */
-	protected $name;
+	public $name;
 
 	/**
 	 * @var string title for UI
 	 */
-	protected $translation;
+	public $translation;
 
 	/**
 	 * Hide default constructor
@@ -69,7 +69,7 @@ abstract class Definition {
 		}
 
 		if (is_null($name)) {
-			return static::$definitions;
+			return array_values(static::$definitions);
 		}
 		elseif (static::exists($name)) {
 			return static::$definitions[$name];
@@ -98,14 +98,12 @@ abstract class Definition {
 	 */
 	protected static function load() {
 		static::$definitions = array();
+		
+		$json = Util\JSON::decode(file_get_contents(VZ_DIR . static::FILE));
 
-		foreach (self::getJSON() as $property) {
+		foreach ($json as $property) {
 			static::$definitions[$property->name] = new static($property);
 		}
-	}
-
-	public static function getJSON() {
-		return Util\JSON::decode(file_get_contents(VZ_DIR . static::FILE));
 	}
 
 	/*

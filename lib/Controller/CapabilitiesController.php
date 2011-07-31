@@ -26,6 +26,7 @@ namespace Volkszaehler\Controller;
 use Volkszaehler\Model;
 use Volkszaehler\Util;
 use Volkszaehler\View;
+use Volkszaehler\Definition;
 
 /**
  * Capabilities controller
@@ -67,8 +68,8 @@ class CapabilitiesController extends Controller {
 				$this->view->setCaching('expires', time()+2*7*24*60*60); // cache for 2 weeks
 			}
 			
-			$capabilities['definitions']['entities'] = \Volkszaehler\Definition\EntityDefinition::getJSON();
-			$capabilities['definitions']['properties'] = \Volkszaehler\Definition\PropertyDefinition::getJSON();
+			$capabilities['definitions']['entities'] = Definition\EntityDefinition::get();
+			$capabilities['definitions']['properties'] = Definition\PropertyDefinition::get();
 		}
 		
 		if (count($capabilities) == 0) {

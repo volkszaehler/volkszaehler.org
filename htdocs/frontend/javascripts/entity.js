@@ -29,17 +29,14 @@
  */
 var Entity = function(json) {
 	this.parseJSON(json);
-
-	if (this.active === undefined) {
-		this.active = true; // activate by default
-	}
-
-	
 };
+
+Entity.colors = 0;
 
 Entity.prototype.parseJSON = function(json) {
 	$.extend(true, this, json);
 
+	// parse children
 	if (this.children) {
 		for (var i = 0; i < this.children.length; i++) {
 			this.children[i].middleware = this.middleware; // children inherit parent middleware		
@@ -48,9 +45,27 @@ Entity.prototype.parseJSON = function(json) {
 		
 		this.children.sort(Entity.compare);
 	}
-	
+
+	// setting defaults	
 	if (this.type !== undefined) {
 		this.definition = vz.capabilities.definitions.get('entities', this.type);
+		
+		if (this.style === undefined) {
+			if (this.definition.style) {
+				this.style = this.definition.style;
+			}
+			else {
+				this.style = (this.definition.interpreter == 'Volkszaehler\\Interpreter\\SensorInterpreter') ? 'lines' : 'steps';
+			}
+		}
+	}
+	
+	if (this.active === undefined) {
+		this.active = true; // activate by default
+	}
+	
+	if (this.color === undefined) {
+		this.color = vz.options.plot.colors[Entity.colors++ % vz.options.plot.colors.length];
 	}
 };
 
@@ -143,14 +158,23 @@ Entity.prototype.getDOMDetails = function(edit) {
 	var data = $('<tbody>');
 	
 	// general properties
-	var general = ['uuid', 'middleware', 'type', 'color', 'cookie'];
+	var general = ['title', 'type', 'uuid', 'middleware', 'color', 'style', 'active', 'cookie'];
 	var sections = ['required', 'optional'];
 	
 	general.each(function(index, property) {
+		var definition = vz.capabilities.definitions.get('properties', property);
+		var title = (definition) ? definition.translation[vz.options.language] : property;
+		var value = this[property];
+		
 		switch(property) {
 			case 'type':
 				var title = 'Typ';
-				var value = this.definition.translation[vz.options.language];
+				var icon = $('<img>').
+					attr('src', 'images/types/' + this.definition.icon)
+					.css('margin-right', 4);
+				var value = $('<span>')
+					.text(this.definition.translation[vz.options.language])
+					.prepend(icon);
 				break;
 			
 			case 'middleware':
@@ -164,8 +188,11 @@ Entity.prototype.getDOMDetails = function(edit) {
 				break;
 	
 			case 'color':
-				var title = 'Farbe';
-				var value = '<span style="background-color: ' + this.color + '">' + this.color + '</span>';
+				var value = $('<span>')
+					.text(this.color)
+					.css('background-color', this.color)
+					.css('padding-left', 5)
+					.css('padding-right', 5);
 				break;
 				
 			case 'cookie':
@@ -173,8 +200,14 @@ Entity.prototype.getDOMDetails = function(edit) {
 				value = '<img src="images/' + ((this.cookie) ? 'tick' : 'cross') + '.png" alt="' + ((value) ? 'ja' : 'nein') + '" />';
 				break;
 			case 'active':
-				var title = 'Aktiv';
 				var value = '<img src="images/' + ((this.active) ? 'tick' : 'cross') + '.png" alt="' + ((this.active) ? 'ja' : 'nein') + '" />';
+				break;
+			case 'style':
+				switch (this.style) {
+					case 'lines': var value = 'Linien'; break;
+					case 'steps': var value = 'Stufen'; break;
+					case 'points': var value = 'Punkte'; break;
+				}
 				break;
 		}
 		
@@ -191,10 +224,10 @@ Entity.prototype.getDOMDetails = function(edit) {
 			)
 		);
 	}, this);
-
+	
 	sections.each(function(index, section) {
 		this.definition[section].each(function(index, property) {
-			if (this.hasOwnProperty(property)) {
+			if (this.hasOwnProperty(property) && !general.contains(property)) {
 				var definition = vz.capabilities.definitions.get('properties', property);
 				var title = definition.translation[vz.options.language];
 				var value = this[property];
