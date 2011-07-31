@@ -307,10 +307,10 @@ Entity.prototype.updateDOMRow = function() {
 	if (this.data.rows > 0) { // update statistics if data available
 		$('.min', row)
 			.text(vz.wui.formatNumber(this.data.min[1], true) + this.definition.unit)
-			.attr('title', $.plot.formatDate(new Date(this.data.min[0]), '%d. %b %y %h:%M:%S', vz.options.plot.xaxis.monthNames));
+			.attr('title', $.plot.formatDate(new Date(this.data.min[0]), '%d. %b %y %h:%M:%S', vz.options.plot.xaxis.monthNames, true));
 		$('.max', row)
 			.text(vz.wui.formatNumber(this.data.max[1], true) + this.definition.unit)
-			.attr('title', $.plot.formatDate(new Date(this.data.max[0]), '%d. %b %y %h:%M:%S', vz.options.plot.xaxis.monthNames));
+			.attr('title', $.plot.formatDate(new Date(this.data.max[0]), '%d. %b %y %h:%M:%S', vz.options.plot.xaxis.monthNames, true));
 		$('.average', row)
 			.text(vz.wui.formatNumber(this.data.average, true) + this.definition.unit);
 		$('.last', row)
