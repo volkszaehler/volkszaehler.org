@@ -29,7 +29,7 @@
 	{
 		"name"			: "title",
 		"type"			: "string",
-		"pattern"		: "\/^[a-z0-9_\/- ]*$\/i",
+		"pattern"		: "\/^[a-z0-9_ -]*$\/i",
 		"max"			: 255,
 		"translation"		: {
 			"de" : "Titel",
