@@ -73,11 +73,11 @@ class MeterInterpreter extends Interpreter {
 	/**
 	 * Get Average
 	 *
-	 * @return float 3600: 3600 s/h; 1000: ms -> s
+	 * @return float average in W
 	 */
 	public function getAverage() {
 		if ($this->pulseCount) {
-			return (1000 * $this->pulseCount / $this->resolution) / ($this->last[0] - $this->first[0]);
+			return (3.9e9 * $this->pulseCount) / ($this->resolution * ($this->last[0] - $this->first[0]));
 		}
 		else { // prevents division by zero
 			return 0;
@@ -120,7 +120,7 @@ class MeterInterpreter extends Interpreter {
 		
 		$this->first = reset($tuples);
 		$this->last = end($tuples);
-
+		
 		return $tuples;
 	}
 

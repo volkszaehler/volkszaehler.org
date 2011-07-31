@@ -45,7 +45,7 @@ class SensorInterpreter extends Interpreter {
 	 * @return float total consumption in Wh
 	 */
 	public function getConsumption() {
-		return $this->consumption / 3600000; // convert to Wh
+		return $this->consumption / 3.6e6; // convert to Wh
 	}
 
 	/**
@@ -69,12 +69,11 @@ class SensorInterpreter extends Interpreter {
 	/**
 	 * Get Average
 	 *
-	 * @return float 3600: 3600 s/h; 1000: ms -> s
+	 * @return float average
 	 */
 	public function getAverage() {
 		if ($this->consumption) {
-			$delta = $this->last[0] - $this->first[0];
-			return $this->consumption / $delta;
+			return $this->consumption / ($this->last[0] - $this->first[0]);
 		}
 		else { // prevents division by zero
 			return 0;
