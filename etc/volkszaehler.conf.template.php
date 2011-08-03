@@ -87,6 +87,12 @@ $config['lib']['doctrine']			= VZ_DIR . '/lib/vendor/Doctrine';
 //$config['timezone']				= 'Europe/Berlin';
 
 /**
+ * @var string Locale used for regular expressions
+ * @link http://php.net/manual/de/function.setlocale.php
+ */
+$config['locale'] = array('de_DE', 'en_US', 'C');
+
+/**
  * @var array of colors for plot series
  */
 $config['colors'] = array('#83CAFF', '#7E0021', '#579D1C', '#FFD320', '#FF420E', '#004586', '#0084D1', '#C5000B', '#FF950E', '#4B1F6F', '#AECF00', '#314004');

@@ -29,7 +29,7 @@
 	{
 		"name"			: "title",
 		"type"			: "string",
-		"pattern"		: "\/^[a-z0-9_ -]*$\/i",
+		"pattern"		: "\/^[\\w\\.\\-\\,()\\]\\[!&*+\\/:@]+$\/u",
 		"max"			: 255,
 		"translation"		: {
 			"de" : "Titel",
@@ -103,7 +103,7 @@
 	{
 		"name"			: "address:city",
 		"type"			: "string",
-		"pattern"		: "\/^[a-z.- ]*$\/i",
+		"pattern"		: "\/^[\\w\\.\\-\\,() ]+$\/u",
 		"translation"		: {
 			"de" : "Stadt",
 			"en" : "City"

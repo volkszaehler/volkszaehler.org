@@ -46,6 +46,9 @@ Util\Configuration::load(VZ_DIR . '/etc/volkszaehler.conf');
 $tz = (Util\Configuration::read('timezone')) ? Util\Configuration::read('timezone') : @date_default_timezone_get();
 date_default_timezone_set($tz);
 
+// set locale
+setlocale(LC_ALL, Util\Configuration::read('locale'));
+
 // define include dirs for vendor libs
 define('DOCTRINE_DIR', Util\Configuration::read('lib.doctrine') ? Util\Configuration::read('lib.doctrine') : 'Doctrine');
 define('JPGRAPH_DIR', Util\Configuration::read('lib.jpgraph') ? Util\Configuration::read('lib.jpgraph') : 'JpGraph');
