@@ -106,13 +106,13 @@ class Property {
 	 */
 	public function validate() {
 		if (!Definition\PropertyDefinition::exists($this->key)) {
-			throw new \Exception('Invalid property');
+			throw new \Exception('Invalid property: ' . $this->key);
 		}
 
 		$this->cast();	// TODO not safe
 
 		if (!$this->getDefinition()->validateValue($this->value)) {
-			throw new \Exception('Invalid property value');
+			throw new \Exception('Invalid property value: ' . $this->value);
 		}
 	}
 

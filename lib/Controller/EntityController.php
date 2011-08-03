@@ -100,7 +100,7 @@ class EntityController extends Controller {
 				continue; // skip generic parameters
 			}		
 			else if (!Definition\PropertyDefinition::exists($key)) {
-				throw new \Exception('Unknown property');
+				throw new \Exception('Unknown property: ' . $key);
 			}
 
 			if ($value == '') { // dont use empty() because it also matches 0
