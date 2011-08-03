@@ -41,7 +41,7 @@
 
 		<div id="export">
 			<img alt="export" src="images/export.png" />
-			<select>
+			<select class="icons">
 				<option value="default" style="background-image: url(images/export.png)" selected="selected">Export...</option>
 				<option value="permalink" style="background-image: url(images/link.png)" >Permalink</option>
 				<option value="png" style="background-image: url(images/image.png)" disabled="disabled" >Snapshot</option>
@@ -152,15 +152,14 @@
 				<table>
 					<tr class="property"><th>Eigenschaft</th><th>Wert</th></tr>
 					<tr class="property"><td>Middleware:</td><td><input type="text" id="entity-create-middleware" /></td></tr>
-					<tr class="property"><td>Typ:</td><td><select id="enti"name="type" size="1"></select></td></tr>
+					<tr class="property"><td>Typ:</td><td><select class="icons" name="type" size="1"></select></td></tr>
 					<tr class="property"><td>&Ouml;ffentlich:</td><td><input type="radio" name="public" value="1"> ja&nbsp;&nbsp;<input type="radio" name="public" value="0"> nein</td></tr>
-					<tr class="property"><td>Titel:</td><td><input type="text" name="title" value="Kuehlschrank" /></td></tr>
+					<tr class="property"><td>Titel:</td><td><input type="text" name="title" value="Kühlschrank" /></td></tr>
 					<tr class="property"><td>Aufl&ouml;sung:</td><td><input type="text" name="resolution" value="1000" /></td></tr>
 					<tr class="property"><td>Kosten:<br /><p style="font-size: small">pro Wh</p></td><td><input type="text" name="cost" value="0.00025" /> €</td></tr>
 					<tr class="property"><td>Beschreibung:</td><td><input type="text" name="description" value="Swissnox 1-phasig" /></td></tr>
 				</table>
-				<input type="hidden" name="operation" value="add" />
-				<p><input type="submit" value="Erstellen" /></p>
+				<p><input type="submit" value="Erstellen" />  <label for="entity-create-cookie">Cookie:</label> <input id="entity-create-cookie" type="checkbox" /></p>
 				<p>Es wird ein neuer Kanal erstellt. Die Antwort der Middleware enthält dann die UUID.<br />
 				Diese muss dann im Controller angegeben werden (z.B. AVR Net-IO).</p>
 			</form>

@@ -127,7 +127,11 @@ vz.wui.dialogs.init = function() {
 	// show available entity types
 	vz.capabilities.definitions.entities.each(function(index, def) {
 		$('#entity-create select[name=type]').append(
-			$('<option>').html(def.translation[vz.options.language]).data('definition', def).val(def.name)
+			$('<option>')
+				.html(def.translation[vz.options.language])
+				.data('definition', def)
+				.val(def.name)
+				.css('background-image', 'url(images/types/' + def.icon)
 		);
 	});
 	$('#entity-create option[value=power]').attr('selected', 'selected');
@@ -187,8 +191,35 @@ vz.wui.dialogs.init = function() {
 	});
 	
 	$('#entity-create form').submit(function() {
-		$(this).attr('action', $('#entity-create-middleware').val() + '/channel.json');
-		$('#entity-add').dialog('close');
+		var def = $('select[name=type] option:selected', this).data('definition');
+
+		vz.load({
+			controller: (def.model == 'Volkszaehler\\Model\\Channel') ? 'channel' : 'aggregator',
+			url: $('#entity-create-middleware').val(),
+			data: $(this).serialize(),
+			type: 'POST',
+			success: function(json) {
+				var entity = new Entity(json.entity);
+				
+				try {
+					entity.cookie = Boolean($('#entity-create-cookie').attr('checked'));
+					entity.middleware = $('#entity-create-middleware').val();
+
+					vz.entities.push(entity);
+					vz.entities.saveCookie();
+					vz.entities.showTable();
+					vz.entities.loadData().done(vz.wui.drawPlot);
+				}
+				catch (e) {
+					vz.wui.dialogs.exception(e);
+				}
+				finally {	
+					$('#entity-add').dialog('close');
+				}
+			}
+		});
+		
+		return false;
 	});
 	
 	// update event handler after lazy loading

@@ -109,8 +109,7 @@ tr.entity td {
 	float: right;
 }
 
-#export option {
-	font-size: 16px;
+select.icons option {
 	padding-left: 20px;
 	background-repeat: no-repeat;
 }
