@@ -252,6 +252,10 @@ vz.wui.zoom = function(from, to) {
 		vz.options.plot.xaxis.min = new Date().getTime() - delta;
 	}
 	
+	if (vz.options.plot.xaxis.min < 0) {
+		vz.options.plot.xaxis.min = 0;
+	}
+	
 	vz.options.plot.yaxis.max = null; // autoscaling
 	vz.options.plot.yaxis.min = 0; // fixed to 0
 	
