@@ -33,6 +33,9 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 bin_PROGRAMS = vzlogger$(EXEEXT)
+@LOCAL_TRUE@am__append_1 = local.c
+@LOCAL_TRUE@am__append_2 = $(DEPS_LOCAL_LIBS)
+@LOCAL_TRUE@am__append_3 = $(DEPS_LOCAL_CFLAGS)
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -45,12 +48,17 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_vzlogger_OBJECTS = main.$(OBJEXT) api.$(OBJEXT) local.$(OBJEXT) \
-	queue.$(OBJEXT) ltqnorm.$(OBJEXT) 1wire.$(OBJEXT) \
-	obis.$(OBJEXT) rawS0.$(OBJEXT) random.$(OBJEXT)
+am__vzlogger_SOURCES_DIST = main.c api.c queue.c ltqnorm.c \
+	protocols/1wire.c protocols/obis.c protocols/rawS0.c \
+	protocols/random.c local.c
+@LOCAL_TRUE@am__objects_1 = local.$(OBJEXT)
+am_vzlogger_OBJECTS = main.$(OBJEXT) api.$(OBJEXT) queue.$(OBJEXT) \
+	ltqnorm.$(OBJEXT) 1wire.$(OBJEXT) obis.$(OBJEXT) \
+	rawS0.$(OBJEXT) random.$(OBJEXT) $(am__objects_1)
 vzlogger_OBJECTS = $(am_vzlogger_OBJECTS)
 am__DEPENDENCIES_1 =
-vzlogger_DEPENDENCIES = $(am__DEPENDENCIES_1)
+@LOCAL_TRUE@am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1)
+vzlogger_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_2)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -60,7 +68,7 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 SOURCES = $(vzlogger_SOURCES)
-DIST_SOURCES = $(vzlogger_SOURCES)
+DIST_SOURCES = $(am__vzlogger_SOURCES_DIST)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -80,6 +88,8 @@ DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DEPS_CFLAGS = @DEPS_CFLAGS@
 DEPS_LIBS = @DEPS_LIBS@
+DEPS_LOCAL_CFLAGS = @DEPS_LOCAL_CFLAGS@
+DEPS_LOCAL_LIBS = @DEPS_LOCAL_LIBS@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
@@ -157,10 +167,13 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 
 # what flags you want to pass to the C compiler & linker
-AM_CFLAGS = -Wall -D_REENTRANT -std=gnu99 $(DEPS_CFLAGS)
+AM_CFLAGS = -Wall -D_REENTRANT -std=gnu99 $(DEPS_CFLAGS) \
+	$(am__append_3)
 AM_LDFLAGS = 
-vzlogger_SOURCES = main.c api.c local.c queue.c ltqnorm.c protocols/1wire.c protocols/obis.c protocols/rawS0.c protocols/random.c
-vzlogger_LDADD = -lpthread -lm $(DEPS_LIBS)
+vzlogger_SOURCES = main.c api.c queue.c ltqnorm.c protocols/1wire.c \
+	protocols/obis.c protocols/rawS0.c protocols/random.c \
+	$(am__append_1)
+vzlogger_LDADD = -lpthread -lm $(DEPS_LIBS) $(am__append_2)
 all: all-am
 
 .SUFFIXES:

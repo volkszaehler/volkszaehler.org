@@ -22,21 +22,25 @@
  * You should have received a copy of the GNU General Public License
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
- 
-#include <stdio.h>
-#include <getopt.h>
-#include <stdarg.h>
+
 #include <stdlib.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <stdarg.h>
+#include <unistd.h>
+#include <math.h>
 #include <string.h>
 #include <curl/curl.h>
-#include <math.h>
-#include <stdint.h>
-#include <microhttpd.h>
+#include <getopt.h>
+
+#ifdef LOCAL
+	#include <microhttpd.h>
+	#include "local.h"
+#endif
 
 #include "main.h"
 #include "queue.h"
 #include "api.h"
-#include "local.h"
 
 #include "protocols/obis.h"
 #include "protocols/1wire.h"
@@ -64,8 +68,10 @@ static protocol_t protocols[] = {
 static struct option long_options[] = {
 	{"config", 	required_argument,	0,	'c'},
 	{"daemon", 	required_argument,	0,	'd'},
+#ifdef LOCAL
 	{"local", 	no_argument,		0,	'l'},
 	{"local-port",	required_argument,	0,	'p'},
+#endif /* LOCAL */
 	{"verbose",	optional_argument,	0,	'v'},
 	{"help",	no_argument,		0,	'h'},
 	{"version",	no_argument,		0,	'V'},
@@ -78,8 +84,10 @@ static struct option long_options[] = {
 static char *long_options_descs[] = {
 	"config file with channel -> uuid mapping",
 	"run as daemon",
+#ifdef LOCAL
 	"activate local interface (tiny webserver)",
 	"TCP port for local interface",
+#endif /* LOCAL */
 	"enable verbose output",
 	"show this help",
 	"show version of vzlogger",
@@ -91,11 +99,11 @@ static char *long_options_descs[] = {
  */
 channel_t chans[MAX_CHANNELS]; // TODO use dynamic allocation
 options_t opts = { /* setting default options */
-	NULL,	/* config file */
-	8080,			/* port for local interface */
-	0,			/* debug level / verbosity */
-	FALSE,			/* daemon mode */
-	FALSE			/* local interface */
+	NULL,		/* config file */
+	8080,		/* port for local interface */
+	0,		/* debug level / verbosity */
+	FALSE,		/* daemon mode */
+	FALSE		/* local interface */
 };
 
 /**
@@ -108,23 +116,24 @@ void usage(char * argv[]) {
 
 	printf("Usage: %s [options]\n\n", argv[0]);
 	printf("  following options are available:\n");
-	
+
 	while (op->name && desc) {
 		printf("\t-%c, --%-12s\t%s\n", op->val, op->name, *desc);
 		op++;
 		desc++;
 	}
-	
+
 	printf("\n");
 	printf("  following protocol types are supported:\n");
-	
+
 	while (prot->name) {
 		printf("\t%-12s\t%s\n", prot->name, prot->desc);
 		prot++;
 	}
-	
-	printf("\nvzlogger - volkszaehler.org logging utility %s\n", VZ_VERSION);
+
+	printf("\n%s - volkszaehler.org logging utility\n", PACKAGE_STRING);
 	printf("by Steffen Vogel <stv0g@0l.de>\n");
+	printf("send bugreports to %s\n", PACKAGE_BUGREPORT);
 }
 
 /**
@@ -136,11 +145,11 @@ void usage(char * argv[]) {
 void print(int level, char * format, channel_t *ch, ... ) {
 	static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 	va_list args;
-	
+
 	struct timeval now;
 	struct tm * timeinfo;
 	char buffer[16];
-	
+
 	if (level <= (signed int) opts.verbose) {
 		gettimeofday(&now, NULL);
 		timeinfo = localtime(&now.tv_sec);
@@ -156,7 +165,7 @@ void print(int level, char * format, channel_t *ch, ... ) {
 			else {
 				fprintf((level > 0) ? stdout : stderr, "\t\t");
 			}
-			
+
 			va_start(args, ch);
 			vfprintf((level > 0) ? stdout : stderr, format, args);
 			va_end(args);
@@ -183,15 +192,15 @@ void parse_options(int argc, char * argv[], options_t * opts) {
 			case 'v':
 				opts->verbose = (optarg == NULL) ? 1 : atoi(optarg);
 				break;
-				
+
 			case 'l':
 				opts->local = TRUE;
 				break;
-				
+
 			case 'd':
 				opts->daemon = TRUE;
 				break;
-				
+
 			case 'p': /* port for local interface */
 				opts->port = atoi(optarg);
 				break;
@@ -200,9 +209,9 @@ void parse_options(int argc, char * argv[], options_t * opts) {
 				opts->config = (char *) malloc(strlen(optarg)+1);
 				strcpy(opts->config, optarg);
 				break;
-				
+
 			case 'V':
-				printf("%s\n", VZ_VERSION);
+				printf("%s\n", VERSION);
 				exit(EXIT_SUCCESS);
 				break;
 
@@ -212,7 +221,7 @@ void parse_options(int argc, char * argv[], options_t * opts) {
 				exit((c == '?') ? EXIT_FAILURE : EXIT_SUCCESS);
 		}
 	}
-	
+
 	if (opts->config == NULL) { /* search for config file */
 		if (access("vzlogger.conf", R_OK) == 0) {
 			opts->config = "vzlogger.conf";
@@ -224,7 +233,7 @@ void parse_options(int argc, char * argv[], options_t * opts) {
 			char *home_config = malloc(255);
 			strcat(home_config, getenv("HOME")); /* get home dir */
 			strcat(home_config, "/.vzlogger.conf"); /* append my filename */
-		
+
 			if (access(home_config, R_OK) == 0) {
 				opts->config = home_config;
 			}
@@ -237,7 +246,7 @@ int parse_channels(char *filename, channel_t *chans) {
 		fprintf(stderr, "No config file found! Please specify with --config!\n");
 		exit(EXIT_FAILURE);
 	}
-	
+
 	FILE *file = fopen(filename, "r"); /* open configuration */
 
 	if (file == NULL) {
@@ -247,10 +256,10 @@ int parse_channels(char *filename, channel_t *chans) {
 	else {
 		print(2, "Start parsing configuration from %s", NULL, filename);
 	}
-	
+
 	char line[256];
 	int chan_num = 0, line_num = 1;
-	
+
 	while (chan_num < MAX_CHANNELS && fgets(line, sizeof line, file) != NULL) { /* read a line */
 		if (line[0] == ';' || line[0] == '\n') continue; /* skip comments */
 
@@ -263,76 +272,76 @@ int parse_channels(char *filename, channel_t *chans) {
 			NULL,
 			protocols
 		};
-		
+
 		char *tok = strtok(line, " \t");
-			
+
 		for (int i = 0; i < 7 && tok != NULL; i++) {
 			size_t len = strlen(tok);
-			
+
 			switch(i) {
 				case 0: /* protocol */
 					while (ch.prot->name && strcmp(ch.prot->name, tok) != 0) ch.prot++; /* linear search */
-					
+
 					if (ch.prot == NULL) {
 						print(-1, "Invalid protocol: %s in %s:%i", NULL, tok, filename, line_num);
 						exit(EXIT_FAILURE);
 					}
 					break;
-			
+
 				case 1: /* interval */
 					ch.interval = strtol(tok, (char **) NULL, 10);
-					
+
 					if (errno == EINVAL || errno == ERANGE) {
 						print(-1, "Invalid interval: %s in %s:%i", NULL, tok, filename, line_num);
 						exit(EXIT_FAILURE);
 					}
 					break;
-					
+
 				case 2: /* uuid */
 					if (len == 0) { // TODO add uuid validation
 						print(-1, "Missing uuid in %s:%i", NULL, filename, line_num);
 						exit(EXIT_FAILURE);
 					}
-					
+
 					ch.uuid = (char *) malloc(len+1); /* including string termination */
 					strcpy(ch.uuid, tok);
 					break;
-					
+
 				case 3: /* middleware */
 					if (len == 0) { // TODO add uuid validation
 						print(-1, "Missing middleware in %s:%i", NULL, filename, line_num);
 						exit(EXIT_FAILURE);
 					}
-					
+
 					ch.middleware = (char *) malloc(len+1); /* including string termination */
 					strcpy(ch.middleware, tok);
 					break;
-			
+
 				case 4: /* options */
 					ch.options = (char *) malloc(len);
 					strncpy(ch.options, tok, len-1);
 					ch.options[len-1] = '\0'; /* replace \n by \0 */
 					break;
 			}
-	
+
 			tok = strtok(NULL, " \t");
 		}
 
 		print(1, "Parsed ch#%i (protocol=%s interval=%i uuid=%s middleware=%s options=%s)", &ch, ch.id, ch.prot->name, ch.interval, ch.uuid, ch.middleware, ch.options);
 		chans[chan_num] = ch;
-		
+
 		chan_num++;
 		line_num++;
 	}
-	
+
 	fclose(file);
-	
+
 	return chan_num;
 }
 
 /**
  * Read thread
- * 
+ *
  * Aquires reading from meters/sensors
  */
 void *read_thread(void *arg) {
@@ -341,41 +350,41 @@ void *read_thread(void *arg) {
 
 	/* initalize channel */
 	ch->handle = ch->prot->init_func(ch->options); /* init sensor/meter */
-	
+
 	do {
 		/**
 		 * Aquire reading,
 		 * may be blocking if mode == MODE_METER
 		 */
 		reading_t rd = ch->prot->read_func(ch->handle);
-		
+
 		pthread_mutex_lock(&ch->mutex);
 			if (!queue_push(&ch->queue, rd)) {
 				print(6, "Warning queue is full, discarding first tuple!", ch);
 			}
 			pthread_cond_broadcast(&ch->condition); /* notify webserver and logging thread */
 		pthread_mutex_unlock(&ch->mutex);
-		
+
 		print(1, "Value read: %.1f", ch, rd.value);
-		
+
 		/* Debugging */
 		if (opts.verbose >= 10) {
 			char *queue_str = queue_print(&ch->queue);
 			print(10, "Queue dump: %s write_p = %lu\t read_p = %lu", ch, queue_str, ch->queue.write_p, ch->queue.read_p);
 			free(queue_str);
 		}
-		
+
 		if (ch->prot->mode != MODE_METER) { /* for meters, the read_func call is blocking */
 			print(5, "Next reading in %i seconds", ch, ch->interval);
 			sleep(ch->interval); /* else sleep and restart aquisition */
 		}
-		
+
 		pthread_testcancel(); /* test for cancelation request */
 	} while (opts.daemon || opts.local);
-	
+
 	/* close channel */
 	ch->prot->close_func(ch->handle);
-	
+
 	return NULL;
 }
 
@@ -384,21 +393,24 @@ void *read_thread(void *arg) {
  */
 int main(int argc, char *argv[]) {
 	int num_chans;
+
+#ifdef LOCAL
 	struct MHD_Daemon *httpd_handle = NULL;
-	
+#endif /* LOCAL */
+
 	parse_options(argc, argv, &opts); /* parse command line arguments */
 	num_chans = parse_channels(opts.config, chans); /* parse channels from configuration */
-	
+
 	print(1, "Started %s with verbosity level %i", NULL, argv[0], opts.verbose);
-	
+
 	curl_global_init(CURL_GLOBAL_ALL); /* global intialization for all threads */
-	
+
 	for (int i = 0; i < num_chans; i++) {
 		channel_t *ch = &chans[i];
-		
+
 		/* initialize queue to buffer data */
 		queue_init(&ch->queue, (BUFFER_LENGTH / ch->interval) + 1);
-	
+
 		/* initialize thread syncronization helpers */
 		pthread_mutex_init(&ch->mutex, NULL);
 		pthread_cond_init(&ch->condition, NULL);
@@ -407,7 +419,8 @@ int main(int argc, char *argv[]) {
 		pthread_create(&ch->reading_thread, NULL, read_thread, (void *) ch);
 		pthread_create(&ch->logging_thread, NULL, api_thread, (void *) ch);
 	}
-	
+
+#ifdef LOCAL
 	/* start webserver for local interface */
 	if (opts.local) {
 		httpd_handle = MHD_start_daemon(
@@ -419,30 +432,33 @@ int main(int argc, char *argv[]) {
 			MHD_OPTION_END
 		);
 	}
-	
+#endif /* LOCAL */
+
 	/* wait for all threads to terminate */
 	// TODO bind signal for termination
 	for (int i = 0; i < num_chans; i++) {
 		channel_t * ch = &chans[i];
-		
+
 		pthread_join(ch->reading_thread, NULL);
 		pthread_join(ch->logging_thread, NULL);
-		
+
 		// TODO close protocol handles
-		
+
 		free(ch->middleware);
 		free(ch->uuid);
 		free(ch->options);
 		queue_free(&ch->queue);
-		
+
 		pthread_cond_destroy(&ch->condition);
 		pthread_mutex_destroy(&ch->mutex);
 	}
-	
+
+#ifdef LOCAL
 	/* stop webserver */
 	if (httpd_handle) {
 		MHD_stop_daemon(httpd_handle);
 	}
-	
+#endif /* LOCAL */
+
 	return EXIT_SUCCESS;
 }

@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.67])
-AC_INIT(vzlogger, 0.2, info@steffenvogel.de)
+AC_INIT([vzlogger], [0.2], [http://bugs.volkszaehler.org])
 AM_INIT_AUTOMAKE(vzlogger, 0.2)
 AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_HEADERS([config.h])
@@ -12,7 +12,7 @@ AC_CONFIG_FILES([Makefile src/Makefile docs/Makefile])
 AC_PROG_CC
 
 # Checks for libraries.
-PKG_CHECK_MODULES([DEPS], [json >= 0.9 libcurl >= 7.21.0 libmicrohttpd >= 0.9.3])
+PKG_CHECK_MODULES([DEPS], [json >= 0.9 libcurl >= 7.21.0])
 
 # Checks for header files.
 AC_CHECK_HEADERS([fcntl.h stddef.h stdint.h stdlib.h string.h sys/time.h termios.h unistd.h])
@@ -27,20 +27,32 @@ AC_FUNC_REALLOC
 AC_FUNC_STRERROR_R
 AC_CHECK_FUNCS([gettimeofday memset sqrt strchr strtol])
 
-# debug compilation support
-AC_MSG_CHECKING([whether to build with debug information])
-AC_ARG_ENABLE([debug],
-    [AS_HELP_STRING([--enable-debug],
-        [enable debug data generation (def=no)])],
-    [debugit="$enableval"],
-    [debugit=no])
-AC_MSG_RESULT([$debugit])
+# local interface support
+AC_ARG_ENABLE(
+    [local-interface], 
+    [AS_HELP_STRING([--enable-local-interface], [enable support for local HTTPd (def=no)])],
+    [local=true],
+    [local=false]
+)
 
-if test x"$debugit" = x"yes"; then
+AM_CONDITIONAL([LOCAL], [test x$local = xtrue])
+if test x"$local" = x"true"; then
+    AC_DEFINE([LOCAL],[],[Local interface])
+    PKG_CHECK_MODULES([DEPS_LOCAL], [libmicrohttpd >= 0.9.3])
+fi
+
+# debug compilation support
+AC_ARG_ENABLE(
+    [debug],
+    [AS_HELP_STRING([--enable-debug], [enable debug data generation (def=no)])],
+    [debug=true],
+    [debug=false]
+)
+
+if test x"$debug" = x"true"; then
     AC_DEFINE([DEBUG],[],[Debug Mode])
     AM_CXXFLAGS="$AM_CXXFLAGS -g -Wall -Werror -Wno-uninitialized -O0"
 else
-    AC_DEFINE([NDEBUG],[],[No-debug Mode])
     AM_CXXFLAGS="$AM_CXXFLAGS -O3"
 fi
 
