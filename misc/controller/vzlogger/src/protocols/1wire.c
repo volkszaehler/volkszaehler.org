@@ -56,16 +56,19 @@ reading_t onewire_get(void *handle) {
 	reading_t rd;
 	char buffer[16];
 	int bytes;
-	
-	rewind((FILE *) handle);
-	bytes = fread(buffer, 1, 16, (FILE *) handle);
-	
-	if (bytes) {
-		print(4, "Read from sensor file: %s", NULL, buffer);
-		
-		rd.value = strtof(buffer, NULL);
-		gettimeofday(&rd.tv, NULL);
-	}
-	
+
+
+	do {
+		rewind((FILE *) handle);
+		bytes = fread(buffer, 1, 16, (FILE *) handle);
+
+		if (bytes) {
+			print(4, "Read from sensor file: %s", NULL, buffer);
+
+			rd.value = strtof(buffer, NULL);
+			gettimeofday(&rd.tv, NULL);
+		}
+	} while (rd.value == 85) { /* skip invalid readings */
+
 	return rd;
 }
