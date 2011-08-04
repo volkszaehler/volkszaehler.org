@@ -1,3 +1,3 @@
-sysconf_DATA = vzlogger.conf
+sysconf_DATA = etc/vzlogger.conf
 
 SUBDIRS = src docs
