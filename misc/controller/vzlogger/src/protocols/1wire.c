@@ -68,7 +68,7 @@ reading_t onewire_get(void *handle) {
 			rd.value = strtof(buffer, NULL);
 			gettimeofday(&rd.tv, NULL);
 		}
-	} while (rd.value == 85) { /* skip invalid readings */
+	} while (rd.value == 85); /* skip invalid readings */
 
 	return rd;
 }
