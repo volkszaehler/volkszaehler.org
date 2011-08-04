@@ -22,7 +22,7 @@
  * You should have received a copy of the GNU General Public License
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -38,13 +38,13 @@
  */
 void * onewire_init(char *address) {
 	FILE * fd  = fopen(address, "r");
-	
+
 	if (fd == NULL) {
 		perror(address);
 		print(-1, "Failed to open sensor: %s", NULL, address);
 		exit(EXIT_FAILURE);
 	}
-	
+
 	return (void *) fd;
 }
 
@@ -56,16 +56,17 @@ reading_t onewire_get(void *handle) {
 	reading_t rd;
 	char buffer[16];
 	int bytes;
-	
+
 	rewind((FILE *) handle);
 	bytes = fread(buffer, 1, 16, (FILE *) handle);
-	
+	buffer[bytes] = '\0'; /* zero terminated, required? */
+
 	if (bytes) {
 		print(4, "Read from sensor file: %s", NULL, buffer);
-		
+
 		rd.value = strtof(buffer, NULL);
 		gettimeofday(&rd.tv, NULL);
 	}
-	
+
 	return rd;
 }

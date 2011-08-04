@@ -30,10 +30,11 @@
 #include <pthread.h>
 #include <errno.h>
 
+#include "../config.h"
+
 #include "protocol.h"
 #include "queue.h"
 
-#define VZ_VERSION "0.2"
 #define MAX_CHANNELS 16
 
 #define RETRY_PAUSE 10 //600	/* seconds to wait after failed request */
@@ -56,13 +57,13 @@ typedef struct {
 	char *middleware;
 	char *uuid;
 	char *options;
-	
+
 	unsigned int interval;
-	
+
 	void *handle;			/* handle to store connection status */
 	protocol_t *prot;		/* pointer to protocol */
 	queue_t queue;			/* circular queue to buffer readings */
-	
+
 	pthread_t reading_thread;	/* pthread for asynchronus reading */
 	pthread_t logging_thread;	/* pthread for asynchronus logging */
 	pthread_mutex_t mutex;
@@ -79,7 +80,7 @@ typedef struct {
 
 	/* boolean bitfields, at the end of struct */
 	int daemon:1;
-	int local:1;		/* enable local interface */	
+	int local:1;		/* enable local interface */
 } options_t;
 
 /* Prototypes */

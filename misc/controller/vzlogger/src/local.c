@@ -25,9 +25,8 @@
 
 #include <json/json.h>
 #include <string.h>
-
 #include <stdio.h>
- 
+
 #include "main.h"
 #include "local.h"
 
@@ -40,22 +39,22 @@ int handle_request(void *cls, struct MHD_Connection *connection, const char *url
 	int ret;
 	int num_chans = *(int *) cls;
 	print(2, "Local request received: %s %s %s", NULL, version, method, url);
-	
+
 	struct MHD_Response *response;
-	
+
 	struct json_object *json_obj = json_object_new_object();
 	struct json_object *json_data = json_object_new_object();
 
 	for (int i = 0; i < num_chans; i++) {
 		channel_t *ch = &chans[i];
 		reading_t rd;
-		
+
 		if (strcmp(url, "/") == 0 || strcmp(ch->uuid, url + 1) == 0) {
 			pthread_mutex_lock(&ch->mutex);
 				/* wait for new data comet-like blocking of HTTP response */
 				pthread_cond_wait(&ch->condition, &ch->mutex); // TODO use pthread_cond_timedwait()
 			pthread_mutex_unlock(&ch->mutex);
-		
+
 			struct json_object *json_tuples = api_json_tuples(ch, TRUE);
 
 			json_object_object_add(json_data, "uuid", json_object_new_string(ch->uuid));
@@ -63,18 +62,18 @@ int handle_request(void *cls, struct MHD_Connection *connection, const char *url
 			json_object_object_add(json_data, "tuples", json_tuples);
 		}
 	}
-	
-	json_object_object_add(json_obj, "version", json_object_new_string(VZ_VERSION));
-	json_object_object_add(json_obj, "generator", json_object_new_string("vzlogger"));
+
+	json_object_object_add(json_obj, "version", json_object_new_string(VERSION));
+	json_object_object_add(json_obj, "generator", json_object_new_string(PACKAGE));
 	json_object_object_add(json_obj, "data", json_data);
 	json_str = json_object_to_json_string(json_obj);
-	
+
 	response = MHD_create_response_from_data(strlen(json_str), (void *) json_str, FALSE, TRUE);
-	
+
 	MHD_add_response_header(response, "Content-type", "application/json");
-	
+
 	ret = MHD_queue_response(connection, MHD_HTTP_OK, response);
-	
+
 	MHD_destroy_response (response);
 
 	return ret;
