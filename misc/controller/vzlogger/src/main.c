@@ -49,9 +49,10 @@
  */
 static protocol_t protocols[] = {
 	{"1wire",	"Dallas 1-Wire sensors (via OWFS)",	onewire_get,	onewire_init,	onewire_close,	MODE_SENSOR},
-	{"obis",	"Plaintext OBIS",			obis_get,	obis_init,	obis_close,	MODE_SENSOR},
+//	{"obis",	"Plaintext OBIS",			obis_get,	obis_init,	obis_close,	MODE_SENSOR},
 	{"random",	"Random walk",				random_get,	random_init,	random_close,	MODE_SENSOR},
 	{"rawS0",	"S0 on RS232",				rawS0_get, 	rawS0_init,	rawS0_close,	MODE_METER},
+//	{"sml",		"Smart Meter Language",			sml_get,	sml_init,	sml_close,	MODE_SENSOR},
 //	{"fluksousb", 	"FluksoUSB board", 			flukso_get,	flukso_init,	flukso_close,	MODE_SENSOR},
 	{NULL} /* stop condition for iterator */
 };
