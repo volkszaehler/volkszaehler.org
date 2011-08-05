@@ -9,7 +9,6 @@ Vcs-Git: git://github.com/volkszaehler/volkszaehler.org.git
 Vcs-Browser: http://github.com/volkszaehler/volkszaehler.org/tree/master/misc/controller/vzlogger/
 
 Package: vzlogger
-Version: 0.2-1
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: program for logging measurements to an volkszaehler.org middelware
