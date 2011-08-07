@@ -49,7 +49,7 @@ class AggregatorController extends EntityController {
 			return $aggregator;
 		}
 		else {
-			throw new \Exception('Entity is not a group: \' . $identifier . '\'');
+			throw new \Exception('Entity is not a group: \'' . $identifier . '\'');
 		}
 	}
 
