@@ -1,5 +1,7 @@
-This directory contains PHP libraries by external developers or projects.
+This directory should contain external, third-party PHP libraries.
+
+You can install them here, specify their location in etc/volkszaehler.conf.php
+or use PHP's include path.
 
 Please consult the wiki for detailed instructions:
-
 http://wiki.volkszaehler.org/howto/getstarted
