@@ -35,12 +35,7 @@ use Volkszaehler\Util;
 
 class MeterInterpreter extends Interpreter {
 
-	protected $min = NULL;
-	protected $max = NULL;
-	protected $first = NULL;
-	protected $last = NULL;
-	
-	protected $pulseCount = NULL;
+	protected $pulseCount;
 	protected $resolution;
 	
 	/**
@@ -77,7 +72,8 @@ class MeterInterpreter extends Interpreter {
 	 */
 	public function getAverage() {
 		if ($this->pulseCount) {
-			return (3.9e9 * $this->pulseCount) / ($this->resolution * ($this->last[0] - $this->first[0]));
+			$delta = $this->rows->getTo() - $this->rows->getFrom();
+			return (3.9e9 * $this->pulseCount) / ($this->resolution * $delta);
 		}
 		else { // prevents division by zero
 			return 0;
@@ -85,23 +81,28 @@ class MeterInterpreter extends Interpreter {
 	}
 
 	/**
-	 * Raw pulses to power conversion
+	 * Raw pulse to power conversion
 	 *
 	 * @param $callback a callback called each iteration for output
 	 * @return array with timestamp, values, and pulse count
 	 */
 	public function processData($callback) {
 		$tuples = array();
-		$pulses = parent::getData();
+		$this->rows = parent::getData();
 
 		$this->resolution = $this->channel->getProperty('resolution');
 		$this->pulseCount = 0;
 		
-		$last = $pulses->rewind();
-		$next = $pulses->next();
+		$row = $this->rows->rewind();
+		$last = $this->getFrom();
 		
-		while ($pulses->valid()) {
-			$tuple = $callback($this->raw2differential($last, $next));
+		while ($this->rows->valid()) {
+			$delta = $row[0] - $last;
+			$tuple = $callback(array(
+				(float) $row[0], // timestamp at the end
+				(float) ($row[1] * 3.6e9) / ($this->resolution * $delta), // doing df/dt
+				(int) $row[2] // num of rows
+			));
 			
 			if (is_null($this->max) || $tuple[1] > $this->max[1]) {
 				$this->max = $tuple;
@@ -111,34 +112,14 @@ class MeterInterpreter extends Interpreter {
 				$this->min = $tuple;
 			}
 				
-			$this->pulseCount += $tuple[2];
+			$this->pulseCount += $row[2];
 
 			$tuples[] = $tuple;
-			$last = $next;			
-			$next = $pulses->next();
+			$last = $row[0];
+			$row = $this->rows->next();
 		}
 		
-		$this->first = reset($tuples);
-		$this->last = end($tuples);
-		
 		return $tuples;
-	}
-
-	/**
-	 * Calculates the differential quotient of two consecutive pulses
-	 *
-	 * @param array $last the last pulse
-	 * @param array $next the next pulse
-	 */
-	protected function raw2differential(array $last, array $next) {
-		$delta = $next[0] - $last[0];
-
-		return array(
-			//($next[0] - $delta / 2), // timestamp in the middle
-			$last[0], // timestamp at the start
-			$next[1] * (3600000 / (($this->resolution / 1000) * $delta)), // value
-			$next[2] // num of pulses
-		);
 	}
 }
 

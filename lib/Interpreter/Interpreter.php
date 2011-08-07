@@ -39,14 +39,18 @@ abstract class Interpreter {
 	/**
 	 * @var Database connection
 	 */
-	protected $conn;
+	protected $conn;	// PDO connection handle
 
-	protected $from;
-	protected $to;
-	protected $groupBy;
+	protected $from;	// request parameters
+	protected $to;		// can be NULL!
+	protected $groupBy;	// user from/to from DataIterator for exact calculations!
 	
-	protected $rowCount;
-	protected $tupleCount;
+	protected $rowCount;	// number of rows in the database
+	protected $tupleCount;	// number of requested tuples
+	protected $rows;	// DataIterator instance for aggregating rows
+	
+	protected $min = NULL;
+	protected $max = NULL;
 
 	/**
 	 * Constructor
@@ -85,35 +89,47 @@ abstract class Interpreter {
 	 * @return Volkszaehler\DataIterator
 	 */
 	protected function getData() {
-		// prepare sql
-		$sqlWhere	= ' WHERE channel_id = ?';
-
+		// get total row count for grouping
+		$sqlParameters	= array($this->channel->getId());
 		if ($this->groupBy && $sqlGroupFields = self::buildGroupBySQL($this->groupBy)) {
-			$sqlRowCount	= 'SELECT COUNT(DISTINCT ' . $sqlGroupFields . ') FROM data' . $sqlWhere;
-			$sqlFields	= ' MAX(timestamp) AS timestamp, SUM(value) AS value, COUNT(timestamp) AS count';
-			
-			$sql		= 'SELECT' . $sqlFields . '
-						FROM data' .
-						$sqlWhere .
-						self::buildDateTimeFilterSQL($this->from, $this->to) .
-						' GROUP BY ' . $sqlGroupFields;
-						
-			$sqlParameters	= array($this->channel->getId());
+			$sqlRowCount	= 'SELECT COUNT(DISTINCT ' . $sqlGroupFields . ') FROM data WHERE channel_id = ?';
 		}
 		else {
-			$sqlRowCount	= 'SELECT COUNT(*) FROM data' . $sqlWhere . self::buildDateTimeFilterSQL($this->from, $this->to);
-			$sqlComon	= 'SELECT timestamp, value, 1 FROM data' . $sqlWhere;
-			
-			$sqlFirst	= '(' . $sqlComon  . ' AND timestamp <= ' . $this->from . ' ORDER BY timestamp DESC LIMIT 1) UNION ';
-			$sqlMiddle	= '(' . $sqlComon . self::buildDateTimeFilterSQL($this->from, $this->to) . ' ORDER BY timestamp ASC)';
-			$sqlLast	= ' UNION (' . $sqlComon . ' AND timestamp >= ' . $this->to . ' ORDER BY timestamp ASC LIMIT 2)'; // we need 2 tuples in MeterInterpreter
-			
-			$sql = ((isset($this->from)) ? $sqlFirst : '') . $sqlMiddle . ((isset($this->to)) ? $sqlLast : '');
-			$sqlParameters	= array_fill(0, 1 + isset($this->from) + isset($this->to), $this->channel->getId());
+			$sqlRowCount	= 'SELECT COUNT(*) FROM data WHERE channel_id = ?' . self::buildDateTimeFilterSQL($this->from, $this->to, $sqlParameters);
 		}
+		$this->rowCount = $this->conn->fetchColumn($sqlRowCount, $sqlParameters, 0);
 		
-		// get total row count for grouping
-		$this->rowCount = $this->conn->fetchColumn($sqlRowCount, array($this->channel->getId()), 0);
+		
+		// get data
+		$sqlParameters	= array();
+		if ($this->groupBy && $sqlGroupFields = self::buildGroupBySQL($this->groupBy)) {
+			$sql		= 'SELECT MAX(timestamp) AS timestamp, SUM(value) AS value, COUNT(timestamp) AS count
+						FROM data
+						WHERE channel_id = ?' .
+						self::buildDateTimeFilterSQL($this->from, $this->to, $sqlParameters) .
+						' GROUP BY ' . $sqlGroupFields;
+		}
+		else {
+			$sql		= '';
+			
+			$sqlComon	= 'SELECT timestamp, value, 1 AS count FROM data WHERE channel_id = ?';
+			$threshold	= 60 * 1000; // 1 minute
+			
+			if (isset($this->from)) {
+				$sql .= '(' . $sqlComon  . ' AND timestamp BETWEEN ? AND ? ORDER BY timestamp DESC LIMIT 2) UNION ALL ';
+				array_push($sqlParameters, $this->channel->getId(), $this->from - $threshold, $this->from);
+			}
+
+			$sqlParameters[] = $this->channel->getId();
+			$sql		.= '(' . $sqlComon . self::buildDateTimeFilterSQL($this->from, $this->to, $sqlParameters) . ')';
+			
+			if (isset($this->to)) {
+				$sql .=' UNION ALL (' . $sqlComon . ' AND timestamp BETWEEN  ? AND ? ORDER BY timestamp ASC LIMIT 2)';
+				array_push($sqlParameters, $this->channel->getId(), $this->to, $this->to + $threshold);
+			}
+			
+			$sql 		.= ' ORDER BY timestamp ASC';
+		}
 		
 		if ($this->rowCount > 0) {
 			$stmt = $this->conn->executeQuery($sql, $sqlParameters); // query for data
@@ -176,15 +192,17 @@ abstract class Interpreter {
 	 * @param integer $to timestamp in ms since 1970
 	 * @return string the sql part
 	 */
-	protected static function buildDateTimeFilterSQL($from = NULL, $to = NULL) {
+	protected static function buildDateTimeFilterSQL($from = NULL, $to = NULL, &$parameters) {
 		$sql = '';
 
 		if (isset($from)) {
-			$sql .= ' AND timestamp >= ' . $from;
+			$sql .= ' AND timestamp >= ?';
+			$parameters[] = $from;
 		}
 
 		if (isset($to)) {
-			$sql .= ' AND timestamp <= ' . $to;
+			$sql .= ' AND timestamp <= ?';
+			$parameters[] = $to;
 		}
 
 		return $sql;
@@ -220,8 +238,8 @@ abstract class Interpreter {
 	public function getRowCount() { return $this->rowCount; }
 	public function getTupleCount() { return $this->tupleCount; }
 	public function setTupleCount($count) { $this->tupleCount = $count; }
-	public function getFrom() { return $this->from; }
-	public function getTo() { return $this->to; }
+	public function getFrom() { return ($this->rowCount > 0) ? $this->rows->getFrom() : NULL; }
+	public function getTo() { return ($this->rowCount > 0) ? $this->rows->getTo() : NULL; }
 }
 
 ?>

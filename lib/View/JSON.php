@@ -188,13 +188,12 @@ class JSON extends View {
 			}
 		);
 		
+		$from = $interpreter->getFrom();
+		$to = $interpreter->getTo();
 		$min = $interpreter->getMin();
 		$max = $interpreter->getMax();
 		$average = $interpreter->getAverage();
 		$consumption = $interpreter->getConsumption();
-		
-		$from = $interpreter->getFrom();
-		$to = $interpreter->getTo();
 
 		$this->json['data']['uuid'] = $interpreter->getEntity()->getUuid();
 		if (isset($from)) $this->json['data']['from'] = $from;

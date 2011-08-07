@@ -33,11 +33,7 @@ use Volkszaehler\Util;
 
 class SensorInterpreter extends Interpreter {
 
-	protected $consumption = NULL; // in Wms (Watt milliseconds)
-	protected $min = NULL;
-	protected $max = NULL;
-	protected $first = NULL;
-	protected $last = NULL;
+	protected $consumption; // in Wms (Watt milliseconds)
 	
 	/**
 	 * Calculates the consumption
@@ -73,7 +69,8 @@ class SensorInterpreter extends Interpreter {
 	 */
 	public function getAverage() {
 		if ($this->consumption) {
-			return $this->consumption / ($this->last[0] - $this->first[0]);
+			$delta = $this->getTo() - $this->getFrom();
+			return $this->consumption / $delta;
 		}
 		else { // prevents division by zero
 			return 0;
@@ -81,17 +78,18 @@ class SensorInterpreter extends Interpreter {
 	}
 
 	public function processData($callback) {
-		$data = parent::getData();
+		$this->rows = parent::getData();
 		$tuples = array();
 		
-		$last = $data->rewind();
-		$next = $data->next();
+		$row = $this->rows->rewind();
+		$last = $this->getFrom();
 		
-		while ($data->valid()) {
+		while ($this->rows->valid()) {
+			$delta = $row[0] - $last;
 			$tuple = $callback(array(
-				(float) $next[0],
-				(float) $next[1] / $next[2],
-				(int) $next[2]
+				(float) $row[0],
+				(float) $row[1] / $row[2],
+				(int) $row[2]
 			));
 			
 			if (is_null($this->max) || $tuple[1] > $this->max[1]) {
@@ -102,22 +100,13 @@ class SensorInterpreter extends Interpreter {
 				$this->min = $tuple;
 			}
 			
-			/*
-			 * Workaround for #73
-			 * Due to the "overfetching"" at the boundary regions
-			 */
-			if ($last[0] > $this->from && $next[0] < $this->to) {
-				$this->consumption += $next[1] * ($next[0] - $last[0]);
-			}
+			$this->consumption += $tuple[1] * $delta;
 				
 			$tuples[] = $tuple;
-			$last = $next;			
-			$next = $data->next();
+			$last = $row[0];
+			$row = $this->rows->next();
 		}
 		
-		$this->first = reset($tuples);
-		$this->last = end($tuples);
-
 		return $tuples;
 	}
 }
