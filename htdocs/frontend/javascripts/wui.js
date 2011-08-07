@@ -77,11 +77,9 @@ vz.wui.init = function() {
 	
 	// toggle all channels
 	$('#entity-toggle').click(function() {
-		var queue = Array;
 		vz.entities.each(function(entity, parent) {
-			queue.push(entity.activate(!entity.active, parent));
+			entity.activate(!entity.active, parent, false).done(vz.wui.drawPlot);
 		}, true);
-		$.when.apply($, queue).done(vz.wui.drawPlot);
 	});
 };
 
@@ -515,7 +513,7 @@ vz.wui.drawPlot = function () {
 	vz.plot = $.plot($('#flot'), series, vz.options.plot);
 	
 	// disable automatic refresh if we are in past
-	if (vz.options.refresh && vz.options.plot.xaxis.max < new Date().getTime() - 1000) {
+	if (vz.options.refresh && vz.options.plot.xaxis.max < new Date().getTime() - 3000) {
 		vz.wui.clearTimeout('(suspended)');
 	}
 	else if (vz.options.refresh) {

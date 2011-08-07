@@ -27,10 +27,10 @@
 // default time interval to show
 vz.options = {
 	language: 'de',
-	precision: 2, // TODO update from middleware capabilities?
-	tuples: null, // automatically determined by plot size
+	precision: 2,		// TODO update from middleware capabilities?
+	tuples: null,		// automatically determined by plot size
 	refresh: false,
-	minTimeout: 3000, // minimum refresh time in ms
+	minTimeout: 2000,	// minimum refresh time in ms
 	defaultInterval: 24*60*60*1000, // 1 day
 };
 
