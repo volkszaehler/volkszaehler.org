@@ -343,7 +343,11 @@ Entity.prototype.activate = function(state, parent, recursive) {
 	$('#entity-' + this.uuid + ((parent) ? '.child-of-entity-' + parent.uuid : '') + ' input[type=checkbox]').attr('checked', state);
 					
 	if (this.active) {
-		queue.push(this.loadData());
+		queue.push(this.loadData()); // reload data
+	}
+	else {
+		this.data = undefined; // clear data
+		this.updateDOMRow();
 	}
 	
 	if (recursive) {
@@ -357,11 +361,11 @@ Entity.prototype.activate = function(state, parent, recursive) {
 
 Entity.prototype.updateDOMRow = function() {
 	var row = $('#entity-' + this.uuid);
-	
-	var delta = this.data.to - this.data.from;
-	var year = 365*24*60*60*1000;
 
-	if (this.data.rows > 0) { // update statistics if data available
+	if (this.data && this.data.rows > 0) { // update statistics if data available
+		var delta = this.data.to - this.data.from;
+		var year = 365*24*60*60*1000;
+	
 		$('.min', row)
 			.text(vz.wui.formatNumber(this.data.min[1], true) + this.definition.unit)
 			.attr('title', $.plot.formatDate(new Date(this.data.min[0]), '%d. %b %y %h:%M:%S', vz.options.plot.xaxis.monthNames, true));
