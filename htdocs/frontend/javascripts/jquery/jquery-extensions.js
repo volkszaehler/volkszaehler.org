@@ -30,21 +30,24 @@
  */
 $.extend( {
 	getUrlParams : function() {
-		var vars = {}, hash;
-		var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+		var vars = {};
+		var hashes = decodeURIComponent(window.location.href).slice(window.location.href.indexOf('?') + 1).split('&');
 		
 		for (var i = 0; i < hashes.length; i++) {
-			hash = hashes[i].split('=');
-			switch (typeof vars[hash[0]]) {
-				case 'undefined':
-					vars[hash[0]] = hash[1];
-					break;
-					
-				case 'string':
-					vars[hash[0]] = Array(vars[hash[0]]);
-					
-				case 'object':
-					vars[hash[0]].push(hash[1]);
+			var hash = hashes[i].split('=');
+			var key = hash[0];
+			var value = hash[1];
+			
+			if (key.substr(key.length-2) == '[]') { // Array
+				key = key.substr(0, key.length-2);
+				if (vars[key] === undefined) {
+					vars[key] = new Array;
+				}
+				
+				vars[key].push(value);
+			}
+			else {
+				vars[key] = value;
 			}
 		}
 		return vars;

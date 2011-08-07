@@ -134,9 +134,9 @@ vz.wui.dialogs.init = function() {
 	$('#entity-create option[value=power]').attr('selected', 'selected');
 
 	// set defaults
-	$('#entity-subscribe-middleware').val(vz.middleware[0].url);
-	$('#entity-public-middleware').append($('<option>').val(vz.middleware[0].url).text('Local (default)'));
-	$('#entity-create-middleware').val(vz.middleware[0].url);
+	$('#entity-subscribe-middleware').val(vz.options.localMiddleware);
+	$('#entity-public-middleware').append($('<option>').val(vz.options.localMiddleware).text('Local (default)'));
+	$('#entity-create-middleware').val(vz.options.localMiddleware);
 	$('#entity-subscribe-cookie').attr('checked', 'checked');
 	$('#entity-public-cookie').attr('checked', 'checked');
 	
@@ -234,18 +234,23 @@ vz.wui.dialogs.init = function() {
 vz.wui.getPermalink = function() {
 	var uuids = new Array;
 	vz.entities.each(function(entity, parent) {
-		if (entity.active && entity.definition.model == 'Volkszaehler\\Model\\Channel') {
-			uuids.push(entity.uuid);
+		if (entity.active) {
+			if (entity.middleware != vz.options.localMiddleware) {
+				uuids.push(entity.uuid + '@' + 	entity.middleware);
+			}
+			else {
+				uuids.push(entity.uuid);
+			}
 		}
-	}, true); // recursive!
+	}); // recursive!
 	
-	var params = $.param({
+	var params = {
 		from: Math.floor(vz.options.plot.xaxis.min),
 		to: Math.ceil(vz.options.plot.xaxis.max),
 		uuid: uuids.unique()
-	});
+	};
 	
-	return window.location.protocol + '//' + window.location.host + window.location.pathname + '?' + params;
+	return window.location.protocol + '//' + window.location.host + window.location.pathname + '?' + $.param(params);
 }
 
 /**

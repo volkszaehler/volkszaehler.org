@@ -32,6 +32,7 @@ vz.options = {
 	refresh: false,
 	minTimeout: 2000,	// minimum refresh time in ms
 	defaultInterval: 24*60*60*1000, // 1 day
+	localMiddleware: '../middleware.php'
 };
 
 vz.options.plot = {

@@ -58,10 +58,10 @@ vz.load = function(args) {
 	});
 	
 	if (args.url === undefined) { // local middleware by default
-		args.url = vz.middleware[0].url;
+		args.url = vz.options.localMiddleware;
 	}
 	
-	if (args.url == vz.middleware[0].url) { // local request
+	if (args.url == vz.options.localMiddleware) { // local request
 		args.dataType = 'json';
 	}
 	else { // remote request
@@ -84,7 +84,14 @@ vz.load = function(args) {
 	}
 	
 	if (args.type) {
-		args.data.operation = args.type.toLowerCase();
+		var operationMapping = {
+			post:	'add',
+			delete:	'delete',
+			get:	'get',
+			pull:	'edit'
+		};
+	
+		args.data.operation = operationMapping[args.type.toLowerCase()];
 	}
 	
 	return $.ajax(args);
@@ -95,18 +102,18 @@ vz.load = function(args) {
  */
 vz.parseUrlParams = function() {
 	var vars = $.getUrlParams();
-	var uuids = new Array;
+	var entities = new Array;
 	var save = false;
 	
 	for (var key in vars) {
 		if (vars.hasOwnProperty(key)) {
 			switch (key) {
 				case 'uuid': // add optional uuid from url
-					uuids = (typeof vars[key] == 'string') ? [vars[key]] : vars[key]; // handle multiple uuids
+					entities = (typeof vars[key] == 'string') ? [vars[key]] : vars[key]; // handle multiple uuids
 					break;
 					
 				case 'save': // save new uuids in cookie
-					save = true;
+					save = vars[key];
 					break;
 					
 				case 'from':
@@ -120,16 +127,16 @@ vz.parseUrlParams = function() {
 		}
 	}
 	
-	uuids.each(function(index, uuid) {
-		try {
-			vz.entities.push(new Entity({
-				middleware: vz.middleware[0].url,
-				uuid: uuid,
-				cookie: save
-			}));
-		} catch (exception) {
-			/* ignore exception */
-		}
+	entities.each(function(index, identifier) {
+		var identifier = identifier.split('@');
+		var uuid = identifier[0];
+		var middleware = (identifier.length > 1) ? identifier[1] : vz.options.localMiddleware;
+		
+		vz.entities.push(new Entity({
+			uuid: uuid,
+			middleware: middleware,
+			cookie: save
+		}));
 	});
 	
 	if (save) {

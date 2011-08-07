@@ -436,10 +436,10 @@ Entity.prototype.addChild = function(child) {
 		controller: 'group',
 		identifier: this.uuid,
 		url: this.middleware,
+		type: 'POST',
 		data: {
 			uuid: child.uuid
-		},
-		type: 'POST'
+		}
 	});
 }
 
@@ -455,9 +455,9 @@ Entity.prototype.removeChild = function(child) {
 		controller: 'group',
 		identifier: this.uuid,
 		url: this.middleware,
+		type: 'DELETE',
 		data: {
-			uuid: child.uuid,
-			type: 'DELETE'
+			uuid: child.uuid
 		}
 	});
 };
