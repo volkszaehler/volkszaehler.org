@@ -61,7 +61,7 @@ class Debug {
 		$em->getConnection()->getConfiguration()->setSQLLogger($this->sqlLogger);
 
 		if (isset(self::$instance)) {
-			throw new \Exception('Debugging has already been started. please use the static functions!');
+			throw new \Exception('Debugging has already been started. Please use the static functions!');
 		}
 		self::$instance = $this;
 	}

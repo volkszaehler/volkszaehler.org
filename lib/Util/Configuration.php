@@ -67,13 +67,13 @@ class Configuration {
 		$filename .= '.php';
 
 		if (!file_exists($filename)) {
-			throw new \Exception('Configuration file not found: ' . $filename);
+			throw new \Exception('Configuration file not found: \'' . $filename . '\'');
 		}
 
 		include $filename;
 
 		if (!isset($config)) {
-			throw new \Exception('No variable $config found in ' . $filename);
+			throw new \Exception('No variable $config found in: \'' . $filename . '\'');
 		}
 
 		self::$values = $config;

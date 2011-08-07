@@ -49,7 +49,7 @@ class AggregatorController extends EntityController {
 			return $aggregator;
 		}
 		else {
-			throw new \Exception($identifier . ' is not a group');
+			throw new \Exception('Entity is not a group: \' . $identifier . '\'');
 		}
 	}
 
@@ -65,7 +65,7 @@ class AggregatorController extends EntityController {
 				$aggregator->addChild($ec->get($uuid));
 			}
 			else {
-				throw new \Exception('You have to specifiy a uuid to add');
+				throw new \Exception('You have to specifiy a UUID to add');
 			}
 		}
 		else {	// create new aggregator
@@ -99,7 +99,7 @@ class AggregatorController extends EntityController {
 				$this->em->flush();
 			}
 			else {
-				throw new \Exception('You have to specifiy a uuid to remove');
+				throw new \Exception('You have to specifiy a UUID to remove');
 			}
 		}
 		else {	// remove aggregator

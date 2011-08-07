@@ -226,7 +226,7 @@ abstract class Interpreter {
 			return $ts * 1000;
 		}
 		else {
-			throw new \Exception('Invalid time format: ' . $string);
+			throw new \Exception('Invalid time format: \'' . $string . '\'');
 		}
 	}
 

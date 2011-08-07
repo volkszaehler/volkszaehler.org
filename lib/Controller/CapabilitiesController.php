@@ -73,7 +73,7 @@ class CapabilitiesController extends Controller {
 		}
 		
 		if (count($capabilities) == 0) {
-			throw new \Exception('Invalid capability identifier!');
+			throw new \Exception('Invalid capability identifier: \'' . $section . '\'');
 		}
 		
 		return array('capabilities' => $capabilities);

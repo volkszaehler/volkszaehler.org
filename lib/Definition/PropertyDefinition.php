@@ -111,7 +111,7 @@ class PropertyDefinition extends Definition {
 				break;
 
 			default:
-				throw new \Exception('Unknown property type: ' . $type);
+				throw new \Exception('Unknown property type: \'' . $type . '\'');
 		}
 
 		if ($this->type == 'integer' || $this->type == 'float') {

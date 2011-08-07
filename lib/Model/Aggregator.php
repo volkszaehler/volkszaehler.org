@@ -67,11 +67,11 @@ class Aggregator extends Entity {
 	 */
 	public function addChild(Entity $child) {
 		if ($this->children->contains($child)) {
-			throw new \Exception('Entity is already a child of the group');
+			throw new \Exception('Entity is already a child of the aggregator');
 		}
 
 		if ($child instanceof Aggregator && $child->contains($this)) {
-			throw new \Exception('Recursion detected! Can\'t group to itself');
+			throw new \Exception('Recursion detected! Can\'t aggregator to itself');
 		}
 
 		$this->children->add($child);
@@ -108,7 +108,7 @@ class Aggregator extends Entity {
 	 */
 	public function removeChild(Entity $child) {
 		if (!$this->children->removeElement($child)) {
-			throw new \Exception('This entity is not a child of this group');
+			throw new \Exception('This entity is not a child of this aggregator');
 		}
 	}
 

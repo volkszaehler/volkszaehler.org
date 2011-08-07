@@ -51,7 +51,7 @@ abstract class Definition {
 				$this->$name = $value;
 			}
 			else {
-				throw new \Exception('Unknown definition syntax: ' . $name);
+				throw new \Exception('Unknown definition syntax: \'' . $name . '\'');
 			}
 		}
 	}

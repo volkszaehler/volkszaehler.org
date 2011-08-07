@@ -133,7 +133,7 @@ class JpGraph extends View {
 		}
 		else {
 			// suppress other classes
-			//throw new \JpGraphException('Can\'t show ' . get_class($data));
+			//throw new \JpGraphException('Can\'t show: \'' . get_class($data) . '\'');
 		}
 	}
 

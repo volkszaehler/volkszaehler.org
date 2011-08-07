@@ -120,9 +120,6 @@ abstract class View {
 			case 'modified':	// Last-modified
 				$this->response->setHeader('Last-Modified', gmdate('D, d M Y H:i:s', $value) . ' GMT');
 
-			case 'etag':		// Etag
-				throw new Exception('This caching mode is not implemented');
-
 			case 'expires': 	// Expire
 				$this->response->setHeader('Expires', gmdate('D, d M Y H:i:s', $value) . ' GMT');
 				break;
@@ -137,7 +134,7 @@ abstract class View {
 				$this->response->setHeader('Pragma', 'no-cache');
 
 			default:
-				throw new Exception('Unknown caching mode: ' . $mode);
+				throw new Exception('Unknown caching mode: \'' . $mode . '\'');
 		}
 	}
 	

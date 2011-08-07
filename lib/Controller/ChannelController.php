@@ -49,7 +49,7 @@ class ChannelController extends EntityController {
 			return $channel;
 		}
 		else {
-			throw new \Exception($identifier . ' is not a channel');
+			throw new \Exception('Entity is not a channel: \'' . $identifier . '\'');
 		}
 	}
 

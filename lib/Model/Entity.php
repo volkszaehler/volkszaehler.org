@@ -76,7 +76,7 @@ abstract class Entity {
 	 */
 	public function __construct($type) {
 		if (!Definition\EntityDefinition::exists($type)) {
-			throw new \Exception('Unknown entity type');
+			throw new \Exception('Unknown entity type: \'' . $type . '\'');
 		}
 
 		$this->type = $type;
@@ -174,7 +174,7 @@ abstract class Entity {
 		$property = $this->findProperty($key);
 
 		if (!$property) {
-			throw new \Exception('Entity has no property \'' . $key . '\'');
+			throw new \Exception('Entity has no property: \'' . $key . '\'');
 		}
 		
 		$this->properties->removeElement($property);

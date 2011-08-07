@@ -53,7 +53,7 @@ abstract class Controller {
 	 */
 	public function run($op, array $arg = array()) {
 		if (!method_exists($this, $op)) {
-			throw new \Exception('Invalid context operation: ' . $op);
+			throw new \Exception('Invalid context operation: \'' . $op . '\'');
 		}
 		
 		switch(count($arg)) { // improved performence
