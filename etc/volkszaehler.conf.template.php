@@ -76,7 +76,7 @@ $config['db']['dbname']				= 'volkszaehler';
  * @var string path to vendor libs
  * @link http://www.php.net/manual/en/ini.core.php#ini.include-path
  */
-$config['lib']['doctrine']			= VZ_DIR . '/lib/vendor/Doctrine';
+//$config['lib']['doctrine']			= VZ_DIR . '/lib/vendor/Doctrine';
 //$config['lib']['jpgraph']			= VZ_DIR . '/lib/vendor/JpGraph';
 
 /**
@@ -90,7 +90,7 @@ $config['lib']['doctrine']			= VZ_DIR . '/lib/vendor/Doctrine';
  * @var string Locale used for regular expressions
  * @link http://php.net/manual/de/function.setlocale.php
  */
-$config['locale'] = array('de_DE', 'en_US', 'C');
+$config['locale']				= array('de_DE', 'en_US', 'C');
 
 /**
  * @var array of colors for plot series
