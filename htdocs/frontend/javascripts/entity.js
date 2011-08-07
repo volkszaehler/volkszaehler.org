@@ -25,14 +25,22 @@
 
 /**
  * Entity constructor
- * @todo add validation
+ * @var data object properties etc.
  */
-var Entity = function(json) {
-	this.parseJSON(json);
+var Entity = function(data) {
+	this.parseJSON(data);
 };
 
+/**
+ * @var static var to get total count of entity instances
+ * Used to choose color
+ */
 Entity.colors = 0;
 
+/**
+ * Parse middleware response (recursive creation of children etc)
+ * @var object from middleware response
+ */
 Entity.prototype.parseJSON = function(json) {
 	$.extend(true, this, json);
 
@@ -71,6 +79,7 @@ Entity.prototype.parseJSON = function(json) {
 
 /**
  * Query middleware for details
+ * @return jQuery dereferred object
  */
 Entity.prototype.loadDetails = function() {
 	return vz.load({
@@ -84,6 +93,10 @@ Entity.prototype.loadDetails = function() {
 	});	
 };
 
+/**
+ * Load data for current view from middleware
+ * @return jQuery dereferred object
+ */
 Entity.prototype.loadData = function() {
 	return vz.load({
 		controller: 'data',
@@ -150,8 +163,7 @@ Entity.prototype.showDetails = function() {
 
 /**
  * Show from for new Channel
- * 
- * @todo implement/test
+ * used to create info dialog
  */
 Entity.prototype.getDOMDetails = function(edit) {
 	var table = $('<table><thead><tr><th>Eigenschaft</th><th>Wert</th></tr></thead></table>');
@@ -258,6 +270,9 @@ Entity.prototype.getDOMDetails = function(edit) {
 	return table.append(data);
 };
 
+/**
+ * Get DOM for list of entities
+ */
 Entity.prototype.getDOMRow = function(parent) {
 	var row =  $('<tr>')
 		.addClass((parent) ? 'child-of-entity-' + parent.uuid : '')
@@ -271,18 +286,23 @@ Entity.prototype.getDOMRow = function(parent) {
 				.attr('type', 'checkbox')
 				.attr('checked', this.active)
 				.bind('change', this, function(event) {
-					var state = $(this).attr('checked');
+					var entity = event.data;
+					entity.active = $(this).attr('checked');
+					var queue = new Array;
 					
-					event.data.active = state;
-					$('#entity-' + event.data.uuid + ((parent) ? '.child-of-entity-' + parent.uuid : '') + ' input[type=checkbox]');
+					if (entity.active) {
+						queue.push(entity.loadData());
+					}
 					
-					event.data.each(function(entity, parent) {
-						$('#entity-' + entity.uuid + ((parent) ? '.child-of-entity-' + parent.uuid : '') + ' input[type=checkbox]')
-						.attr('checked', state);
-						entity.active = state;
+					event.data.each(function(child, parent) {
+						$('#entity-' + child.uuid + ((parent) ? '.child-of-entity-' + parent.uuid : '') + ' input[type=checkbox]').attr('checked', entity.state);
+						child.active = entity.active;
+						if (child.active) {
+							queue.push(entity.loadData());
+						}
 					}, true); // recursive!
-					
-					vz.wui.drawPlot();
+
+					$.when.apply($, queue).done(vz.wui.drawPlot);
 				})
 			)
 		)

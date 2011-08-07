@@ -73,7 +73,7 @@ class MeterInterpreter extends Interpreter {
 	public function getAverage() {
 		if ($this->pulseCount) {
 			$delta = $this->rows->getTo() - $this->rows->getFrom();
-			return (3.9e9 * $this->pulseCount) / ($this->resolution * $delta);
+			return (3.6e9 * $this->pulseCount) / ($this->resolution * $delta);
 		}
 		else { // prevents division by zero
 			return 0;

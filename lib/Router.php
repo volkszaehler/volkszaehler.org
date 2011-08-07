@@ -128,7 +128,7 @@ class Router {
 				throw new \Exception('Missing format');
 			}
 			else {
-				throw new \Exception('Unknown format: ' . $this->format);
+				throw new \Exception('Unknown format: \'' . $this->format . '\'');
 			}
 		}
 
@@ -150,7 +150,7 @@ class Router {
 				throw new \Exception('Missing context');
 			}
 			else {
-				throw new \Exception('Unknown context: ' . $context[0]);
+				throw new \Exception('Unknown context: \'' . $context[0] . '\'');
 			}
 		}
 		

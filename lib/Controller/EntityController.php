@@ -44,7 +44,7 @@ class EntityController extends Controller {
 	public function get($uuid = NULL) {
 		if (isset($uuid)) { // single entity
 			if (!Util\UUID::validate($uuid)) {
-				throw new \Exception('Invalid UUID: ' . $uuid);
+				throw new \Exception('Invalid UUID: \'' . $uuid . '\'');
 			}
 
 			$dql = 'SELECT a, p
@@ -58,7 +58,7 @@ class EntityController extends Controller {
 			try {
 				return $q->getSingleResult();
 			} catch (\Doctrine\ORM\NoResultException $e) {
-				throw new \Exception('No entity found with UUID: ' . $uuid, 404);
+				throw new \Exception('No entity found with UUID: \'' . $uuid . '\'', 404);
 			}
 		}
 		else { // public entities
@@ -100,7 +100,7 @@ class EntityController extends Controller {
 				continue; // skip generic parameters
 			}		
 			else if (!Definition\PropertyDefinition::exists($key)) {
-				throw new \Exception('Unknown property: ' . $key);
+				throw new \Exception('Unknown property: \'' . $key . '\'');
 			}
 
 			if ($value == '') { // dont use empty() because it also matches 0
