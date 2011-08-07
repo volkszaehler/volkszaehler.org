@@ -69,7 +69,7 @@ vz.getPermalink = function() {
 				uuids.push(entity.uuid);
 			}
 		}
-	}); // recursive!
+	});
 	
 	var params = {
 		from: Math.floor(vz.options.plot.xaxis.min),
