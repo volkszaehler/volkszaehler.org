@@ -75,14 +75,13 @@ vz.wui.init = function() {
 		}
 	});
 	
-	// plot rendering
-	$('#render-lines').attr('checked', (vz.options.render == 'lines'));
-	$('#render-points').attr('checked', (vz.options.render == 'points'));
-	$('input[name=render][type=radio]').change(function() {
-		if ($(this).attr('checked')) {
-			vz.options.render = $(this).val();
-			vz.wui.drawPlot();
-		}
+	// toggle all channels
+	$('#entity-toggle').click(function() {
+		var queue = Array;
+		vz.entities.each(function(entity, parent) {
+			queue.push(entity.activate(!entity.active, parent));
+		}, true);
+		$.when.apply($, queue).done(vz.wui.drawPlot);
 	});
 };
 

@@ -287,22 +287,7 @@ Entity.prototype.getDOMRow = function(parent) {
 				.attr('checked', this.active)
 				.bind('change', this, function(event) {
 					var entity = event.data;
-					entity.active = $(this).attr('checked');
-					var queue = new Array;
-					
-					if (entity.active) {
-						queue.push(entity.loadData());
-					}
-					
-					event.data.each(function(child, parent) {
-						$('#entity-' + child.uuid + ((parent) ? '.child-of-entity-' + parent.uuid : '') + ' input[type=checkbox]').attr('checked', entity.state);
-						child.active = entity.active;
-						if (child.active) {
-							queue.push(entity.loadData());
-						}
-					}, true); // recursive!
-
-					$.when.apply($, queue).done(vz.wui.drawPlot);
+					entity.activate($(this).attr('checked'), null, true).done(vz.wui.drawPlot);
 				})
 			)
 		)
@@ -350,6 +335,25 @@ Entity.prototype.getDOMRow = function(parent) {
 		
 	return row;
 };
+
+Entity.prototype.activate = function(state, parent, recursive) {
+	this.active = state;
+	var queue = new Array;
+	
+	$('#entity-' + this.uuid + ((parent) ? '.child-of-entity-' + parent.uuid : '') + ' input[type=checkbox]').attr('checked', state);
+					
+	if (this.active) {
+		queue.push(this.loadData());
+	}
+	
+	if (recursive) {
+		this.each(function(child, parent) {
+			queue.push(child.activate(state, parent, true));
+		}, true); // recursive!
+	}
+
+	return $.when.apply($, queue);
+}
 
 Entity.prototype.updateDOMRow = function() {
 	var row = $('#entity-' + this.uuid);
