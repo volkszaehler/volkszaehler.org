@@ -123,7 +123,7 @@ vz.entities.showTable = function() {
 			//accept: 'tr.channel span.indicator, tr.aggregator span.indicator', // TODO
 			drop: function(event, ui) {
 				var child = $(ui.draggable.parents('tr')[0]).data('entity');
-				var from = child.parent;
+				//var from = child.parent;
 				var to = $(this).data('entity');
 				
 				$('#entity-move').dialog({ // confirm prompt
@@ -138,7 +138,7 @@ vz.entities.showTable = function() {
 								queue.push(to.addChild(child)); // add to new aggregator
 					
 								if (from !== undefined) {
-									queue.push(from.removeChild(child)); // remove from aggregator
+				//					queue.push(from.removeChild(child)); // remove from aggregator
 								}
 								else {
 									child.cookie = false; // remove from cookies
@@ -147,9 +147,8 @@ vz.entities.showTable = function() {
 							} catch (e) {
 								vz.wui.dialogs.exception(e);
 							} finally {
-								$.when(queue).done(function() {
-									// wait for middleware
-									$.when(from.loadDetails(), to.loadDetails).done(vz.entities.showTable);
+								$.when(queue).done(function() { // wait for middleware
+				//					$.when(from.loadDetails(), to.loadDetails).done(vz.entities.showTable);
 								});
 								$(this).dialog('close');
 							}
