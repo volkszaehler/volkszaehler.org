@@ -30,7 +30,55 @@ var Exception = function(type, message, code) {
 		message: message,
 		code: code
 	};
-}
+};
+
+/**
+ * Build link to rendered image of current viewport
+ *
+ * @return string url
+ */
+vz.wui.getLink = function(format) {
+	var entities = new Array;
+	vz.entities.each(function(entity, parent) {
+		if (entity.active) {
+			entities.push(entity);
+		}
+	}, true); // recursive!
+	
+	var entity = entities[0]; // TODO handle other entities
+	
+	return entity.middleware + '/data/' + entity.uuid + '.' + format + '?' + $.param({
+		from: Math.floor(vz.options.plot.xaxis.min),
+		to: Math.ceil(vz.options.plot.xaxis.max)
+	});
+};
+
+/**
+ * Build link to current viewport
+ *
+ * @return string url
+ */
+vz.getPermalink = function() {
+	var uuids = new Array;
+	vz.entities.each(function(entity, parent) {
+		if (entity.active) {
+			if (entity.middleware != vz.options.localMiddleware) {
+				uuids.push(entity.uuid + '@' + 	entity.middleware);
+			}
+			else {
+				uuids.push(entity.uuid);
+			}
+		}
+	}); // recursive!
+	
+	var params = {
+		from: Math.floor(vz.options.plot.xaxis.min),
+		to: Math.ceil(vz.options.plot.xaxis.max),
+		uuid: uuids.unique()
+	};
+	
+	return window.location.protocol + '//' + window.location.host + window.location.pathname + '?' + $.param(params);
+};
  
 /**
  * Universal helper for middleware ajax requests with error handling
@@ -165,4 +213,4 @@ vz.capabilities.definitions.get = function(section, name) {
 			return this[section][i];
 		}
 	}
-}
+};

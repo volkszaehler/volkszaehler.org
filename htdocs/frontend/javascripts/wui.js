@@ -45,12 +45,12 @@ vz.wui.init = function() {
 	$('#export select').change(function(event) {
 		switch ($(this).val()) {
 			case 'permalink':
-				window.location = vz.wui.getPermalink();
+				window.location = vz.getPermalink();
 				break;
 			case 'png':
 			case 'csv':
 			case 'xml':
-				window.location = vz.wui.getLink($(this).val());
+				window.location = vz.getLink($(this).val());
 				break;
 				
 		}
@@ -226,54 +226,6 @@ vz.wui.dialogs.init = function() {
 	});
 };
 
-/**
- * Build link to current viewport
- *
- * @return string url
- */
-vz.wui.getPermalink = function() {
-	var uuids = new Array;
-	vz.entities.each(function(entity, parent) {
-		if (entity.active) {
-			if (entity.middleware != vz.options.localMiddleware) {
-				uuids.push(entity.uuid + '@' + 	entity.middleware);
-			}
-			else {
-				uuids.push(entity.uuid);
-			}
-		}
-	}); // recursive!
-	
-	var params = {
-		from: Math.floor(vz.options.plot.xaxis.min),
-		to: Math.ceil(vz.options.plot.xaxis.max),
-		uuid: uuids.unique()
-	};
-	
-	return window.location.protocol + '//' + window.location.host + window.location.pathname + '?' + $.param(params);
-}
-
-/**
- * Build link to rendered image of current viewport
- *
- * @return string url
- */
-vz.wui.getLink = function(format) {
-	var entities = new Array;
-	vz.entities.each(function(entity, parent) {
-		if (entity.active) {
-			entities.push(entity);
-		}
-	}, true); // recursive!
-	
-	var entity = entities[0]; // TODO handle other entities
-	
-	return entity.middleware + '/data/' + entity.uuid + '.' + format + '?' + $.param({
-		from: Math.floor(vz.options.plot.xaxis.min),
-		to: Math.ceil(vz.options.plot.xaxis.max)
-	});
-}
-
 vz.wui.zoom = function(from, to) {
 	vz.options.plot.xaxis.min = from;
 	vz.options.plot.xaxis.max = to;
@@ -293,7 +245,7 @@ vz.wui.zoom = function(from, to) {
 	vz.options.plot.yaxis.min = 0; // fixed to 0
 	
 	vz.entities.loadData().done(vz.wui.drawPlot);
-}
+};
 
 /**
  * Bind events to handle plot zooming & panning
@@ -430,7 +382,7 @@ vz.wui.setTimeout = function() {
 	vz.wui.timeout = window.setTimeout(vz.wui.refresh, t);
 	
 	$('#refresh-time').html('(' + Math.round(t / 1000) + ' s)');
-}
+};
 
 /**
  * Stop auto-refresh of graphs
@@ -441,7 +393,7 @@ vz.wui.clearTimeout = function(text) {
 	var rc = window.clearTimeout(vz.wui.timeout);
 	vz.wui.timeout = null;
 	return rc;
-}
+};
 
 /**
  * Rounding precision
@@ -468,7 +420,7 @@ vz.wui.formatNumber = function(number, prefix) {
 	}
 
 	return number;
-}
+};
 
 vz.wui.updateHeadline = function() {
 	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
@@ -480,7 +432,7 @@ vz.wui.updateHeadline = function() {
 	var from = $.plot.formatDate(new Date(vz.options.plot.xaxis.min), format, vz.options.plot.xaxis.monthNames, true);
 	var to = $.plot.formatDate(new Date(vz.options.plot.xaxis.max), format, vz.options.plot.xaxis.monthNames, true);
 	$('#title').html(from + ' - ' + to);
-}
+};
 
 /**
  * Draws plot to container
