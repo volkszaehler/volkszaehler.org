@@ -26,7 +26,7 @@ namespace Volkszaehler\Util;
 /**
  * Custom option constant for JSON::encode()
  */
-define('JSON_PRETTY', 32);
+define('JSON_PRETTY', 128);
 
 /**
  * Static JSON utility class
@@ -58,6 +58,7 @@ class JSON extends \ArrayObject {
 	 */
 	public function encode($options = 0) {
 		$json = json_encode($this->getArrayCopy(), $options);
+		//var_dump($this->getArrayCopy());
 
 		if ($options & JSON_PRETTY) {
 			$json = self::format($json);
