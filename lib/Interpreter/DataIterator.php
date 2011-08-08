@@ -70,6 +70,9 @@ class DataIterator implements \Iterator, \Countable {
 				$this->tupleCount++;
 			}
 		}
+		
+		// skipping first reading, just for getting first timestamp
+		$this->from = $this->stmt->fetchColumn();
 	}
 
 	/**
@@ -100,7 +103,6 @@ class DataIterator implements \Iterator, \Countable {
 	 */
 	public function rewind() {
 		$this->key = $this->rowKey = 0;
-		$this->from = $this->stmt->fetchColumn(); // skipping first reading, just for getting first timestamp
 		return $this->next(); // fetch first tuple
 	}
 

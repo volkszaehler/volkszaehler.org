@@ -80,11 +80,9 @@ class SensorInterpreter extends Interpreter {
 	public function processData($callback) {
 		$this->rows = parent::getData();
 		$tuples = array();
-		
-		$row = $this->rows->rewind();
+
 		$last = $this->getFrom();
-		
-		while ($this->rows->valid()) {
+		foreach ($this->rows as $row) {
 			$delta = $row[0] - $last;
 			$tuple = $callback(array(
 				(float) $row[0],
@@ -104,7 +102,6 @@ class SensorInterpreter extends Interpreter {
 				
 			$tuples[] = $tuple;
 			$last = $row[0];
-			$row = $this->rows->next();
 		}
 		
 		return $tuples;

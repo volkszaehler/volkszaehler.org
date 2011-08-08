@@ -97,7 +97,7 @@ abstract class Interpreter {
 		else {
 			$sqlRowCount	= 'SELECT COUNT(*) FROM data WHERE channel_id = ?' . self::buildDateTimeFilterSQL($this->from, $this->to, $sqlParameters);
 		}
-		$this->rowCount = $this->conn->fetchColumn($sqlRowCount, $sqlParameters, 0);
+		$this->rowCount = (int) $this->conn->fetchColumn($sqlRowCount, $sqlParameters, 0);
 		
 		
 		// get data

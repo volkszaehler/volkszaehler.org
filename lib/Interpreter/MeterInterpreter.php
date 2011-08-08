@@ -93,10 +93,8 @@ class MeterInterpreter extends Interpreter {
 		$this->resolution = $this->channel->getProperty('resolution');
 		$this->pulseCount = 0;
 		
-		$row = $this->rows->rewind();
 		$last = $this->getFrom();
-		
-		while ($this->rows->valid()) {
+		foreach ($this->rows as $row) {
 			$delta = $row[0] - $last;
 			$tuple = $callback(array(
 				(float) $row[0], // timestamp at the end
@@ -116,7 +114,6 @@ class MeterInterpreter extends Interpreter {
 
 			$tuples[] = $tuple;
 			$last = $row[0];
-			$row = $this->rows->next();
 		}
 		
 		return $tuples;
