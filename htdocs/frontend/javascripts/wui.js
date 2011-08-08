@@ -32,7 +32,13 @@ vz.wui.init = function() {
 	
 	// initialize dropdown accordion
 	$('#accordion h3').click(function() {
-		$(this).next().toggle('fast');
+		$(this).next().toggle('fast', function() {
+			// resizing plot: workaround for #76
+			vz.plot.resize();
+			vz.plot.setupGrid();
+			vz.plot.draw();
+		});
+		
 		return false;
 	}).next().hide();
 	$('#entity-list').show(); // open entity list by default

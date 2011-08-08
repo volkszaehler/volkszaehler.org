@@ -66,7 +66,9 @@ $(document).ready(function() {
 	$(window).resize(function() {
 		vz.options.tuples = Math.round($('#flot').width() / 3);
 		$('#tuples').val(vz.options.tuples);
-		vz.wui.drawPlot();
+		vz.plot.resize();
+		vz.plot.setupGrid();
+		vz.plot.draw();
 	});
 	
 	window.onerror = function(errorMsg, url, lineNumber) {
