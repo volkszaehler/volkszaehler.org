@@ -32,29 +32,17 @@
  * we dont want to pollute the global namespace
  */
 var vz = {
-	entities: new Array, // entity properties + data
-	middleware: [{ // default middleware
-		url: '../middleware.php',
-		public: [ ] // public entities
-		/* capabilities: { } */
-	}],
-
-	// web user interface
-	wui: {
+	entities: new Array,	// entity properties + data
+	middleware: new Array,	// array of all known middlewares
+	wui: {			// web user interface
 		dialogs: { },
 		timeout: null
 	},
-	
-	// debugging and runtime information from middleware
-	capabilities: {
-		definitions: { } // definitions of entities & properties
+	capabilities: {		// debugging and runtime information from middleware
+		definitions: {}	// definitions of entities & properties
 	},
-	
-	// flot instance
-	plot: { },
-	
-	// options loaded from cookies in options.js
-	options: { }
+	plot: { },		// flot instance
+	options: { }		// options loaded from cookies in options.js
 };
 
 /**
@@ -74,7 +62,19 @@ $(document).ready(function() {
 	window.onerror = function(errorMsg, url, lineNumber) {
 		vz.wui.dialogs.error('Javascript Runtime Error', errorMsg);
 	};
-
+	
+	// initialize variables
+	vz.middleware.push({ // default middleware
+		url: vz.options.localMiddleware,
+		public: [ ] // public entities
+		/* capabilities: { } */
+	});
+	
+	// TODO make language/translation dependent (vz.options.language)
+	vz.options.plot.xaxis.monthNames = vz.options.monthNames;
+	vz.options.plot.xaxis.dayNames = vz.options.dayNames;
+	
+	// start loading cookies/url params
 	vz.entities.loadCookie(); // load uuids from cookie
 	vz.options.loadCookies(); // load options from cookie
 	vz.parseUrlParams(); // parse additional url params (new uuid etc..)

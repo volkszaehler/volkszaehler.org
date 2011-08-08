@@ -37,7 +37,7 @@ var Exception = function(type, message, code) {
  *
  * @return string url
  */
-vz.wui.getLink = function(format) {
+vz.getLink = function(format) {
 	var entities = new Array;
 	vz.entities.each(function(entity, parent) {
 		if (entity.active) {

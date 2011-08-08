@@ -32,7 +32,9 @@ vz.options = {
 	refresh: false,
 	minTimeout: 2000,	// minimum refresh time in ms
 	defaultInterval: 24*60*60*1000, // 1 day
-	localMiddleware: '../middleware.php'
+	localMiddleware: '../middleware.php',
+	monthNames: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
+	dayNames: ['Son', 'Mon', 'Di', 'Mi', 'Do', 'Fr', 'Sam']
 };
 
 vz.options.plot = {
@@ -40,11 +42,7 @@ vz.options.plot = {
 	series: {
 		shadowSize: 0,
 		points: {
-			radius: 1,
-			symbol: function(ctx, x, y, radius, shadow) { // just draw simple pixels
-				ctx.lineWidth = 1;
-				ctx.strokeRect(x-1, y-1, 2, 2);
-			}
+			radius: 3
 		}
 	},
 	legend: { show: false },
@@ -52,8 +50,7 @@ vz.options.plot = {
 		mode: 'time',
 		useLocalTime: true,
 		max: new Date().getTime(), // timeinterval to request
-		min: new Date().getTime() - vz.options.defaultInterval,
-		monthNames: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
+		min: new Date().getTime() - vz.options.defaultInterval
 	},
 	yaxis: {
 		min: 0,

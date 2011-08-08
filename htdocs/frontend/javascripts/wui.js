@@ -287,6 +287,7 @@ vz.wui.initEvents = function() {
 vz.wui.handleControls = function () {
 	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
 	var middle = vz.options.plot.xaxis.min + delta/2;
+	var d = new Date(middle);
 
 	switch($(this).val()) {
 		case 'move-last':
@@ -326,38 +327,33 @@ vz.wui.handleControls = function () {
 			);
 			break;
 		case 'zoom-hour':
-			hour = 60*60*1000;
 			vz.wui.zoom(
-				middle - hour/2,
-				middle + hour/2
+				new Date(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours()).getTime(),
+				new Date(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours()+1).getTime()
 			);
 			break;
 		case 'zoom-day':
-			var day = 24*60*60*1000;
 			vz.wui.zoom(
-				middle - day/2,
-				middle + day/2
+				new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(),
+				new Date(d.getFullYear(), d.getMonth(), d.getDate()+1).getTime()
 			);
 			break;
 		case 'zoom-week':
-			var week = 7*24*60*60*1000;
 			vz.wui.zoom(
-				middle - week/2,
-				middle + week/2
+				new Date(d.getFullYear(), d.getMonth(), d.getDate()-d.getDay()+1).getTime(), // start from monday
+				new Date(d.getFullYear(), d.getMonth(), d.getDate()-d.getDay()+8).getTime()
 			);
 			break;
 		case 'zoom-month':
-			var month = 30*24*60*60*1000;
 			vz.wui.zoom(
-				middle - month/2,
-				middle + month/2
+				new Date(d.getFullYear(), d.getMonth(), 1).getTime(),
+				new Date(d.getFullYear(), d.getMonth()+1, 1).getTime()
 			);
 			break;
 		case 'zoom-year':
-			var year = 365*24*60*60*1000;
 			vz.wui.zoom(
-				middle - year/2,
-				middle + year/2
+				new Date(d.getFullYear(), 0, 1).getTime(),
+				new Date(d.getFullYear()+1, 0, 1).getTime()
 			);
 			break;
 	}
@@ -430,13 +426,13 @@ vz.wui.formatNumber = function(number, prefix) {
 
 vz.wui.updateHeadline = function() {
 	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
-	var format = '%d. %b %y';
+	var format = '%B %d. %b %y';
 	
 	if (delta < 3*24*3600*1000) format += ' %h:%M'; // under 3 days
 	if (delta < 5*60*1000) format += ':%S'; // under 5 minutes
 	
-	var from = $.plot.formatDate(new Date(vz.options.plot.xaxis.min), format, vz.options.plot.xaxis.monthNames, true);
-	var to = $.plot.formatDate(new Date(vz.options.plot.xaxis.max), format, vz.options.plot.xaxis.monthNames, true);
+	var from = $.plot.formatDate(new Date(vz.options.plot.xaxis.min), format, vz.options.monthNames, vz.options.dayNames, true);
+	var to = $.plot.formatDate(new Date(vz.options.plot.xaxis.max), format, vz.options.monthNames, vz.options.dayNames, true);
 	$('#title').html(from + ' - ' + to);
 };
 
@@ -476,7 +472,7 @@ vz.wui.drawPlot = function () {
 	vz.plot = $.plot($('#flot'), series, vz.options.plot);
 	
 	// disable automatic refresh if we are in past
-	if (vz.options.refresh && vz.options.plot.xaxis.max < new Date().getTime() - 3000) {
+	if (vz.options.refresh && vz.options.plot.xaxis.max < new Date().getTime() - 2000) {
 		vz.wui.clearTimeout('(suspended)');
 	}
 	else if (vz.options.refresh) {

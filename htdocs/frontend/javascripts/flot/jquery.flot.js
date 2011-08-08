@@ -1240,7 +1240,7 @@
                 formatter = function (v, axis) {
                     // first check global format
                     if (opts.timeformat != null)
-                        return $.plot.formatDate(v, opts.timeformat, opts.monthNames, opts.useLocalTime);
+                        return $.plot.formatDate(v, opts.timeformat, opts.monthNames, opts.dayNames, opts.useLocalTime);
                     
                     var t = axis.tickSize[0] * timeUnitSize[axis.tickSize[1]];
                     var span = axis.max - axis.min;
@@ -1266,7 +1266,7 @@
                     else
                         fmt = "%y";
                     
-                    return $.plot.formatDate(v, fmt, opts.monthNames, opts.useLocalTime);
+                    return $.plot.formatDate(v, fmt, opts.monthNames, opts.dayNames, opts.useLocalTime);
                 };
             }
             else {
@@ -2535,7 +2535,7 @@
     $.plot.plugins = [];
 
     // returns a string with the date d formatted according to fmt
-    $.plot.formatDate = function(v, fmt, monthNames, tzOffset) {
+    $.plot.formatDate = function(v, fmt, monthNames, dayNames, tzOffset) {
     	if (tzOffset)
             v -= new Date(v).getTimezoneOffset()*60000;
             
@@ -2552,6 +2552,8 @@
         var isAM = hours < 12;
         if (monthNames == null)
             monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        if (dayNames == null)
+            dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
         if (fmt.search(/%p|%P/) != -1) {
             if (hours > 12) {
@@ -2573,6 +2575,7 @@
                 case 'm': c = "" + (d.getUTCMonth() + 1); break;
                 case 'y': c = "" + d.getUTCFullYear(); break;
                 case 'b': c = "" + monthNames[d.getUTCMonth()]; break;
+                case 'B': c = "" + dayNames[d.getUTCDay()]; break;
                 case 'p': c = (isAM) ? ("" + "am") : ("" + "pm"); break;
                 case 'P': c = (isAM) ? ("" + "AM") : ("" + "PM"); break;
                 case '0': c = ""; padNext = true; break;
