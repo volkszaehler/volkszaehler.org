@@ -34,7 +34,11 @@ use Volkszaehler\Model;
  * @todo rename? Bsp: DataSample, Sample, Reading
  *
  * @Entity
- * @Table(name="data", indexes={@index(name="search_idx", columns={"channel_id", "timestamp"})})
+ * @Table(
+ * 	name="data",
+ *	indexes={@index(name="search_idx", columns={"channel_id", "timestamp"})},
+ *	uniqueConstraints={@UniqueConstraint(name="ts_uniq", columns={"channel_id", "timestamp"})}
+ * )
  */
 class Data {
 	/**
