@@ -15,7 +15,8 @@ class VolkszaehlerModelPropertyProxy extends \Volkszaehler\Model\Property implem
         $this->_entityPersister = $entityPersister;
         $this->_identifier = $identifier;
     }
-    private function _load()
+    /** @private */
+    public function __load()
     {
         if (!$this->__isInitialized__ && $this->_entityPersister) {
             $this->__isInitialized__ = true;
@@ -25,53 +26,41 @@ class VolkszaehlerModelPropertyProxy extends \Volkszaehler\Model\Property implem
             unset($this->_entityPersister, $this->_identifier);
         }
     }
-
+    
     
     public function cast()
     {
-        $this->_load();
+        $this->__load();
         return parent::cast();
     }
 
     public function validate()
     {
-        $this->_load();
+        $this->__load();
         return parent::validate();
-    }
-
-    public function checkRemove()
-    {
-        $this->_load();
-        return parent::checkRemove();
-    }
-
-    public function checkPersist()
-    {
-        $this->_load();
-        return parent::checkPersist();
     }
 
     public function getKey()
     {
-        $this->_load();
+        $this->__load();
         return parent::getKey();
     }
 
     public function getValue()
     {
-        $this->_load();
+        $this->__load();
         return parent::getValue();
     }
 
     public function getDefinition()
     {
-        $this->_load();
+        $this->__load();
         return parent::getDefinition();
     }
 
     public function setValue($value)
     {
-        $this->_load();
+        $this->__load();
         return parent::setValue($value);
     }
 
@@ -79,5 +68,22 @@ class VolkszaehlerModelPropertyProxy extends \Volkszaehler\Model\Property implem
     public function __sleep()
     {
         return array('__isInitialized__', 'id', 'key', 'value', 'entity');
+    }
+
+    public function __clone()
+    {
+        if (!$this->__isInitialized__ && $this->_entityPersister) {
+            $this->__isInitialized__ = true;
+            $class = $this->_entityPersister->getClassMetadata();
+            $original = $this->_entityPersister->load($this->_identifier);
+            if ($original === null) {
+                throw new \Doctrine\ORM\EntityNotFoundException();
+            }
+            foreach ($class->reflFields AS $field => $reflProperty) {
+                $reflProperty->setValue($this, $reflProperty->getValue($original));
+            }
+            unset($this->_entityPersister, $this->_identifier);
+        }
+        
     }
 }

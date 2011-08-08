@@ -15,7 +15,8 @@ class VolkszaehlerModelAggregatorProxy extends \Volkszaehler\Model\Aggregator im
         $this->_entityPersister = $entityPersister;
         $this->_identifier = $identifier;
     }
-    private function _load()
+    /** @private */
+    public function __load()
     {
         if (!$this->__isInitialized__ && $this->_entityPersister) {
             $this->__isInitialized__ = true;
@@ -25,89 +26,100 @@ class VolkszaehlerModelAggregatorProxy extends \Volkszaehler\Model\Aggregator im
             unset($this->_entityPersister, $this->_identifier);
         }
     }
-
+    
     
     public function addChild(\Volkszaehler\Model\Entity $child)
     {
-        $this->_load();
+        $this->__load();
         return parent::addChild($child);
     }
 
     public function removeChild(\Volkszaehler\Model\Entity $child)
     {
-        $this->_load();
+        $this->__load();
         return parent::removeChild($child);
     }
 
     public function getChildren()
     {
-        $this->_load();
+        $this->__load();
         return parent::getChildren();
     }
 
     public function checkProperties()
     {
-        $this->_load();
+        $this->__load();
         return parent::checkProperties();
     }
 
     public function getProperty($key)
     {
-        $this->_load();
+        $this->__load();
         return parent::getProperty($key);
     }
 
     public function getProperties($prefix = NULL)
     {
-        $this->_load();
+        $this->__load();
         return parent::getProperties($prefix);
     }
 
     public function setProperty($key, $value)
     {
-        $this->_load();
+        $this->__load();
         return parent::setProperty($key, $value);
     }
 
-    public function unsetProperty($key, \Doctrine\ORM\EntityManager $em)
+    public function deleteProperty($key)
     {
-        $this->_load();
-        return parent::unsetProperty($key, $em);
+        $this->__load();
+        return parent::deleteProperty($key);
     }
 
     public function getId()
     {
-        $this->_load();
+        $this->__load();
         return parent::getId();
     }
 
     public function getUuid()
     {
-        $this->_load();
+        $this->__load();
         return parent::getUuid();
     }
 
     public function getType()
     {
-        $this->_load();
+        $this->__load();
         return parent::getType();
     }
 
     public function getDefinition()
     {
-        $this->_load();
+        $this->__load();
         return parent::getDefinition();
-    }
-
-    public function getInterpreter(\Doctrine\ORM\EntityManager $em, $from, $to)
-    {
-        $this->_load();
-        return parent::getInterpreter($em, $from, $to);
     }
 
 
     public function __sleep()
     {
         return array('__isInitialized__', 'id', 'uuid', 'type', 'properties', 'parents', 'children');
+    }
+
+    public function __clone()
+    {
+        if (!$this->__isInitialized__ && $this->_entityPersister) {
+            $this->__isInitialized__ = true;
+            $class = $this->_entityPersister->getClassMetadata();
+            $original = $this->_entityPersister->load($this->_identifier);
+            if ($original === null) {
+                throw new \Doctrine\ORM\EntityNotFoundException();
+            }
+            foreach ($class->reflFields AS $field => $reflProperty) {
+                $reflProperty->setValue($this, $reflProperty->getValue($original));
+            }
+            unset($this->_entityPersister, $this->_identifier);
+        }
+        
     }
 }

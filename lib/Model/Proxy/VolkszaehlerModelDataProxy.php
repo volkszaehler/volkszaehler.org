@@ -15,7 +15,8 @@ class VolkszaehlerModelDataProxy extends \Volkszaehler\Model\Data implements \Do
         $this->_entityPersister = $entityPersister;
         $this->_identifier = $identifier;
     }
-    private function _load()
+    /** @private */
+    public function __load()
     {
         if (!$this->__isInitialized__ && $this->_entityPersister) {
             $this->__isInitialized__ = true;
@@ -25,29 +26,29 @@ class VolkszaehlerModelDataProxy extends \Volkszaehler\Model\Data implements \Do
             unset($this->_entityPersister, $this->_identifier);
         }
     }
-
+    
     
     public function toArray()
     {
-        $this->_load();
+        $this->__load();
         return parent::toArray();
     }
 
     public function getValue()
     {
-        $this->_load();
+        $this->__load();
         return parent::getValue();
     }
 
     public function getTimestamp()
     {
-        $this->_load();
+        $this->__load();
         return parent::getTimestamp();
     }
 
     public function getChannel()
     {
-        $this->_load();
+        $this->__load();
         return parent::getChannel();
     }
 
@@ -55,5 +56,22 @@ class VolkszaehlerModelDataProxy extends \Volkszaehler\Model\Data implements \Do
     public function __sleep()
     {
         return array('__isInitialized__', 'id', 'timestamp', 'value', 'channel');
+    }
+
+    public function __clone()
+    {
+        if (!$this->__isInitialized__ && $this->_entityPersister) {
+            $this->__isInitialized__ = true;
+            $class = $this->_entityPersister->getClassMetadata();
+            $original = $this->_entityPersister->load($this->_identifier);
+            if ($original === null) {
+                throw new \Doctrine\ORM\EntityNotFoundException();
+            }
+            foreach ($class->reflFields AS $field => $reflProperty) {
+                $reflProperty->setValue($this, $reflProperty->getValue($original));
+            }
+            unset($this->_entityPersister, $this->_identifier);
+        }
+        
     }
 }
