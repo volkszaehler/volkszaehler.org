@@ -75,7 +75,7 @@ abstract class Definition {
 			return static::$definitions[$name];
 		}
 		else {
-			throw new \Exception('Unknown definition');
+			throw new \Exception('Unknown definition: \'' . $name . '\'');
 		}
 	}
 
