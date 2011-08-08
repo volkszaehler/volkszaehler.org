@@ -96,7 +96,7 @@ class EntityController extends Controller {
 	 */
 	protected function setProperties(Model\Entity $entity, $parameters) {
 		foreach ($parameters as $key => $value) {
-			if (in_array($key, array('operation', 'type'))) {
+			if (in_array($key, array('operation', 'type', 'debug'))) {
 				continue; // skip generic parameters
 			}		
 			else if (!Definition\PropertyDefinition::exists($key)) {
