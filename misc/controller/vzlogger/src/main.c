@@ -34,8 +34,8 @@
 #include <getopt.h>
 
 #ifdef LOCAL
-	#include <microhttpd.h>
-	#include "local.h"
+#include <microhttpd.h>
+#include "local.h"
 #endif
 
 #include "main.h"
@@ -52,12 +52,12 @@
  * incl. function pointers
  */
 static protocol_t protocols[] = {
-	{"1wire",	"Dallas 1-Wire sensors (via OWFS)",	onewire_get,	onewire_init,	onewire_close,	MODE_SENSOR},
-//	{"obis",	"Plaintext OBIS",			obis_get,	obis_init,	obis_close,	MODE_SENSOR},
-	{"random",	"Random walk",				random_get,	random_init,	random_close,	MODE_SENSOR},
-	{"rawS0",	"S0 on RS232",				rawS0_get, 	rawS0_init,	rawS0_close,	MODE_METER},
-//	{"sml",		"Smart Meter Language",			sml_get,	sml_init,	sml_close,	MODE_SENSOR},
-//	{"fluksousb", 	"FluksoUSB board", 			flukso_get,	flukso_init,	flukso_close,	MODE_SENSOR},
+	{"1wire",	"Dallas 1-Wire sensors (via OWFS)",	onewire_get,	onewire_init,	onewire_close,	SENSOR},
+//	{"obis",	"Plaintext OBIS",			obis_get,	obis_init,	obis_close,	SENSOR},
+	{"random",	"Random walk",				random_get,	random_init,	random_close,	SENSOR},
+	{"rawS0",	"S0 on RS232",				rawS0_get, 	rawS0_init,	rawS0_close,	METER},
+//	{"sml",		"Smart Meter Language",			sml_get,	sml_init,	sml_close,	SENSOR},
+//	{"fluksousb", 	"FluksoUSB board", 			flukso_get,	flukso_init,	flukso_close,	SENSOR},
 	{NULL} /* stop condition for iterator */
 };
 
@@ -107,7 +107,7 @@ options_t opts = { /* setting default options */
 };
 
 /**
- * Print availble options and some other usefull information
+ * Print available options and some other usefull information
  */
 void usage(char * argv[]) {
 	char ** desc = long_options_descs;
@@ -242,12 +242,12 @@ void parse_options(int argc, char * argv[], options_t * opts) {
 }
 
 int parse_channels(char *filename, channel_t *chans) {
-	if (filename == NULL) {
-		fprintf(stderr, "No config file found! Please specify with --config!\n");
+	FILE *file = fopen(filename, "r"); /* open configuration */
+	
+	if (!filename) { /* nothing found */
+		print(-1, "No config file found! Please specify with --config!\n", NULL);
 		exit(EXIT_FAILURE);
 	}
-
-	FILE *file = fopen(filename, "r"); /* open configuration */
 
 	if (file == NULL) {
 		perror(filename); /* why didn't the file open? */
@@ -354,7 +354,7 @@ void *read_thread(void *arg) {
 	do {
 		/**
 		 * Aquire reading,
-		 * may be blocking if mode == MODE_METER
+		 * may be blocking if interpreter == METER
 		 */
 		reading_t rd = ch->prot->read_func(ch->handle);
 
@@ -374,7 +374,7 @@ void *read_thread(void *arg) {
 			free(queue_str);
 		}
 
-		if (ch->prot->mode != MODE_METER) { /* for meters, the read_func call is blocking */
+		if (ch->prot->interpreter != METER) { /* for meters, the read_func call is blocking */
 			print(5, "Next reading in %i seconds", ch, ch->interval);
 			sleep(ch->interval); /* else sleep and restart aquisition */
 		}

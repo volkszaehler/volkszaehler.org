@@ -165,6 +165,7 @@ void api_parse_exception(CURLresponse response, char *err) {
 		strcpy(err, json_tokener_errors[json_tok->err]);
 	}
 
+	json_object_put(json_obj);
 	json_tokener_free(json_tok);
 }
 
@@ -184,8 +185,9 @@ void * api_thread(void *arg) {
 
 	do { /* start thread mainloop */
 		CURLresponse response;
-		long int http_code, curl_code;
+		json_object *json_obj;
 		char *json_str;
+		long int http_code, curl_code;
 
 		/* initialize response */
 		response.data = NULL;
@@ -196,9 +198,11 @@ void * api_thread(void *arg) {
 			pthread_cond_wait(&ch->condition, &ch->mutex); /* sleep until new data has been read */
 		}
 		pthread_mutex_unlock(&ch->mutex);
-
-		json_str = json_object_to_json_string(api_json_tuples(ch, FALSE));
-		print(1, "JSON request body: %s", ch, json_str);
+		
+		json_obj = api_json_tuples(ch, FALSE);
+		json_str = json_object_to_json_string(json_obj);
+		
+		print(8, "JSON request body: %s", ch, json_str);
 
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json_str);
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_custom_write_callback);
@@ -208,7 +212,7 @@ void * api_thread(void *arg) {
 		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
 
 		if (curl_code == CURLE_OK && http_code == 200) { /* everything is ok */
-			print(1, "Request succeeded with code: %i", ch, http_code);
+			print(3, "Request succeeded with code: %i", ch, http_code);
 			queue_clear(&ch->queue);
 		}
 		else { /* error */
@@ -226,9 +230,8 @@ void * api_thread(void *arg) {
 		}
 
 		/* householding */
-		free(json_str);
-		// TODO free json objects
 		free(response.data);
+		json_object_put(json_obj);
 
 		pthread_testcancel(); /* test for cancelation request */
 	} while (opts.daemon);
