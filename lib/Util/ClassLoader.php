@@ -118,7 +118,7 @@ class ClassLoader {
 
 		$subNamespace = substr($class, strlen($this->namespace));
 		$parts = explode($this->namespaceSeparator, $subNamespace);
-		$path = implode(DIRECTORY_SEPARATOR, $parts);
+		$path = implode('/', $parts);
 
 		require_once ($this->includePath !== NULL ? $this->includePath : '') . $path . $this->fileExtension;
 		return TRUE;
@@ -138,9 +138,9 @@ class ClassLoader {
 
 		$subNamespace = substr($class, strlen($this->namespace));
 		$parts = explode($this->namespaceSeparator, $subNamespace);
-		$path = implode(DIRECTORY_SEPARATOR, $parts);
+		$path = implode('/', $parts);
 
-		return file_exists(($this->includePath !== NULL ? $this->includePath . DIRECTORY_SEPARATOR : '') . $path . $this->fileExtension);
+		return file_exists(($this->includePath !== NULL ? $this->includePath : '') . $path . $this->fileExtension);
 	}
 
 	/**

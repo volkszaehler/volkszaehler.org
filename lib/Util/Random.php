@@ -24,6 +24,14 @@
 namespace Volkszaehler\Util;
 
 /**
+ * Define some CAPICOM constants
+ * @link http://msdn.microsoft.com/en-us/library/aa375673%28v=VS.85%29.aspx
+ */
+define('CAPICOM_ENCODE_ANY', 0xffffffff);
+define('CAPICOM_ENCODE_BASE64', 0);
+define('CAPICOM_ENCODE_BINARY', 1);
+
+/**
  * Extensible PRNG
  *
  * @author Steffen Vogel <info@steffenvogel.de>
@@ -44,22 +52,22 @@ class Random {
 			self::$source = fopen('/dev/urandom', 'rb');
 			self::$func = 'fRead';
 		}
-		elseif (class_exists('COM', 0)) {
-			try {
-				self::$source = new COM('CAPICOM.Utilities.1');  // See http://msdn.microsoft.com/en-us/library/aa388182(VS.85).aspx
-				self::$func = 'COM';
-			}
-			catch(\Exception $e) {}
+		elseif (function_exists('mt_rand')) {
+			mt_srand(microtime(TRUE));
+			self::$func = 'twister';
+		}
+		elseif (class_exists('COM', FALSE)) {
+			self::$source = new COM('CAPICOM.Utilities.1');
+			self::$func = 'COM';
 		}
 		else {
-			self::$func = 'twister';
+			throw \Exception('Could not initalize PRNG');
 		}
 
 		return self::$func;
 	}
-
+	
 	/**
-	 *
 	 * @param intger $bytes
 	 */
 	public static function getBytes($count) {
@@ -71,11 +79,10 @@ class Random {
 	}
 
 	/**
-	 *
 	 * @param array $chars charset for random string
 	 * @param integer $count length of string
 	 */
-	public function getString(array $chars, $length) {
+	public static function getString(array $chars, $length) {
 		$numbers = self::getNumbers(0, count($chars) - 1, $length);
 		$string = '';
 
@@ -106,7 +113,7 @@ class Random {
 		return ($count == 1) ? $numbers[0] : $numbers;
 	}
 
-	/*
+	/**
 	 * Get the specified number of random bytes, using mt_rand().
 	 * Randomness is returned as a string of bytes.
 	 */
@@ -127,13 +134,14 @@ class Random {
 		return fread(self::$source, $count);
 	}
 
-	/*
+	/**
 	 * Get the specified number of random bytes using Windows'
 	 * randomness source via a COM object previously created by Random::init().
 	 * Randomness is returned as a string of bytes.
 	 */
 	protected static function COM($count) {
-		return base64_decode(self::$source->GetRandom($count, 0)); // straight binary mysteriously doesn't work, hence the base64
+		$b64 = self::$source->GetRandom($count, CAPICOM_ENCODE_BASE64);
+		return base64_decode($b64); // straight binary mysteriously doesn't work, hence the base64
 	}
 }
 

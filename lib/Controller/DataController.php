@@ -53,13 +53,11 @@ class DataController extends Controller {
 	 * @todo replace by pluggable api parser
 	 */
 	public function add(Model\Channel $channel) {
-		$rawPost = file_get_contents('php://input');
-		
 		try { /* to parse new submission protocol */
+			$rawPost = file_get_contents('php://input');
 			$json = Util\JSON::decode($rawPost);
-			
 			foreach ($json as $tuple) {
-				$channel->addData(new Model\Data($channel, $tuple[0], $tuple[1]));
+				$channel->addData(new Model\Data($channel, (double) round($tuple[0]), $tuple[1]));
 			}
 		} catch (Util\JSONException $e) { /* fallback to old method */
 			$timestamp = $this->view->request->getParameter('ts');

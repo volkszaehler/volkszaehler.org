@@ -75,6 +75,7 @@ class Property {
 		$this->key = $key;
 		$this->value = $value;
 		
+		// TODO should we really validate each property? Could be a performence bottleneck!
 		$this->validate();
 	}
 
