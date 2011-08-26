@@ -28,36 +28,44 @@
  */
 
 /**
- * @var string PDO driver for Doctrine DBAL
- * @link http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en#getting-a-connection:driver
+ * PDO driver for Doctrine DBAL
+ *
+ * See Doctrine doc for details: http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en#getting-a-connection:driver
  */
 $config['db']['driver']				= 'pdo_mysql';
 
 /**
- * @var string hostname of database server. Use 'localhost' for the machine your webserver is running on.
- * @link http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
+ * Hostname of database server
+ * 
+ * Use 'localhost' for the machine your webserver is running on.
+ * See Doctrine doc for details: http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
  */
 $config['db']['host']				= 'localhost';
 
 /**
- * @var string username for the database server
- * @link http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
+ * Username for the database server
+ *
+ * See Doctrine doc for details: http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
  */
 $config['db']['user']				= 'vz';
 
 /**
- * @var string password for the database server
- * @link http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
+ * Password for the database server
+ *
+ * See Doctrine doc for details: http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
  */
 $config['db']['password']			= 'demo';
 
 /**
  * @var string database name
- * @link http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
+ *
+ * See Doctrine doc for details: http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
  */
 $config['db']['dbname']				= 'volkszaehler';
 
 /**
+ * Administration credentials
+ *
  * For administration tasks (used by doctrine cli and the setup script)
  * the following $['db']['admin'] settings will be merged with $config['db']
  */
@@ -65,45 +73,54 @@ $config['db']['dbname']				= 'volkszaehler';
 //$config['db']['admin']['password']		= 'admin_demo';
 
 /**
- * @var string path of the sqlite database
- * @link http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
+ * Path of the SQLite database
+ * 
+ * See Doctrine doc for details: http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
  */
 //$config['db']['path']				= 'volkszaehler';
 
 /**
  * Vendor libs
+ *
  * Set to NULL to use PHP's include path
- * @var string path to vendor libs
- * @link http://www.php.net/manual/en/ini.core.php#ini.include-path
+ * See PHP doc for details: http://www.php.net/manual/en/ini.core.php#ini.include-path
  */
 //$config['lib']['doctrine']			= VZ_DIR . '/lib/vendor/Doctrine';
 //$config['lib']['jpgraph']			= VZ_DIR . '/lib/vendor/JpGraph';
 
 /**
- * @var string timezone for the middleware
- * @link http://www.php.net/manual/de/timezones.php
- * @link http://www.php.net/manual/de/datetime.configuration.php#ini.date.timezone
+ * Timezone for the middleware
+ *
+ * See PHP doc for details: http://www.php.net/manual/de/timezones.php
+ * http://www.php.net/manual/de/datetime.configuration.php#ini.date.timezone
  */
 //$config['timezone']				= 'Europe/Berlin';
 
 /**
- * @var string Locale used for regular expressions
- * @link http://php.net/manual/de/function.setlocale.php
+ * Locale used for regular expressions
+ *
+ * See PHP doc for details: http://php.net/manual/de/function.setlocale.php
  */
 $config['locale']				= array('de_DE', 'en_US', 'C');
 
 /**
- * @var array of colors for plot series
+ * Array of colors for plot series
+ *
+ * @attention Only used by jpGraph for server-side plotting!
  */
 $config['colors'] = array('#83CAFF', '#7E0021', '#579D1C', '#FFD320', '#FF420E', '#004586', '#0084D1', '#C5000B', '#FF950E', '#4B1F6F', '#AECF00', '#314004');
 
 /**
- * @var boolean disables some optimizations. Only use it when you exactly know what you are doing.
+ * Developer mode
+ *
+ * This disables all caching mechanisms and enabled debugging by default
  */
 $config['devmode']				= FALSE;
 
 /**
- * @var integer set to > 0 to show debugging messages
+ * Debugging level
+ *
+ * Set to > 0 to enable debug messages by default
  */
 $config['debug']				= 0;
 
