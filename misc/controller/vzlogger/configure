@@ -1328,8 +1328,7 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --disable-dependency-tracking  speeds up one-time build
   --enable-dependency-tracking   do not reject slow dependency extractors
-  --enable-local-interface
-                          enable support for local HTTPd (def=no)
+  --enable-local          enable support for local HTTPd (def=no)
   --enable-debug          enable debug data generation (def=no)
 
 Some influential environment variables:

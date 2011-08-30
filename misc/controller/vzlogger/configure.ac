@@ -30,7 +30,7 @@ AC_CHECK_FUNCS([gettimeofday memset sqrt strchr strtol])
 # local interface support
 AC_ARG_ENABLE(
     [local-interface], 
-    [AS_HELP_STRING([--enable-local-interface], [enable support for local HTTPd (def=no)])],
+    [AS_HELP_STRING([--enable-local], [enable support for local HTTPd (def=no)])],
     [local=true],
     [local=false]
 )
