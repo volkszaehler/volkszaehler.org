@@ -1,6 +1,8 @@
-volkszaehler.org can read measurements from a variety of "controllers":
+volkszaehler.org uses 'controllers' to build a gateway
+between meters (physical) and the middleware (internet).
 
-vzlogger/	our main tool for logging meters/sensors/eHz and many more
-ethersex/	little OS running on Atmel AVRs (clone from git://github.com/ethersex/ethersex.git)
-batch/		a collection of batch scripts (mostly used for prototyping)
-current_cost/
+For for information refer to our wiki:
+http://wiki.volkszaehler.org/software/controller/start
+
+bash/		a collection of bash scripts (mostly used for prototyping)
+current_cost/	a simple script to read current cost (c) devices and store data in rrd db
