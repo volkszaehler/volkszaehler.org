@@ -1,7 +1,7 @@
 body {
 	margin: 0;
 	padding: 0;
-	background-color: #769AFF;
+	background-color: #0AA2ED;
 	font-family: sans-serif;
 }
 
@@ -39,11 +39,13 @@ tr.entity td {
 
 #plot {
 	position: relative;
+	background-color: white;
 }
 
 #flot {
 	height: 500px;
 	z-index: 1;
+	margin-bottom: 5px;
 }
 
 #overlay {
@@ -62,44 +64,38 @@ tr.entity td {
 	margin: 10px;
 }
 
-#accordion {
-	margin-top: 10px;
-	background-color: lightgrey;
-	-moz-border-radius: 4px;
-	-webkit-border-radius: 4px;
-	border-radius: 4px;
-}
-
-#accordion h3 {
+#content h3 {
 	background-color: grey;
 	padding: 4px;
 	margin: 2px 0;
 	color: white;
 	cursor: pointer;
 	font-size: 0.9em;
-	-moz-border-radius: 4px;
-	-webkit-border-radius: 4px;
-	border-radius: 4px;
-}
-
-#accordion div {
-	padding: 4px;
 }
 
 #controls {
-	margin: 0;
+	background-color: grey;
+}
+
+#content div {
+	padding: 2px;
 }
 
 #controls button {
-	width: 10%;
-	height: 28px;
+	width: 9.5%;
+	height: 30px;
+}
+
+button {
+	background-color: silver;
+	border: 1px solid darkgrey;
+	font-size: 1.1em;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
 }
 
 /* header */
-#headline {
-	margin-bottom: 15px;
-}
-
 #title {
 	margin: 0.2em;
 	float: left;
