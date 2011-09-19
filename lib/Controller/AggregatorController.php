@@ -76,7 +76,12 @@ class AggregatorController extends EntityController {
 			}
 		
 			$aggregator = new Model\Aggregator($type);
-			$this->setProperties($aggregator, $this->view->request->getParameters());
+			$parameters = array_merge(
+				$this->view->request->getParameters('post'),
+				$this->view->request->getParameters('get')
+			);
+		
+			$this->setProperties($aggregator, $parameters);
 			$this->em->persist($aggregator);
 		}
 

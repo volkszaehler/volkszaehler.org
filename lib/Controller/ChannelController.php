@@ -64,7 +64,12 @@ class ChannelController extends EntityController {
 		}
 	
 		$channel = new Model\Channel($type);
-		$this->setProperties($channel, $this->view->request->getParameters());
+		$parameters = array_merge(
+			$this->view->request->getParameters('post'),
+			$this->view->request->getParameters('get')
+		);
+		
+		$this->setProperties($channel, $parameters);
 		$this->em->persist($channel);
 		$this->em->flush();
 

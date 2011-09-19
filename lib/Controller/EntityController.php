@@ -85,7 +85,12 @@ class EntityController extends Controller {
 	 */
 	public function edit($identifier) {
 		$entity = $this->get($identifier);
-		$this->setProperties($entity, $this->view->request->getParameters());
+		$parameters = array_merge(
+			$this->view->request->getParameters('post'),
+			$this->view->request->getParameters('get')
+		);
+		
+		$this->setProperties($entity, $parameters);
 		$this->em->flush();
 
 		return $entity;
