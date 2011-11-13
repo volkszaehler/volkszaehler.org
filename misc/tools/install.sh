@@ -37,6 +37,15 @@ shopt -s nocasematch
 doctrine_git=git://github.com/doctrine/doctrine2.git
 doctrine_tar=http://www.doctrine-project.org/downloads/DoctrineORM-2.0.1-full.tar.gz
 vz_git=git://github.com/volkszaehler/volkszaehler.org.git
+if [ ! `which php` ] ; then
+  echo you need PHP version 5.3+ to run volkszaehler
+  exit
+fi
+if [ ! `which mysql` ] ; then
+  echo you need mysql to run this install script for volkszaehler
+  exit
+fi
+
 PHP_MAJOR=`/usr/bin/php --version | /bin/grep "^PHP" | /usr/bin/awk ' { print $2 } ' | /usr/bin/cut -b 1 `
 PHP_MINOR=`/usr/bin/php --version | /bin/grep "^PHP" | /usr/bin/awk ' { print $2 } ' | /usr/bin/cut -b 3 `
 
