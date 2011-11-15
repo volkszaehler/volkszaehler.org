@@ -110,7 +110,7 @@ class MeterInterpreter extends Interpreter {
 				$this->min = $tuple;
 			}
 				
-			$this->pulseCount += $row[2];
+			$this->pulseCount += $row[1];
 
 			$tuples[] = $tuple;
 			$last = $row[0];
