@@ -68,20 +68,6 @@
 		}
 	},
 	{
-		"name"			: "power",
-		"required"		: ["resolution"],
-		"optional"		: ["tolerance", "cost", "local"],
-		"icon"			: "bolt.png",
-		"unit"			: "W",
-		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
-		"model"			: "Volkszaehler\\Model\\Channel",
-		"translation"		: {
-			"de" : "Stromzähler",
-			"en" : "Electric Meter",
-			"fr" : "Compteur de courant"
-		}
-	},
-	{
 		"name"			: "heat",
 		"optional"		: ["tolerance", "cost", "local"],
 		"icon"			: "flame.png",
@@ -96,7 +82,7 @@
 		}
 	},
 	{
-		"name"			: "powersensor",
+		"name"			: "power",
 		"required"		: ["resolution"],
 		"optional"		: ["tolerance", "cost", "local"],
 		"icon"			: "bolt.png",
@@ -107,6 +93,20 @@
 			"de" : "Stromzähler",
 			"en" : "Electric Meter",
 			"fr" : "Compteur de courant"
+		}
+	},
+	{
+		"name"			: "powersensor",
+		"required"		: ["resolution"],
+		"optional"		: ["tolerance", "cost", "local"],
+		"icon"			: "bolt.png",
+		"unit"			: "W",
+		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"		: {
+			"de" : "Stromsensor",
+			"en" : "Electric Sensor",
+			"fr" : "Capteur de courant"
 		}
 	}
 	{
