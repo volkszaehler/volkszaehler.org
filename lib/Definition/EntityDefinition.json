@@ -72,8 +72,7 @@
 		"optional"		: ["tolerance", "cost", "local"],
 		"icon"			: "flame.png",
 		"unit"			: "W",
-		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
-		"style"			: "steps",
+		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"translation"		: {
 			"de" : "Wärmemengenzähler",
@@ -97,18 +96,18 @@
 	},
 	{
 		"name"			: "powersensor",
-		"required"		: ["resolution"],
 		"optional"		: ["tolerance", "cost", "local"],
 		"icon"			: "bolt.png",
 		"unit"			: "W",
-		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"style"                 : "steps",
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"translation"		: {
 			"de" : "Stromsensor",
 			"en" : "Electric Sensor",
 			"fr" : "Capteur de courant"
 		}
-	}
+	},
 	{
 		"name"			: "gas",
 		"required"		: ["resolution"],
