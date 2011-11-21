@@ -82,7 +82,7 @@
 		}
 	},
 	{
-		"name"			: "powersensor",
+		"name"			: "heat",
 		"optional"		: ["tolerance", "cost", "local"],
 		"icon"			: "flame.png",
 		"unit"			: "W",
@@ -96,7 +96,7 @@
 		}
 	},
 	{
-		"name"			: "heat",
+		"name"			: "powersensor",
 		"required"		: ["resolution"],
 		"optional"		: ["tolerance", "cost", "local"],
 		"icon"			: "bolt.png",
