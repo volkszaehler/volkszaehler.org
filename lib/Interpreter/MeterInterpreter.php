@@ -97,7 +97,7 @@ class MeterInterpreter extends Interpreter {
 		foreach ($this->rows as $row) {
 			$delta = $row[0] - $last;
 			$tuple = $callback(array(
-				(float) $row[0], // timestamp at the end
+				(float) $last, // timestamp of interval start
 				(float) ($row[1] * 3.6e9) / ($this->resolution * $delta), // doing df/dt
 				(int) $row[2] // num of rows
 			));
