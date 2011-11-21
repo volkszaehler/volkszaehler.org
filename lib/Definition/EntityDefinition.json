@@ -69,6 +69,7 @@
 	},
 	{
 		"name"			: "heat",
+		"required"              : ["resolution"],
 		"optional"		: ["tolerance", "cost", "local"],
 		"icon"			: "flame.png",
 		"unit"			: "W",
@@ -100,7 +101,7 @@
 		"icon"			: "bolt.png",
 		"unit"			: "W",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
-		"style"                 : "steps",
+		"style"			: "steps",
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"translation"		: {
 			"de" : "Stromsensor",
