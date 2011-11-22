@@ -68,6 +68,20 @@
 		}
 	},
 	{
+		"name"			: "heat",
+		"required"              : ["resolution"],
+		"optional"		: ["tolerance", "cost", "local"],
+		"icon"			: "flame.png",
+		"unit"			: "W",
+		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"		: {
+			"de" : "Wärmemengenzähler",
+			"en" : "Heat Meter",
+			"fr" : "Capteur d' énergie thermique"
+		}
+	},
+	{
 		"name"			: "power",
 		"required"		: ["resolution"],
 		"optional"		: ["tolerance", "cost", "local"],

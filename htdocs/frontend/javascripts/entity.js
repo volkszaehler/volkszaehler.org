@@ -301,7 +301,7 @@ Entity.prototype.getDOMRow = function(parent) {
 				.attr('checked', this.active)
 				.bind('change', this, function(event) {
 					var entity = event.data;
-					entity.activate($(this).attr('checked'), null, true).done(vz.wui.drawPlot);
+					entity.activate($(this).prop('checked'), null, true).done(vz.wui.drawPlot);
 				})
 			)
 		)

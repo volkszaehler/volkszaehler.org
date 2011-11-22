@@ -1,0 +1,189 @@
+#!/usr/bin/perl -w
+#
+# Messbus-perl library (c) by Sven Anders <mbus@sven.anders.im> 2011
+#  @copyright Copyright (c) 2011, The volkszaehler.org project
+#  @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+
+#
+#  This file is part of volkzaehler.org
+# 
+#  volkzaehler.org is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  any later version.
+#
+#  volkzaehler.org is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+# 
+#  You should have received a copy of the GNU General Public License
+#  along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
+#
+
+my $mbusPort="/dev/messbus"; # or /dev/ttyS0 ..
+my $vzURL="http://host.domain/volkszaehler/middleware.php/";
+my $vzOldFile="/root/.mbus-vzold";
+my $mbusserial="/root/.mbusserial";
+my $mbusBaudrate=2400;
+
+use strict;
+use vars qw(%vzUuid $vzURL $vzOldFile $mbusserial $mbusBaudarte $mbusPort);
+use mbus;
+use mbusconf;
+use LWP;
+use Getopt::Long;
+
+my $sqlout=0;
+my $sqlrawout=0;
+my $debug=0;
+my $counter=0;
+my $genserial=0;
+my $verbose=0;
+my $printmbusconf=0;
+my $help=0;
+my $cmd="mbus-cmd";
+GetOptions ('debug' => \$debug, 
+	    'help' => \$help,
+	    'sqlout' => \$sqlout,
+	    'sqlrawout' => \$sqlrawout,
+	    'verbose' => \$verbose,
+	    'genserial' => \$genserial,
+	    'print-mbusconf' => \$printmbusconf
+    );
+
+
+if ($help) {
+    print "mbus-cmd [--help] [--debug] [--verbose] [--sqlout] [--sqlrawout] [--genserial] [--print-mbusconf]\n";
+    print "\t--help  \tprint this help\n";
+    print "\t--debug  \tdebug messages\n";
+    print "\t--verbose\tverbose messages\n";
+    print "\t--genserial\tgenerate $mbusserial file, find new mbus clients\n";
+    print "\t--sqlout\tprint insert statements, which can be used for piplinig to mysql\n";
+    print "\t--sqlrawout\tprint one insert statements for each client with the raw mbus telegram, which can be used for piplinig to mysql\n";
+    print "\t--print-busconf\tuse this param to create a new mbusconf\n";
+    exit;
+}
+if ($genserial)  {
+
+    my $PortObj=&initPort($mbusPort,$mbusBaudrate);
+    my @liste=&findenummer("",$PortObj);
+    print "speiche in $mbusserial";
+    open(FILE,">$mbusserial") or die;
+    foreach my $line (@liste) {
+	print FILE "$line\n";
+    }
+    close(FILE);
+    $PortObj->close();
+    exit;
+}
+(-f $mbusserial) or die("File $mbusserial not found, please generate with --genserial first!");
+my $browser = LWP::UserAgent->new;
+my %vzOld;
+open(VZOLD,"<$vzOldFile");
+my @lines=<VZOLD>;
+foreach my $line (@lines) {
+    chop $line;
+    my ($uuid,$val)= split(/\t/,$line);
+    $vzOld{$uuid}=$val;
+}
+close(VZOLD);
+
+open(FILE,$mbusserial) or die;
+my @serials=<FILE>;
+close(FILE);
+
+foreach my $serial (@serials) 
+{
+ my $PortObj=&initPort($mbusPort,$mbusBaudrate);
+ my $cfield=0x53;
+ my $afield=0xFD;
+ my $cifield=0x52;
+ my $serialnum=&INTtoBCD($serial,4).chr(0xFF).chr(0xFF).chr(0xFF).chr(0xFF);
+ &sendLongFrame($PortObj,$cfield,$afield,$cifield,$serialnum);
+ my ($str,$okay)=&readAnswer($PortObj);
+ ($okay==0) and die("Kollision bei Seriennummer:$serial");
+ if ($okay!=1)  {
+ warn("Zaehler nicht gefunden. Seriennummer:$serial");
+} else {
+ $cfield=0x5B;# REQ_UD2
+ $afield=0xFD;
+ &sendShortFrame($PortObj,$cfield,$afield);
+ ($str,$okay)=&readAnswer($PortObj);
+ my $ostr=&BCDtoINT(substr($str,7,4));
+ if ($ostr == $serial ) {
+ print "Gefunden: Seriennummer: $ostr\n" if $debug;
+ my @chars=split(//,$str);
+ if ($sqlrawout) {
+     print "INSERT INTO rawdata SET serial=\"$ostr\",data=\"";
+     foreach (@chars) {
+ 	 print "\\" ;
+	 print ord($_);
+	 
+     }
+     print "\";\n";
+ }
+ my @datarr=&strToArray($str);
+ my @labels=("vif","dif","value","unit","zweck","serial","valArt","count");
+
+ my $pos=0;
+ foreach my $arr (@datarr)
+ { 
+     my ($vif,$dif,$value,$unit,$zweck,$serial,$valArt,$count)=@$arr;
+     if (defined($vzUuid{$serial."-".$zweck})) {
+	 my $uuid=$vzUuid{$serial."-".$zweck};
+	 if ($uuid ne "") {
+	     my $sendval;
+	     if ($zweck eq "Heizenergie") {
+		 if (defined($vzOld{$uuid})) {
+		     $sendval=$value-$vzOld{$uuid};
+		     if ($sendval==0) {
+			 $sendval=undef;
+		     }
+		 } 
+		 $vzOld{$uuid}=$value;
+	     } else {
+		 $sendval=$value;
+	     }
+	     if (defined($sendval)) {
+		 print "Sending POST ".$vzURL."data/".$uuid.".json  (value=$sendval)\n" if ($verbose);
+		 my $response =$browser->post(($vzURL."data/".$uuid.".json"),[
+					      "value" => $sendval
+					      ]);
+		 if (! $response->is_success) {
+		     warn "$vzURL $uuid error: ", $response->status_line;
+		 }
+	     } else {
+		 print "NOT Sending POST ".$vzURL."data/".$uuid.".json  (value not changed)\n" if ($verbose);
+	     }
+
+	 }
+     } elsif ($printmbusconf) {
+	 print "\$vzUuid{\"$serial-$zweck\"\}=\"\";# ($value) \n";
+     }
+     print "INSERT INTO zaehler SET pos=\"$pos\"," if $sqlout;
+     my $i=0;
+     foreach (@$arr) {
+     	if ($i>0) 
+	{ 
+	  print "," if $sqlout;
+	}
+     	print "$labels[$i]=\"$_\"" if $sqlout;
+	$i++;
+     }
+     $pos++;
+     print ";\n" if $sqlout;
+ }
+} else {
+    warn "Serial mismatch: $ostr != $serial";
+}
+}
+
+$PortObj->close();
+}
+
+open(VZOLD,">$vzOldFile");
+foreach my $key (keys %vzOld) {
+    print VZOLD "$key\t$vzOld{$key}\n";
+}
+close(VZOLD);
