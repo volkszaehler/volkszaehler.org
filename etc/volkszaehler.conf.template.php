@@ -36,7 +36,7 @@ $config['db']['driver']				= 'pdo_mysql';
 
 /**
  * Hostname of database server
- * 
+ *
  * Use 'localhost' for the machine your webserver is running on.
  * See Doctrine doc for details: http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
  */
@@ -74,7 +74,7 @@ $config['db']['dbname']				= 'volkszaehler';
 
 /**
  * Path of the SQLite database
- * 
+ *
  * See Doctrine doc for details: http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
  */
 //$config['db']['path']				= 'volkszaehler';
@@ -85,8 +85,8 @@ $config['db']['dbname']				= 'volkszaehler';
  * Set to NULL to use PHP's include path
  * See PHP doc for details: http://www.php.net/manual/en/ini.core.php#ini.include-path
  */
-//$config['lib']['doctrine']			= VZ_DIR . '/lib/vendor/Doctrine';
-//$config['lib']['jpgraph']			= VZ_DIR . '/lib/vendor/JpGraph';
+$config['lib']['doctrine']			= VZ_DIR . '/lib/vendor/Doctrine';
+$config['lib']['jpgraph']			= VZ_DIR . '/lib/vendor/JpGraph';
 
 /**
  * Timezone for the middleware
