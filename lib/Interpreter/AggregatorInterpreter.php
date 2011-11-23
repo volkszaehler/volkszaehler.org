@@ -37,7 +37,7 @@ use Volkszaehler\Util;
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
  */
-class AggregatorInterpreter {
+class AggregatorInterpreter extends Interpreter {
 	/**
 	 * @var array of Interpreter
 	 */
