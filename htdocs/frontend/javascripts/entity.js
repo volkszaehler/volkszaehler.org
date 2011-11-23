@@ -376,22 +376,35 @@ Entity.prototype.activate = function(state, parent, recursive) {
 Entity.prototype.updateDOMRow = function() {
 	var row = $('#entity-' + this.uuid);
 
+	// clear table first
+	$('.min', row).text('').attr('title', '');
+	$('.max', row).text('').attr('title', '');
+	$('.average', row).text('');
+	$('.last', row).text('');
+	$('.consumption', row).text('');
+	$('.cost', row).text('');
+
 	if (this.data && this.data.rows > 0) { // update statistics if data available
 		var delta = this.data.to - this.data.from;
 		var year = 365*24*60*60*1000;
 	
-		$('.min', row)
+		if (this.data.min)
+			$('.min', row)
 			.text(vz.wui.formatNumber(this.data.min[1], true) + this.definition.unit)
 			.attr('title', $.plot.formatDate(new Date(this.data.min[0]), '%d. %b %y %h:%M:%S', vz.options.monthNames, vz.options.dayNames, true));
-		$('.max', row)
+		if (this.data.max)
+			$('.max', row)
 			.text(vz.wui.formatNumber(this.data.max[1], true) + this.definition.unit)
 			.attr('title', $.plot.formatDate(new Date(this.data.max[0]), '%d. %b %y %h:%M:%S', vz.options.monthNames, vz.options.dayNames, true));
-		$('.average', row)
+		if (this.data.average)
+			$('.average', row)
 			.text(vz.wui.formatNumber(this.data.average, true) + this.definition.unit);
-		$('.last', row)
+		if (this.data.tuples && this.data.tuples.last)
+			$('.last', row)
 			.text(vz.wui.formatNumber(this.data.tuples.last()[1], true) + this.definition.unit);
-		
-		$('.consumption', row)
+
+		if (this.data.consumption)
+			$('.consumption', row)
 			.text(vz.wui.formatNumber(this.data.consumption, true) + this.definition.unit + 'h')
 			.attr('title', vz.wui.formatNumber(this.data.consumption * (year/delta), true) + this.definition.unit + 'h' + '/Jahr');
 		
@@ -400,14 +413,6 @@ Entity.prototype.updateDOMRow = function() {
 				.text(vz.wui.formatNumber(this.cost * this.data.consumption) + ' €')
 				.attr('title', vz.wui.formatNumber(this.cost * this.data.consumption * (year/delta)) + ' €/Jahr');
 		}
-	}
-	else { // no data available, clear table
-		$('.min', row).text('').attr('title', '');
-		$('.max', row).text('').attr('title', '');
-		$('.average', row).text('');
-		$('.last', row).text('');
-		$('.consumption', row).text('');
-		$('.cost', row).text('');
 	}
 };
 
