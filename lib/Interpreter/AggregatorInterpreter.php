@@ -91,10 +91,10 @@ class AggregatorInterpreter {
 	 * @return array with the smallest value
 	 */
 	public function getMin() {
-		$min = current($this->childrenInterpreter)->getMin();
+		$min = null;
 		foreach ($this->childrenInterpreter as $interpreter) {
 			$arr = $interpreter->getMax();
-			if ($arr['value '] < $min['value']) {
+			if (! $min or $arr['value'] < $min['value']) {
 				$min = $arr;
 			}
 		}
@@ -107,10 +107,10 @@ class AggregatorInterpreter {
 	 * @return array with the biggest value
 	 */
 	public function getMax() {
-		$max = current($this->childrenInterpreter)->getMax();
+		$max = null;
 		foreach ($this->childrenInterpreter as $interpreter) {
 			$arr = $interpreter->getMax();
-			if ($arr['value '] > $max['value']) {
+			if (! $max or $arr['value'] > $max['value']) {
 				$max = $arr;
 			}
 		}
