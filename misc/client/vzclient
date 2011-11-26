@@ -1,0 +1,60 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+import argparse
+import ConfigParser
+import urllib
+import urllib2
+import os
+Config = ConfigParser.ConfigParser()
+version="0.8";
+
+parser = argparse.ArgumentParser(description='A client for volkszaehler.org',
+              formatter_class=argparse.RawDescriptionHelpFormatter,
+              epilog="Syntax of /etc/vzclient.conf or ~/.vzclient.conf: \n"+
+                     "------------------------------------------------------------\n"+
+                     "[default]\n"+
+                     " url:http://www.example.org/subdir/volkszaehler/middleware.php\n"+
+                     " format:json\n");
+parser.add_argument("operation", choices=["add","get","edit","delete"],help="what to do");
+parser.add_argument('context',choices=["data","channel","group","capabilities"],help="the context of the operation");
+parser.add_argument('--url', action='store',help="url to the volkszaehler.org middelware.php (tip: put this in config file, see below)");
+parser.add_argument('-u', '--uuid', action='store',help="the uuid to edit, get or delete");
+parser.add_argument('-f', '--format',choices=["json","xml","csv","png","gif","jpg"],action='store',help="the format");
+parser.add_argument('param',nargs='*',help="Paramter always in syntax key=value");
+args = parser.parse_args();  
+              
+Config.read(["/etc/vzclient.conf",os.path.expanduser('~/.vzclient.conf')]);
+url=args.url;
+if (url is None):
+  try:
+    url=Config.get("default", "url");
+  except:
+    print "ERROR: Please spezify a url!";
+    exit(1);
+format=args.format;
+if (format is None):
+  try:
+    format=Config.get("default","format");
+  except:
+    format="json";
+context=args.context;  
+url=url+"/"+context;
+uuid=args.uuid;
+if (uuid is not None):
+  url=url+"/"+uuid;
+url=url+"."+format+"?operation="+args.operation
+for p in args.param:
+  (key,value)=p.split("=");
+  url=url+"&"+urllib2.quote(key)+"="+urllib2.quote(value);
+#print url;
+req = urllib2.Request(url)
+req.add_header('User-agent', 'vzclient/$version')
+try:
+  f= urllib2.urlopen(url);
+  print f.read()
+  exit(0);
+except urllib2.HTTPError,error:
+  print error.read();
+  exit(1);
+    
