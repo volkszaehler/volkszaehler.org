@@ -31,7 +31,7 @@ import os
 Config = ConfigParser.ConfigParser()
 version="0.8";
 
-parser = argparse.ArgumentParser(description='A client for volkszaehler.org',
+parser = argparse.ArgumentParser(description='A python client for volkszaehler.org',
               formatter_class=argparse.RawDescriptionHelpFormatter,
               epilog="Syntax of /etc/vzclient.conf or ~/.vzclient.conf: \n"+
                      "------------------------------------------------------------\n"+
