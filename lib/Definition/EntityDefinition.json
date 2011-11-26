@@ -68,6 +68,20 @@
 		}
 	},
 	{
+	        "name"                  : "flow",
+                "optional"              : ["tolerance", "local"],
+                "icon"                  : "waterdrop.png",
+                "unit"                  : "m^3/h",
+                "interpreter"           : "Volkszaehler\\Interpreter\\SensorInterpreter",
+                "model"                 : "Volkszaehler\\Model\\Channel",
+                "translation"           : {
+                        "de" : "Fließgeschwindigkeit",
+                        "en" : "Flow rate",
+                        "fr" : "Vitesse d'écoulement"
+                }
+
+	},
+	{
 		"name"			: "heat",
 		"required"              : ["resolution"],
 		"optional"		: ["tolerance", "cost", "local"],
