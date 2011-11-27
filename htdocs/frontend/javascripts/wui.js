@@ -233,14 +233,18 @@ vz.wui.dialogs.init = function() {
 };
 
 vz.wui.zoom = function(from, to) {
-	vz.options.plot.xaxis.min = from;
-	vz.options.plot.xaxis.max = to;
+
+	vz.wui.atXMax = (to >= (vz.options.plot.xaxis.max - 1000));
 
 	// we dont want to zoom/pan into the future
-	if (vz.options.plot.xaxis.max > new Date().getTime()) {
+	var now = new Date().getTime();
+	if (to > now) {
 		var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
-		vz.options.plot.xaxis.max = new Date().getTime();
-		vz.options.plot.xaxis.min = new Date().getTime() - delta;
+		vz.options.plot.xaxis.max = now;
+		vz.options.plot.xaxis.min = now - delta;
+	} else {
+		vz.options.plot.xaxis.min = from;
+		vz.options.plot.xaxis.max = to;
 	}
 	
 	if (vz.options.plot.xaxis.min < 0) {
@@ -472,11 +476,14 @@ vz.wui.drawPlot = function () {
 	vz.plot = $.plot($('#flot'), series, vz.options.plot);
 	
 	// disable automatic refresh if we are in past
-	if (vz.options.refresh && vz.options.plot.xaxis.max < new Date().getTime() - 2000) {
-		vz.wui.clearTimeout('(suspended)');
-	}
-	else if (vz.options.refresh) {
-		vz.wui.setTimeout();
+	if (vz.options.refresh) {
+		if (vz.wui.atXMax) {
+			vz.wui.setTimeout();
+		} else {
+			vz.wui.clearTimeout('(suspended)');
+		}
+	} else {
+		vz.wui.clearTimeout();
 	}
 };
 
