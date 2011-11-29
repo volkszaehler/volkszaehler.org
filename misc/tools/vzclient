@@ -28,8 +28,9 @@ import ConfigParser
 import urllib
 import urllib2
 import os
+import json
 Config = ConfigParser.ConfigParser()
-version="0.8";
+version="0.9";
 
 parser = argparse.ArgumentParser(description='A python client for volkszaehler.org',
               formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -43,6 +44,7 @@ parser.add_argument('context',choices=["data","channel","group","capabilities"],
 parser.add_argument('--url', action='store',help="url to the volkszaehler.org middelware.php (tip: put this in config file, see below)");
 parser.add_argument('-u', '--uuid', action='store',help="the uuid to edit, get or delete");
 parser.add_argument('-f', '--format',choices=["json","xml","csv","png","gif","jpg"],action='store',help="the format");
+parser.add_argument('-e', '--eval',action='store',help="get attribute from json sperated by comma (Example: entity,uuid will extract the uuid from a json string: {\"entity\":{\"uuid\":\"4...\"}})");
 parser.add_argument('param',nargs='*',help="Paramter always in syntax key=value");
 args = parser.parse_args();  
               
@@ -74,7 +76,17 @@ req = urllib2.Request(url)
 req.add_header('User-agent', 'vzclient/$version')
 try:
   f= urllib2.urlopen(url);
-  print f.read()
+  jsonstr=f.read();
+  if (args.eval is None):
+     print jsonstr;
+  else:
+     obj=json.loads(jsonstr);
+     for ev in args.eval.split(",") :
+       try:
+         obj=obj[ev]
+       except KeyError:
+         print "Key: "+ev+" not found in str: "+jsonstr;
+     print obj;
   exit(0);
 except urllib2.HTTPError,error:
   print error.read();
