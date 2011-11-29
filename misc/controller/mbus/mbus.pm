@@ -22,10 +22,12 @@
 
 use Device::SerialPort qw( :PARAM :STAT 0.07 );
 
+my $debug=0;
 
 sub initPort {
     my $portName=shift;
     my $baudrate=shift;
+    $debug=shift;
     my $PortObj = new Device::SerialPort ($portName, $quiet)
               || die "Can't open $portName: $!\n";
     $PortObj->baudrate($baudrate);
@@ -257,9 +259,11 @@ sub strToArray {
 	$i++;
 	my $tarif=($dife & (16+32));
 	my $deviceunit=$dife & 64;
-	my $extension=$dife & 128;
+	$extension=$dife & 128;
 	print "dife: $dife storageNum: $storageNum, tarif: $tarif, devunit: $deviceunit ext: $extension \n" if $debug;
         $pos++;
+	($pos<$len) or die("No dife length exceeded");
+
      }
     my $vif=$arr[$pos];
     $extension=$vif & 128;
@@ -419,7 +423,7 @@ sub strToArray {
     } elsif ($description5==92) {
      $unit="C";
      $n=$n2-3;
-     $zweck="Rücklauftemperatur";
+     $zweck="Ruecklauftemperatur";
     } elsif ($description5==96) {
      $unit="K";
      $n=$n2-3;
