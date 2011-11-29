@@ -234,9 +234,7 @@ vz.wui.dialogs.init = function() {
 
 vz.wui.zoom = function(from, to) {
 
-	vz.wui.atXMax = (to >= (vz.options.plot.xaxis.max - 1000));
-
-	// we dont want to zoom/pan into the future
+	// we cannot zoom/pan into the future
 	var now = new Date().getTime();
 	if (to > now) {
 		var delta = to - from;
@@ -246,6 +244,8 @@ vz.wui.zoom = function(from, to) {
 		vz.options.plot.xaxis.min = from;
 		vz.options.plot.xaxis.max = to;
 	}
+
+	vz.wui.tmaxnow = (vz.options.plot.xaxis.max >= (now - 1000));
 	
 	if (vz.options.plot.xaxis.min < 0) {
 		vz.options.plot.xaxis.min = 0;
@@ -477,7 +477,7 @@ vz.wui.drawPlot = function () {
 	
 	// disable automatic refresh if we are in past
 	if (vz.options.refresh) {
-		if (vz.wui.atXMax) {
+		if (vz.wui.tmaxnow) {
 			vz.wui.setTimeout();
 		} else {
 			vz.wui.clearTimeout('(suspended)');
