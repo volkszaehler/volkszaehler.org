@@ -31,7 +31,7 @@ vz.options = {
 	tuples: null,		// automatically determined by plot size
 	refresh: false,
 	minTimeout: 2000,	// minimum refresh time in ms
-	defaultInterval: 24*60*60*1000, // 1 day
+	interval: 24*60*60*1000, // 1 day
 	localMiddleware: '../middleware.php',
 	monthNames: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
 	dayNames: ['Son', 'Mon', 'Di', 'Mi', 'Do', 'Fr', 'Sam']
@@ -49,8 +49,6 @@ vz.options.plot = {
 	xaxis: {
 		mode: 'time',
 		useLocalTime: true,
-		max: new Date().getTime(), // timeinterval to request
-		min: new Date().getTime() - vz.options.defaultInterval
 	},
 	yaxis: {
 		min: 0,

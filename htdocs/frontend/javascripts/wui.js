@@ -444,6 +444,7 @@ vz.wui.updateHeadline = function() {
  * Draws plot to container
  */
 vz.wui.drawPlot = function () {
+	vz.options.interval = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
 	vz.wui.updateHeadline();
 
 	var series = new Array;

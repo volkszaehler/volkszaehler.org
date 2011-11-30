@@ -79,6 +79,10 @@ $(document).ready(function() {
 	vz.options.loadCookies(); // load options from cookie
 	vz.parseUrlParams(); // parse additional url params (new uuid etc..)
 	
+	// set x axis limits _after_ loading options cookie
+	vz.options.plot.xaxis.max = new Date().getTime(); 
+	vz.options.plot.xaxis.min = vz.options.plot.xaxis.max - vz.options.interval;
+
 	// initialize user interface
 	vz.wui.init();
 	vz.wui.initEvents();
