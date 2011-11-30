@@ -69,11 +69,13 @@ vz.wui.init = function() {
 	
 	// auto refresh
 	if (vz.options.refresh) {
-		$('#refresh').attr('checked', true);
+		$('#refresh').prop('checked', true);
+		vz.wui.tmaxnow = true;
 		vz.wui.setTimeout();
 	}
 	$('#refresh').change(function() {
-		if (vz.options.refresh = $(this).attr('checked')) {
+		vz.options.refresh = $(this).prop('checked');
+		if (vz.options.refresh) {
 			vz.wui.refresh(); // refresh once
 			vz.wui.setTimeout();
 		} else {
