@@ -292,13 +292,11 @@ vz.wui.handleControls = function () {
 	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
 	var middle = vz.options.plot.xaxis.min + delta/2;
 	var d = new Date(middle);
+	var now = new Date().getTime();
 
 	switch($(this).val()) {
 		case 'move-last':
-			vz.wui.zoom(
-				new Date().getTime() - delta,
-				new Date().getTime()
-			);
+			vz.wui.zoom(now-delta, now);
 			break;
 		case 'move-back':
 			vz.wui.zoom(
@@ -319,10 +317,10 @@ vz.wui.handleControls = function () {
 			);
 			break;
 		case 'zoom-in':
-			vz.wui.zoom(
-				middle - delta/4,
-				middle + delta/4
-			);
+			if (vz.wui.tmaxnow)
+				vz.wui.zoom(now - delta/2, now);
+			else
+				vz.wui.zoom(middle - delta/4, middle + delta/4);
 			break;
 		case 'zoom-out':
 			vz.wui.zoom(
