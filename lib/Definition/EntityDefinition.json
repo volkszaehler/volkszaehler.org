@@ -74,12 +74,12 @@
                 "unit"                  : "m^3/h",
                 "interpreter"           : "Volkszaehler\\Interpreter\\SensorInterpreter",
                 "model"                 : "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: "true",
                 "translation"           : {
                         "de" : "Fließgeschwindigkeit",
                         "en" : "Flow rate",
                         "fr" : "Vitesse d'écoulement"
                 }
-
 	},
 	{
 		"name"			: "heat",
@@ -89,6 +89,7 @@
 		"unit"			: "W",
 		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: "true",
 		"translation"		: {
 			"de" : "Wärmemengenzähler",
 			"en" : "Heat Meter",
@@ -103,6 +104,7 @@
 		"unit"			: "W",
 		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: "true",
 		"translation"		: {
 			"de" : "Stromzähler",
 			"en" : "Electric Meter",
@@ -117,6 +119,7 @@
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
 		"style"			: "steps",
 		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: "true",
 		"translation"		: {
 			"de" : "Stromsensor",
 			"en" : "Electric Sensor",
