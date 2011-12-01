@@ -68,22 +68,22 @@
 		}
 	},
 	{
-	        "name"                  : "flow",
-                "optional"              : ["tolerance", "local"],
-                "icon"                  : "waterdrop.png",
-                "unit"                  : "m^3/h",
-                "interpreter"           : "Volkszaehler\\Interpreter\\SensorInterpreter",
-                "model"                 : "Volkszaehler\\Model\\Channel",
+		"name"		  : "flow",
+		"optional"	      : ["tolerance", "local"],
+		"icon"		  : "waterdrop.png",
+		"unit"		  : "m^3/h",
+		"interpreter"	   : "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"		 : "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
-                "translation"           : {
-                        "de" : "Fließgeschwindigkeit",
-                        "en" : "Flow rate",
-                        "fr" : "Vitesse d'écoulement"
-                }
+		"translation"	   : {
+			"de" : "Fließgeschwindigkeit",
+			"en" : "Flow rate",
+			"fr" : "Vitesse d'écoulement"
+		}
 	},
 	{
 		"name"			: "heat",
-		"required"              : ["resolution"],
+		"required"		: ["resolution"],
 		"optional"		: ["tolerance", "cost", "local"],
 		"icon"			: "flame.png",
 		"unit"			: "W",
