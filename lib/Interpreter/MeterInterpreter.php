@@ -44,7 +44,7 @@ class MeterInterpreter extends Interpreter {
 	 * @return float total consumption in Wh
 	 */
 	public function getConsumption() {
-		return 1000 * $this->pulseCount / $this->resolution;
+		return $this->channel->getDefinition()->hasConsumption ? 1000 * $this->pulseCount / $this->resolution : NULL;
 	}
 
 	/**
