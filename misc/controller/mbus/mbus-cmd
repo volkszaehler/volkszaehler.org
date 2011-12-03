@@ -23,14 +23,14 @@
 
 our $mbusPort="/dev/messbus"; # or /dev/ttyS0 ..
 our $vzURL="http://host.domain/volkszaehler/middleware.php/";
-our $vzOldFile="/root/.mbus-vzold";
-our $mbusserial="/root/.mbusserial";
+our $vzOldFile="/var/lib/mbus/vzold";
+our $mbusserial="/etc/mbus/serialno";
 our $mbusBaudrate=2400;
-our $lockfile="/tmp/mbus-cmd.lck";
+our $lockfile="/var/lib/mbus/lockfile";
 our %vzUuid;
 use strict;
 use mbus;
-require mbusconf;
+require "/etc/mbus/mbusconf.pm";
 use LWP;
 use Getopt::Long;
 use LockFile::Simple qw(lock trylock unlock);
