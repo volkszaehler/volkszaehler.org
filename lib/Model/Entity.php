@@ -149,6 +149,21 @@ abstract class Entity {
 	}
 
 	/**
+	 * Check if a property exists
+	 *
+	 * @param string $key
+	 * @return boolean
+	 */
+	public function hasProperty($key) {
+		foreach ($this->properties as $property) {
+			if ($property->getKey() == $key) {
+				return TRUE;
+			}
+		}
+		return FALSE;
+	}
+
+	/**
 	 * Set property by key/value
 	 *
 	 * @param string $key name of the property

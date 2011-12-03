@@ -86,6 +86,12 @@ class EntityDefinition extends Definition {
 	public $icon;
 
 	/**
+	 * a consumption value can be calculated
+ 	 * @var boolean
+	 */
+	public $hasConsumption = FALSE;
+
+	/**
 	 * @var array holds definitions
 	 */
 	protected static $definitions = NULL;

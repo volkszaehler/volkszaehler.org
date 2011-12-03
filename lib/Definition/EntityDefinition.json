@@ -68,27 +68,28 @@
 		}
 	},
 	{
-	        "name"                  : "flow",
-                "optional"              : ["tolerance", "local"],
-                "icon"                  : "waterdrop.png",
-                "unit"                  : "m^3/h",
-                "interpreter"           : "Volkszaehler\\Interpreter\\SensorInterpreter",
-                "model"                 : "Volkszaehler\\Model\\Channel",
-                "translation"           : {
-                        "de" : "Fließgeschwindigkeit",
-                        "en" : "Flow rate",
-                        "fr" : "Vitesse d'écoulement"
-                }
-
+		"name"			: "flow",
+		"optional"		: ["tolerance", "local"],
+		"icon"			: "waterdrop.png",
+		"unit"			: "m^3/h",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
+		"translation"		: {
+			"de" : "Fließgeschwindigkeit",
+			"en" : "Flow rate",
+			"fr" : "Vitesse d'écoulement"
+		}
 	},
 	{
 		"name"			: "heat",
-		"required"              : ["resolution"],
+		"required"		: ["resolution"],
 		"optional"		: ["tolerance", "cost", "local"],
 		"icon"			: "flame.png",
 		"unit"			: "W",
 		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
 		"translation"		: {
 			"de" : "Wärmemengenzähler",
 			"en" : "Heat Meter",
@@ -103,6 +104,7 @@
 		"unit"			: "W",
 		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
 		"translation"		: {
 			"de" : "Stromzähler",
 			"en" : "Electric Meter",
@@ -117,6 +119,7 @@
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
 		"style"			: "steps",
 		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
 		"translation"		: {
 			"de" : "Stromsensor",
 			"en" : "Electric Sensor",
@@ -131,6 +134,7 @@
 		"unit"			: "m³/h",
 		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
 		"translation"		: {
 			"de" : "Gas",
 			"en" : "Gas",
@@ -145,6 +149,7 @@
 		"unit"			: "l/h",
 		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
 		"translation"		: {
 			"de" : "Wasser",
 			"en" : "Water",
