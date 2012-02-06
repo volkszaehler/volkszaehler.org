@@ -243,6 +243,9 @@ vz.wui.dialogs.init = function() {
 		AddProperties(vz.capabilities.definitions.entities[$(this)[0].selectedIndex].optional, "optional");
 	});
 	
+	$('#entity-create select').change();
+	
+	
 	$('#entity-create form').submit(function() {
 		var def = $('select[name=type] option:selected', this).data('definition');
 
