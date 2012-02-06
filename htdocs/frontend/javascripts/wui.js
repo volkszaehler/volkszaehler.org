@@ -194,6 +194,57 @@ vz.wui.dialogs.init = function() {
 			$('#entity-add').dialog('close');
 		}
 	});
+
+	//Show available properties for selected type
+	function AddProperties(proplist, className) {
+		proplist.each(function(index, def) {
+			vz.capabilities.definitions.properties.each(function(propindex, propdef) {
+				if (def == propdef.name)
+				{
+					var row = $('<tr>').append($('<td>').text(propdef.translation[vz.options.language])).addClass("property");
+					var cntrl = null;
+					
+					if ((propdef.type == 'string') || (propdef.type == 'text'))
+						cntrl = $('<input>').attr("type", "text");
+					
+					if ((propdef.type == 'float') || (propdef.type == 'integer'))
+						cntrl = $('<input>').attr("type", "text");
+					
+					if ((propdef.type == 'boolean'))
+						cntrl = $('<input>').attr("type", "checkbox");
+					
+					if ((propdef.type == 'multiple'))
+					{
+						cntrl = $('<select>').attr("Size", "1");
+						propdef.options.each(function(optindex, optdef) {
+							cntrl.append(
+								$('<option>').html(optdef)
+							);
+						});
+					}
+					
+					if (cntrl != null)
+					{
+						row.addClass(className);
+						cntrl.attr("name", propdef.name);
+						row.append($('<td>').append(cntrl));
+						$('#entity-create form table').append(row);
+					}
+				}
+			});
+		});
+	}
+	
+	$('#entity-create select').change(function() {
+		$('#entity-create form table .required').remove();
+		$('#entity-create form table .optional').remove();
+		
+		AddProperties(vz.capabilities.definitions.entities[$(this)[0].selectedIndex].required, "required");
+		AddProperties(vz.capabilities.definitions.entities[$(this)[0].selectedIndex].optional, "optional");
+	});
+	
+	$('#entity-create select').change();
+	
 	
 	$('#entity-create form').submit(function() {
 		var def = $('select[name=type] option:selected', this).data('definition');
