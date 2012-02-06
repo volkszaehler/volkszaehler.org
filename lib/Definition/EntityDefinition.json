@@ -170,6 +170,19 @@
 		}
 	},
 	{
+		"name"			: "voltage",
+		"optional"		: ["tolerance", "local"],
+		"icon"			: "thermometer.png",
+		"unit"			: "V",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"		: {
+			"de" : "Spannung",
+			"en" : "Voltage",
+			"fr" : "Voltage"
+		}
+	},
+	{
 		"name"			: "pressure",
 		"optional"		: ["tolerance", "local"],
 		"icon"			: "cloud.png",
