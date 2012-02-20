@@ -69,6 +69,10 @@ class ChannelController extends EntityController {
 			$this->view->request->getParameters('get')
 		);
 		
+		foreach ($parameters as $key => $value)
+			if ($value == '')
+				unset($parameters[$key]);
+		
 		$this->setProperties($channel, $parameters);
 		$this->em->persist($channel);
 		$this->em->flush();
