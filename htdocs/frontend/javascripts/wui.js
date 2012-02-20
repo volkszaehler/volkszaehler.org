@@ -195,36 +195,44 @@ vz.wui.dialogs.init = function() {
 		}
 	});
 
-	//Show available properties for selected type
-	function AddProperties(proplist, className) {
+	// show available properties for selected type
+	function addProperties(proplist, className) {
 		proplist.each(function(index, def) {
 			vz.capabilities.definitions.properties.each(function(propindex, propdef) {
-				if (def == propdef.name)
-				{
-					var row = $('<tr>').append($('<td>').text(propdef.translation[vz.options.language])).addClass("property");
+				if (def == propdef.name) {
 					var cntrl = null;
+					var row = $('<tr>')
+						.addClass("property")
+						.append(
+							$('<td>').text(propdef.translation[vz.options.language])
+						);
 					
-					if ((propdef.type == 'string') || (propdef.type == 'text'))
-						cntrl = $('<input>').attr("type", "text");
+					switch (propdef.type) {
+						case 'float':
+						case 'integer':
+						case 'string':
+							cntrl = $('<input>').attr("type", "text");
+							break;
+							
+						case 'text':
+							cntrl = $('<textarea>');
+							break;
 					
-					if ((propdef.type == 'float') || (propdef.type == 'integer'))
-						cntrl = $('<input>').attr("type", "text");
-					
-					if ((propdef.type == 'boolean'))
-						cntrl = $('<input>').attr("type", "checkbox");
-					
-					if ((propdef.type == 'multiple'))
-					{
-						cntrl = $('<select>').attr("Size", "1");
-						propdef.options.each(function(optindex, optdef) {
-							cntrl.append(
-								$('<option>').html(optdef)
-							);
-						});
+						case 'boolean':
+							cntrl = $('<input>').attr("type", "checkbox");
+							break;
+						
+						case 'multiple':
+							cntrl = $('<select>').attr("Size", "1");
+							propdef.options.each(function(optindex, optdef) {
+								cntrl.append(
+									$('<option>').html(optdef)
+								);
+							});
+							break;
 					}
 					
-					if (cntrl != null)
-					{
+					if (cntrl != null) {
 						row.addClass(className);
 						cntrl.attr("name", propdef.name);
 						row.append($('<td>').append(cntrl));
@@ -239,10 +247,9 @@ vz.wui.dialogs.init = function() {
 		$('#entity-create form table .required').remove();
 		$('#entity-create form table .optional').remove();
 		
-		AddProperties(vz.capabilities.definitions.entities[$(this)[0].selectedIndex].required, "required");
-		AddProperties(vz.capabilities.definitions.entities[$(this)[0].selectedIndex].optional, "optional");
+		addProperties(vz.capabilities.definitions.entities[$(this)[0].selectedIndex].required, "required");
+		addProperties(vz.capabilities.definitions.entities[$(this)[0].selectedIndex].optional, "optional");
 	});
-	
 	$('#entity-create select').change();
 	
 	
