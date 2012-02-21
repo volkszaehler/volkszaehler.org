@@ -35,9 +35,11 @@ require_once VZ_DIR . '/lib/Util/Configuration.php';
 // load configuration
 Util\Configuration::load(VZ_DIR . '/etc/volkszaehler.conf');
 
+define('DOCTRINE_DIR', Util\Configuration::read('lib.doctrine') ? Util\Configuration::read('lib.doctrine') : 'Doctrine');
+
 $classLoaders = array(
-	new Util\ClassLoader('Doctrine', (is_null(Util\Configuration::read('lib.doctrine'))) ? 'Doctrine' : Util\Configuration::read('lib.doctrine')),
-	new Util\ClassLoader('Symfony', VZ_DIR . '/lib/vendor/Doctrine/Symfony'),
+	new Util\ClassLoader('Doctrine', DOCTRINE_DIR),
+	new Util\ClassLoader('Symfony', DOCTRINE_DIR . '/Symfony'),
 	new Util\ClassLoader('Volkszaehler', VZ_DIR . '/lib')
 );
 
@@ -51,8 +53,5 @@ $helperSet = new \Symfony\Component\Console\Helper\HelperSet(array(
 	'db' => new \Doctrine\DBAL\Tools\Console\Helper\ConnectionHelper($em->getConnection()),
 	'em' => new \Doctrine\ORM\Tools\Console\Helper\EntityManagerHelper($em)
 ));
-
-
-\Doctrine\ORM\Tools\Console\ConsoleRunner::run($helperSet);
 
 ?>
