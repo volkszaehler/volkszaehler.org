@@ -41,7 +41,7 @@ abstract class View {
 	 *
 	 * @var integer round all values to x decimals
 	 */
-	const PRECISSION = 3;
+	const PRECISION = 3;
 
 	/**
 	 * @var HTTP\Request
