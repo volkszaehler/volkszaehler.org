@@ -26,19 +26,21 @@
 
 # vzmonitor operates as a cronjob and monitors whether data for a particular UUID keeps arriving (or - to be precise: has been arriving recently)
 
-#------------------------------------------------------------------------
+#----<config>-------------------------------------------------------------
 
 # UUID to be monitored
 uuid = '12345678-1234-1234-1234-123456789012'
-uuidstring = str(uuid)
 
-# time interval to be checked in seconds:
+# URL of the vz middleware
+middleware = 'http://demo.volkszaehler.org/middleware.php/'
+
+# time interval to be monitored in seconds
 interval = 3600
 
-# minimum number of expected readings that needs to be present to prevent an alarm:
+# minimum number of expected readings that needs to be present to prevent an alarm
 threshold = 9
 
-#------------------------------------------------------------------------
+#----</config>------------------------------------------------------------
 
 tz_offset = 1 # h
 
@@ -46,6 +48,8 @@ debug = False
 debug_middleware = False
 
 #------------------------------------------------------------------------
+
+uuidstring = str(uuid)
 
 import datetime
 
@@ -62,10 +66,10 @@ intervalstart = timestamp2vz_format(past)
 
 #------------------------------------------------------------------------
 
-url = 'http://demo.volkszaehler.org'
 
 import urllib2
-url += '/middleware.php/data/'
+url = middleware
+url += 'data/'
 url += uuid
 url += '.json?from='
 url += intervalstart
