@@ -42,7 +42,7 @@ threshold = 9
 
 #----</config>------------------------------------------------------------
 
-tz_offset = 1 # h
+tz_offset = 2 # h; CEST -> 2; CET -> 1; show me, how to improve this! :-)
 
 debug = False
 debug_middleware = False
