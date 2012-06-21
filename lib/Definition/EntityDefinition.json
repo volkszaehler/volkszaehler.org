@@ -106,7 +106,7 @@
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
-			"de" : "Stromzähler",
+			"de" : "Strommesser",
 			"en" : "Electric Meter",
 			"fr" : "Compteur de courant"
 		}
@@ -126,6 +126,21 @@
 			"fr" : "Capteur de courant"
 		}
 	},
+	{
+		"name" : "electric meter",
+		"required"		: ["resolution"],
+		"optional" : ["tolerance", "cost", "local"],
+		"icon"			: "bolt.png",
+		"unit"			: "W",
+		"interpreter"		: "Volkszaehler\\Interpreter\\CounterInterpreter",
+		"style"			: "steps",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
+		"translation"		: {
+			"de" : "Stromzaehler",
+			"en" : "Electric Meter"
+		}
+	},		
 	{
 		"name"			: "gas",
 		"required"		: ["resolution"],
