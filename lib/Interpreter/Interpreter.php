@@ -71,6 +71,8 @@ abstract class Interpreter {
 		// parse interval
 		if (isset($from)) {
 			$this->from = self::parseDateTimeString($from, time() * 1000);
+		} else {
+			$this->from = (time() - 24*60*60) * 1000;
 		}
 		
 		if (isset($to)) {

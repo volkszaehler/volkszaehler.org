@@ -41,7 +41,7 @@ abstract class View {
 	 *
 	 * @var integer round all values to x decimals
 	 */
-	const PRECISSION = 3;
+	const PRECISION = 3;
 
 	/**
 	 * @var HTTP\Request
@@ -139,13 +139,13 @@ abstract class View {
 	}
 	
 	/**
-	 * Round decimal numbers to given precission
+	 * Round decimal numbers to given precision
 	 *
 	 * @param $number float the number
 	 * @return (float|string) the formatted number
 	 */
 	public static function formatNumber($number) {
-		return round($number, self::PRECISSION);
+		return round($number, self::PRECISION);
 	}
 
 	public abstract function add($object);
