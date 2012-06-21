@@ -36,4 +36,5 @@ CREATE TABLE IF NOT EXISTS `properties` (
 INSERT INTO `properties` (`id`, `entity_id`, `pkey`, `value`) VALUES
 (1, 1, 'title', 'S0-Zaehler'),
 (2, 1, 'description', 'Nummer 1'),
-(4, 1, 'resolution', '2000');
+(4, 1, 'resolution', '2000'),
+(5, 1, 'public', '1');
