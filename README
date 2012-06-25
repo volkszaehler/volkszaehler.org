@@ -12,6 +12,7 @@ volkszaehler.org/
  |_ misc/
  |   |_ controller/
  |   |   |_ vzlogger/		command line tool to log meters/sensors
+ |   |   |_ mbus/               a controler for mbus/messbus
  |   |   \_ batch/		batch scripts for logging (prototypes)
  |   |
  |   |_ docs/			documentation

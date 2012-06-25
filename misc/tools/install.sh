@@ -28,32 +28,35 @@
 # along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-# cannot handle other hosts right now
-db_host=localhost
-
 set -e
 shopt -s nocasematch
 
-doctrine_git=git://github.com/doctrine/doctrine2.git
-doctrine_tar=http://www.doctrine-project.org/downloads/DoctrineORM-2.0.1-full.tar.gz
-vz_git=git://github.com/volkszaehler/volkszaehler.org.git
-if [ ! `which php` ] ; then
-  echo you need PHP version 5.3+ to run volkszaehler
-  exit
-fi
-if [ ! `which mysql` ] ; then
-  echo you need mysql to run this install script for volkszaehler
-  exit
-fi
+###############################
+# some configuration
 
-PHP_MAJOR=`/usr/bin/php --version | /bin/grep "^PHP" | /usr/bin/awk ' { print $2 } ' | /usr/bin/cut -b 1 `
-PHP_MINOR=`/usr/bin/php --version | /bin/grep "^PHP" | /usr/bin/awk ' { print $2 } ' | /usr/bin/cut -b 3 `
+# please update after releases
+dt_tar=http://www.doctrine-project.org/downloads/DoctrineORM-2.2.0-full.tar.gz
+vz_tar=https://github.com/volkszaehler/volkszaehler.org/tarball/master
+#vz_tar=http://wiki.volkszaehler.org/_media/software/releases/volkszaehler.org-0.2.tar.gz
 
+# cannot handle other hosts right now
+db_host=localhost
+
+tmp_dir=`mktemp --tmpdir=/tmp --directory vz_inst.XXX`
+
+###############################
+# functions
 ask() {
 	question=$1
 	default=$2
 	read -e -p "$question [$default] "
 	REPLY=${REPLY:-$default}
+}
+
+cleanup() {
+	if [ -e $tmp_dir ]; then
+		rm -r $tmp_dir
+	fi
 }
 
 get_admin() {
@@ -72,95 +75,126 @@ get_db_name() {
 	db_name=$REPLY
 }
 
-############
+###############################
+# header
+echo "volkszaehler.org installation script"
+
+###############################
 # check prerequisites
-if [ "${PHP_MAJOR}" -lt "5" ] ; then
-  echo you need PHP version 5.3+ to run volkszaehler
-  exit
-elif [ "${PHP_MAJOR}" == "5" ] ; then
-  if [ "${PHP_MINOR}" -lt "3" ] ; then
-    echo you need PHP version 5.3+ to run volkszaehler
-    exit
-  fi
+echo
+echo -n "checking prerequisites:"
+
+deps=( php mysql awk sed grep wget mktemp mkdir tar )
+
+for binary in "${deps[@]}"; do
+	if [ `which $binary` ] ; then
+		echo -n " $binary"
+	else
+		echo
+		echo "you need $binary to run this installer"
+		cleanup && exit 1
+	fi
+done
+echo
+
+php_major=`php --version | grep "^PHP" | awk ' { print $2 } ' | cut -b 1 `
+php_minor=`php --version | grep "^PHP" | awk ' { print $2 } ' | cut -b 3 `
+
+echo "php version: $php_major.$php_minor"
+
+if [ "$php_major" -lt "5" ] ; then
+	echo "you need PHP version 5.3+ to run volkszaehler"
+	cleanup && exit 1
+elif [ "$php_major" == "5" ] ; then
+	if [ "$php_minor" -lt "3" ] ; then
+		echo "you need PHP version 5.3+ to run volkszaehler"
+		cleanup && exit 1
+	fi
 fi
 
-
-############
+###############################
 echo
-echo doctrine setup...
+echo "doctrine setup..."
 
 ask "doctrine path?" /usr/local/lib/doctrine-orm
-dtdir=$REPLY
+dt_dir=$REPLY
 
-REPLY=y
-test -e "$dtdir" && ask "$dtdir already exists. overwrite?" n
-if [ "$REPLY" == 'y' ]; then
-	echo "installing doctrine into $dtdir"
-
-#	wget -O - $doctrine_tar | tar xz -C $dtdir
-
-	git clone $doctrine_git $dtdir
-	pushd $dtdir
-	git submodule init
-	git submodule update
-
-	cd lib/Doctrine
-	ln -s ../vendor/doctrine-dbal/lib/Doctrine/DBAL/ .
-	ln -s ../vendor/doctrine-common/lib/Doctrine/Common/ .
-	popd
+if [ -e "$dt_dir" ]; then
+	ask "$dt_dir already exists. overwrite?" n
+else
+	mkdir $dt_dir
+	REPLY=y
 fi
 
-############
+if [ "$REPLY" == 'y' ]; then
+	echo "installing doctrine into $dt_dir"
+	wget -O - $dt_tar | tar xz -C $tmp_dir
+	cp -r $tmp_dir/Doctrine*/Doctrine/* $dt_dir/
+fi
+
+###############################
 echo
-echo volkszaehler setup...
+echo "volkszaehler setup..."
 
 ask "volkszaehler path?" /var/www/volkszaehler.org
-vzdir=$REPLY
+vz_dir=$REPLY
 
-REPLY=y
-test -e "$vzdir" && ask "$vzdir already exists. overwrite?" n
-if [ "$REPLY" == 'y' ]; then
-	echo "installing volkszaehler.org into $vzdir"
-	git clone $vz_git $vzdir
-
-	pushd $vzdir/lib/vendor
-	ln -s $dtdir/lib/Doctrine .
-	ln -s $dtdir/lib/vendor/Symfony ./Doctrine/
-#	ln -s $dtdir/Doctrine/ .
-	popd
+if [ -e "$vz_dir" ]; then
+	ask "$vz_dir already exists. overwrite?" n
+else
+	mkdir $vz_dir
+	REPLY=y
 fi
 
-config=$vzdir/etc/volkszaehler.conf.php
+if [ "$REPLY" == 'y' ]; then
+	echo "installing volkszaehler.org into $vz_dir"
+	wget -O - $vz_tar | tar xz -C $tmp_dir
+	cp -r $tmp_dir/volkszaehler*/* $vz_dir/
+fi
 
-############
+###############################
 echo
-ask "configure volkszaehler.org (database connection)?" y
+ask "configure volkszaehler.org?" y
+
+config=$vz_dir/etc/volkszaehler.conf.php
 
 if [ "$REPLY" == "y" ]; then
-	#TODO check for php5-mysql
-	echo database config...
+	# test for pdo_mysql php module
+	php -m | grep pdo_mysql > /dev/null
+	if [ $? -ne 0 ]; then
+		echo "php module pdo_mysql has not been found"
+		echo "try 'sudo apt-get install php5-mysql' on Debian/Ubuntu based systems"
+		cleanup && exit 1
+	fi
+	
 	ask "mysql user?" vz
 	db_user=$REPLY
 	ask "mysql password?" demo
 	db_pass=$REPLY
 	get_db_name
 
-	sed -e "s/^\(\$config\['db'\]\['user'\]\).*/\1 = '$db_user';/" \
-		-e "s/^\(\$config\['db'\]\['password'\]\).*/\1 = '$db_pass';/" \
-		-e "s/^\(\$config\['db'\]\['dbname'\]\).*/\1 = '$db_name';/" \
-	< $vzdir/etc/volkszaehler.conf.template.php \
+	# we are using "|" as delimiter for sed to avoid escaped sequences in $dt_dir
+	sed -e "s|^\(\$config\['db'\]\['user'\]\).*|\1 = '$db_user';|" \
+		-e "s|^\/*\(\$config\['db'\]\['password'\]\).*|\1 = '$db_pass';|" \
+		-e "s|^\/*\(\$config\['db'\]\['dbname'\]\).*|\1 = '$db_name';|" \
+		-e "s|^\/*\(\$config\['lib'\]\['doctrine'\]\).*|\1 = '$dt_dir';|" \
+	< $vz_dir/etc/volkszaehler.conf.template.php \
 	> $config
+	
+	pushd $vz_dir
+	php misc/tools/doctrine orm:generate-proxies
+	popd
 fi
 
-#########
+###############################
 echo
 ask "create database?" y
 if [ "$REPLY" == "y" ]; then
 	get_admin
 
-	echo creating database $db_name...
+	echo "creating database $db_name..."
 	mysql -h$db_host -u$db_admin_user -p$db_admin_pass -e 'CREATE DATABASE `'$db_name'`'
-	pushd $vzdir
+	pushd $vz_dir
 	php misc/tools/doctrine orm:schema-tool:create
 	popd
 
@@ -177,7 +211,9 @@ ask "insert demo data in to database?" n
 if [ "$REPLY" == "y" ]; then
 	get_admin
 	get_db_name
-	cat $vzdir/misc/sql/demo/entities.sql $vzdir/misc/sql/demo/properties.sql $vzdir/misc/sql/demo/data-demoset1.sql |
+	cat $vz_dir/misc/sql/demo/entities.sql $vz_dir/misc/sql/demo/properties.sql $vz_dir/misc/sql/demo/data-demoset1.sql |
 	mysql -h$db_host -u$db_admin_user -p$db_admin_pass $db_name
 fi
+
+cleanup
 

@@ -196,14 +196,79 @@ vz.wui.dialogs.init = function() {
 			$('#entity-add').dialog('close');
 		}
 	});
+
+	// show available properties for selected type
+	function addProperties(proplist, className) {
+		proplist.each(function(index, def) {
+			vz.capabilities.definitions.properties.each(function(propindex, propdef) {
+				if (def == propdef.name) {
+					var cntrl = null;
+					var row = $('<tr>')
+						.addClass("property")
+						.append(
+							$('<td>').text(propdef.translation[vz.options.language])
+						);
+					
+					switch (propdef.type) {
+						case 'float':
+						case 'integer':
+						case 'string':
+							cntrl = $('<input>').attr("type", "text");
+							break;
+							
+						case 'text':
+							cntrl = $('<textarea>');
+							break;
+					
+						case 'boolean':
+							cntrl = $('<input>').attr("type", "checkbox");
+							break;
+						
+						case 'multiple':
+							cntrl = $('<select>').attr("Size", "1");
+							propdef.options.each(function(optindex, optdef) {
+								cntrl.append(
+									$('<option>').html(optdef)
+								);
+							});
+							break;
+					}
+					
+					if (cntrl != null) {
+						row.addClass(className);
+						cntrl.attr("name", propdef.name);
+						row.append($('<td>').append(cntrl));
+						$('#entity-create form table').append(row);
+					}
+				}
+			});
+		});
+	}
+	
+	$('#entity-create select').change(function() {
+		$('#entity-create form table .required').remove();
+		$('#entity-create form table .optional').remove();
+		
+		addProperties(vz.capabilities.definitions.entities[$(this)[0].selectedIndex].required, "required");
+		addProperties(vz.capabilities.definitions.entities[$(this)[0].selectedIndex].optional, "optional");
+	});
+	$('#entity-create select').change();
+	
 	
 	$('#entity-create form').submit(function() {
 		var def = $('select[name=type] option:selected', this).data('definition');
+		var properties = [];
+		
+		$(this).serializeArray().each(function(index, value) {
+			if (value.value != '') {
+				properties.push(value);
+			}
+		});
 
 		vz.load({
 			controller: (def.model == 'Volkszaehler\\Model\\Channel') ? 'channel' : 'aggregator',
 			url: $('#entity-create-middleware').val(),
-			data: $(this).serialize(),
+			data: $.param(properties),
 			type: 'POST',
 			success: function(json) {
 				var entity = new Entity(json.entity);

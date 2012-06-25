@@ -46,7 +46,7 @@ class CapabilitiesController extends Controller {
 		
 		if (is_null($section) || $section == 'configuration') {
 			$configuration = array(
-				'precission' => View\View::PRECISSION,
+				'precision' => View\View::PRECISION,
 				'database' => Util\Configuration::read('db.driver'),
 				'debug' => Util\Configuration::read('debug'),
 				'devmode' => Util\Configuration::read('devmode')

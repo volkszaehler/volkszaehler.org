@@ -18,6 +18,10 @@ tr th {
 	font-size: 0.9em;
 }
 
+tr.optional {
+  color: silver;
+}
+
 tr.property td {
 	border-top: 1px solid #A7A7A7;
 }
