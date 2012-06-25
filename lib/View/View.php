@@ -145,7 +145,7 @@ abstract class View {
 	 * @return (float|string) the formatted number
 	 */
 	public static function formatNumber($number) {
-		return is_null($number) ? null :  round($number, self::PRECISSION);
+		return is_null($number) ? null :  round($number, self::PRECISION);
 	}
 
 	public abstract function add($object);
