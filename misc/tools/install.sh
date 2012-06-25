@@ -42,7 +42,7 @@ vz_tar=https://github.com/volkszaehler/volkszaehler.org/tarball/master
 # cannot handle other hosts right now
 db_host=localhost
 
-tmp_dir=`mktemp --tmpdir=/tmp --directory vz_inst.XXX`
+tmp_dir=$(mktemp -d)
 
 ###############################
 # functions
