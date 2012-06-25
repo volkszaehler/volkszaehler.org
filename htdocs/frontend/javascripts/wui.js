@@ -34,9 +34,11 @@ vz.wui.init = function() {
 	$('#accordion h3').click(function() {
 		$(this).next().toggle('fast', function() {
 			// resizing plot: workaround for #76
-			vz.plot.resize();
-			vz.plot.setupGrid();
-			vz.plot.draw();
+			if (vz && vz.plot) {
+				vz.plot.resize();
+				vz.plot.setupGrid();
+				vz.plot.draw();
+			}
 		});
 		
 		return false;
@@ -253,8 +255,11 @@ vz.wui.zoom = function(from, to) {
 		vz.options.plot.xaxis.min = 0;
 	}
 	
-	vz.options.plot.yaxis.max = null; // autoscaling
-	vz.options.plot.yaxis.min = 0; // fixed to 0
+	
+	vz.options.plot.yaxes.each(function(i) {
+		vz.options.plot.yaxes[i].max = null; // autoscaling
+		vz.options.plot.yaxes[i].min = 0; // fixed to 0
+	});
 	
 	vz.entities.loadData().done(vz.wui.drawPlot);
 };
@@ -285,7 +290,67 @@ vz.wui.initEvents = function() {
 			vz.options.plot.yaxis.max = axes.yaxis.max;
 			vz.entities.loadData().done(vz.wui.drawPlot);
 		});*/
+		.bind("plothover", function (event, pos, item) {
+			// $('#title').html("pos "+pos.x + " - event-data: "+event.data);
+			if (!vz.entities || !vz.entities.length)
+				return; // no channels -> nothing to do
+			vz.wui.latestPosition = pos;
+			if (!vz.wui.updateLegendTimeout)
+				vz.wui.updateLegendTimeout = setTimeout(vz.wui.updateLegend, 50);
+		})
 };
+
+vz.wui.updateLegend = function() {
+	vz.wui.updateLegendTimeout = null;
+
+	var pos = vz.wui.latestPosition;
+	
+        var axes = vz.plot.getAxes();
+        if (pos.x < axes.xaxis.min || pos.x > axes.xaxis.max ||
+	    pos.y < axes.yaxis.min || pos.y > axes.yaxis.max)
+		return;
+
+	var i, j, dataset = vz.plot.getData();
+	for (i = 0; i < dataset.length; ++i) {
+		var series = dataset[i];
+
+		if (!series.data.length)
+			continue;
+
+		// find the nearest points, x-wise
+		for (j = 0; j < series.data.length; ++j)
+			if (series.data[j][0] > pos.x)
+				break;
+		var y;
+		if (series.lines.steps) {
+			var p = series.data[j-1];
+			if (p)
+				y = p[1];
+			else
+				y = null;
+		} else { // no steps -> interpolate
+			var p1 = series.data[j - 1], p2 = series.data[j];
+			if (p1 == null || p2 == null)
+				y = null;
+			else
+				y = p1[1] + (p2[1] - p1[1]) * (pos.x - p1[0]) / (p2[0] - p1[0]);
+		}
+		// vz.wui.legends.eq(i).text(series.label.replace(/= [^ ]*/, "= " + y.toFixed(1)));
+		if (y == null)
+			vz.wui.legends.eq(i).text(series.title);
+		else {
+			function fmt(x) {
+				return (x > 9 ? x : '0'+x);
+			}
+			var d = new Date(pos.x);
+			//var timestr = (d.getHours() > 9 ? '' : '0') + d.getHours() + ":" +
+			//	(d.getMinutes() > 9 ? '' : '0') + d.getMinutes() + ":" + 
+			//	(d.getSeconds() > 9 ? '' : '0') + d.getSeconds();
+			var timestr = fmt(d.getHours()) + ':' + fmt(d.getMinutes()) + ':' + fmt(d.getSeconds());
+			vz.wui.legends.eq(i).text(series.title + ": " + timestr + " - " + y.toFixed(1) + " " + series.unit);
+		}
+	}
+}
 
 /**
  * Move & zoom in the plotting area
@@ -449,22 +514,26 @@ vz.wui.drawPlot = function () {
 
 	var series = new Array;
 	vz.entities.each(function(entity) {
-		if (entity.active && entity.data && entity.data.tuples && entity.data.tuples.length > 0) {
+		if (entity.active && entity.definition.model == 'Volkszaehler\\Model\\Channel' && entity.data && entity.data.tuples && entity.data.tuples.length > 0) {
 			var serie = {
 				data: entity.data.tuples,
 				color: entity.color,
+				label : entity.title,
+				title: entity.title,
+				unit : entity.definition.unit,
 				lines: {
 					show: (entity.style == 'lines' || entity.style == 'steps'),
 					steps: (entity.style == 'steps')
 				},
 				points: {
 					show: (entity.style == 'points')
-				}
+				},
+				yaxis: entity.yaxis
 			};
 			
 			series.push(serie);
 		}
-	}, true); // recursive!
+	}, true);
 	
 	if (series.length == 0) {
 		$('#overlay').html('<img src="images/empty.png" alt="no data..." /><p>nothing to plot...</p>');
@@ -475,6 +544,21 @@ vz.wui.drawPlot = function () {
 	}
 
 	vz.plot = $.plot($('#flot'), series, vz.options.plot);
+	vz.wui.legends = $("#flot .legendLabel");
+//	vz.wui.legends.each(function () {
+		// fix the widths so they don't jump around
+		//$(this).css('width', $(this).width()/2);
+//	});
+/*
+	vz.plot.hooks.bindEvents.push(function (plot, eventHolder) {
+//		eventHolder.mousedown(function () {
+//	vz.plot.mousedown(function () {
+		eventHolder.bind('mousedown', function (e) {
+			console.log("mousedown");
+			vz.wui.legends.eq(0).text('');
+		});
+	});
+*/	
 	
 	// disable automatic refresh if we are in past
 	if (vz.options.refresh) {
