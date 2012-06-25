@@ -93,11 +93,11 @@ class MeterInterpreter extends Interpreter {
 		$this->resolution = $this->channel->getProperty('resolution');
 		$this->pulseCount = 0;
 		
-		$last = $this->getFrom();
+		$ts_last = $this->getFrom();
 		foreach ($this->rows as $row) {
-			$delta = $row[0] - $last;
+			$delta = $row[0] - $ts_last;
 			$tuple = $callback(array(
-				(float) $last, // timestamp of interval start
+				(float) $ts_last, // timestamp of interval start
 				(float) ($row[1] * 3.6e9) / ($this->resolution * $delta), // doing df/dt
 				(int) $row[2] // num of rows
 			));
@@ -113,8 +113,15 @@ class MeterInterpreter extends Interpreter {
 			$this->pulseCount += $row[1];
 
 			$tuples[] = $tuple;
-			$last = $row[0];
+			$ts_last = $row[0];
 		}
+		$last_tuple = end($tuples);
+		$tuples[] = array((float) $ts_last, $last_tuple[1], $last_tuple[2]);
+		$tuples[] =  $callback(array(
+			(float) $ts_last, // timestamp of interval start
+			null,
+			1
+		));
 		
 		return $tuples;
 	}
