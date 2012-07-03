@@ -264,7 +264,7 @@ Entity.prototype.getDOMDetails = function(edit) {
 				}
 					
 				if (property == 'cost') {
-					value = (value * 1000 * 100) + ' ct/k' + this.definition.unit + 'h'; // ct per kWh
+					value = Number(value * 1000 * 100).toFixed(2) + ' ct/k' + this.definition.unit + 'h'; // ct per kWh
 				}
 
 				data.append($('<tr>')
