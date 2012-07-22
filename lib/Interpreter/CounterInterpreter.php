@@ -93,26 +93,26 @@ class CounterInterpreter extends Interpreter {
 		$this->resolution = $this->channel->getProperty('resolution');
 		$this->valsum = 0;
 		
-		#$last_time = $this->getFrom();
 		foreach ($this->rows as $row) {
+			$val = $row[1] / $row[2]; // kind of revert what DataIterator::next did to our data
+
 			if (!isset($last_val)) { # skip first row - we need a starting value
 				$last_ts = $row[0];
-				$last_val = $row[1];
+				$last_val = $val;
 				continue;
 			}
-
-			if ($row[1] === $last_val)
+			if ($val === $last_val)
 				continue; # skip duplicate values
 
 			$delta_ts = $row[0] - $last_ts; # time between now and row before
-			$delta_val = $row[1] - $last_val;
+			$delta_val = $val - $last_val;
 			$tuple = $callback(array(
 				(float) $last_ts, // timestamp of interval start
 				(float) ($delta_val / $this->resolution) * 3.6e9 / $delta_ts, // doing df/dt
 				(int) $row[2] // num of rows
 			));
 			$last_ts = $row[0];
-			$last_val = $row[1];
+			$last_val = $val;
 			
 			if (is_null($this->max) || $tuple[1] > $this->max[1]) {
 				$this->max = $tuple;
