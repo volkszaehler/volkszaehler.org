@@ -97,6 +97,20 @@
 		}
 	},
 	{
+		"name"			: "voltage",
+		"optional"		: ["tolerance", "cost", "local"],
+		"icon"			: "bolt.png",
+		"unit"			: "V",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: false,
+		"translation"		: {
+			"de" : "Spannungssensor",
+			"en" : "Voltage Meter",
+			"fr" : "voltmètre"
+		}
+	},
+	{
 		"name"			: "power",
 		"required"		: ["resolution"],
 		"optional"		: ["tolerance", "cost", "local"],
