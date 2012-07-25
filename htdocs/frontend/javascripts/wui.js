@@ -400,19 +400,15 @@ vz.wui.updateLegend = function() {
 			else
 				y = p1[1] + (p2[1] - p1[1]) * (pos.x - p1[0]) / (p2[0] - p1[0]);
 		}
-		// vz.wui.legends.eq(i).text(series.label.replace(/= [^ ]*/, "= " + y.toFixed(1)));
-		if (y == null)
-			vz.wui.legends.eq(i).text(series.title);
-		else {
+		if (y == null) {
+			vz.wui.legend.eq(i).text(series.title);
+		} else {
 			function fmt(x) {
 				return (x > 9 ? x : '0'+x);
 			}
 			var d = new Date(pos.x);
-			//var timestr = (d.getHours() > 9 ? '' : '0') + d.getHours() + ":" +
-			//	(d.getMinutes() > 9 ? '' : '0') + d.getMinutes() + ":" + 
-			//	(d.getSeconds() > 9 ? '' : '0') + d.getSeconds();
 			var timestr = fmt(d.getHours()) + ':' + fmt(d.getMinutes()) + ':' + fmt(d.getSeconds());
-			vz.wui.legends.eq(i).text(series.title + ": " + timestr + " - " + y.toFixed(1) + " " + series.unit);
+			vz.wui.legend.eq(i).text(series.title + ": " + timestr + " - " + y.toFixed(1) + " " + series.unit);
 		}
 	}
 }
@@ -607,14 +603,34 @@ vz.wui.drawPlot = function () {
 	else {
 		$('#overlay').empty();
 	}
+	
+	var flot = $('#flot');
+	vz.plot = $.plot(flot, series, vz.options.plot);
 
-	vz.plot = $.plot($('#flot'), series, vz.options.plot);
+	if (!vz.options.plot.legend.show) {
+		// redraw grid with legend enabled (workaround for b0rken default layout)
+		var pos = 'position:absolute; left:40px; top:5px;';
+		var legend = $('<div id="legend" style="'+pos+'width:'+flot.width()+'"> </div>');
+		flot.append(legend);
+	
+		vz.plot.getOptions().legend.show = true;
+		vz.plot.getOptions().legend.container = legend; // $('#legend');
+		vz.plot.setupGrid();
 
-	$('#flot').append('<div id="legend" style="position:absolute; left:40px; top:5px"></div>');
-	vz.plot.getOptions().legend.show = true;
-	vz.plot.getOptions().legend.container = $('#legend');
-	vz.plot.setupGrid();
-	vz.wui.legends = $('#legend .legendLabel');
+		// opaque background - breaks layout, so it's disabled for now
+		/*
+		var div = legend.children();
+		div.css('position', 'absolute'); div.css('left', '40px'); div.css('top', '5px');
+		var bg = $('<div id="legendBg" style="'+pos+' width:' + div.width() + 'px; height:' + div.height() + 'px;"> </div>');
+		bg.css('opacity', vz.options.plot.legend.backgroundOpacity);
+		bg.css('background-color', 'white');
+		bg.prependTo(legend);
+		*/
+
+		vz.wui.legend = $('#legend .legendLabel');
+	} else {
+		vz.wui.legend = $('.legend .legendLabel')
+	}
 
 	// disable automatic refresh if we are in past
 	if (vz.options.refresh) {
