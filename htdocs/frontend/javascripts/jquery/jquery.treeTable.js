@@ -1,5 +1,5 @@
 /*
- * jQuery treeTable Plugin unreleased
+ * jQuery treeTable Plugin VERSION
  * http://ludo.cubicphuse.nl/jquery-plugins/treeTable/doc/
  *
  * Copyright 2011, Ludo van den Boom
@@ -17,18 +17,27 @@
 
     return this.each(function() {
       $(this).addClass("treeTable").find("tbody tr").each(function() {
-        // Initialize root nodes only if possible
-        if(!options.expandable || $(this)[0].className.search(options.childPrefix) == -1) {
+        // Skip initialized nodes.
+        if (!$(this).hasClass('initialized')) {
+          var isRootNode = ($(this)[0].className.search(options.childPrefix) == -1);
+
           // To optimize performance of indentation, I retrieve the padding-left
           // value of the first root node. This way I only have to call +css+
           // once.
-          if (isNaN(defaultPaddingLeft)) {
+          if (isRootNode && isNaN(defaultPaddingLeft)) {
             defaultPaddingLeft = parseInt($($(this).children("td")[options.treeColumn]).css('padding-left'), 10);
           }
 
-          initialize($(this));
-        } else if(options.initialState == "collapsed") {
-          this.style.display = "none"; // Performance! $(this).hide() is slow...
+          // Set child nodes to initial state if we're in expandable mode.
+          if(!isRootNode && options.expandable && options.initialState == "collapsed") {
+            $(this).addClass('ui-helper-hidden');
+          }
+
+          // If we're not in expandable mode, initialize all nodes.
+          // If we're in expandable mode, only initialize root nodes.
+          if(!options.expandable || isRootNode) {
+            initialize($(this));
+          }
         }
       });
     });
@@ -41,7 +50,11 @@
     indent: 19,
     initialState: "collapsed",
     onNodeShow: null,
-    treeColumn: 0
+    onNodeHide: null,
+    treeColumn: 0,
+    persist: false,
+    persistCookiePrefix: 'treeTable_',
+    persistCookieOptions: {}
   };
 
   // Recursively hide all node's children in a tree
@@ -53,7 +66,12 @@
         $(this).collapse();
       }
 
-      this.style.display = "none"; // Performance! $(this).hide() is slow...
+      $(this).addClass('ui-helper-hidden');
+
+      if($.isFunction(options.onNodeHide)) {
+        options.onNodeHide.call(this);
+      }
+
     });
 
     return this;
@@ -70,11 +88,10 @@
         $(this).expand();
       }
 
-      // this.style.display = "table-row"; // Unfortunately this is not possible with IE :-(
-      $(this).show();
+      $(this).removeClass('ui-helper-hidden');
 
       if($.isFunction(options.onNodeShow)) {
-        options.onNodeShow.call();
+        options.onNodeShow.call(this);
       }
     });
 
@@ -131,6 +148,12 @@
       $(this).removeClass("expanded").collapse();
     }
 
+    if (options.persist) {
+      // Store cookie if this node is expanded, otherwise delete cookie.
+      var cookieName = options.persistCookiePrefix + $(this).attr('id');
+      $.cookie(cookieName, $(this).hasClass('expanded') ? 'true' : null, options.persistCookieOptions);
+    }
+
     return this;
   };
 
@@ -145,7 +168,7 @@
   };
 
   function childrenOf(node) {
-    return $("table.treeTable tbody tr." + options.childPrefix + node[0].id);
+    return $(node).siblings("tr." + options.childPrefix + node[0].id);
   };
 
   function getPaddingLeft(node) {
@@ -194,6 +217,13 @@
             });
           }
 
+          if (options.persist) {
+            var cookieName = options.persistCookiePrefix + node.attr('id');
+            if ($.cookie(cookieName) == 'true') {
+              node.addClass('expanded');
+            }
+          }
+
           // Check for a class set explicitly by the user, otherwise set the default class
           if(!(node.hasClass("expanded") || node.hasClass("collapsed"))) {
             node.addClass(options.initialState);
@@ -217,7 +247,7 @@
 
     for(var key=0; key<classNames.length; key++) {
       if(classNames[key].match(options.childPrefix)) {
-        return $("#" + classNames[key].substring(9));
+        return $(node).siblings("#" + classNames[key].substring(options.childPrefix.length));
       }
     }
 
