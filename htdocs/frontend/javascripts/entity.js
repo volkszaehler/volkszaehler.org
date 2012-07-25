@@ -57,6 +57,7 @@ Entity.prototype.parseJSON = function(json) {
 	// setting defaults	
 	if (this.type !== undefined) {
 		this.definition = vz.capabilities.definitions.get('entities', this.type);
+		this.yaxis = this.type == 'temperature' ? 2 : 1;
 		
 		if (this.style === undefined) {
 			if (this.definition.style) {
@@ -112,8 +113,8 @@ Entity.prototype.loadData = function() {
 			this.data = json.data;
 
 			if (this.data.tuples && this.data.tuples.length > 0) {
-				if (this.data.min[1] < vz.options.plot.yaxis.min) { // allow negative values for temperature sensors
-					vz.options.plot.yaxis.min = null;
+				if (this.data.min && this.data.min[1] < vz.options.plot.yaxes[this.yaxis-1].min) { // allow negative values for temperature sensors
+					vz.options.plot.yaxes[this.yaxis-1].min = null;
 				}
 			}
 			
@@ -263,7 +264,7 @@ Entity.prototype.getDOMDetails = function(edit) {
 				}
 					
 				if (property == 'cost') {
-					value = (value * 1000 * 100) + ' ct/k' + this.definition.unit + 'h'; // ct per kWh
+					value = Number(value * 1000 * 100).toFixed(2) + ' ct/k' + this.definition.unit + 'h'; // ct per kWh
 				}
 
 				data.append($('<tr>')
@@ -399,9 +400,13 @@ Entity.prototype.updateDOMRow = function() {
 		if (this.data.average)
 			$('.average', row)
 			.text(vz.wui.formatNumber(this.data.average, true) + this.definition.unit);
-		if (this.data.tuples && this.data.tuples.last)
+		if (this.data.tuples && this.data.tuples.last) {
+			last = this.data.tuples.last()[1];
+			if (last == null && this.data.tuples.length > 1)
+				last = this.data.tuples[this.data.tuples.length-2][1];
 			$('.last', row)
-			.text(vz.wui.formatNumber(this.data.tuples.last()[1], true) + this.definition.unit);
+			.text(vz.wui.formatNumber(last, true) + this.definition.unit);
+		}
 
 		if (this.data.consumption)
 			$('.consumption', row)

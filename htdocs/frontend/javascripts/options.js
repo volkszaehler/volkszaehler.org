@@ -45,15 +45,26 @@ vz.options.plot = {
 			radius: 3
 		}
 	},
-	legend: { show: false },
+ 	legend: {
+		show: false, // will be enabled by the code
+		backgroundOpacity: 0.30,
+	},
 	xaxis: {
 		mode: 'time',
 		useLocalTime: true,
 	},
-	yaxis: {
-		min: 0,
-		max: null
-	},
+	yaxes: [
+		{
+			min: 0,
+			max: null
+		},
+		{
+			min: 0,
+			max: null,
+			//alignTicksWithAxis: 1,
+			position: 'right'
+		}
+	],
 	selection: { mode: 'x' },
 	crosshair: { mode: 'x' },
 	grid: {
