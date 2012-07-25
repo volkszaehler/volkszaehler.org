@@ -609,22 +609,13 @@ vz.wui.drawPlot = function () {
 	}
 
 	vz.plot = $.plot($('#flot'), series, vz.options.plot);
-	vz.wui.legends = $("#flot .legendLabel");
-//	vz.wui.legends.each(function () {
-		// fix the widths so they don't jump around
-		//$(this).css('width', $(this).width()/2);
-//	});
-/*
-	vz.plot.hooks.bindEvents.push(function (plot, eventHolder) {
-//		eventHolder.mousedown(function () {
-//	vz.plot.mousedown(function () {
-		eventHolder.bind('mousedown', function (e) {
-			console.log("mousedown");
-			vz.wui.legends.eq(0).text('');
-		});
-	});
-*/	
-	
+
+	$('#flot').append('<div id="legend" style="position:absolute; left:40px; top:5px"></div>');
+	vz.plot.getOptions().legend.show = true;
+	vz.plot.getOptions().legend.container = $('#legend');
+	vz.plot.setupGrid();
+	vz.wui.legends = $('#legend .legendLabel');
+
 	// disable automatic refresh if we are in past
 	if (vz.options.refresh) {
 		if (vz.wui.tmaxnow) {

@@ -46,8 +46,8 @@ vz.options.plot = {
 		}
 	},
  	legend: {
-		show: true,
-		backgroundOpacity: 0.30
+		show: false, // will be enabled by the code
+		backgroundOpacity: 0.30,
 	},
 	xaxis: {
 		mode: 'time',
