@@ -1,6 +1,6 @@
 <?php
 /**
- * @copyright Copyright (c) 2011, The volkszaehler.org project
+ * @copyright Copyright (c) 2012, The volkszaehler.org project
  * @package default
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  */
@@ -24,18 +24,18 @@
 namespace Volkszaehler\Interpreter;
 
 /**
- * Meter interpreter
+ * Counter interpreter
  *
  * @package default
- * @author Steffen Vogel (info@steffenvogel.de)
+ * @author Jakob Hirsch (jh.vz@plonk.de)
  *
  */
 use Volkszaehler;
 use Volkszaehler\Util;
 
-class MeterInterpreter extends Interpreter {
+class CounterInterpreter extends Interpreter {
 
-	protected $pulseCount;
+	protected $valsum;
 	protected $resolution;
 	
 	/**
@@ -44,7 +44,7 @@ class MeterInterpreter extends Interpreter {
 	 * @return float total consumption in Wh
 	 */
 	public function getConsumption() {
-		return $this->channel->getDefinition()->hasConsumption ? 1000 * $this->pulseCount / $this->resolution : NULL;
+		return $this->channel->getDefinition()->hasConsumption ? $this->valsum * 1000 / $this->resolution : NULL;
 	}
 
 	/**
@@ -71,9 +71,9 @@ class MeterInterpreter extends Interpreter {
 	 * @return float average in W
 	 */
 	public function getAverage() {
-		if ($this->pulseCount) {
+		if ($this->valsum) {
 			$delta = $this->rows->getTo() - $this->rows->getFrom();
-			return (3.6e9 * $this->pulseCount) / ($this->resolution * $delta); // 60 s/min * 60 min/h * 1.000ms/s * 1.000W/KW = 3.6e9 (Units: s/h*ms/s*W/KW = s/3.600s*.001s/s*W/1.000W = 1)
+			return (3.6e9 * $this->valsum) / ($this->resolution * $delta); // 60 s/min * 60 min/h * 1.000ms/s * 1.000W/KW = 3.6e9 (Units: s/h*ms/s*W/KW = s/3.600s*.001s/s*W/1.000W = 1)
 		}
 		else { // prevents division by zero
 			return 0;
@@ -81,26 +81,38 @@ class MeterInterpreter extends Interpreter {
 	}
 
 	/**
-	 * Raw pulse to power conversion
+	 * Raw counter value to power conversion
 	 *
 	 * @param $callback a callback called each iteration for output
-	 * @return array with timestamp, values, and pulse count
+	 * @return array with arrays of timestamp, energy and value count
 	 */
 	public function processData($callback) {
 		$tuples = array();
 		$this->rows = parent::getData();
 
 		$this->resolution = $this->channel->getProperty('resolution');
-		$this->pulseCount = 0;
+		$this->valsum = 0;
 		
-		$ts_last = $this->getFrom();
 		foreach ($this->rows as $row) {
-			$delta = $row[0] - $ts_last;
+			$val = $row[1] / $row[2]; // kind of revert what DataIterator::next did to our data
+
+			if (!isset($last_val)) { # skip first row - we need a starting value
+				$last_ts = $row[0];
+				$last_val = $val;
+				continue;
+			}
+			if ($val === $last_val)
+				continue; # skip duplicate values
+
+			$delta_ts = $row[0] - $last_ts; # time between now and row before
+			$delta_val = $val - $last_val;
 			$tuple = $callback(array(
-				(float) $ts_last, // timestamp of interval start
-				(float) ($row[1] * 3.6e9) / ($this->resolution * $delta), // doing df/dt
+				(float) $last_ts, // timestamp of interval start
+				(float) ($delta_val / $this->resolution) * 3.6e9 / $delta_ts, // doing df/dt
 				(int) $row[2] // num of rows
 			));
+			$last_ts = $row[0];
+			$last_val = $val;
 			
 			if (is_null($this->max) || $tuple[1] > $this->max[1]) {
 				$this->max = $tuple;
@@ -110,18 +122,10 @@ class MeterInterpreter extends Interpreter {
 				$this->min = $tuple;
 			}
 				
-			$this->pulseCount += $row[1];
+			$this->valsum += $delta_val;
 
 			$tuples[] = $tuple;
-			$ts_last = $row[0];
 		}
-		$last_tuple = end($tuples);
-		$tuples[] = array((float) $ts_last, $last_tuple[1], $last_tuple[2]);
-		$tuples[] =  $callback(array(
-			(float) $ts_last, // timestamp of interval start
-			null,
-			1
-		));
 		
 		return $tuples;
 	}

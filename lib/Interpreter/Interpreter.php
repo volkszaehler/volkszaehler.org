@@ -101,46 +101,43 @@ abstract class Interpreter {
 		}
 		$this->rowCount = (int) $this->conn->fetchColumn($sqlRowCount, $sqlParameters, 0);
 		
+		if ($this->rowCount <= 0)
+			return new \EmptyIterator();
 		
 		// get data
-		$sqlParameters	= array();
+		$sqlParameters	= array($this->channel->getId());
 		if ($this->groupBy && $sqlGroupFields = self::buildGroupBySQL($this->groupBy)) {
-			$sql		= 'SELECT MAX(timestamp) AS timestamp, SUM(value) AS value, COUNT(timestamp) AS count
-						FROM data
-						WHERE channel_id = ?' .
-						self::buildDateTimeFilterSQL($this->from, $this->to, $sqlParameters) .
-						' GROUP BY ' . $sqlGroupFields;
+			$sql = 'SELECT MAX(timestamp) AS timestamp, SUM(value) AS value, COUNT(timestamp) AS count
+				FROM data
+				WHERE channel_id = ?' .
+				self::buildDateTimeFilterSQL($this->from, $this->to, $sqlParameters) .
+				' GROUP BY ' . $sqlGroupFields;
 		}
-		else {
-			$sql		= '';
-			
-			$sqlComon	= 'SELECT timestamp, value, 1 AS count FROM data WHERE channel_id = ?';
-			$threshold	= 60 * 1000; // 1 minute
-			
+		else
+		{
 			if (isset($this->from)) {
-				$sql .= '(' . $sqlComon  . ' AND timestamp BETWEEN ? AND ? ORDER BY timestamp DESC LIMIT 2) UNION ALL ';
-				array_push($sqlParameters, $this->channel->getId(), $this->from - $threshold, $this->from);
+				$sql = 'SELECT MIN(timestamp) FROM (SELECT timestamp FROM data WHERE channel_id=? AND timestamp<? ORDER BY timestamp DESC LIMIT 2) t';
+				$from = $this->conn->fetchColumn($sql, array((int) $this->channel->getId(), $this->from), 0);
+				if ($from)
+					$this->from = $from;
 			}
 
-			$sqlParameters[] = $this->channel->getId();
-			$sql		.= '(' . $sqlComon . self::buildDateTimeFilterSQL($this->from, $this->to, $sqlParameters) . ')';
-			
 			if (isset($this->to)) {
-				$sql .=' UNION ALL (' . $sqlComon . ' AND timestamp BETWEEN  ? AND ? ORDER BY timestamp ASC LIMIT 2)';
-				array_push($sqlParameters, $this->channel->getId(), $this->to, $this->to + $threshold);
+				$sql = 'SELECT MAX(timestamp) FROM (SELECT timestamp FROM data WHERE channel_id=? AND timestamp>? ORDER BY timestamp ASC LIMIT 2) t';
+				$to = $this->conn->fetchColumn($sql, array($this->channel->getId(), $this->to), 0);
+				if ($to)
+					$this->to = $to;
 			}
+
+			$sql = 'SELECT timestamp, value, 1 AS count FROM data WHERE channel_id=?';
+			$sql .= self::buildDateTimeFilterSQL($this->from, $this->to, $sqlParameters);
+			$sql .= ' ORDER BY timestamp ASC';
 			
-			$sql 		.= ' ORDER BY timestamp ASC';
 		}
 		
-		if ($this->rowCount > 0) {
-			$stmt = $this->conn->executeQuery($sql, $sqlParameters); // query for data
+		$stmt = $this->conn->executeQuery($sql, $sqlParameters); // query for data
 
-			return new DataIterator($stmt, $this->rowCount, $this->tupleCount);
-		}
-		else { // no data available
-			return new \EmptyIterator();
-		}
+		return new DataIterator($stmt, $this->rowCount, $this->tupleCount);
 	}
 
 	/**
