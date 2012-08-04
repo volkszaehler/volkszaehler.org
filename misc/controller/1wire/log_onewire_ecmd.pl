@@ -25,9 +25,9 @@ my $debug    = $ENV{debug} // 0;
 
 #Temperature Sensors
 my @DS18S20 = (
-	[ '<sensor id>', '<uuid>', '<first sensor description>' ],
-	[ '<sensor id>', '<uuid>', '<second sensor description>' ],
-	[ '<sensor id>', '<uuid>', '<last sensor description>' ],
+	[ '<first sensor description>', '<sensor id>', '<uuid>' ],
+	[ '<second sensor description>', '<sensor id>', '<uuid>' ],
+	[ '<last sensor description>', '<sensor id>', '<uuid>' ],
 #	[ '', '', '' ],
 );
 #configuration end
@@ -81,13 +81,13 @@ foreach (@sensor) {
 	}
 
 	foreach my $ref (@DS18S20) {
-		if ( @$ref[0] eq $_ ) {
-			print "ID_DS18S20: @$ref[0] Temp: ${temp}°C "
-				. "uuid: @$ref[1] name: @$ref[2]\n" if $debug >= 1;
+		if ( @$ref[1] eq $_ ) {
+			print "ID_DS18S20: @$ref[1] Temp: ${temp}°C "
+				. "uuid: @$ref[2] name: @$ref[0]\n" if $debug >= 1;
 			$familiar = 1;
 
 			my $h = HTTP::Headers->new;
-			my $reqString = "$url/data/@$ref[1].json?value=$temp";
+			my $reqString = "$url/data/@$ref[2].json?value=$temp";
 
 			my $ua = LWP::UserAgent->new;
 			$h->authorization_basic($uname, $password);
