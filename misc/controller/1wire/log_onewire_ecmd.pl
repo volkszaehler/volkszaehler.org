@@ -13,18 +13,18 @@ use LWP::UserAgent;
 use HTTP::Request::Common;
 use Readonly;
 
-#configuration start
-my $esexip   = "<host>";			#ip or hostname for ethersex
-my $esexport = "2701";				#ECMD port
-my $url      = "http://<your volkszaehler domain>/volkszaehler/middleware.php"; #url to volkszaehler middleware
-my $uname    = "<username>";			#username for basic-auth from apache
-my $password = "<password>";			#password
-Readonly my $TIMEOUT => 10;			#timeout for all in seconds
-my $debug    = $ENV{debug} // 0;
-# 0: normally no output
-# 1: only sensor values
-# 2: all
-# you can use export debug=2 before executing the perl script to get verbose output.
+## configuration start
+Readonly my $esexip   => "<host>";                ## ip or hostname for ethersex
+Readonly my $esexport => "2701";                  ## ECMD port
+Readonly my $url      => "http://<your volkszaehler domain>/volkszaehler/middleware.php"; ## url to volkszaehler middleware
+Readonly my $uname    => "<username>";            ## username for basic-auth from apache
+Readonly my $password => "<password>";            ## password
+Readonly my $TIMEOUT => 10;                       ## timeout for all in seconds
+my $debug = $ENV{debug} // 0;
+## 0: normally no output
+## 1: only sensor values
+## 2: all
+## you can use export debug=2 before executing the perl script to get verbose output.
 
 #Temperature Sensors
 my @DS18S20 = (
