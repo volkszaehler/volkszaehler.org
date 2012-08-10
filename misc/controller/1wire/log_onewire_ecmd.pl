@@ -6,6 +6,8 @@
 use strict;
 use warnings;
 use 5.010;
+use utf8;
+binmode STDOUT, ':encoding(UTF-8)';
 use Net::Telnet ();
 use LWP::UserAgent;
 use HTTP::Request::Common;
