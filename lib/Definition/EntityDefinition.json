@@ -276,5 +276,18 @@
 			"en" : "Working Hour Meter",
 			"fr" : "Compteur horaire"
 		}
+	},
+	{
+		"name"			: "valve",
+		"optional"		: ["tolerance", "local"],
+		//"icon"			: "rain.png",
+		"unit"			: "%",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"		: {
+			"de" : "Ventil",
+			"en" : "valve",
+			"fr" : "valve"
+		}
 	}
 ]
