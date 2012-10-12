@@ -34,7 +34,9 @@ vz.options = {
 	interval: 24*60*60*1000, // 1 day
 	localMiddleware: '../middleware.php',
 	monthNames: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
-	dayNames: ['Son', 'Mon', 'Di', 'Mi', 'Do', 'Fr', 'Sam']
+	dayNames: ['Son', 'Mon', 'Di', 'Mi', 'Do', 'Fr', 'Sam'],
+	lineWidthDefault: 2,
+	lineWidthSelected: 4,
 };
 
 vz.options.plot = {
