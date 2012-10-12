@@ -57,7 +57,7 @@ Entity.prototype.parseJSON = function(json) {
 	// setting defaults	
 	if (this.type !== undefined) {
 		this.definition = vz.capabilities.definitions.get('entities', this.type);
-		this.yaxis = this.type == 'temperature' ? 2 : 1;
+		this.yaxis = this.type == 'temperature' || this.type == 'flow' ? 2 : 1;
 		
 		if (this.style === undefined) {
 			if (this.definition.style) {
