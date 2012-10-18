@@ -574,6 +574,7 @@ vz.wui.drawPlot = function () {
 	vz.wui.updateHeadline();
 
 	var series = new Array;
+	var index = 0;
 	vz.entities.each(function(entity) {
 		if (entity.active && entity.definition.model == 'Volkszaehler\\Model\\Channel' && entity.data && entity.data.tuples && entity.data.tuples.length > 0) {
 			var serie = {
@@ -584,13 +585,17 @@ vz.wui.drawPlot = function () {
 				unit : entity.definition.unit,
 				lines: {
 					show: (entity.style == 'lines' || entity.style == 'steps'),
-					steps: (entity.style == 'steps')
+					steps: (entity.style == 'steps'),
+					lineWidth: (index == vz.wui.selectedChannel ? vz.options.lineWidthSelected : vz.options.lineWidthDefault)
 				},
 				points: {
 					show: (entity.style == 'points')
 				},
 				yaxis: entity.yaxis
 			};
+
+			entity.index = index;
+			++index;
 			
 			series.push(serie);
 		}
