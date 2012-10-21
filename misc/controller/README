@@ -4,5 +4,4 @@ between meters (physical) and the middleware (internet).
 For for information refer to our wiki:
 http://wiki.volkszaehler.org/software/controller/start
 
-bash/		a collection of bash scripts (mostly used for prototyping)
 current_cost/	a simple script to read current cost (c) devices and store data in rrd db
