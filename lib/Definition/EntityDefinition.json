@@ -271,6 +271,7 @@
 		"unit"			: "h",
 		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
 		"translation"		: {
 			"de" : "Betriebsstundenzähler",
 			"en" : "Working Hour Meter",
