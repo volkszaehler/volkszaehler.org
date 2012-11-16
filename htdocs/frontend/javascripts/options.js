@@ -76,13 +76,14 @@ vz.options.plot = {
 };
 
 vz.options.saveCookies = function() {
+	var expires = new Date(new Date().getTime() + 3e11); // in about 10 years
 	for (var key in vz.options) {
 		if (vz.options.hasOwnProperty(key) &&
 			typeof vz.options[key] != 'function' &&
 			typeof vz.options[key] != 'object' &&
 			typeof vz.options[key] != 'undefined'
 		) {
-			$.setCookie('vz_' + key, vz.options[key]);
+			$.setCookie('vz_' + key, vz.options[key], {expires: expires});
 		}
 	}
 };
