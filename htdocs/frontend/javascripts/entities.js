@@ -28,7 +28,7 @@
  * Save minimal Entity in JSON cookie
  */
 vz.entities.saveCookie = function() {
-	var expires = new Date(new Date().getTime() + 3e10); // in about a year
+	var expires = new Date(2038, 0, 1); // some days before y2k38 problem
 	var arr = new Array;
 	
 	this.each(function(entity) {
