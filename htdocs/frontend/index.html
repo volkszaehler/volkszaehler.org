@@ -7,7 +7,11 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	
 	<link rel="shortcut icon" type="image/x-icon" href="../favicon.ico" />
+	<link rel="apple-touch-icon-precomposed" href="../favicon.ico" />
+	<!-- to support android versions newer than 2.3 -->
 	<link rel="apple-touch-icon" href="../favicon.ico" />
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black" />
 
 	<!-- jQuery -->
 	<script type="text/javascript" src="javascripts/jquery/jquery-1.7.2.min.js"></script>
@@ -27,6 +31,11 @@
 	<script type="text/javascript" src="javascripts/entities.js"></script>
 	<script type="text/javascript" src="javascripts/wui.js"></script>
 	<script type="text/javascript" src="javascripts/entity.js"></script>
+	<script type="text/javascript">
+		if(navigator.userAgent.match(/(iPhone|iPod|iPad)/i)) {
+			document.title = "Volkszaehler";
+		}
+	</script>
 	
 	<link rel="stylesheet" type="text/css" href="stylesheets/jquery-ui-vz/jquery-ui-1.8.16.css" />
 	<link rel="stylesheet" type="text/css" href="stylesheets/jquery-treeTable.css" />
