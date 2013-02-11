@@ -336,6 +336,7 @@ Entity.prototype.getDOMRow = function(parent) {
 		.data('entity', this);
 	row.bind('click', this, function(event) {
 		var redraw = false;
+		var previousSelection = vz.wui.selectedChannel;
 		// unhighlight previous target
 		if (vz.wui.selectedChannel != null) {
 			var data  = vz.plot.getData()[vz.wui.selectedChannel];
@@ -348,7 +349,7 @@ Entity.prototype.getDOMRow = function(parent) {
 		if (event.data.active && event.data.definition.model == 'Volkszaehler\\Model\\Channel' && event.data.index != null) {
 			// only channels handled, no groups yet
 			var data = vz.plot.getData()[event.data.index];
-			if (data) {
+			if (data && event.data.index != previousSelection) {
 				data.lines.lineWidth = vz.options.lineWidthSelected;
 				vz.wui.selectedChannel = event.data.index;
 				redraw = true;

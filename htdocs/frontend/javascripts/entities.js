@@ -171,14 +171,16 @@ vz.entities.showTable = function() {
 
 	// make visible that a row is clicked
 	$('#entity-list table tbody tr').mousedown(function() {
-		$('tr.selected').removeClass('selected'); // deselect currently selected rows
-		$(this).addClass('selected');
+		var selected = $('tr.selected');
+		selected.removeClass('selected'); // deselect currently selected rows
+		if ($(this).attr('id') != selected.attr('id'))
+			$(this).addClass('selected'); // select if a different row was clicked
 	});
 
 	// make sure row is selected when span is clicked
-	$('#entity-list table tbody tr span').mousedown(function() {
+/*	$('#entity-list table tbody tr span').mousedown(function() {
 		$($(this).parents('tr')[0]).trigger('mousedown');
-	});
+	}); */
 	
 	$('#entity-list table').treeTable({
 		treeColumn: 2,
