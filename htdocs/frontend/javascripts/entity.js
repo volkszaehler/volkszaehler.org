@@ -68,11 +68,11 @@ Entity.prototype.parseJSON = function(json) {
 			}
 		}
 	}
-	
+
 	if (this.active === undefined) {
 		this.active = true; // activate by default
 	}
-	
+
 	if (this.color === undefined) {
 		this.color = vz.options.plot.colors[Entity.colors++ % vz.options.plot.colors.length];
 	}
@@ -113,11 +113,12 @@ Entity.prototype.loadData = function() {
 			this.data = json.data;
 
 			if (this.data.tuples && this.data.tuples.length > 0) {
-				if (this.data.min && this.data.min[1] < vz.options.plot.yaxes[this.yaxis-1].min) { // allow negative values for temperature sensors
+				// allow negative values, e.g. for temperature sensors
+				if (this.data.min && this.data.min[1] < vz.options.plot.yaxes[this.yaxis-1].min) {
 					vz.options.plot.yaxes[this.yaxis-1].min = null;
 				}
 			}
-			
+
 			this.updateDOMRow();
 		}
 	});
@@ -424,13 +425,9 @@ Entity.prototype.updateDOMRow = function() {
 		if (this.data.average)
 			$('.average', row)
 			.text(vz.wui.formatNumber(this.data.average, true) + this.definition.unit);
-		if (this.data.tuples && this.data.tuples.last) {
-			last = this.data.tuples.last()[1];
-			if (last == null && this.data.tuples.length > 1)
-				last = this.data.tuples[this.data.tuples.length-2][1];
+		if (this.data.tuples && this.data.tuples.last)
 			$('.last', row)
-			.text(vz.wui.formatNumber(last, true) + this.definition.unit);
-		}
+			.text(vz.wui.formatNumber(this.data.tuples.last()[1], true) + this.definition.unit);
 
 		if (this.data.consumption)
 			$('.consumption', row)

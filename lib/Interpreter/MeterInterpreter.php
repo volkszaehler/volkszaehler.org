@@ -115,13 +115,6 @@ class MeterInterpreter extends Interpreter {
 			$tuples[] = $tuple;
 			$ts_last = $row[0];
 		}
-		$last_tuple = end($tuples);
-		$tuples[] = array((float) $ts_last, $last_tuple[1], $last_tuple[2]);
-		$tuples[] =  $callback(array(
-			(float) $ts_last, // timestamp of interval start
-			null,
-			1
-		));
 		
 		return $tuples;
 	}
