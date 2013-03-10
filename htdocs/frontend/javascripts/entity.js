@@ -49,6 +49,7 @@ Entity.prototype.parseJSON = function(json) {
 		for (var i = 0; i < this.children.length; i++) {
 			this.children[i].middleware = this.middleware; // children inherit parent middleware		
 			this.children[i] = new Entity(this.children[i]);
+			this.children[i].parent = this;
 		}
 		
 		this.children.sort(Entity.compare);
@@ -83,6 +84,8 @@ Entity.prototype.parseJSON = function(json) {
  * @return jQuery dereferred object
  */
 Entity.prototype.loadDetails = function() {
+	// clear children first
+	delete this.children;
 	return vz.load({
 		url: this.middleware,
 		controller: 'entity',
@@ -334,31 +337,6 @@ Entity.prototype.getDOMRow = function(parent) {
 			)
 		)
 		.data('entity', this);
-	row.bind('click', this, function(event) {
-		var redraw = false;
-		var previousSelection = vz.wui.selectedChannel;
-		// unhighlight previous target
-		if (vz.wui.selectedChannel != null) {
-			var data  = vz.plot.getData()[vz.wui.selectedChannel];
-			if (data) {
-				data.lines.lineWidth = vz.options.lineWidthDefault;
-				redraw = true;
-				vz.wui.selectedChannel = null;
-			}
-		}
-		if (event.data.active && event.data.definition.model == 'Volkszaehler\\Model\\Channel' && event.data.index != null) {
-			// only channels handled, no groups yet
-			var data = vz.plot.getData()[event.data.index];
-			if (data && event.data.index != previousSelection) {
-				data.lines.lineWidth = vz.options.lineWidthSelected;
-				vz.wui.selectedChannel = event.data.index;
-				redraw = true;
-			}
-		}
-		if (redraw)
-			vz.plot.draw();
-	});
-
 	
 	if (this.cookie) {		
 		$('td.ops', row).prepend($('<input>')

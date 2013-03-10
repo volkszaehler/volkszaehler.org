@@ -140,6 +140,7 @@ vz.load = function(args) {
 		};
 	
 		args.data.operation = operationMapping[args.type.toLowerCase()];
+		delete args.type; // this makes jquery append the data to the query string
 	}
 	
 	return $.ajax(args);

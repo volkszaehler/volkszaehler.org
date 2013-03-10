@@ -576,7 +576,8 @@ vz.wui.drawPlot = function () {
 	var series = new Array;
 	var index = 0;
 	vz.entities.each(function(entity) {
-		if (entity.active && entity.definition.model == 'Volkszaehler\\Model\\Channel' && entity.data && entity.data.tuples && entity.data.tuples.length > 0) {
+		if (entity.active && entity.definition && entity.definition.model == 'Volkszaehler\\Model\\Channel' &&
+		    entity.data && entity.data.tuples && entity.data.tuples.length > 0) {
 			var tuples = entity.data.tuples;
 			// mangle data for "steps" curves
 			if (tuples && tuples.length > 0 && tuples.last) {
