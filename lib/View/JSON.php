@@ -196,8 +196,8 @@ class JSON extends View {
 		$consumption = $interpreter->getConsumption();
 
 		$this->json['data']['uuid'] = $interpreter->getEntity()->getUuid();
-		if (isset($from)) $this->json['data']['from'] = $from;
-		if (isset($to)) $this->json['data']['to'] = $to;
+		if (isset($from)) $this->json['data']['from'] = 0 + $from;
+		if (isset($to)) $this->json['data']['to'] = 0 + $to;
 		if (isset($min)) $this->json['data']['min'] = $min;
 		if (isset($max)) $this->json['data']['max'] = $max;
 		if (isset($average)) $this->json['data']['average'] = View::formatNumber($average);

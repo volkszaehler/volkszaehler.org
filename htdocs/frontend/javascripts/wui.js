@@ -576,9 +576,16 @@ vz.wui.drawPlot = function () {
 	var series = new Array;
 	var index = 0;
 	vz.entities.each(function(entity) {
-		if (entity.active && entity.definition.model == 'Volkszaehler\\Model\\Channel' && entity.data && entity.data.tuples && entity.data.tuples.length > 0) {
+		if (entity.active && entity.definition && entity.definition.model == 'Volkszaehler\\Model\\Channel' &&
+		    entity.data && entity.data.tuples && entity.data.tuples.length > 0) {
+			var tuples = entity.data.tuples;
+			// mangle data for "steps" curves
+			if (tuples && tuples.length > 0 && tuples.last) {
+				tuples.push([entity.data.to, tuples.last()[1], 1]);
+				tuples.push([entity.data.to, null, 1]);
+			}
 			var serie = {
-				data: entity.data.tuples,
+				data: tuples,
 				color: entity.color,
 				label : entity.title,
 				title: entity.title,
