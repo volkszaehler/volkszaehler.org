@@ -66,7 +66,7 @@ vz.entities.loadData = function() {
 
 	var queue = new Array;
 	this.each(function(entity) {
-		if (entity.active && entity.definition.model == 'Volkszaehler\\Model\\Channel') {
+		if (entity.active && entity.definition && entity.definition.model == 'Volkszaehler\\Model\\Channel') {
 			queue.push(entity.loadData());
 		}
 	}, true); // recursive!
@@ -94,10 +94,9 @@ vz.entities.each = function(cb, recursive) {
  */
 vz.entities.showTable = function() {
 	$('#entity-list tbody').empty();
-
 	vz.entities.sort(Entity.compare);
 	
-	this.each(function(entity, parent) {
+	vz.entities.each(function(entity, parent) {
 		$('#entity-list tbody').append(entity.getDOMRow(parent));
 	}, true); // recursive!
 
@@ -123,8 +122,10 @@ vz.entities.showTable = function() {
 			//accept: 'tr.channel span.indicator, tr.aggregator span.indicator', // TODO
 			drop: function(event, ui) {
 				var child = $(ui.draggable.parents('tr')[0]).data('entity');
-				//var from = child.parent;
+				var from = child.parent;
 				var to = $(this).data('entity');
+				if (to == child)
+					return; // drop on itself -> do nothing
 				
 				$('#entity-move').dialog({ // confirm prompt
 					resizable: false,
@@ -138,17 +139,22 @@ vz.entities.showTable = function() {
 								queue.push(to.addChild(child)); // add to new aggregator
 					
 								if (from !== undefined) {
-				//					queue.push(from.removeChild(child)); // remove from aggregator
+									queue.push(from.removeChild(child)); // remove from aggregator
 								}
 								else {
-									child.cookie = false; // remove from cookies
-									vz.entities.saveCookie();
+									// child.cookie = false; // remove from cookies
+									// vz.entities.saveCookie();
+									console.log("from undefined");
 								}
 							} catch (e) {
 								vz.wui.dialogs.exception(e);
 							} finally {
 								$.when(queue).done(function() { // wait for middleware
-				//					$.when(from.loadDetails(), to.loadDetails).done(vz.entities.showTable);
+									var q = new Array;
+									if (from !== undefined)
+										q.push(from.loadDetails());
+									q.push(to.loadDetails());
+									$.when(q).done(vz.entities.showTable);
 								});
 								$(this).dialog('close');
 							}

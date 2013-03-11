@@ -49,6 +49,7 @@ Entity.prototype.parseJSON = function(json) {
 		for (var i = 0; i < this.children.length; i++) {
 			this.children[i].middleware = this.middleware; // children inherit parent middleware		
 			this.children[i] = new Entity(this.children[i]);
+			this.children[i].parent = this;
 		}
 		
 		this.children.sort(Entity.compare);
@@ -68,11 +69,11 @@ Entity.prototype.parseJSON = function(json) {
 			}
 		}
 	}
-	
+
 	if (this.active === undefined) {
 		this.active = true; // activate by default
 	}
-	
+
 	if (this.color === undefined) {
 		this.color = vz.options.plot.colors[Entity.colors++ % vz.options.plot.colors.length];
 	}
@@ -83,6 +84,8 @@ Entity.prototype.parseJSON = function(json) {
  * @return jQuery dereferred object
  */
 Entity.prototype.loadDetails = function() {
+	// clear children first
+	delete this.children;
 	return vz.load({
 		url: this.middleware,
 		controller: 'entity',
@@ -113,11 +116,12 @@ Entity.prototype.loadData = function() {
 			this.data = json.data;
 
 			if (this.data.tuples && this.data.tuples.length > 0) {
-				if (this.data.min && this.data.min[1] < vz.options.plot.yaxes[this.yaxis-1].min) { // allow negative values for temperature sensors
+				// allow negative values, e.g. for temperature sensors
+				if (this.data.min && this.data.min[1] < vz.options.plot.yaxes[this.yaxis-1].min) {
 					vz.options.plot.yaxes[this.yaxis-1].min = null;
 				}
 			}
-			
+
 			this.updateDOMRow();
 		}
 	});
@@ -333,30 +337,6 @@ Entity.prototype.getDOMRow = function(parent) {
 			)
 		)
 		.data('entity', this);
-	row.bind('click', this, function(event) {
-		var redraw = false;
-		// unhighlight previous target
-		if (vz.wui.selectedChannel != null) {
-			var data  = vz.plot.getData()[vz.wui.selectedChannel];
-			if (data) {
-				data.lines.lineWidth = vz.options.lineWidthDefault;
-				redraw = true;
-				vz.wui.selectedChannel = null;
-			}
-		}
-		if (event.data.active && event.data.definition.model == 'Volkszaehler\\Model\\Channel' && event.data.index != null) {
-			// only channels handled, no groups yet
-			var data = vz.plot.getData()[event.data.index];
-			if (data) {
-				data.lines.lineWidth = vz.options.lineWidthSelected;
-				vz.wui.selectedChannel = event.data.index;
-				redraw = true;
-			}
-		}
-		if (redraw)
-			vz.plot.draw();
-	});
-
 	
 	if (this.cookie) {		
 		$('td.ops', row).prepend($('<input>')
@@ -424,13 +404,9 @@ Entity.prototype.updateDOMRow = function() {
 		if (this.data.average)
 			$('.average', row)
 			.text(vz.wui.formatNumber(this.data.average, true) + this.definition.unit);
-		if (this.data.tuples && this.data.tuples.last) {
-			last = this.data.tuples.last()[1];
-			if (last == null && this.data.tuples.length > 1)
-				last = this.data.tuples[this.data.tuples.length-2][1];
+		if (this.data.tuples && this.data.tuples.last)
 			$('.last', row)
-			.text(vz.wui.formatNumber(last, true) + this.definition.unit);
-		}
+			.text(vz.wui.formatNumber(this.data.tuples.last()[1], true) + this.definition.unit);
 
 		if (this.data.consumption)
 			$('.consumption', row)

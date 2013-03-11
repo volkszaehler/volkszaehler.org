@@ -70,8 +70,8 @@ class Aggregator extends Entity {
 			throw new \Exception('Entity is already a child of the aggregator');
 		}
 
-		if ($child instanceof Aggregator && $child->contains($this)) {
-			throw new \Exception('Recursion detected! Can\'t aggregator to itself');
+		if ($child instanceof Aggregator && ($this === $child || $child->contains($this, true))) {
+			throw new \Exception('Circular group relation.');
 		}
 
 		$this->children->add($child);
