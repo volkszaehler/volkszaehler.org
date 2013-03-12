@@ -105,7 +105,7 @@ class JSON extends View {
 	 * @param Model\Entity $entity
 	 * @return array
 	 */
-	protected static function convertEntity(Model\Entity $entity) {
+	protected static function convertEntity(Model\Entity $entity, $chain = array()) {
 		$jsonEntity = array();
 		$jsonEntity['uuid'] = (string) $entity->getUuid();
 		$jsonEntity['type'] = $entity->getType();
@@ -113,10 +113,13 @@ class JSON extends View {
 		foreach ($entity->getProperties() as $key => $value) {
 			$jsonEntity[$key] = $value;
 		}
-		
+
 		if ($entity instanceof Model\Aggregator) {
+			$chain[$entity->getUuid()] = 1;
 			foreach ($entity->getChildren() as $child) {
-				$jsonEntity['children'][] = self::convertEntity($child);
+				if (array_key_exists($child->getUuid(), $chain))
+					continue; # don't ever loop back
+				$jsonEntity['children'][] = self::convertEntity($child, $chain);
 			}
 		}
 
