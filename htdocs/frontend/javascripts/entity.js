@@ -460,6 +460,8 @@ Entity.prototype.removeChild = function(child) {
 		throw new Exception('EntityException', 'Entity is not an Aggregator');
 	}
 
+	delete child.parent;
+
 	return vz.load({
 		controller: 'group',
 		identifier: this.uuid,
