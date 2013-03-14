@@ -34,10 +34,11 @@ vz.wui.init = function() {
 	$('#accordion h3').click(function() {
 		$(this).next().toggle('fast', function() {
 			// resizing plot: workaround for #76
-			if (vz && vz.plot) {
+			for (var i in vz.plot) { // run only if vz is actually initialized
 				vz.plot.resize();
 				vz.plot.setupGrid();
 				vz.plot.draw();
+				break;
 			}
 		});
 		
@@ -99,7 +100,7 @@ vz.wui.init = function() {
 vz.wui.dialogs.init = function() {
 	// initialize dialogs
 	$('#entity-add.dialog').dialog({
-		title: 'Kanal hinzuf&uuml;gen',
+		title: unescape('Kanal hinzuf%FCgen'),
 		width: 530,
 		resizable: false
 	});

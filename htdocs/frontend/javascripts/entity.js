@@ -84,8 +84,7 @@ Entity.prototype.parseJSON = function(json) {
  * @return jQuery dereferred object
  */
 Entity.prototype.loadDetails = function() {
-	// clear children first
-	delete this.children;
+	delete this.children; // clear children first
 	return vz.load({
 		url: this.middleware,
 		controller: 'entity',
@@ -461,6 +460,8 @@ Entity.prototype.removeChild = function(child) {
 		throw new Exception('EntityException', 'Entity is not an Aggregator');
 	}
 
+	delete child.parent;
+
 	return vz.load({
 		controller: 'group',
 		identifier: this.uuid,
@@ -496,12 +497,16 @@ Entity.prototype.each = function(cb, recursive) {
  * @todo Channels before Aggregators
  */
 Entity.compare = function(a, b) {
-	if (a.definition.model == 'Volkszaehler\\Model\\Channel' && // Channels before Aggregators
-		b.definition.model == 'Volkszaehler\\Model\\Aggregator')
-	{	
+	if (a.definition === undefined)
+		return -1;
+	if (b.definition === undefined)
 		return 1;
-	}
-	else {
+	// Channels before Aggregators
+	if (a.definition.model == 'Volkszaehler\\Model\\Channel' && b.definition.model == 'Volkszaehler\\Model\\Aggregator')
+		return -1;
+	else if (a.definition.model == 'Volkszaehler\\Model\\Aggregator' && b.definition.model == 'Volkszaehler\\Model\\Channel')
+		return 1;
+	else
 		return ((a.title < b.title) ? -1 : ((a.title > b.title) ? 1 : 0));
-	}
-}
+};
+
