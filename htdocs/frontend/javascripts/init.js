@@ -100,17 +100,22 @@ $(document).ready(function() {
 		
 		var queue = new Array;
 		vz.entities.each(function(entity) {
-			queue.push(entity.loadDetails());
+			var p = $.when(entity.loadDetails()).then(
+				function(x) { return {result:x, resolved:true}; },
+				function(x) { return (new $.Deferred).resolve({result:x, resolved:false}); }
+			);
+			queue.push(p);
 		}, true);
 		
-		$.when.apply($, queue).done(function() {
+		var cb = function(x) {
 			if (vz.entities.length == 0) {
 				vz.wui.dialogs.init();
 			}
 		
 			vz.entities.showTable();
 			vz.entities.loadData().done(vz.wui.drawPlot);
-		});
+		};
+		$.when.apply($, queue).done(cb);
 	});
 });	
 
