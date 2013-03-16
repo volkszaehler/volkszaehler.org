@@ -258,18 +258,18 @@ vz.wui.dialogs.init = function() {
 	
 	$('#entity-create form').submit(function() {
 		var def = $('select[name=type] option:selected', this).data('definition');
-		var properties = [];
+		var properties = {};
 		
 		$(this).serializeArray().each(function(index, value) {
 			if (value.value != '') {
-				properties.push(value);
+				properties[value.name] = value.value;
 			}
 		});
 
 		vz.load({
 			controller: (def.model == 'Volkszaehler\\Model\\Channel') ? 'channel' : 'aggregator',
 			url: $('#entity-create-middleware').val(),
-			data: $.param(properties),
+			data: properties,
 			type: 'POST',
 			success: function(json) {
 				var entity = new Entity(json.entity);
