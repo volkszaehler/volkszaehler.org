@@ -105,30 +105,28 @@ vz.wui.dialogs.init = function() {
 		resizable: false
 	});
 	$('#entity-add.dialog > div').tabs({
-		show: function(event, ui) { // lazy loading public entities
-			if (ui.index != 1) {
-				return; // abort, we are not in public tab
-			}
-		
-			vz.load({
-				controller: 'entity',
-				success: function(json) {
-					var public = new Array;
-					json.entities.each(function(index, json) {
-						public.push(new Entity(json));
-					});
+		activate: function(event, ui) { // lazy loading public entities
+			if (ui.newTab.attr('aria-controls') == 'entity-public') {
+				vz.load({
+					controller: 'entity',
+					success: function(json) {
+						var public = new Array;
+						json.entities.each(function(index, json) {
+							public.push(new Entity(json));
+						});
 
-					public.sort(Entity.compare);
-					vz.middleware[0].public = public;
-			
-					$('#entity-public-entity').empty();
-					public.each(function(index, entity) {
-						$('#entity-public-entity').append(
-							$('<option>').html(entity.title).val(entity.uuid).data('entity', entity)
-						);
-					});
-				}
-			});
+						public.sort(Entity.compare);
+						vz.middleware[0].public = public;
+				
+						$('#entity-public-entity').empty();
+						public.each(function(index, entity) {
+							$('#entity-public-entity').append(
+								$('<option>').html(entity.title).val(entity.uuid).data('entity', entity)
+							);
+						});
+					}
+				});
+			}
 		}
 	});
 	
@@ -258,18 +256,18 @@ vz.wui.dialogs.init = function() {
 	
 	$('#entity-create form').submit(function() {
 		var def = $('select[name=type] option:selected', this).data('definition');
-		var properties = [];
+		var properties = {};
 		
 		$(this).serializeArray().each(function(index, value) {
 			if (value.value != '') {
-				properties.push(value);
+				properties[value.name] = value.value;
 			}
 		});
 
 		vz.load({
 			controller: (def.model == 'Volkszaehler\\Model\\Channel') ? 'channel' : 'aggregator',
 			url: $('#entity-create-middleware').val(),
-			data: $.param(properties),
+			data: properties,
 			type: 'POST',
 			success: function(json) {
 				var entity = new Entity(json.entity);
