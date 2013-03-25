@@ -539,7 +539,7 @@ vz.wui.formatNumber = function(number, prefix) {
 	var siPrefixes = ['k', 'M', 'G', 'T'];
 	var siIndex = 0;
 	
-	while (prefix && number > 1000 && siIndex < siPrefixes.length-1) {
+	while (prefix && Math.abs(number) > 1000 && siIndex < siPrefixes.length-1) {
 		number /= 1000;
 		siIndex++;
 	}
