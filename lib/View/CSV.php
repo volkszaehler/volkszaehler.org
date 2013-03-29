@@ -142,22 +142,22 @@ class CSV extends View {
 		$average = $interpreter->getAverage();
 		$consumption = $interpreter->getConsumption();
 		
-		$from = $interpreter->getFrom();
-		$to = $interpreter->getTo();
+		$from = $this->formatTimestamp($interpreter->getFrom());
+		$to = $this->formatTimestamp($interpreter->getTo());
 
 		echo '# uuid: ' . $interpreter->getEntity()->getUuid() . PHP_EOL;
 		
 		if (isset($from)) echo '# from: ' . $from . PHP_EOL;
 		if (isset($to)) echo '# to: ' . $to . PHP_EOL;
-		if (isset($min)) echo '# min: ' . $min[0] . ' => ' . $min[1] . PHP_EOL;
-		if (isset($max)) echo '# max: ' . $max[0] . ' => ' . $max[1] . PHP_EOL;
+		if (isset($min)) echo '# min: ' . $this->formatTimestamp($min[0]) . ' => ' . View::formatNumber($min[1]) . PHP_EOL;
+		if (isset($max)) echo '# max: ' . $this->formatTimestamp($max[0]) . ' => ' . View::formatNumber($max[1]) . PHP_EOL;
 		if (isset($average))  echo '# average: ' . View::formatNumber($average) . PHP_EOL;
 		if (isset($consumption)) echo '# consumption: ' . View::formatNumber($consumption) . PHP_EOL;
 			
 		echo '# rows: ' . $interpreter->getRowCount() . PHP_EOL;
 		
 		foreach ($tuples as $tuple) {
-			echo implode(CSV::DELIMITER, $tuple) . PHP_EOL;
+			echo $this->formatTimestamp($tuple[0]) . CSV::DELIMITER . $tuple[1] . CSV::DELIMITER . $tuple[2] . PHP_EOL;
 		}
 	}
 
