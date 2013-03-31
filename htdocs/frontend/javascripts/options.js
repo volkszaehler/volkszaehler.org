@@ -34,7 +34,9 @@ vz.options = {
 	interval: 24*60*60*1000, // 1 day
 	localMiddleware: '../middleware.php',
 	monthNames: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
-	dayNames: ['Son', 'Mon', 'Di', 'Mi', 'Do', 'Fr', 'Sam']
+	dayNames: ['Son', 'Mon', 'Di', 'Mi', 'Do', 'Fr', 'Sam'],
+	lineWidthDefault: 2,
+	lineWidthSelected: 4,
 };
 
 vz.options.plot = {
@@ -74,13 +76,15 @@ vz.options.plot = {
 };
 
 vz.options.saveCookies = function() {
+	var expires = new Date(2038, 0, 1); // some days before y2k38 problem
+
 	for (var key in vz.options) {
 		if (vz.options.hasOwnProperty(key) &&
 			typeof vz.options[key] != 'function' &&
 			typeof vz.options[key] != 'object' &&
 			typeof vz.options[key] != 'undefined'
 		) {
-			$.setCookie('vz_' + key, vz.options[key]);
+			$.setCookie('vz_' + key, vz.options[key], {expires: expires});
 		}
 	}
 };

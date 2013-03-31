@@ -34,10 +34,11 @@ vz.wui.init = function() {
 	$('#accordion h3').click(function() {
 		$(this).next().toggle('fast', function() {
 			// resizing plot: workaround for #76
-			if (vz && vz.plot) {
+			for (var i in vz.plot) { // run only if vz is actually initialized
 				vz.plot.resize();
 				vz.plot.setupGrid();
 				vz.plot.draw();
+				break;
 			}
 		});
 		
@@ -99,35 +100,33 @@ vz.wui.init = function() {
 vz.wui.dialogs.init = function() {
 	// initialize dialogs
 	$('#entity-add.dialog').dialog({
-		title: 'Kanal hinzuf&uuml;gen',
+		title: unescape('Kanal hinzuf%FCgen'),
 		width: 530,
 		resizable: false
 	});
 	$('#entity-add.dialog > div').tabs({
-		show: function(event, ui) { // lazy loading public entities
-			if (ui.index != 1) {
-				return; // abort, we are not in public tab
-			}
-		
-			vz.load({
-				controller: 'entity',
-				success: function(json) {
-					var public = new Array;
-					json.entities.each(function(index, json) {
-						public.push(new Entity(json));
-					});
+		activate: function(event, ui) { // lazy loading public entities
+			if (ui.newTab.attr('aria-controls') == 'entity-public') {
+				vz.load({
+					controller: 'entity',
+					success: function(json) {
+						var public = new Array;
+						json.entities.each(function(index, json) {
+							public.push(new Entity(json));
+						});
 
-					public.sort(Entity.compare);
-					vz.middleware[0].public = public;
-			
-					$('#entity-public-entity').empty();
-					public.each(function(index, entity) {
-						$('#entity-public-entity').append(
-							$('<option>').html(entity.title).val(entity.uuid).data('entity', entity)
-						);
-					});
-				}
-			});
+						public.sort(Entity.compare);
+						vz.middleware[0].public = public;
+				
+						$('#entity-public-entity').empty();
+						public.each(function(index, entity) {
+							$('#entity-public-entity').append(
+								$('<option>').html(entity.title).val(entity.uuid).data('entity', entity)
+							);
+						});
+					}
+				});
+			}
 		}
 	});
 	
@@ -257,18 +256,18 @@ vz.wui.dialogs.init = function() {
 	
 	$('#entity-create form').submit(function() {
 		var def = $('select[name=type] option:selected', this).data('definition');
-		var properties = [];
+		var properties = {};
 		
 		$(this).serializeArray().each(function(index, value) {
 			if (value.value != '') {
-				properties.push(value);
+				properties[value.name] = value.value;
 			}
 		});
 
 		vz.load({
 			controller: (def.model == 'Volkszaehler\\Model\\Channel') ? 'channel' : 'aggregator',
 			url: $('#entity-create-middleware').val(),
-			data: $.param(properties),
+			data: properties,
 			type: 'POST',
 			success: function(json) {
 				var entity = new Entity(json.entity);
@@ -540,7 +539,7 @@ vz.wui.formatNumber = function(number, prefix) {
 	var siPrefixes = ['k', 'M', 'G', 'T'];
 	var siIndex = 0;
 	
-	while (prefix && number > 1000 && siIndex < siPrefixes.length-1) {
+	while (prefix && Math.abs(number) > 1000 && siIndex < siPrefixes.length-1) {
 		number /= 1000;
 		siIndex++;
 	}
@@ -574,23 +573,35 @@ vz.wui.drawPlot = function () {
 	vz.wui.updateHeadline();
 
 	var series = new Array;
+	var index = 0;
 	vz.entities.each(function(entity) {
-		if (entity.active && entity.definition.model == 'Volkszaehler\\Model\\Channel' && entity.data && entity.data.tuples && entity.data.tuples.length > 0) {
+		if (entity.active && entity.definition && entity.definition.model == 'Volkszaehler\\Model\\Channel' &&
+		    entity.data && entity.data.tuples && entity.data.tuples.length > 0) {
+			var tuples = entity.data.tuples;
+			// mangle data for "steps" curves
+			if (tuples && tuples.length > 0 && tuples.last) {
+				tuples.push([entity.data.to, tuples.last()[1], 1]);
+				tuples.push([entity.data.to, null, 1]);
+			}
 			var serie = {
-				data: entity.data.tuples,
+				data: tuples,
 				color: entity.color,
 				label : entity.title,
 				title: entity.title,
 				unit : entity.definition.unit,
 				lines: {
 					show: (entity.style == 'lines' || entity.style == 'steps'),
-					steps: (entity.style == 'steps')
+					steps: (entity.style == 'steps'),
+					lineWidth: (index == vz.wui.selectedChannel ? vz.options.lineWidthSelected : vz.options.lineWidthDefault)
 				},
 				points: {
 					show: (entity.style == 'points')
 				},
 				yaxis: entity.yaxis
 			};
+
+			entity.index = index;
+			++index;
 			
 			series.push(serie);
 		}

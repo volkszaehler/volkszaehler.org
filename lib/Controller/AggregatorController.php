@@ -94,23 +94,20 @@ class AggregatorController extends EntityController {
 	 * Delete Aggregator or remove entity from aggregator
 	 */
 	public function delete($identifier) {
-		if (isset($identifier) && $uuid = $this->view->request->getParameter('uuid')) {	// remove entity from aggregator
+		if (!isset($identifier))
+			return;
+
+		$aggregator = NULL;
+		if ($uuid = $this->view->request->getParameter('uuid')) { // remove entity from aggregator
 			$aggregator = $this->get($identifier);
+			$ec = new EntityController($this->view, $this->em);
+			$aggregator->removeChild($ec->get($uuid));
 
-			if ($uuid) {
-				$ec = new EntityController($this->view, $this->em);
-				$aggregator->removeChild($ec->get($uuid));
-
-				$this->em->flush();
-			}
-			else {
-				throw new \Exception('You have to specifiy a UUID to remove');
-			}
+			$this->em->flush();
 		}
 		else {	// remove aggregator
 			parent::delete($identifier);
 		}
-
 		return $aggregator;
 	}
 }

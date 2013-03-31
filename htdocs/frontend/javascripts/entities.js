@@ -28,14 +28,14 @@
  * Save minimal Entity in JSON cookie
  */
 vz.entities.saveCookie = function() {
-	var expires = new Date(new Date().getTime() + 3e10); // in about a year
+	var expires = new Date(2038, 0, 1); // some days before y2k38 problem
 	var arr = new Array;
 	
 	this.each(function(entity) {
 		if (entity.cookie === true) {
 			arr.push(entity.uuid + '@' + entity.middleware);
 		}
-	}, true); // recursive!
+	}, false); // non-recursive, i.e. only save root entities
 	
 	$.setCookie('vz_entities', arr.join('|'), {expires: expires});
 };
@@ -66,7 +66,7 @@ vz.entities.loadData = function() {
 
 	var queue = new Array;
 	this.each(function(entity) {
-		if (entity.active && entity.definition.model == 'Volkszaehler\\Model\\Channel') {
+		if (entity.active && entity.definition && entity.definition.model == 'Volkszaehler\\Model\\Channel') {
 			queue.push(entity.loadData());
 		}
 	}, true); // recursive!
@@ -94,12 +94,13 @@ vz.entities.each = function(cb, recursive) {
  */
 vz.entities.showTable = function() {
 	$('#entity-list tbody').empty();
-
 	vz.entities.sort(Entity.compare);
-	
-	this.each(function(entity, parent) {
-		$('#entity-list tbody').append(entity.getDOMRow(parent));
-	}, true); // recursive!
+
+	// add entities to table (recurse into aggregators) 
+	vz.entities.each(function(entity, parent) {
+		if (entity.definition) // skip bad entities, e.g. without data
+			$('#entity-list tbody').append(entity.getDOMRow(parent));
+	}, true);
 
 	/*
 	 * Initialize treeTable
@@ -117,14 +118,22 @@ vz.entities.showTable = function() {
 		scroll: true
 	});
 
-	// configure aggregators as droppable
-	$('#entity-list tr.aggregator span.indicator').each(function() {
+	// configure thead and aggregators as droppable
+	$('#entity-list tr.aggregator span.indicator,#entity-list thead tr th:first').each(function() {
 		$(this).parents('tr').droppable({
-			//accept: 'tr.channel span.indicator, tr.aggregator span.indicator', // TODO
+			accept: '#entity-list tr.channel span.indicator, #entity-list tr.aggregator span.indicator',
 			drop: function(event, ui) {
 				var child = $(ui.draggable.parents('tr')[0]).data('entity');
-				//var from = child.parent;
+				if (child === null)
+					return; // no data for the dropped object, probably not a row
+				var from = child.parent;
 				var to = $(this).data('entity');
+				if (to === child)
+					return; // drop on itself -> do nothing
+				if (from === to)
+					return; // drop into same group -> do nothing
+				if (to && to.definition.model == 'Volkszaehler\\Model\\Aggregator' && $.inArray(child, to.children) >= 0)
+					return;
 				
 				$('#entity-move').dialog({ // confirm prompt
 					resizable: false,
@@ -135,20 +144,35 @@ vz.entities.showTable = function() {
 						'Verschieben': function() {
 							try {
 								var queue = new Array;
-								queue.push(to.addChild(child)); // add to new aggregator
-					
-								if (from !== undefined) {
-				//					queue.push(from.removeChild(child)); // remove from aggregator
-								}
-								else {
-									child.cookie = false; // remove from cookies
+								if (to) {
+									queue.push(to.addChild(child)); // add to new aggregator
+								} else { // add to root
+									if ($.inArray(child, vz.entities) < 0)
+										vz.entities.push(child);
+									child.cookie = true;
 									vz.entities.saveCookie();
+								}
+					
+								if (from) { // remove from an aggregator
+									queue.push(from.removeChild(child));
+								} else { // remove from root
+									child.cookie = false;
+									vz.entities.saveCookie();
+									var idx = $.inArray(child, vz.entities);
+									if (idx >= 0)
+										vz.entities.splice(idx, 1);
 								}
 							} catch (e) {
 								vz.wui.dialogs.exception(e);
 							} finally {
-								$.when(queue).done(function() { // wait for middleware
-				//					$.when(from.loadDetails(), to.loadDetails).done(vz.entities.showTable);
+								$.when.apply($, queue).done(function() { // wait for middleware
+									var q = new Array;
+									if (from)
+										q.push(from.loadDetails());
+									if (to)
+										q.push(to.loadDetails());
+
+									$.when.apply($, q).done(vz.entities.showTable);
 								});
 								$(this).dialog('close');
 							}

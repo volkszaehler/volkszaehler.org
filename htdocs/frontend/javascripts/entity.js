@@ -49,6 +49,7 @@ Entity.prototype.parseJSON = function(json) {
 		for (var i = 0; i < this.children.length; i++) {
 			this.children[i].middleware = this.middleware; // children inherit parent middleware		
 			this.children[i] = new Entity(this.children[i]);
+			this.children[i].parent = this;
 		}
 		
 		this.children.sort(Entity.compare);
@@ -57,7 +58,7 @@ Entity.prototype.parseJSON = function(json) {
 	// setting defaults	
 	if (this.type !== undefined) {
 		this.definition = vz.capabilities.definitions.get('entities', this.type);
-		this.yaxis = this.type == 'temperature' ? 2 : 1;
+		this.yaxis = this.type == 'temperature' || this.type == 'flow' || this.type == 'gas' ? 2 : 1;
 		
 		if (this.style === undefined) {
 			if (this.definition.style) {
@@ -68,11 +69,11 @@ Entity.prototype.parseJSON = function(json) {
 			}
 		}
 	}
-	
+
 	if (this.active === undefined) {
 		this.active = true; // activate by default
 	}
-	
+
 	if (this.color === undefined) {
 		this.color = vz.options.plot.colors[Entity.colors++ % vz.options.plot.colors.length];
 	}
@@ -83,6 +84,7 @@ Entity.prototype.parseJSON = function(json) {
  * @return jQuery dereferred object
  */
 Entity.prototype.loadDetails = function() {
+	delete this.children; // clear children first
 	return vz.load({
 		url: this.middleware,
 		controller: 'entity',
@@ -113,11 +115,12 @@ Entity.prototype.loadData = function() {
 			this.data = json.data;
 
 			if (this.data.tuples && this.data.tuples.length > 0) {
-				if (this.data.min && this.data.min[1] < vz.options.plot.yaxes[this.yaxis-1].min) { // allow negative values for temperature sensors
+				// allow negative values, e.g. for temperature sensors
+				if (this.data.min && this.data.min[1] < vz.options.plot.yaxes[this.yaxis-1].min) {
 					vz.options.plot.yaxes[this.yaxis-1].min = null;
 				}
 			}
-			
+
 			this.updateDOMRow();
 		}
 	});
@@ -400,13 +403,9 @@ Entity.prototype.updateDOMRow = function() {
 		if (this.data.average)
 			$('.average', row)
 			.text(vz.wui.formatNumber(this.data.average, true) + this.definition.unit);
-		if (this.data.tuples && this.data.tuples.last) {
-			last = this.data.tuples.last()[1];
-			if (last == null && this.data.tuples.length > 1)
-				last = this.data.tuples[this.data.tuples.length-2][1];
+		if (this.data.tuples && this.data.tuples.last)
 			$('.last', row)
-			.text(vz.wui.formatNumber(last, true) + this.definition.unit);
-		}
+			.text(vz.wui.formatNumber(this.data.tuples.last()[1], true) + this.definition.unit);
 
 		if (this.data.consumption)
 			$('.consumption', row)
@@ -461,6 +460,8 @@ Entity.prototype.removeChild = function(child) {
 		throw new Exception('EntityException', 'Entity is not an Aggregator');
 	}
 
+	delete child.parent;
+
 	return vz.load({
 		controller: 'group',
 		identifier: this.uuid,
@@ -496,12 +497,16 @@ Entity.prototype.each = function(cb, recursive) {
  * @todo Channels before Aggregators
  */
 Entity.compare = function(a, b) {
-	if (a.definition.model == 'Volkszaehler\\Model\\Channel' && // Channels before Aggregators
-		b.definition.model == 'Volkszaehler\\Model\\Aggregator')
-	{	
+	if (a.definition === undefined)
+		return -1;
+	if (b.definition === undefined)
 		return 1;
-	}
-	else {
+	// Channels before Aggregators
+	if (a.definition.model == 'Volkszaehler\\Model\\Channel' && b.definition.model == 'Volkszaehler\\Model\\Aggregator')
+		return -1;
+	else if (a.definition.model == 'Volkszaehler\\Model\\Aggregator' && b.definition.model == 'Volkszaehler\\Model\\Channel')
+		return 1;
+	else
 		return ((a.title < b.title) ? -1 : ((a.title > b.title) ? 1 : 0));
-	}
-}
+};
+
