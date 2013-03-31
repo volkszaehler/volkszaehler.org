@@ -281,7 +281,7 @@
 	{
 		"name"			: "valve",
 		"optional"		: ["tolerance", "local"],
-		//"icon"			: "rain.png",
+		"icon"			: "",
 		"unit"			: "%",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
