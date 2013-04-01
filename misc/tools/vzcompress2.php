@@ -250,7 +250,7 @@
     
     //'channels' => array(  //If defined only this channels are compressed
     //  '1', '2', '3'       //Note that IDs are strings
-    //)
+    //),
     
     'compressscheme' => array(
     //  '1' => array(       //Definition for Channel ID 1
