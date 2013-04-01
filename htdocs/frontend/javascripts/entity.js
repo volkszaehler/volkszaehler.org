@@ -136,7 +136,7 @@ Entity.prototype.showDetails = function() {
 	dialog.addClass('details')
 	.append(this.getDOMDetails())
 	.dialog({
-		title: 'Details f&uuml;r ' + this.title,
+		title: 'Details für ' + this.title,
 		width: 480,
 		resizable: false,
 		buttons : {
