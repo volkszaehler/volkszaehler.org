@@ -85,55 +85,68 @@ abstract class Interpreter {
 	}
 
 	/**
+	 * Get minimum
+	 *
+	 * @return array (0 => timestamp, 1 => value)
+	 */
+	public function getMin() {
+		return ($this->min) ? array_map('floatval', array_slice($this->min, 0 , 2)) : NULL;
+	}
+
+	/**
+	 * Get maximum
+	 *
+	 * @return array (0 => timestamp, 1 => value)
+	 */
+	public function getMax() {
+		return ($this->max) ? array_map('floatval', array_slice($this->max, 0 , 2)) : NULL;
+	}
+
+	/**
 	 * Get raw data
 	 *
 	 * @param string|integer $groupBy
 	 * @return Volkszaehler\DataIterator
 	 */
 	protected function getData() {
-		// get total row count for grouping
-		$sqlParameters	= array($this->channel->getId());
-		if ($this->groupBy && $sqlGroupFields = self::buildGroupBySQL($this->groupBy)) {
-			$sqlRowCount	= 'SELECT COUNT(DISTINCT ' . $sqlGroupFields . ') FROM data WHERE channel_id = ?';
+
+		// get timestamps of preceding and following data points as a graciousness
+		// for the frontend to be able to draw graphs to the left and right borders
+		if (isset($this->from)) {
+			$sql = 'SELECT MIN(timestamp) FROM (SELECT timestamp FROM data WHERE channel_id=? AND timestamp<? ORDER BY timestamp DESC LIMIT 2) t';
+			$from = $this->conn->fetchColumn($sql, array($this->channel->getId(), $this->from), 0);
+			if ($from)
+				$this->from = $from;
 		}
-		else {
-			$sqlRowCount	= 'SELECT COUNT(*) FROM data WHERE channel_id = ?' . self::buildDateTimeFilterSQL($this->from, $this->to, $sqlParameters);
+		if (isset($this->to)) {
+			$sql = 'SELECT MAX(timestamp) FROM (SELECT timestamp FROM data WHERE channel_id=? AND timestamp>? ORDER BY timestamp ASC LIMIT 2) t';
+			$to = $this->conn->fetchColumn($sql, array($this->channel->getId(), $this->to), 0);
+			if ($to)
+				$this->to = $to;
 		}
-		$this->rowCount = (int) $this->conn->fetchColumn($sqlRowCount, $sqlParameters, 0);
-		
-		if ($this->rowCount <= 0)
-			return new \EmptyIterator();
-		
-		// get data
-		$sqlParameters	= array($this->channel->getId());
-		if ($this->groupBy && $sqlGroupFields = self::buildGroupBySQL($this->groupBy)) {
-			$sql = 'SELECT MAX(timestamp) AS timestamp, SUM(value) AS value, COUNT(timestamp) AS count
-				FROM data
-				WHERE channel_id = ?' .
-				self::buildDateTimeFilterSQL($this->from, $this->to, $sqlParameters) .
+
+		// common conditions for following SQL queries	
+		$sqlParameters = array($this->channel->getId());
+		$sqlTimeFilter = self::buildDateTimeFilterSQL($this->from, $this->to, $sqlParameters);
+
+		if ($this->groupBy) {
+			$sqlGroupFields = self::buildGroupBySQL($this->groupBy);
+			if (!$sqlGroupFields)
+				throw new \Exception('Unknown group');
+			$sqlRowCount = 'SELECT COUNT(DISTINCT ' . $sqlGroupFields . ') FROM data WHERE channel_id = ?' . $sqlTimeFilter;
+			$sql = 'SELECT MAX(timestamp) AS timestamp, SUM(value) AS value, COUNT(timestamp) AS count'.
+				' FROM data'.
+				' WHERE channel_id = ?' . $sqlTimeFilter .
 				' GROUP BY ' . $sqlGroupFields;
 		}
-		else
-		{
-			if (isset($this->from)) {
-				$sql = 'SELECT MIN(timestamp) FROM (SELECT timestamp FROM data WHERE channel_id=? AND timestamp<? ORDER BY timestamp DESC LIMIT 2) t';
-				$from = $this->conn->fetchColumn($sql, array((int) $this->channel->getId(), $this->from), 0);
-				if ($from)
-					$this->from = $from;
-			}
-
-			if (isset($this->to)) {
-				$sql = 'SELECT MAX(timestamp) FROM (SELECT timestamp FROM data WHERE channel_id=? AND timestamp>? ORDER BY timestamp ASC LIMIT 2) t';
-				$to = $this->conn->fetchColumn($sql, array($this->channel->getId(), $this->to), 0);
-				if ($to)
-					$this->to = $to;
-			}
-
-			$sql = 'SELECT timestamp, value, 1 AS count FROM data WHERE channel_id=?';
-			$sql .= self::buildDateTimeFilterSQL($this->from, $this->to, $sqlParameters);
-			$sql .= ' ORDER BY timestamp ASC';
-			
+		else {
+			$sqlRowCount = 'SELECT COUNT(*) FROM data WHERE channel_id = ?' . $sqlTimeFilter;
+			$sql = 'SELECT timestamp, value, 1 AS count FROM data WHERE channel_id=?' . $sqlTimeFilter . ' ORDER BY timestamp ASC';
 		}
+
+		$this->rowCount = (int) $this->conn->fetchColumn($sqlRowCount, $sqlParameters, 0);
+		if ($this->rowCount <= 0)
+			return new \EmptyIterator();
 		
 		$stmt = $this->conn->executeQuery($sql, $sqlParameters); // query for data
 

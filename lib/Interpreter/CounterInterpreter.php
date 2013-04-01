@@ -48,24 +48,6 @@ class CounterInterpreter extends Interpreter {
 	}
 
 	/**
-	 * Get minimum
-	 *
-	 * @return array (0 => timestamp, 1 => value)
-	 */
-	public function getMin() {
-		return ($this->min) ? array_map('floatval', array_slice($this->min, 0 , 2)) : NULL;
-	}
-
-	/**
-	 * Get maximum
-	 *
-	 * @return array (0 => timestamp, 1 => value)
-	 */
-	public function getMax() {
-		return ($this->max) ? array_map('floatval', array_slice($this->max, 0 , 2)) : NULL;
-	}
-
-	/**
 	 * Get Average
 	 *
 	 * @return float average in W
