@@ -54,7 +54,7 @@ class MeterInterpreter extends Interpreter {
 	 */
 	public function getAverage() {
 		if ($this->pulseCount) {
-			$delta = $this->rows->getTo() - $this->rows->getFrom();
+			$delta = $this->getTo() - $this->getFrom();
 			return (3.6e9 * $this->pulseCount) / ($this->resolution * $delta); // 60 s/min * 60 min/h * 1.000ms/s * 1.000W/KW = 3.6e9 (Units: s/h*ms/s*W/KW = s/3.600s*.001s/s*W/1.000W = 1)
 		}
 		else { // prevents division by zero
@@ -75,11 +75,8 @@ class MeterInterpreter extends Interpreter {
 		$this->resolution = $this->channel->getProperty('resolution');
 		$this->pulseCount = 0;
 		
+		$ts_last = $this->getFrom();
 		foreach ($this->rows as $row) {
-			if (!isset($ts_last)) {
-				$ts_last = $row[0];
-				continue;
-			}
 			$delta = $row[0] - $ts_last;
 			$tuple = $callback(array(
 				(float) $ts_last, // timestamp of interval start
