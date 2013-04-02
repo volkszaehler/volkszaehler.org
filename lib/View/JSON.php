@@ -57,7 +57,16 @@ class JSON extends View {
 		$this->json = new Util\JSON();
 		$this->json['version'] = VZ_VERSION;
 
-		$this->response->setHeader('Content-type', 'application/json');
+		// jsonp requested?
+		$this->callback = $request->getParameter('callback');
+
+		if ($this->callback) {
+			// jsonp
+			$this->response->setHeader('Content-type', 'application/javascript');
+		} else {
+			// json
+			$this->response->setHeader('Content-type', 'application/json');
+		}
 		$this->setPadding($request->getParameter('padding'));
 	}
 
@@ -93,10 +102,20 @@ class JSON extends View {
 	protected function render() {
 		$json = $this->json->encode((Util\Debug::isActivated()) ? JSON_PRETTY : 0);
 
+		if ($this->callback) {
+			// jsonp
+			echo($this->callback."(");
+		}
+
 		if ($this->padding) {
 			$json = $this->padding  . '(' . $json . ');';
 		}
 		echo $json;
+		
+		if ($this->callback) {
+			// jsonp
+			echo(");");
+		}
 	}
 
 	/**
