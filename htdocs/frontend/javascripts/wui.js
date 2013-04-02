@@ -137,7 +137,7 @@ vz.wui.dialogs.init = function() {
 				.html(def.translation[vz.options.language])
 				.data('definition', def)
 				.val(def.name)
-				.css('background-image', 'url(images/types/' + def.icon)
+				.css('background-image', def.icon ? 'url(images/types/' + def.icon : null)
 		);
 	});
 	$('#entity-create option[value=power]').attr('selected', 'selected');
