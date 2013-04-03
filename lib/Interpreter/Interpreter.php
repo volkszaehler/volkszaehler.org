@@ -64,23 +64,19 @@ abstract class Interpreter {
 		$this->channel = $channel;
 		$this->groupBy = $groupBy;
 		$this->tupleCount = $tupleCount;
-		$this->from = $from;
-		$this->to = $to;
 		$this->conn = $em->getConnection(); // get dbal connection from EntityManager
 		
 		// parse interval
-		if (isset($from)) {
-			$this->from = self::parseDateTimeString($from, time() * 1000);
-		} else {
-			$this->from = (time() - 24*60*60) * 1000;
-		}
-		
-		if (isset($to)) {
-			$this->to = self::parseDateTimeString($to, (isset($this->from)) ? $this->from : time() * 1000);
-		}
+		if (isset($to))
+			$this->to = self::parseDateTimeString($to);
+
+		if (isset($from))
+			$this->from = self::parseDateTimeString($from);
+		else
+			$this->from = ($this->to ? $this->to : time()*1000) - 24*60*60*1000; // default: "to" or now minus 24h
 
 		if (isset($this->from) && isset($this->to) && $this->from > $this->to) {
-			throw new \Exception('&from is larger than &to parameter');
+			throw new \Exception('from is larger than to parameter');
 		}
 	}
 
@@ -230,11 +226,11 @@ abstract class Interpreter {
 	 * @param float $now in ms since 1970
 	 * @return float
 	 */
-	protected static function parseDateTimeString($string, $now) {
+	protected static function parseDateTimeString($string) {
 		if (ctype_digit($string)) { // handling as ms timestamp
 			return (float) $string;
 		}
-		elseif ($ts = strtotime($string, $now / 1000)) {
+		elseif ($ts = strtotime($string)) {
 			return $ts * 1000;
 		}
 		else {
