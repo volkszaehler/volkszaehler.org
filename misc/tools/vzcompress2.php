@@ -219,19 +219,19 @@
                 
                 $this->sql->beginTransaction();
                 
-                //Step 2.3: Update oldest Datapoint
-                //          Note: Use UPDATE instead of INSERT to avoid filling up our id-pool
-                if($this->sql_simplequery("UPDATE `data` SET `timestamp` = '".($curtime-1)."', `value` = '".$newset[0]['newval']."' WHERE `channel_id` = '".$channel['id']."' AND `id` = '".$newset[0]['updateid']."';") === false) {
-                    $this->sql->rollback();
-                    trigger_error('SQL FAILURE', E_USER_ERROR);
-                }
-                
-                //Step 2.4: Delete old Datapoints
+                //Step 2.3: Delete old Datapoints
                 if($this->sql_simplequery("DELETE FROM `data` WHERE `channel_id` = '".$channel['id']."' AND `timestamp` > '".$lastcurtime."' AND `timestamp` <= '".$curtime."' AND `id` != '".$newset[0]['updateid']."';") === false) {
                     $this->sql->rollback();
                     trigger_error('SQL FAILURE', E_USER_ERROR);
                 }
                 $this->purgecounter+=($newset[0]['datapoints']-1);
+                
+                //Step 2.4: Update oldest Datapoint
+                //          Note: Use UPDATE instead of INSERT to avoid filling up our id-pool
+                if($this->sql_simplequery("UPDATE `data` SET `timestamp` = '".($curtime-1)."', `value` = '".$newset[0]['newval']."' WHERE `channel_id` = '".$channel['id']."' AND `id` = '".$newset[0]['updateid']."';") === false) {
+                    $this->sql->rollback();
+                    trigger_error('SQL FAILURE', E_USER_ERROR);
+                }
                 
                 //Step 2.6 Commit to Database
                 $this->sql->commit();
