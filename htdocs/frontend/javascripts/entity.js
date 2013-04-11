@@ -136,7 +136,7 @@ Entity.prototype.showDetails = function() {
 	dialog.addClass('details')
 	.append(this.getDOMDetails())
 	.dialog({
-		title: 'Details f&uuml;r ' + this.title,
+		title: 'Details für ' + this.title,
 		width: 480,
 		resizable: false,
 		buttons : {
@@ -199,12 +199,13 @@ Entity.prototype.getDOMDetails = function(edit) {
 		switch(property) {
 			case 'type':
 				var title = 'Typ';
-				var icon = $('<img>').
-					attr('src', 'images/types/' + this.definition.icon)
-					.css('margin-right', 4);
+				var icon = this.definition.icon ? $('<img>').
+						attr('src', 'images/types/' + this.definition.icon)
+						.css('margin-right', 4) 
+					: null;
 				var value = $('<span>')
 					.text(this.definition.translation[vz.options.language])
-					.prepend(icon);
+					.prepend(icon ? icon : null);
 				break;
 			
 			case 'middleware':
@@ -314,7 +315,7 @@ Entity.prototype.getDOMRow = function(parent) {
 			.append($('<span>')
 				.text(this.title)
 				.addClass('indicator')
-				.css('background-image', 'url(images/types/' + this.definition.icon + ')')
+				.css('background-image', this.definition.icon ? 'url(images/types/' + this.definition.icon + ')' : null)
 			)
 		)
 		.append($('<td>').text(this.definition.translation[vz.options.language])) // channel type

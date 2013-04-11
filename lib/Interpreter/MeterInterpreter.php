@@ -48,31 +48,13 @@ class MeterInterpreter extends Interpreter {
 	}
 
 	/**
-	 * Get minimum
-	 *
-	 * @return array (0 => timestamp, 1 => value)
-	 */
-	public function getMin() {
-		return ($this->min) ? array_map('floatval', array_slice($this->min, 0 , 2)) : NULL;
-	}
-
-	/**
-	 * Get maximum
-	 *
-	 * @return array (0 => timestamp, 1 => value)
-	 */
-	public function getMax() {
-		return ($this->max) ? array_map('floatval', array_slice($this->max, 0 , 2)) : NULL;
-	}
-
-	/**
 	 * Get Average
 	 *
 	 * @return float average in W
 	 */
 	public function getAverage() {
 		if ($this->pulseCount) {
-			$delta = $this->rows->getTo() - $this->rows->getFrom();
+			$delta = $this->getTo() - $this->getFrom();
 			return (3.6e9 * $this->pulseCount) / ($this->resolution * $delta); // 60 s/min * 60 min/h * 1.000ms/s * 1.000W/KW = 3.6e9 (Units: s/h*ms/s*W/KW = s/3.600s*.001s/s*W/1.000W = 1)
 		}
 		else { // prevents division by zero
