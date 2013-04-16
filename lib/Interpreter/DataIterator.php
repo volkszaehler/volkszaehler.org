@@ -70,7 +70,7 @@ class DataIterator implements \Iterator, \Countable {
 				$this->tupleCount++;
 			}
 		}
-		
+
 		// skipping first reading, just for getting first timestamp
 		$this->from = $this->stmt->fetchColumn();
 	}
@@ -82,7 +82,7 @@ class DataIterator implements \Iterator, \Countable {
 	public function next() {
 		$package = array(0, 0, 0);
 		for ($i = 0; $i < $this->packageSize && $tuple = $this->stmt->fetch(); $i++) {
-			$package[0] = $tuple[0]; // use last timestamp in package
+			$package[0] = $tuple[0]; // last timestamp of package will be used
 			$package[1] += $tuple[1];
 			$package[2] += $tuple[2];
 			
@@ -91,7 +91,8 @@ class DataIterator implements \Iterator, \Countable {
 		
 		$this->key++;
 		
-		if ($package[2]) $this->to = $package[0];
+		if ($package[2])
+			$this->to = $package[0];
 		
 		return $this->current = $package;
 	}

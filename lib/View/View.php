@@ -134,7 +134,7 @@ abstract class View {
 				$this->response->setHeader('Pragma', 'no-cache');
 
 			default:
-				throw new Exception('Unknown caching mode: \'' . $mode . '\'');
+				throw new \Exception('Unknown caching mode: \'' . $mode . '\'');
 		}
 	}
 	
@@ -146,6 +146,23 @@ abstract class View {
 	 */
 	public static function formatNumber($number) {
 		return is_null($number) ? null :  round($number, self::PRECISION);
+	}
+
+	/**
+	 * format timestamp according to request
+         */
+	public function formatTimestamp($ts) {
+		switch ($this->request->getParameter('tsfmt')) {
+			case 'sql':
+				return strftime('%Y-%m-%d %H:%M:%S', intval($ts/1000));
+			case 'unix':
+			case 'ms':
+			case '':
+			case NULL:
+				return 0 + $ts;
+			default:
+				throw new \Exception('Unknown timefmt');
+		}
 	}
 
 	public abstract function add($object);
