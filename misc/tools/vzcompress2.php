@@ -187,7 +187,7 @@
             if($cs[$times[$i]] == 0) continue;
             
             //Step 1: Detect oldest and newest dataset
-            $datatimes = $this->sql_simplequery("SELECT MIN(`timestamp`) as `min`, MAX(`timestamp`) as `max` FROM `data` WHERE `channel_id` =  '".$channel['id']."' AND `timestamp` <= '".(($timestamp-$times[$i])*1000)."' AND `timestamp` > '".(($timestamp-$times[$i+1])*1000)."'");
+            $datatimes = $this->sql_simplequery("SELECT MIN(`timestamp`) as `min`, MAX(`timestamp`) as `max` FROM `data` WHERE `channel_id` =  '".$channel['id']."' AND `timestamp` <= '".(($timestamp-$times[$i])*1000)."' AND `timestamp` > '".(($times[$i+1] > 0) ? (($timestamp-$times[$i+1])*1000) : 0 )."'");
             
             if((float)$datatimes[0]['max'] == 0) {
                 echo '  Skipping compression pass for datapoints between '.strftime("%d.%m.%Y %H:%M:%S", ($timestamp-$times[$i+1])).' and '.strftime("%d.%m.%Y %H:%M:%S", ($timestamp-$times[$i])).' using a '.$cs[$times[$i]].' second timeframe: No Datapoints found'."\n";
