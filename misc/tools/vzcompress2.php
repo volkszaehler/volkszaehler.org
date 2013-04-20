@@ -21,6 +21,12 @@
  * You can set your own scheme for all or specific datapoints at the
  * bottom of this file
  *
+ * By default this script saves its state in /tmp/vzcompress2/. You may want
+ * to move this files to a location that is not cleaned on reboot. If the files
+ * are not present or caching is turned off the script will scan the complete
+ * database. If you often insert/import historic data you may want to turn
+ * this off. Configuration can be found near the end of this file.
+ *
  * Database parameters are read from ../../etc/volkszaehler.conf.php
  *
  * @copyright Copyright (c) 2013, The volkszaehler.org project
@@ -83,10 +89,12 @@
         }
         
         if(!isset($config['verbose'])) $config['verbose']=true;
+        if(!isset($config['caching'])) $config['caching']=false;
         
         $this->config = $config;
         $this->sql_config_load();
         $this->sql_connect();
+        $this->cache_init();
         $this->sql_getChannels();
         $this->json_getEntities();
         $this->compress();
@@ -136,6 +144,40 @@
         }
         
         $this->entities = json_decode($json);
+    }
+    
+    private function cache_init() {
+        if($this->config['caching']) {
+            if(substr($this->config['caching'], -1) != '/') $this->config['caching'].='/';
+            
+            if(file_exists($this->config['caching'])) {
+                if(!is_dir($this->config['caching'])) {
+                    trigger_error('Can not cache to '.$this->config['caching'].' - Not a directory', E_USER_WARNING);
+                    $this->config['caching'] = false;
+                }
+                if(!is_writable($this->config['caching'])) {
+                    trigger_error('Can not cache to'.$this->config['caching'].' - Not writable', E_USER_WARNING);
+                    $this->config['caching'] = false;
+                }
+            }else{
+                if(!mkdir($this->config['caching'], 0755, true)) {
+                    trigger_error('Can not cache to'.$this->config['caching'].' - Could not create directory', E_USER_WARNING);
+                    $this->config['caching'] = false;
+                }
+            }
+        }
+    }
+    
+    private function cache_write($chanid, $timebase, $last) {
+        if(!$this->config['caching']) return false;
+        if($timebase == 0 || $last == 0) return false;
+        file_put_contents($this->config['caching'].$chanid.'.'.$timebase, $last);
+    }
+    
+    private function cache_read($chanid, $timebase) {
+        if(!$this->config['caching']) return false;
+        if(!file_exists($this->config['caching'].$chanid.'.'.$timebase)) return false;
+        return (float)file_get_contents($this->config['caching'].$chanid.'.'.$timebase);
     }
     
     private function compress() {
@@ -194,6 +236,13 @@
                 continue;
             }
             
+            //Caching
+            $lastrun = (float)$this->cache_read($channel['id'], $times[$i]);
+            if($lastrun && (float)$lastrun >= (float)$datatimes[0]['min']) {
+                echo '  Skipping datapoints between '.strftime("%d.%m.%Y %H:%M:%S", ((float)$datatimes[0]['min']/1000)).' and '.strftime("%d.%m.%Y %H:%M:%S", ((float)$lastrun/1000)).' (Cached)'."\n";
+                (float)$datatimes[0]['min'] = $lastrun;
+            }
+            
             echo '  Compressing datapoints between '.strftime("%d.%m.%Y %H:%M:%S", ((float)$datatimes[0]['min']/1000)).' and '.strftime("%d.%m.%Y %H:%M:%S", ((float)$datatimes[0]['max']/1000)).' using a '.$cs[$times[$i]].' second timeframe'."\n";
             
             //Step 2: Loop new possible timeframes
@@ -238,6 +287,8 @@
                 
             }while($curtime <= (float)$datatimes[0]['max']);
             echo "\r    Removed ".($this->purgecounter-$lastpurgecount).' Datapoints in '.(time()-$passstart).' Seconds.                                  '."\n";
+            
+            $this->cache_write($channel['id'], $times[$i], (float)$datatimes[0]['max']);
         }
     }
  }
@@ -247,6 +298,7 @@
   */
  $config = array(
     'verbose' => true,      //Show times/percentage - should be disables on slow TTYs
+    'caching' => '/tmp/vzcompress2/', //Path or false
     
     //'channels' => array(  //If defined only this channels are compressed
     //  '1', '2', '3'       //Note that IDs are strings
