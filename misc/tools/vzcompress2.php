@@ -249,6 +249,7 @@
             $curtime = (float)$datatimes[0]['min'];
             $lastpurgecount = $this->purgecounter;
             $steps = (((float)$datatimes[0]['max']/1000)-((float)$datatimes[0]['min']/1000))/$cs[$times[$i]];
+            if($steps == 0) continue;
             $step = 0;
             $passstart = time();
             do {
