@@ -90,6 +90,7 @@
         
         if(!isset($config['verbose'])) $config['verbose']=true;
         if(!isset($config['caching'])) $config['caching']=false;
+        if(!isset($config['sleep'])) $config['sleep']=0;
         
         $this->config = $config;
         $this->sql_config_load();
@@ -117,6 +118,7 @@
     }
     
     private function sql_simplequery($qry) {
+        usleep($this->config['sleep']);
         if(!$stmt = $this->sql->prepare ($qry)) return false;
         if(!$stmt->execute()) {
             var_dump($stmt->errorInfo());
@@ -285,7 +287,7 @@
                 
                 //Step 2.6 Commit to Database
                 $this->sql->commit();
-                
+            
             }while($curtime <= (float)$datatimes[0]['max']);
             echo "\r    Removed ".($this->purgecounter-$lastpurgecount).' Datapoints in '.(time()-$passstart).' Seconds.                                  '."\n";
             
@@ -300,6 +302,7 @@
  $config = array(
     'verbose' => true,      //Show times/percentage - should be disables on slow TTYs
     'caching' => '/tmp/vzcompress2/', //Path or false
+    'sleep' => 500000, //Microseconds to sleep between requests
     
     //'channels' => array(  //If defined only this channels are compressed
     //  '1', '2', '3'       //Note that IDs are strings
