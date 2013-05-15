@@ -69,6 +69,7 @@
     private $channels;
     private $entities;
     private $purgecounter;
+    private $timestr = '%x %X';
     
     static private $sensortypemap = array(
         'SensorInterpreter'  => 'AVG',
@@ -187,10 +188,10 @@
         foreach($this->channels as $channel) {
             if(isset($this->config['channels']) && !in_array($channel['id'], $this->config['channels'])) continue;
             
-            echo 'Processing Sensor ID '.$channel['id'].'...'."\n";
+            echo strftime($this->timestr).' - Processing Sensor ID '.$channel['id'].'...'."\n";
             $this->process($channel);
         }
-        echo 'Done. Purged '.$this->purgecounter.' Datapoints from '.count($this->channels).' Channels in '.(time()-$start).' Seconds'."\n";
+        echo strftime($this->timestr).' - Done. Purged '.$this->purgecounter.' Datapoints from '.count($this->channels).' Channels in '.(time()-$start).' Seconds'."\n";
     }
     
     private function process($channel) {
@@ -234,18 +235,18 @@
             $datatimes = $this->sql_simplequery("SELECT MIN(`timestamp`) as `min`, MAX(`timestamp`) as `max` FROM `data` WHERE `channel_id` =  '".$channel['id']."' AND `timestamp` <= '".(($timestamp-$times[$i])*1000)."' AND `timestamp` > '".(($times[$i+1] > 0) ? (($timestamp-$times[$i+1])*1000) : 0 )."'");
             
             if((float)$datatimes[0]['max'] == 0) {
-                echo '  Skipping compression pass for datapoints between '.strftime("%d.%m.%Y %H:%M:%S", ($timestamp-$times[$i+1])).' and '.strftime("%d.%m.%Y %H:%M:%S", ($timestamp-$times[$i])).' using a '.$cs[$times[$i]].' second timeframe: No Datapoints found'."\n";
+                echo strftime($this->timestr).' -   Skipping compression pass for datapoints between '.strftime($this->timestr, ($timestamp-$times[$i+1])).' and '.strftime($this->timestr, ($timestamp-$times[$i])).' using a '.$cs[$times[$i]].' second timeframe: No Datapoints found'."\n";
                 continue;
             }
             
             //Caching
             $lastrun = (float)$this->cache_read($channel['id'], $times[$i]);
             if($lastrun && (float)$lastrun >= (float)$datatimes[0]['min']) {
-                echo '  Skipping datapoints between '.strftime("%d.%m.%Y %H:%M:%S", ((float)$datatimes[0]['min']/1000)).' and '.strftime("%d.%m.%Y %H:%M:%S", ((float)$lastrun/1000)).' (Cached)'."\n";
+                echo strftime($this->timestr).' -   Skipping datapoints between '.strftime($this->timestr, ((float)$datatimes[0]['min']/1000)).' and '.strftime($this->timestr, ((float)$lastrun/1000)).' (Cached)'."\n";
                 (float)$datatimes[0]['min'] = $lastrun;
             }
             
-            echo '  Compressing datapoints between '.strftime("%d.%m.%Y %H:%M:%S", ((float)$datatimes[0]['min']/1000)).' and '.strftime("%d.%m.%Y %H:%M:%S", ((float)$datatimes[0]['max']/1000)).' using a '.$cs[$times[$i]].' second timeframe'."\n";
+            echo strftime($this->timestr).' -   Compressing datapoints between '.strftime($this->timestr, ((float)$datatimes[0]['min']/1000)).' and '.strftime($this->timestr, ((float)$datatimes[0]['max']/1000)).' using a '.$cs[$times[$i]].' second timeframe'."\n";
             
             //Step 2: Loop new possible timeframes
             $curtime = (float)$datatimes[0]['min'];
@@ -261,7 +262,7 @@
                 $curtime += $cs[$times[$i]]*1000;
                 
                 //Print status
-                if($this->config['verbose']) echo "\r    Processing: ".strftime("%d.%m.%Y %H:%M:%S", $lastcurtime/1000).' - '.strftime("%d.%m.%Y %H:%M:%S", $curtime/1000).' ('.round(100/$steps*$step).'%)...                    ';
+                if($this->config['verbose']) echo "\r".strftime($this->timestr).' -     Processing: '.strftime($this->timestr, $lastcurtime/1000).' - '.strftime($this->timestr, $curtime/1000).' ('.round(100/$steps*$step).'%)...                    ';
                 
                 //Step 2.1: Get new Value for timeframe
                 $newset = $this->sql_simplequery("SELECT ".$sqlfunc."(`value`) as `newval`, COUNT(`value`) as `datapoints`, MIN(`id`) as updateid FROM `data` WHERE `channel_id` = '".$channel['id']."' AND `timestamp` > '".$lastcurtime."' AND `timestamp` <= '".$curtime."';");
@@ -289,7 +290,7 @@
                 $this->sql->commit();
             
             }while($curtime <= (float)$datatimes[0]['max']);
-            echo "\r    Removed ".($this->purgecounter-$lastpurgecount).' Datapoints in '.(time()-$passstart).' Seconds.                                  '."\n";
+            echo "\r".strftime($this->timestr).' -     Removed '.($this->purgecounter-$lastpurgecount).' Datapoints in '.(time()-$passstart).' Seconds.                                  '."\n";
             
             $this->cache_write($channel['id'], $times[$i], (float)$datatimes[0]['max']);
         }
@@ -299,10 +300,11 @@
  /**
   * Sample Configuration
   */
+ setlocale(LC_ALL, 'de_DE.UTF-8', 'de_DE@euro', 'de_DE', 'de', 'ge');
  $config = array(
     'verbose' => true,      //Show times/percentage - should be disables on slow TTYs
     'caching' => '/tmp/vzcompress2/', //Path or false
-    'sleep' => 500000, //Microseconds to sleep between requests
+    'sleep' => 500, //Microseconds to sleep between requests
     
     //'channels' => array(  //If defined only this channels are compressed
     //  '1', '2', '3'       //Note that IDs are strings
