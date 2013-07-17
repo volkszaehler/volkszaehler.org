@@ -48,7 +48,7 @@ description='Configure CCALERT at the commandline ->',
 epilog="CCALERT is intended to operate as a cronjob and monitors the cost (current consumption) for a particular UUID, based on the configured costs of the channel 'Strommesser' and the consumption within the interval.")
 
 parser.add_argument("-u",dest="uuid", required=True, help="Enter your 'Strommesser' UUID here!")
-parser.add_argument("-c",dest="costs", type=float, default=1.50, help="Cost limit that will cause a alert (default 1.50)")
+parser.add_argument("-c",dest="costs", type=float, default=0, help="Cost limit that will cause a alert (default 1.50)")
 parser.add_argument("-i",dest="interval",  type=int, default=86400, help="Monitoring interval in seconds (default 86400 = 24h)")
 
 args = parser.parse_args()
