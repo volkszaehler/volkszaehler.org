@@ -28,19 +28,19 @@
 # CCALERT is intended to operate as a cronjob and monitors the cost (current consumption) for a particular UUID 'Strommesser', 
 # based on the configured costs of the channel and the consumption within the configured interval.
 
+import sys
+import argparse
+import datetime
+import urllib2
+import json
+
 #----<config>-------------------------------------------------------------
 
-# URL of the vz middleware
-
 middleware = 'http://demo.volkszaehler.org/middleware.php/'
-
-#----</config>------------------------------------------------------------
 
 tz_offset = 2 # h; CEST -> 2; CET -> 1; show me, how to improve this! :-)
 
 #------------------------------------------------------------------------
-
-import argparse
 
 parser = argparse.ArgumentParser(
 prog='cALERT',
@@ -48,7 +48,6 @@ description='Configure cALERT at the commandline ->',
 epilog="cALERT is intended to operate as a cronjob and monitors the cost (Power/Gas consumption) for a particular UUID, based on the configured costs of the channel and the consumption within the interval.")
 
 parser.add_argument("-u",dest="uuid", required=True, help="Enter the coresponding UUID here [required]")
-parser.add_argument("-t",dest="unit", required=True, choices=['kWh', 'm3'], help="Power/Gas [required]")
 parser.add_argument("-c",dest="costs", type=float, default=0, help="Cost limit that will cause a alert")
 parser.add_argument("-i",dest="interval",  type=int, default=86400, help="Monitoring interval in seconds")
 
@@ -57,13 +56,9 @@ args = parser.parse_args()
 uuid = args.uuid 
 maximum_value = args.costs
 interval = args.interval
-unit = args.unit
 
 uuidstring = str(uuid)
 
-import datetime
-
-# convert timestamp into volkszaehler format
 def timestamp2vz_format(ts):
   tz_delta = datetime.timedelta(seconds=tz_offset*3600) #UTC offset and adjustment for daylight saving time (sutraction in seconds)
   dt = ts - datetime.datetime(1970, 1, 1, 0, 0) - tz_delta
@@ -74,11 +69,6 @@ now = datetime.datetime.now()
 past = now  - datetime.timedelta(seconds=interval)
 intervalstart = timestamp2vz_format(past)
 
-#------------------------------------------------------------------------
-
-import urllib2
-import json
-
 url_cost = middleware
 url_cost += 'channel/'
 url_cost += uuid
@@ -87,21 +77,29 @@ url_cost += '.json'
 cost = urllib2.urlopen(url_cost).read()
 json_decoded = json.loads(cost)
 rate = json_decoded['entity']['cost']
+type = json_decoded['entity']['type']
+resolution = json_decoded['entity']['resolution']
 
 url_data = middleware
 url_data += 'data/'
 url_data += uuid
 url_data += '.json?from='
 url_data += intervalstart
-	
+
 result = urllib2.urlopen(url_data).read() 
 json_decoded = json.loads(result)
 consumption = json_decoded['data']['consumption']
+	
+if "power" in type:
+	unit = "kWh"
+	kosten = consumption * rate
+	if kosten > maximum_value:
+		print '%.2f%s / %.2fEUR' % (consumption / 1000, unit, kosten)
 
-kosten = consumption * rate
-
-if "kWh" in unit:
-	consumption = consumption / 1000
-
-if kosten > maximum_value:
-	print '%.2f%s / %.2fEUR' % (consumption, unit, kosten)
+if "gas" in type:
+	unit = "m3"
+	kosten = consumption * rate
+	if kosten > maximum_value:
+		print '%.2f%s / %.2fEUR' % (consumption, unit, kosten)
+	
+sys.exit(-1)
