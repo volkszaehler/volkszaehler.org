@@ -103,5 +103,5 @@ kosten = consumption * rate
 if "kWh" in unit:
 	consumption = consumption / 1000
 
-if cost > maximum_value:
+if kosten > maximum_value:
 	print '%.2f%s / %.2fEUR' % (consumption, unit, kosten)
