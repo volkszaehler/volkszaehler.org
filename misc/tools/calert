@@ -25,9 +25,6 @@
 #* along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
 #*/
 
-# CCALERT is intended to operate as a cronjob and monitors the cost (current consumption) for a particular UUID 'Strommesser', 
-# based on the configured costs of the channel and the consumption within the configured interval.
-
 import sys
 import argparse
 import datetime
@@ -45,7 +42,8 @@ tz_offset = 2 # h; CEST -> 2; CET -> 1; show me, how to improve this! :-)
 parser = argparse.ArgumentParser(
 prog='cALERT',
 description='Configure cALERT at the commandline ->',
-epilog="cALERT is intended to operate as a cronjob and monitors the cost (Power/Gas consumption) for a particular UUID, based on the configured costs of the channel and the consumption within the interval.")
+epilog="cALERT is intended to operate as a cronjob and monitors the cost (Power/Gas consumption) for a particular UUID, based on the configured costs of the channel and the consumption within the interval."
+)
 
 parser.add_argument("-u",dest="uuid", required=True, help="Enter the coresponding UUID here [required]")
 parser.add_argument("-c",dest="costs", type=float, default=0, help="Cost limit that will cause a alert")
@@ -56,8 +54,6 @@ args = parser.parse_args()
 uuid = args.uuid 
 maximum_value = args.costs
 interval = args.interval
-
-uuidstring = str(uuid)
 
 def timestamp2vz_format(ts):
   tz_delta = datetime.timedelta(seconds=tz_offset*3600) #UTC offset and adjustment for daylight saving time (sutraction in seconds)
