@@ -68,8 +68,15 @@ class XML extends View {
 	 * @param mixed $data
 	 */
 	public function add($data) {
-		if ($data instanceof Interpreter\Interpreter || $data instanceof Interpreter\AggregatorInterpreter) {
+		if ($data instanceof Interpreter\AggregatorInterpreter) {
+			$this->addAggregateData($data);
+		}
+		elseif ($data instanceof Interpreter\Interpreter) {
 			$this->addData($data);
+			// clean unneeded ids
+			if ($xmlElement = $this->xmlDoc->getElementById('data')) {
+				$xmlElement->removeAttribute('id');
+			}
 		}
 		elseif ($data instanceof Model\Entity) {
 			$this->addEntity($data);
@@ -226,13 +233,49 @@ class XML extends View {
 	}
 
 	/**
-	 * Add data to output queue
+	 * Get existing XML element or create new one
+	 * @param 	string $id
+	 */
+	protected function obtainElementById($id) {
+		if (!isset($xmlElement = $this->xmlDoc->getElementById($id))) {
+			$xmlElement = $this->xmlDoc->createElement($id);
+			$xmlElement->setAttribute('id', $id);
+			$xmlElement->setIdAttribute('id', true);
+		}
+		return($xmlElement);
+	}
+
+	/**
+	 * Add multiple data objects to output queue
 	 *
 	 * @param $interpreter
 	 */
-	protected function addData($interpreter) {
+	protected function addAggregateData($interpreter) {
+		// child entities first to ensure min/max etc are populated
+		foreach ($interpreter->getChildrenInterpreter() as $childInterpreter) {
+			$this->addData($childInterpreter, true);
+		}
+		$this->addData($interpreter);
+
+		// clean unneeded ids
+		if ($xmlElement = $this->xmlDoc->getElementById('data')) {
+			$xmlElement->removeAttribute('id');
+		}
+		if ($xmlElement = $this->xmlDoc->getElementById('children')) {
+			$xmlElement->removeAttribute('id');
+		}
+	}
+
+	/**
+	 * Add data to output queue
+	 *
+	 * @param 	$interpreter
+	 * @param 	boolean $children
+	 */
+	protected function addData($interpreter, $children = false) {
 		$xmlDoc = $this->xmlDoc;
-		$xmlData = $this->xmlDoc->createElement('data');
+		$xmlData = ($children) ? $this->xmlDoc->createElement('data') 
+							   : $this->obtainElementById('data');
 		$xmlTuples = $this->xmlDoc->createElement('tuples');
 		
 		$data = $interpreter->processData(
@@ -285,8 +328,19 @@ class XML extends View {
 		
 		if (($interpreter->getTupleCount() > 0 || is_null($interpreter->getTupleCount())) && count($data) > 0)
 			$xmlData->appendChild($xmlTuples);
-	
-		$this->xmlRoot->appendChild($xmlData);
+
+		if ($children) {
+			$xmlChildren = $this->obtainElementById('children');
+			$xmlChildren->appendChild($xmlData);
+
+			$xmlParentData = $this->obtainElementById('data');
+			$xmlParentData->appendChild($xmlChildren);
+
+			$this->xmlRoot->appendChild($xmlParentData);
+		}
+		else {
+			$this->xmlRoot->appendChild($xmlData);
+		}
 	}
 
 	/**

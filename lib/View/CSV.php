@@ -58,7 +58,10 @@ class CSV extends View {
 	 * @param mixed $data
 	 */
 	public function add($data) {
-		if ($data instanceof Interpreter\Interpreter || $data instanceof Interpreter\AggregatorInterpreter) {
+		if ($data instanceof Interpreter\AggregatorInterpreter) {
+			$this->addAggregateData($data);
+		}
+		elseif ($data instanceof Interpreter\Interpreter) {
 			$this->addData($data);
 		}
 		elseif ($data instanceof \Exception) {
@@ -113,19 +116,46 @@ class CSV extends View {
 			echo "#\tline: " . $exception->getLine() . PHP_EOL;
 		}
 	}
-	
+
+	/**
+	 * Add multiple data objects to output queue
+	 *
+	 * @param $interpreter
+	 * @todo  Aggregate first- this deviates from json view behaviour and breaks min/max etc
+	 */
+	protected function addAggregateData($interpreter) {
+		// run first & buffer children to make min/max work
+		ob_start();
+		foreach ($interpreter->getChildrenInterpreter() as $childInterpreter) {
+			$this->addData($childInterpreter, true);
+		}
+		$children = ob_get_contents();
+		ob_end_clean();
+
+		$this->addData($interpreter);
+		
+		if (isset($children)) {
+			echo '# children: ' . PHP_EOL;
+			echo($children);
+		}
+	}
+
 	/**
 	 * Add data to output queue
 	 *
 	 * @param Interpreter\InterpreterInterface $interpreter
+	 * @param boolean $children
+	 * @todo  Aggregate first is assumed- this deviates from json view behaviour
 	 */
-	protected function addData(Interpreter\Interpreter $interpreter) {
-		$this->response->setHeader(
-			'Content-Disposition',
-			'attachment; ' .
-			'filename="' . strtolower($interpreter->getEntity()->getProperty('title')) . '.csv" ' .
-			'creation-date="' .  date(DATE_RFC2822, $interpreter->getTo()/1000). '"'
-		);
+	protected function addData(Interpreter\Interpreter $interpreter, $children = false) {
+		if ($children == false) {
+			$this->response->setHeader(
+				'Content-Disposition',
+				'attachment; ' .
+				'filename="' . strtolower($interpreter->getEntity()->getProperty('title')) . '.csv" ' .
+				'creation-date="' .  date(DATE_RFC2822, $interpreter->getTo()/1000). '"'
+			);
+		}
 		
 		$tuples = $interpreter->processData(
 			function($tuple) {
@@ -156,8 +186,11 @@ class CSV extends View {
 			
 		echo '# rows: ' . $interpreter->getRowCount() . PHP_EOL;
 		
-		foreach ($tuples as $tuple) {
-			echo $this->formatTimestamp($tuple[0]) . CSV::DELIMITER . $tuple[1] . CSV::DELIMITER . $tuple[2] . PHP_EOL;
+		if (isset($tuples)) {
+			// Aggregators don't return tuples
+			foreach ($tuples as $tuple) {
+				echo $this->formatTimestamp($tuple[0]) . CSV::DELIMITER . $tuple[1] . CSV::DELIMITER . $tuple[2] . PHP_EOL;
+			}
 		}
 	}
 
