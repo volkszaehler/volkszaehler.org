@@ -50,6 +50,28 @@ class DataController extends Controller {
 	}
 
 	/**
+	 * Query for data by multiple given channels
+	 *
+	 * @param Controller\EntityController $ec
+	 */
+	public function getMultiple($ec) {
+		$uuids = $this->view->request->getParameter('uuid');
+
+		if (!is_array($uuids)) {
+			// ensure $uuids is an array
+			$uuids = array($uuids);
+		}
+
+		$interpreters = array();
+		foreach ($uuids as $uuid) {
+			$entity = $ec->get($uuid);
+			$interpreters[] = $this->get($entity);
+		}
+
+		return $interpreters;
+	}
+
+	/**
 	 * Sporadic test/demo implemenation
 	 *
 	 * @todo replace by pluggable api parser
@@ -79,11 +101,23 @@ class DataController extends Controller {
 		$this->em->flush();
 	}
 
+	/**
+	 * Run operation
+	 */
 	public function run($operation, array $identifiers = array()) {
 		$ec = new EntityController($this->view, $this->em);
-		$entity = $ec->get($identifiers[0]);
-		
-		return $this->{$operation}($entity);
+
+		// allow get for multiple UUIDs
+		if (count($identifiers) == 0) {
+			if ($operation !== 'get') {
+				throw new \Exception('No entity given', 404);
+			}
+			return $this->getMultiple($ec);
+		}
+		else {
+			$entity = $ec->get($identifiers[0]);
+			return $this->{$operation}($entity);
+		}	
 	}
 }
 
