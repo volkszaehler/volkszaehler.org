@@ -60,13 +60,8 @@ class AggregatorController extends EntityController {
 		if (isset($identifier)) {	// add entity to aggregator
 			$aggregator = $this->get($identifier);
 
-			if ($uuids = $this->view->request->getParameter('uuid')) {
+			if ($uuids = self::makeArray($this->view->request->getParameter('uuid'))) {
 				$ec = new EntityController($this->view, $this->em);
-
-				if (!is_array($uuids)) {
-					// ensure $uuids is an array
-					$uuids = array($uuids);
-				}
 
 				foreach ($uuids as $uuid) {
 					$aggregator->addChild($ec->get($uuid));
@@ -106,14 +101,9 @@ class AggregatorController extends EntityController {
 			return;
 
 		$aggregator = NULL;
-		if ($uuids = $this->view->request->getParameter('uuid')) { // remove entity from aggregator
+		if ($uuids = $this->makeArray($this->view->request->getParameter('uuid'))) { // remove entity from aggregator
 			$aggregator = $this->get($identifier);
 			$ec = new EntityController($this->view, $this->em);
-
-			if (!is_array($uuids)) {
-				// ensure $uuids is an array
-				$uuids = array($uuid);
-			}
 
 			foreach ($uuids as $uuid) {
 				$aggregator->removeChild($ec->get($uuid));

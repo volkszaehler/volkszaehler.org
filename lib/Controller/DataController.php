@@ -35,40 +35,36 @@ use Volkszaehler\Util;
 class DataController extends Controller {
 
 	/**
-	 * Query for data by given channel or group
+	 * Query for data by given channel or group or multiple channels
+	 *
+	 * @param Model\Entity $entity - can be null
 	 */
-	public function get(Model\Entity $entity) {
+	public function get($entity) {
 		$from = $this->view->request->getParameter('from');
 		$to = $this->view->request->getParameter('to');
 		$tuples = $this->view->request->getParameter('tuples');
 		$groupBy = $this->view->request->getParameter('group');
 		$tsFmt = $this->view->request->getParameter('tsfmt');
 		$client = strtolower($this->view->request->getParameter('client'));
-		$class = $entity->getDefinition()->getInterpreter();
 
-		return new $class($entity, $this->em, $from, $to, $tuples, $groupBy, $client);
-	}
-
-	/**
-	 * Query for data by multiple given channels
-	 *
-	 * @param Controller\EntityController $ec
-	 */
-	public function getMultiple($ec) {
-		$uuids = $this->view->request->getParameter('uuid');
-
-		if (!is_array($uuids)) {
-			// ensure $uuids is an array
-			$uuids = array($uuids);
+		// single entity
+		if ($entity) {
+			$class = $entity->getDefinition()->getInterpreter();
+			return new $class($entity, $this->em, $from, $to, $tuples, $groupBy, $client);
 		}
 
-		$interpreters = array();
-		foreach ($uuids as $uuid) {
-			$entity = $ec->get($uuid);
-			$interpreters[] = $this->get($entity);
-		}
+		// multiple UUIDs
+		if ($uuids = self::makeArray($this->view->request->getParameter('uuid'))) {
+			$ec = new EntityController($this->view, $this->em);
 
-		return $interpreters;
+			$interpreters = array();
+			foreach ($uuids as $uuid) {
+				$entity = $ec->get($uuid);
+				$interpreters[] = $this->get($entity);
+			}
+
+			return $interpreters;
+		}
 	}
 
 	/**
@@ -107,17 +103,8 @@ class DataController extends Controller {
 	public function run($operation, array $identifiers = array()) {
 		$ec = new EntityController($this->view, $this->em);
 
-		// allow get for multiple UUIDs
-		if (count($identifiers) == 0) {
-			if ($operation !== 'get') {
-				throw new \Exception('No entity given', 404);
-			}
-			return $this->getMultiple($ec);
-		}
-		else {
-			$entity = $ec->get($identifiers[0]);
-			return $this->{$operation}($entity);
-		}	
+		$entity = isset($identifiers[0]) ? $ec->get($identifiers[0]) : null;
+		return $this->{$operation}($entity);
 	}
 }
 
