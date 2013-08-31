@@ -78,6 +78,9 @@ class XML extends View {
 				$xmlElement->removeAttribute('id');
 			}
 		}
+		elseif (is_array($data) && isset($data[0]) && $data[0] instanceof Interpreter\Interpreter) {
+			$this->addMultipleData($data);
+		}
 		elseif ($data instanceof Model\Entity) {
 			$this->addEntity($data);
 		}
@@ -234,10 +237,13 @@ class XML extends View {
 
 	/**
 	 * Get existing XML element or create new one
-	 * @param 	string $id
+	 *
+	 * @param string $id
+	 * @return DOMElement
 	 */
-	protected function obtainElementById($id) {
-		if (!isset($xmlElement = $this->xmlDoc->getElementById($id))) {
+	private function obtainElementById($id) {
+		$xmlElement = $this->xmlDoc->getElementById($id);
+		if (!isset($xmlElement)) {
 			$xmlElement = $this->xmlDoc->createElement($id);
 			$xmlElement->setAttribute('id', $id);
 			$xmlElement->setIdAttribute('id', true);
@@ -246,7 +252,7 @@ class XML extends View {
 	}
 
 	/**
-	 * Add multiple data objects to output queue
+	 * Add aggregate data object to output queue
 	 *
 	 * @param $interpreter
 	 */
@@ -263,6 +269,28 @@ class XML extends View {
 		}
 		if ($xmlElement = $this->xmlDoc->getElementById('children')) {
 			$xmlElement->removeAttribute('id');
+		}
+	}
+
+	/**
+	 * Add multiple data objects to output queue
+	 *
+	 * @param $interpreter
+	 */
+	protected function addMultipleData($data) {
+		foreach ($data as $interpreter) {
+			$this->addData($interpreter, true);
+		}
+		// correct structure
+		if ($xmlChildren = $this->xmlDoc->getElementById('children')) {
+			// move children->data[] to root->data[]
+			while ($xmlChildren->childNodes->length > 0) {
+				$xmlData = $xmlChildren->childNodes->item(0);
+				$xmlElement = $xmlChildren->removeChild($xmlData);
+				$this->xmlRoot->appendChild($xmlElement);
+			}
+
+			$this->xmlRoot->removeChild($this->xmlDoc->getElementById('data'));
 		}
 	}
 

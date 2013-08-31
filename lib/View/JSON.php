@@ -73,6 +73,9 @@ class JSON extends View {
 		elseif ($data instanceof Interpreter\Interpreter) {
 			$this->addData($data);
 		}
+		elseif (is_array($data) && isset($data[0]) && $data[0] instanceof Interpreter\Interpreter) {
+			$this->addMultipleData($data);
+		}
 		elseif ($data instanceof Model\Entity) {
 			$this->json['entity'] = self::convertEntity($data);
 		}
@@ -179,7 +182,7 @@ class JSON extends View {
 	}
 
 	/**
-	 * Add multiple data objects to output queue
+	 * Add aggregate data object to output queue
 	 *
 	 * @param $interpreter
 	 */
@@ -189,6 +192,19 @@ class JSON extends View {
 			$this->addData($childInterpreter, true);
 		}
 		$this->addData($interpreter);
+	}
+
+	/**
+	 * Add multiple data objects to output queue
+	 *
+	 * @param $interpreter
+	 */
+	protected function addMultipleData($data) {
+		foreach ($data as $interpreter) {
+			$this->addData($interpreter, true);
+		}
+		// correct structure
+		$this->json['data'] = $this->json['data']['children'];
 	}
 
 	/**

@@ -64,6 +64,9 @@ class CSV extends View {
 		elseif ($data instanceof Interpreter\Interpreter) {
 			$this->addData($data);
 		}
+		elseif (is_array($data) && isset($data[0]) && $data[0] instanceof Interpreter\Interpreter) {
+			$this->addMultipleData($data);
+		}
 		elseif ($data instanceof \Exception) {
 			$this->addException($data);
 		}
@@ -118,7 +121,7 @@ class CSV extends View {
 	}
 
 	/**
-	 * Add multiple data objects to output queue
+	 * Add aggregate data object to output queue
 	 *
 	 * @param $interpreter
 	 * @todo  Aggregate first- this deviates from json view behaviour and breaks min/max etc
@@ -137,6 +140,17 @@ class CSV extends View {
 		if (isset($children)) {
 			echo '# children: ' . PHP_EOL;
 			echo($children);
+		}
+	}
+
+	/**
+	 * Add multiple data objects to output queue
+	 *
+	 * @param $interpreter
+	 */
+	protected function addMultipleData($data) {
+		for ($i=0; $i<count($data); $i++) {
+			$this->addData($data[$i], $i>0);
 		}
 	}
 
