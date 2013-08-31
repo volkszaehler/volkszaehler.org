@@ -101,7 +101,7 @@ class AggregatorController extends EntityController {
 			return;
 
 		$aggregator = NULL;
-		if ($uuids = $this->makeArray($this->view->request->getParameter('uuid'))) { // remove entity from aggregator
+		if ($uuids = self::makeArray($this->view->request->getParameter('uuid'))) { // remove entity from aggregator
 			$aggregator = $this->get($identifier);
 			$ec = new EntityController($this->view, $this->em);
 
