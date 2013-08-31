@@ -65,7 +65,7 @@ class AggregatorController extends EntityController {
 
 				if (!is_array($uuids)) {
 					// ensure $uuids is an array
-					$uuids = array($uuid);
+					$uuids = array($uuids);
 				}
 
 				foreach ($uuids as $uuid) {
