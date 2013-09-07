@@ -71,13 +71,41 @@ class DataController extends Controller {
 	 * Sporadic test/demo implemenation
 	 *
 	 * @todo replace by pluggable api parser
+	 * @param Model\Channel $channel - can be null
 	 */
-	public function add(Model\Channel $channel) {
+	public function add($channel) {
 		try { /* to parse new submission protocol */
 			$rawPost = file_get_contents('php://input');
 			$json = Util\JSON::decode($rawPost);
-			foreach ($json as $tuple) {
-				$channel->addData(new Model\Data($channel, (double) round($tuple[0]), $tuple[1]));
+
+			// multiple tuples - bundle in transaction
+			$this->em->getConnection()->beginTransaction(); // suspend auto-commit
+			try {
+				if ($json['data']) {
+					// multiple channels
+					$ec = new EntityController($this->view, $this->em);
+
+					foreach ($json['data'] as $data) {
+						$uuid = $data->uuid;
+						$channel = $ec->get($uuid);
+
+						foreach ($data->tuples as $tuple) {
+							$channel->addData(new Model\Data($channel, (double) round($tuple[0]), $tuple[1]));
+						}
+					}
+				}
+				else {
+					// single channel
+					foreach ($json as $tuple) {
+						$channel->addData(new Model\Data($channel, (double) round($tuple[0]), $tuple[1]));
+					}
+				}
+				$this->em->flush();
+				$this->em->getConnection()->commit();
+			}
+			catch (Exception $e) {
+				$this->em->getConnection()->rollback(); 
+				throw($e);
 			}
 		} catch (Util\JSONException $e) { /* fallback to old method */
 			$timestamp = $this->view->request->getParameter('ts');
@@ -92,9 +120,8 @@ class DataController extends Controller {
 			}
 		
 			$channel->addData(new Model\Data($channel, $timestamp, $value));
+			$this->em->flush();
 		}
-
-		$this->em->flush();
 	}
 
 	/**
