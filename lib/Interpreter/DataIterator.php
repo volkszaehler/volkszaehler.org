@@ -41,8 +41,9 @@ class DataIterator implements \Iterator, \Countable {
 	protected $tupleCount;	// num of requested tuples
 	protected $packageSize; // num of rows we aggregate in each tuple
 	
-	protected $from;	// exact timestamps based on on query results
-	protected $to;		// from/to of Interpreter are based on the request parameters!
+	protected $from;		// exact timestamps based on on query results
+	protected $to;			// from/to of Interpreter are based on the request parameters!
+	protected $firstValue; 	// value parameter of first database tuple
 
 	/**
 	 * Constructor
@@ -71,8 +72,8 @@ class DataIterator implements \Iterator, \Countable {
 			}
 		}
 
-		// skipping first reading, just for getting first timestamp
-		$this->from = $this->stmt->fetchColumn();
+		// skipping first reading, just for getting first timestamp, value is remembered
+ 		list($this->from, $this->firstValue, $foo) = $this->stmt->fetch();
 	}
 
 	/**
@@ -85,7 +86,7 @@ class DataIterator implements \Iterator, \Countable {
 			$package[0] = $tuple[0]; // last timestamp of package will be used
 			$package[1] += $tuple[1];
 			$package[2] += $tuple[2];
-			
+
 			$this->rowKey++;
 		}
 		
@@ -96,6 +97,11 @@ class DataIterator implements \Iterator, \Countable {
 		
 		return $this->current = $package;
 	}
+
+	/**
+	 * Return first tuple's data
+	 */
+	public function firstValue() { return $this->firstValue; }
 
 	/**
 	 * Rewind the iterator

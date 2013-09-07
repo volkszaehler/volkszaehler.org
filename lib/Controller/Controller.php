@@ -64,6 +64,16 @@ abstract class Controller {
 			default: return call_user_func_array(array($this, $op), $arg);
 		}
 	}
+
+	/**
+	 * Helper function to convert single/multiple parameters to array format
+	 */
+	protected static function makeArray($data) {
+		if (!is_array($data)) {
+			if (isset($data)) $data = array($data);
+		}
+		return $data;
+	}
 }
 
 ?>

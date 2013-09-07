@@ -60,8 +60,8 @@ class SensorInterpreter extends Interpreter {
 	}
 
 	public function processData($callback) {
-		$this->rows = parent::getData();
 		$tuples = array();
+		$this->rows = $this->getData();
 
 		$last = $this->getFrom();
 		foreach ($this->rows as $row) {

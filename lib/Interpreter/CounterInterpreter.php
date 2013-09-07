@@ -70,7 +70,7 @@ class CounterInterpreter extends Interpreter {
 	 */
 	public function processData($callback) {
 		$tuples = array();
-		$this->rows = parent::getData();
+		$this->rows = $this->getData();
 
 		$this->resolution = $this->channel->getProperty('resolution');
 		$this->valsum = 0;
@@ -78,10 +78,9 @@ class CounterInterpreter extends Interpreter {
 		foreach ($this->rows as $row) {
 			$val = $row[1] / $row[2]; // kind of revert what DataIterator::next did to our data
 
-			if (!isset($last_val)) { # skip first row - we need a starting value
-				$last_ts = $row[0];
-				$last_val = $val;
-				continue;
+			if (!isset($last_val)) { # get starting value from skipped first row
+				$last_ts = $this->rows->getFrom();
+				$last_val = $this->rows->firstValue();
 			}
 			if ($val === $last_val)
 				continue; # skip duplicate values
@@ -103,12 +102,27 @@ class CounterInterpreter extends Interpreter {
 			if (is_null($this->min) || $tuple[1] < $this->min[1]) {
 				$this->min = $tuple;
 			}
-				
+			
 			$this->valsum += $delta_val;
 
 			$tuples[] = $tuple;
 		}
-		
+
+		// in case of subtotaled queries (tupleCount) make sure consumption is correct
+		// this avoids the aliasing problems due to DataIterator dropping first record and last counter value averaged into package
+		// assumption is that counter values are increasing
+		if ($this->tupleCount && count($tuples)) {
+			// common conditions for following SQL queries	
+			$sqlParameters = array($this->channel->getId());
+			$sqlTimeFilter = self::buildDateTimeFilterSQL($this->from, $this->to, $sqlParameters);
+
+			$first = $this->rows->firstValue();
+			$last  = $this->conn->fetchColumn('SELECT value FROM data WHERE channel_id=?' . $sqlTimeFilter . ' ORDER BY timestamp DESC LIMIT 1', $sqlParameters);
+
+			if ($first && $last)
+				$this->valsum = $last - $first;
+		}
+
 		return $tuples;
 	}
 }
