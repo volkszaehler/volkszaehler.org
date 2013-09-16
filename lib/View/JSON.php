@@ -67,8 +67,14 @@ class JSON extends View {
 	 * @param mixed $data
 	 */
 	public function add($data) {
-		if ($data instanceof Interpreter\Interpreter || $data instanceof Interpreter\AggregatorInterpreter) {
+		if ($data instanceof Interpreter\AggregatorInterpreter) {
+			$this->addAggregateData($data);
+		}
+		elseif ($data instanceof Interpreter\Interpreter) {
 			$this->addData($data);
+		}
+		elseif (is_array($data) && isset($data[0]) && $data[0] instanceof Interpreter\Interpreter) {
+			$this->addMultipleData($data);
 		}
 		elseif ($data instanceof Model\Entity) {
 			$this->json['entity'] = self::convertEntity($data);
@@ -176,11 +182,38 @@ class JSON extends View {
 	}
 
 	/**
-	 * Add data to output queue
+	 * Add aggregate data object to output queue
 	 *
 	 * @param $interpreter
 	 */
-	protected function addData($interpreter) {
+	protected function addAggregateData($interpreter) {
+		// child entities first to ensure min/max etc are populated
+		foreach ($interpreter->getChildrenInterpreter() as $childInterpreter) {
+			$this->addData($childInterpreter, true);
+		}
+		$this->addData($interpreter);
+	}
+
+	/**
+	 * Add multiple data objects to output queue
+	 *
+	 * @param $interpreter
+	 */
+	protected function addMultipleData($data) {
+		foreach ($data as $interpreter) {
+			$this->addData($interpreter, true);
+		}
+		// correct structure
+		$this->json['data'] = $this->json['data']['children'];
+	}
+
+	/**
+	 * Add data to output queue
+	 *
+	 * @param $interpreter
+	 * @param boolean $children
+	 */
+	protected function addData($interpreter, $children = false) {
 		$data = $interpreter->processData( // iterate through PDO resultset
 			function($tuple) {
 				return array(
@@ -198,18 +231,31 @@ class JSON extends View {
 		$average = $interpreter->getAverage();
 		$consumption = $interpreter->getConsumption();
 
-		$this->json['data']['uuid'] = $interpreter->getEntity()->getUuid();
-		if (isset($from)) $this->json['data']['from'] = $from;
-		if (isset($to)) $this->json['data']['to'] = $to;
-		if (isset($min)) $this->json['data']['min'] = $min;
-		if (isset($max)) $this->json['data']['max'] = $max;
-		if (isset($average)) $this->json['data']['average'] = View::formatNumber($average);
-		if (isset($consumption)) $this->json['data']['consumption'] = View::formatNumber($consumption);
+		$wrapper = array();
+		$wrapper['uuid'] = $interpreter->getEntity()->getUuid();
+		if (isset($from)) $wrapper['from'] = $from;
+		if (isset($to)) $wrapper['to'] = $to;
+		if (isset($min)) $wrapper['min'] = $min;
+		if (isset($max)) $wrapper['max'] = $max;
+		if (isset($average)) $wrapper['average'] = View::formatNumber($average);
+		if (isset($consumption)) $wrapper['consumption'] = View::formatNumber($consumption);
 			
-		$this->json['data']['rows'] = $interpreter->getRowCount();
+		$wrapper['rows'] = $interpreter->getRowCount();
 		
 		if (($interpreter->getTupleCount() > 0 || is_null($interpreter->getTupleCount())) && count($data) > 0)
-			$this->json['data']['tuples']	= $data;
+			$wrapper['tuples'] = $data;
+
+		if (!isset($this->json['data'])) {
+			// make sure json['data'] is initialized when child data is added
+			$this->json['data'] = array();
+		}
+		if ($children == false) {
+			// preserve child data if existing
+			$this->json['data'] = array_merge($wrapper, $this->json['data']);
+		}
+		else {
+			$this->json['data']['children'][] = $wrapper;
+		}
 	}
 
 	protected function addArray($data, &$refNode) {

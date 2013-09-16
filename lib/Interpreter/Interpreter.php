@@ -44,6 +44,7 @@ abstract class Interpreter {
 	protected $from;	// request parameters
 	protected $to;		// can be NULL!
 	protected $groupBy;	// user from/to from DataIterator for exact calculations!
+	protected $client;  // client type for specific optimizations
 	
 	protected $rowCount;	// number of rows in the database
 	protected $tupleCount;	// number of requested tuples
@@ -60,10 +61,11 @@ abstract class Interpreter {
 	 * @param integer $from timestamp in ms since 1970
 	 * @param integer $to timestamp in ms since 1970
 	 */
-	public function __construct(Model\Channel $channel, ORM\EntityManager $em, $from, $to, $tupleCount, $groupBy) {
+	public function __construct(Model\Channel $channel, ORM\EntityManager $em, $from, $to, $tupleCount, $groupBy, $client = 'unknown') {
 		$this->channel = $channel;
 		$this->groupBy = $groupBy;
 		$this->tupleCount = $tupleCount;
+		$this->client = $client;
 		$this->conn = $em->getConnection(); // get dbal connection from EntityManager
 		
 		// parse interval
@@ -105,20 +107,21 @@ abstract class Interpreter {
 	 * @return Volkszaehler\DataIterator
 	 */
 	protected function getData() {
-
-		// get timestamps of preceding and following data points as a graciousness
-		// for the frontend to be able to draw graphs to the left and right borders
-		if (isset($this->from)) {
-			$sql = 'SELECT MIN(timestamp) FROM (SELECT timestamp FROM data WHERE channel_id=? AND timestamp<? ORDER BY timestamp DESC LIMIT 2) t';
-			$from = $this->conn->fetchColumn($sql, array($this->channel->getId(), $this->from), 0);
-			if ($from)
-				$this->from = $from;
-		}
-		if (isset($this->to)) {
-			$sql = 'SELECT MAX(timestamp) FROM (SELECT timestamp FROM data WHERE channel_id=? AND timestamp>? ORDER BY timestamp ASC LIMIT 2) t';
-			$to = $this->conn->fetchColumn($sql, array($this->channel->getId(), $this->to), 0);
-			if ($to)
-				$this->to = $to;
+		if ($this->client !== 'raw') {
+			// get timestamps of preceding and following data points as a graciousness
+			// for the frontend to be able to draw graphs to the left and right borders
+			if (isset($this->from)) {
+				$sql = 'SELECT MIN(timestamp) FROM (SELECT timestamp FROM data WHERE channel_id=? AND timestamp<? ORDER BY timestamp DESC LIMIT 2) t';
+				$from = $this->conn->fetchColumn($sql, array($this->channel->getId(), $this->from), 0);
+				if ($from)
+					$this->from = $from;
+			}
+			if (isset($this->to)) {
+				$sql = 'SELECT MAX(timestamp) FROM (SELECT timestamp FROM data WHERE channel_id=? AND timestamp>? ORDER BY timestamp ASC LIMIT 2) t';
+				$to = $this->conn->fetchColumn($sql, array($this->channel->getId(), $this->to), 0);
+				if ($to)
+					$this->to = $to;
+			}
 		}
 
 		// common conditions for following SQL queries	
@@ -143,10 +146,48 @@ abstract class Interpreter {
 		$this->rowCount = (int) $this->conn->fetchColumn($sqlRowCount, $sqlParameters, 0);
 		if ($this->rowCount <= 0)
 			return new \EmptyIterator();
-		
-		$stmt = $this->conn->executeQuery($sql, $sqlParameters); // query for data
+
+		// perform any optimizations, based on the actual number of rows
+		$stmt = $this->runSQL($sql, $sqlParameters);
 
 		return new DataIterator($stmt, $this->rowCount, $this->tupleCount);
+	}
+
+	/**
+	 * Execute SQL after performing potential optimizations
+	 * Helper function to avoid duplicate code in derived classes
+	 * Reduces number of tuples returned from DB if possible
+	 *
+	 * @author Andreas Götz <cpuidle@gmx.de>
+	 * @param string $sql
+	 * @param string $sqlParameters
+	 */
+	protected function runSQL($sql, $sqlParameters) {
+		// potential to reduce result set - can't do this for already grouped SQL
+		if ($this->tupleCount && ($this->rowCount > $this->tupleCount) && !$this->groupBy) {
+			$packageSize = floor($this->rowCount / $this->tupleCount);
+
+			if ($packageSize > 1) { // worth doing -> go
+				$foo = array();
+				$sqlTimeFilter = self::buildDateTimeFilterSQL($this->from, $this->to, $foo);
+
+				$this->rowCount = floor($this->rowCount / $packageSize);
+				// setting @row to packageSize-2 will make the first package contain 1 tuple only - as it's skipped anyway
+				// this pushes as much 'real' data as possible into the first used package
+				$this->conn->query('SET @row:=' . ($packageSize-2));
+				$sql = 'SELECT MAX(aggregate.timestamp) AS timestamp, SUM(aggregate.value) AS value, COUNT(aggregate.value) AS count '.
+					   'FROM ('.
+					   '	SELECT timestamp, value, @row:=@row+1 AS row '.
+					   ' 	FROM data WHERE channel_id=?' . $sqlTimeFilter . 
+					   ') AS aggregate '.
+					   'GROUP BY row DIV ' . $packageSize .' '.
+					   'ORDER BY timestamp ASC';
+			}
+		}
+
+		$stmt = $this->conn->executeQuery($sql, $sqlParameters); // query for data
+
+		return($stmt);
 	}
 
 	/**

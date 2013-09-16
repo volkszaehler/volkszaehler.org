@@ -70,11 +70,11 @@ class MeterInterpreter extends Interpreter {
 	 */
 	public function processData($callback) {
 		$tuples = array();
-		$this->rows = parent::getData();
+		$this->rows = $this->getData();
 
 		$this->resolution = $this->channel->getProperty('resolution');
 		$this->pulseCount = 0;
-		
+	
 		$ts_last = $this->getFrom();
 		foreach ($this->rows as $row) {
 			$delta = $row[0] - $ts_last;
@@ -91,13 +91,18 @@ class MeterInterpreter extends Interpreter {
 			if (is_null($this->min) || $tuple[1] < $this->min[1]) {
 				$this->min = $tuple;
 			}
-				
+			
 			$this->pulseCount += $row[1];
 
 			$tuples[] = $tuple;
 			$ts_last = $row[0];
 		}
-		
+
+		// in case of subtotaled queries (tupleCount) make sure consumption is correct
+		// this avoids the aliasing problems due to DataIterator dropping first record
+		if ($this->tupleCount && count($tuples))
+			$this->pulseCount += $this->rows->firstValue();
+
 		return $tuples;
 	}
 }

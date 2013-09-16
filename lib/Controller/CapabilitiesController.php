@@ -54,7 +54,27 @@ class CapabilitiesController extends Controller {
 			
 			$capabilities['configuration'] = $configuration;
 		}
-		
+
+		if (is_null($section) || $section == 'database') {
+			$conn = $this->em->getConnection(); // get dbal connection from EntityManager
+
+			$sql = 'SELECT ('.
+				   '	SELECT COUNT(1) '.
+				   '	FROM data'.
+				   ') AS rows, ('.
+				   '	SELECT SUM(data_length + index_length) '.
+				   '	FROM information_schema.tables '.
+				   '	WHERE table_schema = ?'.
+				   ') AS size';
+
+			$res = $conn->fetchArray($sql, array(Util\Configuration::read('db.dbname')));
+
+			$capabilities['database'] = array(
+				'rows' => $res[0],
+				'size' => $res[1]
+			);
+		}
+				
 		if (is_null($section) || $section == 'formats') {
 			$capabilities['formats'] = array_keys(\Volkszaehler\Router::$viewMapping);
 		}
