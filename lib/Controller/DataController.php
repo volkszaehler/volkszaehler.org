@@ -81,7 +81,7 @@ class DataController extends Controller {
 			// multiple tuples - bundle in transaction
 			$this->em->getConnection()->beginTransaction(); // suspend auto-commit
 			try {
-				if ($json['data']) {
+				if (isset($json['data'])) {
 					// multiple channels
 					$ec = new EntityController($this->view, $this->em);
 
