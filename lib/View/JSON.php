@@ -59,6 +59,26 @@ class JSON extends View {
 
 		$this->response->setHeader('Content-type', 'application/json');
 		$this->setPadding($request->getParameter('padding'));
+
+		// enable CORS if not JSONP
+		if (!$this->padding) $this->response->setHeader('Access-Control-Allow-Origin', '*');
+	}
+
+	/**
+	 * Handles exceptions and sets HTTP return code in a JSONP-aware way.
+	 * Overrides View->exceptionHandler.
+	 *
+	 * @param \Exception $exception
+	 * @author Andreas Götz <cpuidle@gmx.de>
+	 */
+	public function exceptionHandler(\Exception $exception) {
+		$this->add($exception);
+
+		$code = ($exception->getCode() == 0 || !HTTP\Response::getCodeDescription($exception->getCode())) ? 400 : $exception->getCode();
+		$this->response->setCode(($this->padding) ? 200 : $code);
+		$this->send();
+
+		die();
 	}
 
 	/**
