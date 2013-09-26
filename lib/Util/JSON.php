@@ -58,7 +58,6 @@ class JSON extends \ArrayObject {
 	 */
 	public function encode($options = 0) {
 		$json = json_encode($this->getArrayCopy(), $options);
-		//var_dump($this->getArrayCopy());
 
 		if ($options & JSON_PRETTY) {
 			$json = self::format($json);

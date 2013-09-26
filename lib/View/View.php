@@ -86,7 +86,7 @@ abstract class View {
 	 *
 	 * @param \Exception $exception
 	 */
-	final public function exceptionHandler(\Exception $exception) {
+	public function exceptionHandler(\Exception $exception) {
 		$this->add($exception);
 
 		$code = ($exception->getCode() == 0 || !HTTP\Response::getCodeDescription($exception->getCode())) ? 400 : $exception->getCode();

@@ -72,7 +72,7 @@ class AggregatorInterpreter extends Interpreter {
 	 * @todo to be implemented
 	 * @return array of values
 	 */
-	public function processData($tuples = NULL, $groupBy = NULL) {
+	public function processData($callback) {
 
 	}
 
@@ -94,7 +94,7 @@ class AggregatorInterpreter extends Interpreter {
 		$min = null;
 		foreach ($this->childrenInterpreter as $interpreter) {
 			$arr = $interpreter->getMax();
-			if (! $min or $arr['value'] < $min['value']) {
+			if (! $min or $arr[1] < $min[1]) {
 				$min = $arr;
 			}
 		}
@@ -110,7 +110,7 @@ class AggregatorInterpreter extends Interpreter {
 		$max = null;
 		foreach ($this->childrenInterpreter as $interpreter) {
 			$arr = $interpreter->getMax();
-			if (! $max or $arr['value'] > $max['value']) {
+			if (! $max or $arr[1] > $max[1]) {
 				$max = $arr;
 			}
 		}
