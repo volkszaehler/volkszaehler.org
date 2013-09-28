@@ -33,7 +33,7 @@ use Volkszaehler\Controller;
 error_reporting(E_ALL | E_STRICT);
 
 define('VZ_DIR', realpath(__DIR__ . '/..'));
-define('VZ_VERSION', '0.2');
+define('VZ_VERSION', '0.3');
 
 // class autoloading
 require_once VZ_DIR . '/lib/Util/ClassLoader.php';
