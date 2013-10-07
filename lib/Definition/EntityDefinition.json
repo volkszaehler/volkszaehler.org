@@ -120,7 +120,7 @@
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
-			"de" : "Elektrische Energie (s0-impulse)",
+			"de" : "Elektrische Energie (S0-Impulse)",
 			"en" : "Electric Energy (s0-pulses)",
 		}
 	},
