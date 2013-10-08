@@ -121,7 +121,7 @@
 		"hasConsumption"	: true,
 		"translation"		: {
 			"de" : "Elektrische Energie (S0-Impulse)",
-			"en" : "Electric Energy (s0-pulses)",
+			"en" : "Electric Energy (s0-pulses)"
 		}
 	},
 	{
@@ -135,7 +135,7 @@
 		"hasConsumption"	: true,
 		"translation"		: {
 			"de" : "Elektrische Energie (Leistungswerte)",
-			"en" : "Electric Energy (power readings)",
+			"en" : "Electric Energy (power readings)"
 		}
 	},
 	{
