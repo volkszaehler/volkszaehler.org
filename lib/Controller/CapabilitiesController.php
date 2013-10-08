@@ -54,7 +54,8 @@ class CapabilitiesController extends Controller {
 			
 			$capabilities['configuration'] = $configuration;
 		}
-
+/*
+		// TODO fix COUNT performance on large INNODB tables
 		if (is_null($section) || $section == 'database') {
 			$conn = $this->em->getConnection(); // get dbal connection from EntityManager
 
@@ -74,7 +75,7 @@ class CapabilitiesController extends Controller {
 				'size' => $res[1]
 			);
 		}
-				
+*/				
 		if (is_null($section) || $section == 'formats') {
 			$capabilities['formats'] = array_keys(\Volkszaehler\Router::$viewMapping);
 		}
