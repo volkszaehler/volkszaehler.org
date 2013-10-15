@@ -3,12 +3,12 @@
  * Test harness
  *
  * @package Test
- * @author Andreas Götz <cpuidle@gmx.de>
+ * @author Andreas Goetz <cpuidle@gmx.de>
  */
 
 require_once('simpletest/autorun.php');
 
-class AllFileTests extends TestSuite { 
+class Test extends TestSuite { 
 
 	function __construct() {
 		parent::__construct();
@@ -18,8 +18,7 @@ class AllFileTests extends TestSuite {
 
 		// entities
 		$this->addFile('ChannelTest.php');
-		// not implemented
-		// $this->addFile('GroupTest.php');
+		$this->addFile('GroupTest.php');
 
 		// meters
 		$this->addFile('DataMeterTest.php');

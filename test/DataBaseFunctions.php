@@ -49,24 +49,23 @@ abstract class DataBaseFunctions extends MiddlewareTest
 		$this->getJson($url);
 	}
 
-	protected function getDatapoints($from = null, $to = null, $group = null) {
-		$url = $this->context . '/' . $this->uuid . '.json?';
+	protected function _getDatapoints($url, $from = null, $to = null, $group = null) {
 		if ($from) $url .= 'from=' . $from . '&';
 		if ($to) $url .= 'to=' . $to . '&';
 		if ($group) $url .= 'group=' . $group . '&';
-		
+
 		$this->getJson($url);
 		$this->assertUUID();
 	}
 
+	protected function getDatapoints($from = null, $to = null, $group = null) {
+		$url = $this->context . '/' . $this->uuid . '.json?';
+		return $this->_getDatapoints($url, $from, $to, $group);
+	}
+
 	protected function getDatapointsRaw($from = null, $to = null, $group = null) {
 		$url = $this->context . '/' . $this->uuid . '.json?client=raw&';
-		if ($from) $url .= 'from=' . $from . '&';
-		if ($to) $url .= 'to=' . $to . '&';
-		if ($group) $url .= 'group=' . $group . '&';
-		
-		$this->getJson($url);
-		$this->assertUUID();
+		return $this->_getDatapoints($url, $from, $to, $group);
 	}
 
 	protected function debug() {

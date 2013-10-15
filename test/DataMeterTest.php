@@ -24,6 +24,8 @@ class DataMeterTest extends DataBaseFunctions
 	protected $value2 = 1000;
 	protected $value3 = 2000;
 
+	// function __destruct() {	}
+
 	function getConsumption($rawValue) {
 		return($rawValue / $this->resolution * 1000);
 	}
@@ -108,10 +110,10 @@ class DataMeterTest extends DataBaseFunctions
 	}
 
 	/**
-	 * only get data points inside request range
+	 * only get data points inside request range - shouldn't find anything
 	 */
 	function testGetEdgeDatapointsRaw() {
-		$this->getDatapointsRaw($this->ts2, $this->ts2 + 1000);
+		$this->getDatapointsRaw($this->ts2 + 1, $this->ts2 + 1000);
 
 		$this->assertTrue($this->json->data->from == $this->ts2 + 1, "<from> doesn't match request");
 		$this->assertTrue($this->json->data->to == $this->ts2 + 1000, "<to> doesn't match request");
