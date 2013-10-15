@@ -28,7 +28,7 @@ class DataCounterTest extends DataBaseFunctions
 	}
 
 	function getAverage($from, $to, $periodValue) {
-		return($periodValue * $this->hour / ($to - $from));
+		return($periodValue * 3600000 / ($to - $from));
 	}
 
 	function getTuple($from, $to, $fromValue, $toValue, $count = NULL) {
