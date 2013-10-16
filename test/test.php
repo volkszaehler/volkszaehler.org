@@ -8,6 +8,8 @@
 
 require_once('simpletest/autorun.php');
 
+SimpleTest::prefer(new TextReporter());
+
 class Test extends TestSuite { 
 
 	function __construct() {

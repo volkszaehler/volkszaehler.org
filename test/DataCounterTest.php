@@ -6,9 +6,9 @@
  * @author Andreas Götz <cpuidle@gmx.de>
  */
 
-require_once('DataBaseFunctions.php');
+require_once('DataContext.php');
 
-class DataCounterTest extends DataBaseFunctions
+class DataCounterTest extends DataContext
 {
 	// DataBaseFunctions overridde
 	protected $title = 'Counter';

@@ -6,10 +6,9 @@
  * @author Andreas Götz <cpuidle@gmx.de>
  */
 
-require_once('MiddlewareTest.php');
-require_once('DataBaseFunctions.php');
+require_once('DataContext.php');
 
-class DataSensorTest extends DataBaseFunctions
+class DataSensorTest extends DataContext
 {
 	// channel properties
 	protected $title = 'Sensor';

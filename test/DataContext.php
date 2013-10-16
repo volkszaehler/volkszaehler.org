@@ -8,7 +8,7 @@
 
 require_once('MiddlewareTest.php');
 
-abstract class DataBaseFunctions extends MiddlewareTest
+abstract class DataContext extends MiddlewareTest
 {
 	protected $uuid;
 

@@ -6,9 +6,9 @@
  * @author Andreas Götz <cpuidle@gmx.de>
  */
 
-require_once('DataBaseFunctions.php');
+require_once('DataContext.php');
 
-class DataMeterTest extends DataBaseFunctions
+class DataMeterTest extends DataContext
 {
 	// channel properties
 	protected $title = 'Meter';

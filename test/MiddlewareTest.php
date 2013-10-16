@@ -10,8 +10,6 @@ require_once('simpletest/autorun.php');
 require_once('simpletest/browser.php'); 
 // require_once('simpletest/web_tester.php');
 
-SimpleTest::prefer(new TextReporter());
-
 class MiddlewareTest extends UnitTestCase  
 {
 	public static $mw = '';				// middleware url (auto-detected or manually set)
