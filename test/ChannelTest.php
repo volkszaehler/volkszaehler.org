@@ -6,112 +6,80 @@
  * @author Andreas Götz <cpuidle@gmx.de>
  */
 
-require_once('MiddlewareTest.php');
+require_once('Middleware.php');
 
-class ChannelTest extends MiddlewareTest
+class ChannelTest extends Middleware
 {
 	protected $uuid;
 
-	protected $title = 'Power';
-	protected $type = 'power';
-	protected $resolution = 1000;	
-
-	protected $title2 = 'Electric Meter';
-	protected $type2 = 'electric meter';
-	protected $resolution2 = 10;	
-
-	protected $title3 = 'Sensor';
-	protected $type3 = 'powersensor';
-
-	function __construct() {
-		parent::__construct();
+	function __construct($name = NULL, array $data = array(), $dataName = '') {
+		parent::__construct($name, $data, $dataName);
 		$this->context = self::$mw . 'channel';
 	}
 
-	public function createChannel($title, $type, $resolution = NULL) {
-		$url = $this->context . '.json?operation=add&title=' . $title . '&type=' . $type;
+	public function createChannel($title, $type, $resolution) {
+		$url = $this->context . '.json?operation=add&title=' . urlencode($title) . '&type=' . urlencode($type);
 		if ($resolution) $url .= '&resolution=' . $resolution;
 		$this->getJson($url);
 
-		$this->assertTrue(isset($this->json->entity->uuid));
-		return($this->uuid = $this->json->entity->uuid);
+		return($this->uuid = (isset($this->json->entity->uuid)) ? $this->json->entity->uuid : null);
 	}
 
-	public function deleteChannel($uuid) {
-		$url = $this->context . '/' . $uuid . '.json?operation=delete';
-		$this->getJson($url);
+	function channelProvider() {
+		return array(
+			array('Power', 'power', 1000),					// Meter
+			array('Electric Meter', 'electric meter', 10),	// Counter
+			array('Sensor', 'powersensor', null)			// Sensor
+		);
 	}
 
-	function testListChannel() {
+	function testListChannels() {
 		$url = $this->context . '.json';
 		$this->getJson($url);
 	}
 
-	function testCreateMeterChannel() {
-		$this->createChannel($this->title, $this->type, $this->resolution);
+	/**
+     * @dataProvider channelProvider
+     */
+	function testChannelLifecycle($title, $type, $resolution) {
+		// create
+		$uuid = $this->createChannel($title, $type, $resolution);
 
-		if ($this->assertTrue(isset($this->json->entity), "Expected <entity> got none.")) {
-			$this->assertTrue($this->json->entity->type == $this->type);
-			$this->assertTrue($this->json->entity->title == $this->title);
-			$this->assertTrue($this->json->entity->resolution == $this->resolution);
-		}
-	}
+		$this->assertTrue(isset($this->json->entity), "Expected <entity> got none.");
+		$this->assertTrue(isset($this->json->entity->uuid));
 
-	function testFindChannel() {
+		$this->assertTrue($this->json->entity->type == $type);
+		$this->assertTrue($this->json->entity->title == $title);
+		if ($resolution) $this->assertTrue($this->json->entity->resolution == $resolution);
+
+		// search
 		$url = $this->context . '/' . $this->uuid . '.json';
 		$this->getJson($url);
 
-		if ($this->assertTrue(isset($this->json->entity), "Expected <entity> got none")) {
-			$this->assertTrue($this->json->entity->uuid == $this->uuid);
-			$this->assertTrue($this->json->entity->type == $this->type);
-			$this->assertTrue($this->json->entity->title == $this->title);
-			$this->assertTrue($this->json->entity->resolution == $this->resolution);
-		}
-	}
+		$this->assertTrue(isset($this->json->entity), "Expected <entity> got none");
+		$this->assertTrue($this->json->entity->uuid == $uuid);
+		$this->assertTrue($this->json->entity->type == $type);
+		$this->assertTrue($this->json->entity->title == $title);
+		if ($resolution) $this->assertTrue($this->json->entity->resolution == $resolution);
 
-	/**
-	 * @todo fix mw silently failing when changing meter type 
-	 */
-	function testUpdateChannel() {
-		$url = $this->context . '/' . $this->uuid . '.json?operation=edit&title='.$this->title2.'&type='.$this->type2.'&resolution='.$this->resolution2;
+		// test updating for first channel type only
+		if ($title == 'Power') {
+			$url = $this->context . '/' . $this->uuid . '.json?operation=edit&title='.$title.'Updated'.'&type='.'Sensor'.'&resolution='.($resolution*10);
+			$this->getJson($url);
+
+			$this->assertTrue(isset($this->json->entity), "Expected <entity> got none");
+			$this->assertTrue($this->json->entity->uuid == $uuid);
+			$this->assertTrue($this->json->entity->type == $type, "<type> must not be changed");
+			$this->assertTrue($this->json->entity->title == $title.'Updated');
+			$this->assertTrue($this->json->entity->resolution == $resolution*10);
+		}
+
+		// delete
+		$url = $this->context . '/' . $uuid . '.json?operation=delete';
 		$this->getJson($url);
-
-		if ($this->assertTrue(isset($this->json->entity), "Expected <entity> got none")) {
-			$this->assertTrue($this->json->entity->uuid == $this->uuid);
-			$this->assertTrue($this->json->entity->type == $this->type2, "<type> could not be changed");
-			$this->assertTrue($this->json->entity->title == $this->title2);
-			$this->assertTrue($this->json->entity->resolution == $this->resolution2);
-		}
-	}
-
-	function testDeleteChannel() {
-		$this->deleteChannel($this->uuid);
 
 		$url = $this->context . '/' . $this->uuid . '.json';
 		$this->getJson($url, "No entity found with UUID: '" . $this->uuid . "'");
-	}
-
-	function testCreateCounterChannel() {
-		$this->createChannel($this->title2, $this->type2, $this->resolution2);
-
-		if ($this->assertTrue(isset($this->json->entity), "Expected <entity> got none")) {
-			$this->assertTrue($this->json->entity->type == $this->type2);
-			$this->assertTrue($this->json->entity->title == $this->title2);
-			$this->assertTrue($this->json->entity->resolution == $this->resolution2);
-		}
-
-		$this->deleteChannel($this->uuid);
-	}
-
-	function testCreateSensorChannel() {
-		$this->createChannel($this->title3, $this->type3);
-
-		if ($this->assertTrue(isset($this->json->entity), "Expected <entity> got none")) {
-			$this->assertTrue($this->json->entity->type == $this->type3);
-			$this->assertTrue($this->json->entity->title == $this->title3);
-		}
-
-		$this->deleteChannel($this->uuid);
 	}
 }
 

@@ -6,9 +6,9 @@
  * @author Andreas Götz <cpuidle@gmx.de>
  */
 
-require_once('MiddlewareTest.php');
+require_once('Middleware.php');
 
-class GroupTest extends MiddlewareTest
+class GroupTest extends Middleware
 {
 	function __construct() {
 		parent::__construct();

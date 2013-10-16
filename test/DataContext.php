@@ -6,9 +6,9 @@
  * @author Andreas Götz <cpuidle@gmx.de>
  */
 
-require_once('MiddlewareTest.php');
+require_once('Middleware.php');
 
-abstract class DataContext extends MiddlewareTest
+abstract class DataContext extends Middleware
 {
 	protected $uuid;
 
@@ -29,19 +29,20 @@ abstract class DataContext extends MiddlewareTest
 		// destroy channel
  		if ($this->uuid) // allow children to override
  			$this->deleteChannel($this->uuid);
+		// parent::__destruct();
 	}
 
 	public function createChannel($title, $type, $resolution) {
-		$url = self::$mw . 'channel.json?operation=add&title=' . $title . '&type=' . $type;
+		$url = self::$mw . 'channel.json?operation=add&title=' . urlencode($title) . '&type=' . urlencode($type);
 		if ($resolution) $url .= '&resolution=' . $resolution;
-		$this->_getJson($url);
+		$this->getJson($url);
 
-		return($this->uuid = $this->json->entity->uuid);
+		return($this->uuid = (isset($this->json->entity->uuid)) ? $this->json->entity->uuid : null);
 	}
 
 	public function deleteChannel($uuid) {
 		$url = self::$mw . 'channel/' . $uuid . '.json?operation=delete';
-		$this->_getJson($url);
+		$this->getJson($url);
 	}
 
 	protected function addDatapoint($ts, $value) {
@@ -50,8 +51,8 @@ abstract class DataContext extends MiddlewareTest
 	}
 
 	protected function _getDatapoints($url, $from = null, $to = null, $group = null) {
-		if ($from) $url .= 'from=' . $from . '&';
-		if ($to) $url .= 'to=' . $to . '&';
+		if ($from)  $url .= 'from=' . $from . '&';
+		if ($to) 	$url .= 'to=' . $to . '&';
 		if ($group) $url .= 'group=' . $group . '&';
 
 		$this->getJson($url);
@@ -60,12 +61,12 @@ abstract class DataContext extends MiddlewareTest
 
 	protected function getDatapoints($from = null, $to = null, $group = null) {
 		$url = $this->context . '/' . $this->uuid . '.json?';
-		return $this->_getDatapoints($url, $from, $to, $group);
+		$this->_getDatapoints($url, $from, $to, $group);
 	}
 
 	protected function getDatapointsRaw($from = null, $to = null, $group = null) {
 		$url = $this->context . '/' . $this->uuid . '.json?client=raw&';
-		return $this->_getDatapoints($url, $from, $to, $group);
+		$this->_getDatapoints($url, $from, $to, $group);
 	}
 
 	protected function debug() {
@@ -76,7 +77,17 @@ abstract class DataContext extends MiddlewareTest
 	 * Helper assertion to validate correct UUID
 	 */
 	protected function assertUUID() {
-		$this->assertTrue($this->json->data->uuid == $this->uuid, "Wrong UUID. Expected " . $this->uuid . ", got " . $this->json->data->uuid);
+		$this->assertEquals((isset($this->json->data->uuid) ? $this->json->data->uuid : null), $this->uuid, 
+			"Wrong UUID. Expected " . $this->uuid . ", got " . $this->json->data->uuid);
+	}
+
+	/**
+	 * Helper assertion to validate header fields
+	 */
+	protected function assertHeader($consumption, $average, $rows) {
+		$this->assertEquals($consumption, $this->json->data->consumption);
+		$this->assertEquals($average, $this->json->data->average);
+		$this->assertEquals($rows, $this->json->data->rows);
 	}
 
 	/**
@@ -90,12 +101,12 @@ abstract class DataContext extends MiddlewareTest
 
 		if (is_array($tuple)) {
 			for ($i=0; $i<sizeof($tuple); $i++) {
-				$this->assertTrue($realTuple[$i] == $tuple[$i], 
+				$this->assertEquals($realTuple[$i], $tuple[$i], 
 					$msg . ". Got " . print_r(array_slice($realTuple,0,sizeof($tuple)),1) . 
 					", expected " . print_r($tuple,1));
 			}
 		}
-		else $this->assertTrue($realTuple[1] == $tuple, 
+		else $this->assertEquals($realTuple[1], $tuple, 
 					$msg . ". Got value " . print_r($realTuple[1],1) . 
 					", expected " . $tuple);
 	}

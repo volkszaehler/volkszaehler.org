@@ -55,12 +55,9 @@ class DataMeterTest extends DataContext
 	function testGetOneDatapoint() {
 		$this->getDatapoints($this->ts1, $this->ts2);
 
-		$this->assertTrue($this->json->data->from == $this->ts1, "<from> doesn't match request");
-		$this->assertTrue($this->json->data->to == $this->ts2, "<to> doesn't match request");
-
-		$this->assertTrue($this->json->data->consumption == 0);
-		$this->assertTrue($this->json->data->average == 0);
-		$this->assertTrue($this->json->data->rows == 1);
+		$this->assertEquals($this->ts1, $this->json->data->from, "<from> doesn't match request");
+		$this->assertEquals($this->ts2, $this->json->data->to, "<to> doesn't match request");
+		$this->assertHeader(0, 0, 1);
 
 		$this->assertFalse(isset($this->json->data->tuples));
 	}
@@ -75,18 +72,15 @@ class DataMeterTest extends DataContext
 	function testGetTwoDatapoints() {
 		$this->getDatapoints($this->ts1, $this->ts2);
 
-		$this->assertTrue($this->json->data->from == $this->ts1, "<from> doesn't match request");
-		$this->assertTrue($this->json->data->to == $this->ts2, "<to> doesn't match request");
+		$this->assertEquals($this->ts1, $this->json->data->from, "<from> doesn't match request");
+		$this->assertEquals($this->ts2, $this->json->data->to, "<to> doesn't match request");
 
 		$consumption = $this->getConsumption($this->value2);
 		$average = $this->getAverage($this->ts1, $this->ts2, $consumption);
-
-		$this->assertTrue($this->json->data->consumption == $consumption);
-		$this->assertTrue($this->json->data->average == $average);
-		$this->assertTrue($this->json->data->rows == 2);
+		$this->assertHeader($consumption, $average, 2);
 
 		// timestamp of interval start
-		$this->assertTrue(sizeof($this->json->data->tuples) == 1);
+		$this->assertCount(1, $this->json->data->tuples);
 
 		// equivalent
 		$this->assertTuple(0, $this->getTuple($this->ts1, $this->ts2, $this->value2));
@@ -98,15 +92,12 @@ class DataMeterTest extends DataContext
 	function testGetEdgeDatapoints() {
 		$this->getDatapoints($this->ts2, $this->ts2 + 1000);
 
-		$this->assertTrue($this->json->data->from == $this->ts1, "<from> doesn't match request");
-		$this->assertTrue($this->json->data->to == $this->ts2, "<to> doesn't match request");
+		$this->assertEquals($this->ts1, $this->json->data->from, "<from> doesn't match request");
+		$this->assertEquals($this->ts2, $this->json->data->to, "<to> doesn't match request");
 
 		$consumption = $this->getConsumption($this->value2);
 		$average = $this->getAverage($this->ts1, $this->ts2, $consumption);
-
-		$this->assertTrue($this->json->data->consumption == $consumption);
-		$this->assertTrue($this->json->data->average == $average);
-		$this->assertTrue($this->json->data->rows == 2);
+		$this->assertHeader($consumption, $average, 2);
 	}
 
 	/**
@@ -115,12 +106,10 @@ class DataMeterTest extends DataContext
 	function testGetEdgeDatapointsRaw() {
 		$this->getDatapointsRaw($this->ts2 + 1, $this->ts2 + 1000);
 
-		$this->assertTrue($this->json->data->from == $this->ts2 + 1, "<from> doesn't match request");
-		$this->assertTrue($this->json->data->to == $this->ts2 + 1000, "<to> doesn't match request");
-
-		$this->assertTrue($this->json->data->consumption == 0);
-		$this->assertTrue($this->json->data->average == 0);
-		$this->assertTrue($this->json->data->rows == 0);
+		// from/to expected 0 if rows=0
+		$this->assertEquals(0, $this->json->data->from, "<from> doesn't match request");
+		$this->assertEquals(0, $this->json->data->to, "<to> doesn't match request");
+		$this->assertHeader(0, 0, 0);
 	}
 
 	/**
@@ -133,48 +122,42 @@ class DataMeterTest extends DataContext
 		// get data
 		$this->getDatapoints($this->ts1, $this->ts3);
 
-		$this->assertTrue($this->json->data->from == $this->ts1, "<from> doesn't match request");
-		$this->assertTrue($this->json->data->to == $this->ts3, "<to> doesn't match request");
+		$this->assertEquals($this->ts1, $this->json->data->from, "<from> doesn't match request");
+		$this->assertEquals($this->ts3, $this->json->data->to, "<to> doesn't match request");
 
 		$consumption = $this->getConsumption($this->value2 + $this->value3);
 		$average = $this->getAverage($this->ts1, $this->ts3, $consumption);
-
-		$this->assertTrue($this->json->data->consumption == $consumption);
-		$this->assertTrue($this->json->data->average == $average);
-		$this->assertTrue($this->json->data->rows == 3);
+		$this->assertHeader($consumption, $average, 3);
 
 		// timestamp of interval start
-		$this->assertTrue(sizeof($this->json->data->tuples) == 2);
+		$this->assertCount(2, $this->json->data->tuples);
 
 		$this->assertTuple(0, $this->getTuple($this->ts1, $this->ts2, $this->value2));
 		$this->assertTuple(1, $this->getTuple($this->ts2, $this->ts3, $this->value3));
 
-		$this->assertTuple($this->json->data->min, $this->getTuple($this->ts1, $this->ts2, $this->value2), "<min> tuple mismatch");
-		$this->assertTuple($this->json->data->max, $this->getTuple($this->ts2, $this->ts3, $this->value3), "<max> tuple mismatch");
+		$this->assertTuple($this->getTuple($this->ts1, $this->ts2, $this->value2), $this->json->data->min, "<min> tuple mismatch");
+		$this->assertTuple($this->getTuple($this->ts2, $this->ts3, $this->value3), $this->json->data->max, "<max> tuple mismatch");
 	}
 
 	function testThreeDatapointsAggregationByHour() {
 		// get data
 		$this->getDatapoints($this->ts1, $this->ts3, "hour");
 
-		$this->assertTrue($this->json->data->from == $this->ts1, "<from> doesn't match request");
-		$this->assertTrue($this->json->data->to == $this->ts3, "<to> doesn't match request");
+		$this->assertEquals($this->ts1, $this->json->data->from, "<from> doesn't match request");
+		$this->assertEquals($this->ts3, $this->json->data->to, "<to> doesn't match request");
 
 		$consumption = $this->getConsumption($this->value2 + $this->value3);
 		$average = $this->getAverage($this->ts1, $this->ts3, $consumption);
-
-		$this->assertTrue($this->json->data->consumption == $consumption);
-		$this->assertTrue($this->json->data->average == $average);
-		$this->assertTrue($this->json->data->rows == 3);
+		$this->assertHeader($consumption, $average, 3);
 
 		// timestamp of interval start
-		$this->assertTrue(sizeof($this->json->data->tuples) == 2);
+		$this->assertCount(2, $this->json->data->tuples);
 
 		$this->assertTuple(0, $this->getTuple($this->ts1, $this->ts2, $this->value2));
 		$this->assertTuple(1, $this->getTuple($this->ts2, $this->ts3, $this->value3));
 
-		$this->assertTuple($this->json->data->min, $this->getTuple($this->ts1, $this->ts2, $this->value2), "<min> tuple mismatch");
-		$this->assertTuple($this->json->data->max, $this->getTuple($this->ts2, $this->ts3, $this->value3), "<max> tuple mismatch");
+		$this->assertTuple($this->getTuple($this->ts1, $this->ts2, $this->value2), $this->json->data->min, "<min> tuple mismatch");
+		$this->assertTuple($this->getTuple($this->ts2, $this->ts3, $this->value3), $this->json->data->max, "<max> tuple mismatch");
 	}
 }
 
