@@ -1,3 +1,5 @@
+Allow from all
+
 <IfModule mod_rewrite.c>
     RewriteEngine on
     RewriteRule ^$ app/public/ [L]
