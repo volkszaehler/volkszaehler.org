@@ -10,43 +10,43 @@ require_once('Middleware.php');
 
 abstract class DataContext extends Middleware
 {
-	protected $uuid;
+	static $uuid;
 
-	// abstract channel properties
-	protected $title = NULL;
-	protected $type = NULL;
-	protected $resolution = NULL;
-
-	function __construct() {
-		parent::__construct();
-		$this->context = self::$mw . 'data';
-
-		if (!$this->uuid) // allow children to override
-			$this->uuid = $this->createChannel($this->title, $this->type, $this->resolution);
+	/**
+	 * Initialize context
+	 */
+	static function setupBeforeClass() {
+		parent::setupBeforeClass();
+		self::$context = self::$mw . 'data';
 	}
 
-	function __destruct() {
-		// destroy channel
- 		if ($this->uuid) // allow children to override
- 			$this->deleteChannel($this->uuid);
-		// parent::__destruct();
-	}
+	/**
+	 * Remove channel if initialized
+	 */
+	static function tearDownAfterClass() {
+		if (self::$uuid) {
+			self::deleteChannel(self::$uuid);
+			self::$uuid = null;
+		}
+		parent::tearDownAfterClass();
+ 	}
 
-	public function createChannel($title, $type, $resolution) {
+	static function createChannel($title, $type, $resolution = null) {
 		$url = self::$mw . 'channel.json?operation=add&title=' . urlencode($title) . '&type=' . urlencode($type);
 		if ($resolution) $url .= '&resolution=' . $resolution;
-		$this->getJson($url);
+		$json = self::_getJson($url);
 
-		return($this->uuid = (isset($this->json->entity->uuid)) ? $this->json->entity->uuid : null);
+		return ((isset($json->entity->uuid)) ? $json->entity->uuid : null);
 	}
 
-	public function deleteChannel($uuid) {
+	static function deleteChannel($uuid) {
 		$url = self::$mw . 'channel/' . $uuid . '.json?operation=delete';
-		$this->getJson($url);
+		$json = self::_getJson($url);
 	}
 
-	protected function addDatapoint($ts, $value) {
-		$url = $this->context . '/' . $this->uuid . '.json?operation=add&ts=' . $ts . '&value=' . $value;
+	protected function addDatapoint($ts, $value, $uuid = null) {
+		$url = self::$context . '/' . (($uuid) ?: self::$uuid) . 
+			   '.json?operation=add&ts=' . $ts . '&value=' . $value;
 		$this->getJson($url);
 	}
 
@@ -60,12 +60,12 @@ abstract class DataContext extends Middleware
 	}
 
 	protected function getDatapoints($from = null, $to = null, $group = null) {
-		$url = $this->context . '/' . $this->uuid . '.json?';
+		$url = self::$context . '/' . self::$uuid . '.json?';
 		$this->_getDatapoints($url, $from, $to, $group);
 	}
 
 	protected function getDatapointsRaw($from = null, $to = null, $group = null) {
-		$url = $this->context . '/' . $this->uuid . '.json?client=raw&';
+		$url = self::$context . '/' . self::$uuid . '.json?client=raw&';
 		$this->_getDatapoints($url, $from, $to, $group);
 	}
 
@@ -77,8 +77,8 @@ abstract class DataContext extends Middleware
 	 * Helper assertion to validate correct UUID
 	 */
 	protected function assertUUID() {
-		$this->assertEquals((isset($this->json->data->uuid) ? $this->json->data->uuid : null), $this->uuid, 
-			"Wrong UUID. Expected " . $this->uuid . ", got " . $this->json->data->uuid);
+		$this->assertEquals((isset($this->json->data->uuid) ? $this->json->data->uuid : null), self::$uuid, 
+			"Wrong UUID. Expected " . self::$uuid . ", got " . $this->json->data->uuid);
 	}
 
 	/**

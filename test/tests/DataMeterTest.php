@@ -11,9 +11,7 @@ require_once('DataContext.php');
 class DataMeterTest extends DataContext
 {
 	// channel properties
-	protected $title = 'Meter';
-	protected $type = 'power';
-	protected $resolution = 100;
+	static $resolution = 100;
 
 	// data properties
 	protected $ts1 = 100000000;
@@ -24,10 +22,16 @@ class DataMeterTest extends DataContext
 	protected $value2 = 1000;
 	protected $value3 = 2000;
 
-	// function __destruct() {	}
+	/**
+	 * Create channel
+	 */
+	static function setupBeforeClass() {
+		parent::setupBeforeClass();
+		self::$uuid = self::createChannel('Meter', 'power', self::$resolution);
+	}
 
 	function getConsumption($rawValue) {
-		return($rawValue / $this->resolution * 1000);
+		return($rawValue / self::$resolution * 1000);
 	}
 
 	function getAverage($from, $to, $periodValue) {
@@ -52,21 +56,31 @@ class DataMeterTest extends DataContext
 		$this->assertFalse(isset($this->json->data));
 	}
 
+	/**
+	 * @depends testAddDatapoint
+	 */
 	function testGetOneDatapoint() {
 		$this->getDatapoints($this->ts1, $this->ts2);
 
+		// from/to expected to match single datapoint
 		$this->assertEquals($this->ts1, $this->json->data->from, "<from> doesn't match request");
-		$this->assertEquals($this->ts2, $this->json->data->to, "<to> doesn't match request");
+		$this->assertEquals($this->ts1, $this->json->data->to, "<to> doesn't match request");
 		$this->assertHeader(0, 0, 1);
 
 		$this->assertFalse(isset($this->json->data->tuples));
 	}
 
+	/**
+	 * @depends testAddDatapoint
+	 */
 	function testAddAnotherDatapoint() {
 		$this->addDatapoint($this->ts2, $this->value2);
 	}
 
 	/**
+	 * @depends testAddDatapoint
+	 * @depends testAddAnotherDatapoint
+	 *
 	 * @todo getting interval start timestamp seems odd as the value is discarded?
 	 */
 	function testGetTwoDatapoints() {
@@ -88,6 +102,9 @@ class DataMeterTest extends DataContext
 
 	/**
 	 * get data points outside request range
+	 *
+	 * @depends testAddDatapoint
+	 * @depends testAddAnotherDatapoint
 	 */
 	function testGetEdgeDatapoints() {
 		$this->getDatapoints($this->ts2, $this->ts2 + 1000);
@@ -102,6 +119,9 @@ class DataMeterTest extends DataContext
 
 	/**
 	 * only get data points inside request range - shouldn't find anything
+	 *
+	 * @depends testAddDatapoint
+	 * @depends testAddAnotherDatapoint
 	 */
 	function testGetEdgeDatapointsRaw() {
 		$this->getDatapointsRaw($this->ts2 + 1, $this->ts2 + 1000);
@@ -114,6 +134,9 @@ class DataMeterTest extends DataContext
 
 	/**
 	 * @todo getting interval start timestamp seems odd as the value is discarded?
+	 *
+	 * @depends testAddDatapoint
+	 * @depends testAddAnotherDatapoint
 	 */
 	function testThreeDatapointsAverageAndConsumption() {
 		// add 3rd datapoint
@@ -139,6 +162,11 @@ class DataMeterTest extends DataContext
 		$this->assertTuple($this->getTuple($this->ts2, $this->ts3, $this->value3), $this->json->data->max, "<max> tuple mismatch");
 	}
 
+	/**
+	 * @todo getting interval start timestamp seems odd as the value is discarded?
+	 *
+	 * @depends testThreeDatapointsAverageAndConsumption
+	 */
 	function testThreeDatapointsAggregationByHour() {
 		// get data
 		$this->getDatapoints($this->ts1, $this->ts3, "hour");

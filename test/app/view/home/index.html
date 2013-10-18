@@ -50,6 +50,14 @@
         <div class='span3'>
           <form id='test-container' action='./' method='post' class='well'>
             <ul class="nav nav-list">
+
+              <li class='centered'>
+                <input type='hidden' name='test_files' id='test-files' />
+                <button type="submit" id='run-tests' class="btn btn-primary">Run Tests</button>
+              </li>
+
+              <li class='divider'></li>
+
               <li class='nav-header'>Files</li>
 
               <li>
@@ -153,13 +161,6 @@
                   <input type='checkbox' id='display-succeeded' class='display-suite' value='1' checked='checked' data-target='succeeded' />
                   <abbr title='Succeeded'>Su</abbr>
                 </label>
-              </li>
-
-              <li class='divider'></li>
-
-              <li class='centered'>
-                <input type='hidden' name='test_files' id='test-files' />
-                <button type="submit" id='run-tests' class="btn btn-primary">Run Tests</button>
               </li>
 
             </ul>
