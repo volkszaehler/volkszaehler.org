@@ -12,13 +12,16 @@ class ChannelTest extends Middleware
 {
 	protected $uuid;
 
-	function __construct($name = NULL, array $data = array(), $dataName = '') {
-		parent::__construct($name, $data, $dataName);
-		$this->context = self::$mw . 'channel';
+	/**
+	 * Initialize context
+	 */
+	static function setupBeforeClass() {
+		parent::setupBeforeClass();
+		self::$context = self::$mw . 'channel';
 	}
 
-	public function createChannel($title, $type, $resolution) {
-		$url = $this->context . '.json?operation=add&title=' . urlencode($title) . '&type=' . urlencode($type);
+	function createChannel($title, $type, $resolution) {
+		$url = self::$context . '.json?operation=add&title=' . urlencode($title) . '&type=' . urlencode($type);
 		if ($resolution) $url .= '&resolution=' . $resolution;
 		$this->getJson($url);
 
@@ -34,7 +37,7 @@ class ChannelTest extends Middleware
 	}
 
 	function testListChannels() {
-		$url = $this->context . '.json';
+		$url = self::$context . '.json';
 		$this->getJson($url);
 	}
 
@@ -53,7 +56,7 @@ class ChannelTest extends Middleware
 		if ($resolution) $this->assertTrue($this->json->entity->resolution == $resolution);
 
 		// search
-		$url = $this->context . '/' . $this->uuid . '.json';
+		$url = self::$context . '/' . $this->uuid . '.json';
 		$this->getJson($url);
 
 		$this->assertTrue(isset($this->json->entity), "Expected <entity> got none");
@@ -64,7 +67,7 @@ class ChannelTest extends Middleware
 
 		// test updating for first channel type only
 		if ($title == 'Power') {
-			$url = $this->context . '/' . $this->uuid . '.json?operation=edit&title='.$title.'Updated'.'&type='.'Sensor'.'&resolution='.($resolution*10);
+			$url = self::$context . '/' . $this->uuid . '.json?operation=edit&title='.$title.'Updated'.'&type='.'Sensor'.'&resolution='.($resolution*10);
 			$this->getJson($url);
 
 			$this->assertTrue(isset($this->json->entity), "Expected <entity> got none");
@@ -75,10 +78,10 @@ class ChannelTest extends Middleware
 		}
 
 		// delete
-		$url = $this->context . '/' . $uuid . '.json?operation=delete';
+		$url = self::$context . '/' . $uuid . '.json?operation=delete';
 		$this->getJson($url);
 
-		$url = $this->context . '/' . $this->uuid . '.json';
+		$url = self::$context . '/' . $this->uuid . '.json';
 		$this->getJson($url, "No entity found with UUID: '" . $this->uuid . "'");
 	}
 }

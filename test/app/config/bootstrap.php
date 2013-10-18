@@ -2,6 +2,9 @@
 
 $root = dirname(dirname(__DIR__));
 
+// add logfile for debugging
+if (!defined('VZ_LOG')) define('VZ_LOG', "{$root}/debug.log");
+
 $config = array(
     /* Required */
 
@@ -10,7 +13,7 @@ $config = array(
 
     // The directories where the tests reside
     'test_directories' => array(
-        "{$root}/../.."
+        "{$root}/tests"
     ),
 
 
@@ -64,7 +67,7 @@ $config = array(
     // In order for VPU to function correctly, the configuration files must
     // contain a JSON listener (see the README for more information)
     'xml_configuration_files' => array(
-       "{$root}/../../phpunit.xml"
+       "{$root}/phpunit.xml"
     ),
 
     // Paths to any necessary bootstraps
@@ -80,8 +83,8 @@ set_include_path(
 );
 
 // shared hosting hack - vendor folder
-set_include_path(get_include_path() . PATH_SEPARATOR . "{$root}/.."); 
-set_include_path(get_include_path() . PATH_SEPARATOR . "{$root}/../PHPUnit");
+// set_include_path(get_include_path() . PATH_SEPARATOR . "{$root}/.."); 
+// set_include_path(get_include_path() . PATH_SEPARATOR . "{$root}/../PHPUnit");
 
 require_once 'PHPUnit/Autoload.php';
 require_once 'PHPUnit/Util/Log/JSON.php';

@@ -417,7 +417,8 @@ class VPU {
         $tests = $this->_parse_tests($tests);
         $original_classes = get_declared_classes();
         foreach ( $tests as $test ) {
-            require $test;
+            // require_once $test; //!!
+            require $test; //!!
         }
         $new_classes = get_declared_classes();
         $tests = array_diff($new_classes, $original_classes);
