@@ -179,7 +179,7 @@ abstract class Interpreter {
 					   'FROM ('.
 					   '	SELECT timestamp, value, @row:=@row+1 AS row '.
 					   ' 	FROM data WHERE channel_id=?' . $sqlTimeFilter . 
-					   ') AS aggregate '.
+					   'ORDER BY timestamp ) AS aggregate '.
 					   'GROUP BY row DIV ' . $packageSize .' '.
 					   'ORDER BY timestamp ASC';
 			}
