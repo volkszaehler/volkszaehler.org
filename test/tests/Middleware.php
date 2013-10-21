@@ -11,9 +11,10 @@ abstract class Middleware extends PHPUnit_Framework_TestCase
 	static $mw = '';			// middleware url (auto-detected or manually set)
 
 	static $context;			// context base url
+	static $response;			// request response
+	static $response_code;		// response code
 
 	protected $url;				// request url
-	protected $response;		// request response
 	protected $json;			// decoded json response
 
 	static function setupBeforeClass() {
@@ -22,15 +23,20 @@ abstract class Middleware extends PHPUnit_Framework_TestCase
 		}
 	}
 
+	private static function CURL_EXEC($curl) {
+		self::$response = curl_exec($curl);
+		self::$response_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+		curl_close($curl);
+		return(self::$response);
+	}
+
 	public static function HTTP_GET($url) {
 		$curl = curl_init();
 		curl_setopt_array($curl, array(
 			CURLOPT_URL => $url,
 			CURLOPT_RETURNTRANSFER => 1, 
 		));
-		$result = curl_exec($curl);
-		curl_close($curl);
-		return($result);
+		return(self::CURL_EXEC($curl));
 	}
 
 	public static function HTTP_POST($url, $post = array()) {
@@ -41,9 +47,7 @@ abstract class Middleware extends PHPUnit_Framework_TestCase
 			CURLOPT_POST => 1,
 			CURLOPT_POSTFIELDS => $post,
 		));
-		$result = curl_exec($curl);
-		curl_close($curl);
-		return($result);
+		return(self::CURL_EXEC($curl));
 	}
 
 	/**
@@ -86,7 +90,7 @@ abstract class Middleware extends PHPUnit_Framework_TestCase
 		$this->url = $url;
 		$this->json = self::_getJson($url);
 
-		$this->assertTrue($this->json !== null, "Expected JSON got " . print_r($this->response,1));
+		$this->assertTrue($this->json !== null, "Expected JSON got " . print_r(self::$response,1));
 
 		if (isset($this->json)) {
 			if ($hasException) {
