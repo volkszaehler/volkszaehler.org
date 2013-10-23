@@ -6,77 +6,74 @@
  * @author Andreas Götz <cpuidle@gmx.de>
  */
 
+// enable strict error reporting
+error_reporting(E_ALL | E_STRICT);
+
+if (!defined('VZ_DIR')) define('VZ_DIR', realpath(__DIR__ . '/../..'));
+if (!defined('VZ_VERSION')) define('VZ_VERSION', '0.3');
+
+@include_once VZ_DIR . '/lib/vendor/autoload.php';	// composer
+
+require_once VZ_DIR . '/lib/Util/ClassLoader.php';
+require_once VZ_DIR . '/lib/Util/Configuration.php';
+
+// load configuration\Volkszaehler\
+\Volkszaehler\Util\Configuration::load(VZ_DIR . '/etc/volkszaehler.conf.pc');
+
+// set timezone
+$tz = (\Volkszaehler\Util\Configuration::read('timezone')) ? \Volkszaehler\Util\Configuration::read('timezone') : @date_default_timezone_get();
+date_default_timezone_set($tz);
+
+// set locale
+setlocale(LC_ALL, \Volkszaehler\Util\Configuration::read('locale'));
+
+// define include dirs for vendor libs
+if (!defined('DOCTRINE_DIR')) define('DOCTRINE_DIR', \Volkszaehler\Util\Configuration::read('lib.doctrine') ? \Volkszaehler\Util\Configuration::read('lib.doctrine') : 'Doctrine');
+if (!defined('JPGRAPH_DIR')) define('JPGRAPH_DIR', \Volkszaehler\Util\Configuration::read('lib.jpgraph') ? \Volkszaehler\Util\Configuration::read('lib.jpgraph') : 'JpGraph');
+
+$classLoaders = array(
+	new \Volkszaehler\Util\ClassLoader('Doctrine', DOCTRINE_DIR),
+	new \Volkszaehler\Util\ClassLoader('Volkszaehler', VZ_DIR . '/lib')
+);
+
+foreach ($classLoaders as $loader) {
+	$loader->register(); // register on SPL autoload stack
+}
+
+$loader = new \Volkszaehler\Util\ClassLoader('Wrapper', VZ_DIR . '/test/wrapper');
+$loader->register();
+
 abstract class Middleware extends PHPUnit_Framework_TestCase  
 {
-	static $mw = '';			// middleware url (auto-detected or manually set)
+	// middleware url (auto-detected or manually set)
+	static $mw = 'http://localhost/vz/middleware/';
 
 	static $context;			// context base url
-	static $response;			// request response
-	static $response_code;		// response code
 
 	protected $url;				// request url
+	protected $response;		// request response
 	protected $json;			// decoded json response
 
-	static function setupBeforeClass() {
-		if (empty(self::$mw)) {
-			self::$mw = self::getMwUrl();
-		}
-	}
-
-	private static function CURL_EXEC($curl) {
-		self::$response = curl_exec($curl);
-		self::$response_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-		curl_close($curl);
-		return(self::$response);
-	}
-
-	public static function HTTP_GET($url) {
-		$curl = curl_init();
-		curl_setopt_array($curl, array(
-			CURLOPT_URL => $url,
-			CURLOPT_RETURNTRANSFER => 1, 
-		));
-		return(self::CURL_EXEC($curl));
-	}
-
-	public static function HTTP_POST($url, $post = array()) {
-		$curl = curl_init();
-		curl_setopt_array($curl, array(
-			CURLOPT_URL => $url,
-			CURLOPT_RETURNTRANSFER => 1, 
-			CURLOPT_POST => 1,
-			CURLOPT_POSTFIELDS => $post,
-		));
-		return(self::CURL_EXEC($curl));
-	}
-
 	/**
-	 * auto-discover middleware url from request
+	 * Setup evironment for executing 'fake' middleware call
 	 */
-	public static function getMwUrl($postfix = '') {
-		if (isset($_SERVER['HTTP_HOST']) && $_SERVER['REQUEST_URI']) {
-			$host = $_SERVER['HTTP_HOST'];
-			$uri  = $_SERVER['REQUEST_URI'];
+	static function callMiddleware($url) {
+		$request = new \Wrapper\View\HTTP\Request($url);
+		$response = new \Wrapper\View\HTTP\Response();
 
-			$uricomponents = preg_split('/\//', $uri);
-			while (array_pop($uricomponents) !== 'test');
+		$r = new \Wrapper\Router($request, $response);
+		$r->run();
+		$r->view->send();
 
-			$mw = 'http://' . $host . (isset($_SERVER['HTTP_PORT']) ? ':'.$_SERVER['HTTP_PORT'] : '');
-			$mw .= join('/', $uricomponents) . '/middleware' . $postfix . '/';
-		}
-		else {
-			// fallback if run from command line
-			$mw = 'http://localhost/vz/middleware' . $postfix . '/';
-		}
-
-		return($mw);
+		$result = $response->getResponseContents();
+		return($result);
 	}
 
 	/**
 	 * Execute barebones JSON middleware request
 	 */
 	static function _getJson($url) {
-		$response = self::HTTP_GET($url);
+		$response = self::callMiddleware($url);
 		return (json_decode($response));
 	}
 
@@ -90,7 +87,7 @@ abstract class Middleware extends PHPUnit_Framework_TestCase
 		$this->url = $url;
 		$this->json = self::_getJson($url);
 
-		$this->assertTrue($this->json !== null, "Expected JSON got " . print_r(self::$response,1));
+		$this->assertTrue($this->json !== null, "Expected JSON got " . print_r($this->response,1));
 
 		if (isset($this->json)) {
 			if ($hasException) {

@@ -50,24 +50,23 @@ abstract class DataContext extends Middleware
 		$this->getJson($url);
 	}
 
-	protected function _getDatapoints($url, $from = null, $to = null, $group = null, $tuples = null) {
+	protected function _getDatapoints($url, $from = null, $to = null, $group = null) {
 		if ($from)  $url .= 'from=' . $from . '&';
 		if ($to) 	$url .= 'to=' . $to . '&';
 		if ($group) $url .= 'group=' . $group . '&';
-		if ($tuples) $url .= 'tuples=' . $tuples . '&';
 
 		$this->getJson($url);
 		$this->assertUUID();
 	}
 
-	protected function getDatapoints($from = null, $to = null, $group = null, $tuples = null) {
+	protected function getDatapoints($from = null, $to = null, $group = null) {
 		$url = self::$context . '/' . self::$uuid . '.json?';
-		$this->_getDatapoints($url, $from, $to, $group, $tuples);
+		$this->_getDatapoints($url, $from, $to, $group);
 	}
 
-	protected function getDatapointsRaw($from = null, $to = null, $group = null, $tuples = null) {
+	protected function getDatapointsRaw($from = null, $to = null, $group = null) {
 		$url = self::$context . '/' . self::$uuid . '.json?client=raw&';
-		$this->_getDatapoints($url, $from, $to, $group, $tuples);
+		$this->_getDatapoints($url, $from, $to, $group);
 	}
 
 	protected function debug() {

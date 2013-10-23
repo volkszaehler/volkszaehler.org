@@ -48,7 +48,8 @@ class DataCounterTest extends DataContext
 	}
 
 	function testAddDatapoint() {
-		$this->addDatapoint($this->ts1, $this->value1);
+		$url = self::$context . '/' . self::$uuid . '.json?operation=add&ts=' . $this->ts1 . '&value=' . $this->value1;
+		$this->getJson($url);
 
 		// doesn't return any data
 		$this->assertFalse(isset($this->json->data));
@@ -58,7 +59,10 @@ class DataCounterTest extends DataContext
 	 * @depends testAddDatapoint
 	 */
 	function testGetOneDatapoint() {
-		$this->getDatapoints($this->ts1, $this->ts2);
+		$url = self::$context . '/' . self::$uuid . '.json?from=' . $this->ts1 . "&to=" . $this->ts2;
+		$this->getJson($url);
+
+		$this->assertUUID();
 
 		// from/to expected to match single datapoint
 		$this->assertEquals($this->ts1, $this->json->data->from, "<from> doesn't match request");
@@ -70,7 +74,8 @@ class DataCounterTest extends DataContext
 	 * @depends testAddDatapoint
 	 */
 	function testAddAnotherDatapoint() {
-		$this->addDatapoint($this->ts2, $this->value2);
+		$url = self::$context . '/' . self::$uuid . '.json?operation=add&ts=' . $this->ts2 . '&value=' . $this->value2;
+		$this->getJson($url);
 	}
 
 	/**
@@ -80,7 +85,10 @@ class DataCounterTest extends DataContext
 	 * @todo getting interval start timestamp seems odd as the value is discarded?
 	 */
 	function testGetTwoDatapoints() {
-		$this->getDatapoints($this->ts1, $this->ts2);
+		$url = self::$context . '/' . self::$uuid . '.json?from=' . $this->ts1 . "&to=" . $this->ts2;
+		$this->getJson($url);
+
+		$this->assertUUID();
 
 		$this->assertEquals($this->ts1, $this->json->data->from, "<from> doesn't match request");
 		$this->assertEquals($this->ts2, $this->json->data->to, "<to> doesn't match request");
@@ -88,9 +96,6 @@ class DataCounterTest extends DataContext
 		$consumption = $this->getConsumption($this->value1, $this->value2);
 		$average = $this->getAverage($this->ts1, $this->ts2, $consumption);
 		$this->assertHeader($consumption, $average, 2);
-
-		// number of rows
-		$this->assertCount(1, $this->json->data->tuples);
 
 		// timestamp of interval start
 		$this->assertTuple(0, $this->getTuple($this->ts1, $this->ts2, $this->value1, $this->value2));
@@ -103,7 +108,10 @@ class DataCounterTest extends DataContext
 	 * @depends testAddAnotherDatapoint
 	 */
 	function testGetEdgeDatapoints() {
-		$this->getDatapoints($this->ts2 + 1, $this->ts2 + 1000);
+		$url = self::$context . '/' . self::$uuid . '.json?from=' . ($this->ts2 + 1). "&to=" . ($this->ts2 + 1000);
+		$this->getJson($url);
+
+		$this->assertUUID();
 
 		$this->assertEquals($this->ts1, $this->json->data->from, "<from> doesn't match request");
 		$this->assertEquals($this->ts2, $this->json->data->to, "<to> doesn't match request");
@@ -120,7 +128,10 @@ class DataCounterTest extends DataContext
 	 * @depends testAddAnotherDatapoint
 	 */
 	function testGetEdgeDatapointsRaw() {
-		$this->getDatapointsRaw($this->ts2 + 1, $this->ts2 + 1000);
+		$url = self::$context . '/' . self::$uuid . '.json?from=' . ($this->ts2 + 1). "&to=" . ($this->ts2 + 1000) . "&client=raw";
+		$this->getJson($url);
+
+		$this->assertUUID();
 
 		// from/to expected 0 if rows=0
 		$this->assertEquals(0, $this->json->data->from, "<from> doesn't match request");
@@ -135,11 +146,15 @@ class DataCounterTest extends DataContext
 	 * @depends testAddAnotherDatapoint
 	 */
 	function testThreeDatapointsAverageAndConsumption() {
-		// add 3rd datapoint
-		$this->addDatapoint($this->ts3, $this->value3);
+		// add 3rd datapoint with double value
+		$url = self::$context . '/' . self::$uuid . '.json?operation=add&ts=' . $this->ts3 . '&value=' . $this->value3;
+		$this->getJson($url);
 
 		// get data
-		$this->getDatapoints($this->ts1, $this->ts3);
+		$url = self::$context . '/' . self::$uuid . '.json?from=' . $this->ts1 . "&to=" . $this->ts3;
+		$this->getJson($url);
+
+		$this->assertUUID();
 
 		$this->assertEquals($this->ts1, $this->json->data->from, "<from> doesn't match request");
 		$this->assertEquals($this->ts3, $this->json->data->to, "<to> doesn't match request");
@@ -163,7 +178,10 @@ class DataCounterTest extends DataContext
 	 */
 	function testThreeDatapointsAggregationByHour() {
 		// get data
-		$this->getDatapoints($this->ts1, $this->ts3, "hour");
+		$url = self::$context . '/' . self::$uuid . '.json?from=' . $this->ts1 . "&to=" . $this->ts3 . "&group=hour";
+		$this->getJson($url);
+
+		$this->assertUUID();
 
 		$this->assertEquals($this->ts1, $this->json->data->from, "<from> doesn't match request");
 		$this->assertEquals($this->ts3, $this->json->data->to, "<to> doesn't match request");

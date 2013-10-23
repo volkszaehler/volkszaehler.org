@@ -1,12 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<phpunit bootstrap="./webserver/webserver.php">
-
-  <php>
-    <const name="WEB_SERVER_HOST" value="localhost" />
-    <const name="WEB_SERVER_PORT" value="10880" />
-    <const name="WEB_SERVER_DOCROOT" value="../htdocs" />
-    <const name="HTTP_ROOT" value="http://localhost:10880/middleware.php/" />
-  </php>
+<phpunit>
 
   <testsuites>
     <testsuite name="Volkszaehler">

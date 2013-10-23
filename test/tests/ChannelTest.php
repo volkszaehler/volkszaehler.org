@@ -80,9 +80,6 @@ class ChannelTest extends Middleware
 		// delete
 		$url = self::$context . '/' . $uuid . '.json?operation=delete';
 		$this->getJson($url);
-
-		$url = self::$context . '/' . $this->uuid . '.json';
-		$this->getJson($url, "No entity found with UUID: '" . $this->uuid . "'");
 	}
 }
 

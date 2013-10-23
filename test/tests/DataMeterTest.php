@@ -93,7 +93,7 @@ class DataMeterTest extends DataContext
 		$average = $this->getAverage($this->ts1, $this->ts2, $consumption);
 		$this->assertHeader($consumption, $average, 2);
 
-		// number of rows
+		// timestamp of interval start
 		$this->assertCount(1, $this->json->data->tuples);
 
 		// equivalent
