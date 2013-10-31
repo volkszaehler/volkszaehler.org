@@ -34,7 +34,7 @@ class Request extends \Volkszaehler\View\HTTP\Request {
 				'post'		=> array(),
 				'cookies'	=> array(),
 				'files'		=> array()
-			), 
+			),
 			array(
 				$method => $parameters
 			)
