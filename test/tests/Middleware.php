@@ -12,8 +12,6 @@ error_reporting(E_ALL | E_STRICT);
 if (!defined('VZ_DIR')) define('VZ_DIR', realpath(__DIR__ . '/../..'));
 if (!defined('VZ_VERSION')) define('VZ_VERSION', '0.3');
 
-@include_once VZ_DIR . '/lib/vendor/autoload.php';	// composer
-
 require_once VZ_DIR . '/lib/Util/ClassLoader.php';
 require_once VZ_DIR . '/lib/Util/Configuration.php';
 
@@ -78,7 +76,7 @@ abstract class Middleware extends PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * Execute JSON middleware request and validate result for 
+	 * Execute JSON middleware request and validate result for
 	 * - no exception ($hasException = false or omitted)
 	 * - has exception ($hasException = true or string)
 	 * - has exception with specific message ($hasException = message string)
