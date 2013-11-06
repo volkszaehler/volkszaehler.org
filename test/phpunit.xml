@@ -2,7 +2,7 @@
 <phpunit>
 
   <testsuites>
-    <testsuite name="Volkszaehler">
+    <testsuite name="Middleware">
       <directory suffix="Test.php">tests</directory>
     </testsuite>
   </testsuites>
@@ -11,5 +11,13 @@
   <listeners>
     <listener class="PHPUnit_Util_Log_JSON"></listener>
   </listeners>
+
+  <!-- configure code coverage -->
+	<filter>
+		<blacklist>
+			<directory suffix=".php">wrapper</directory>
+			<directory suffix=".php">../lib/vendor</directory>
+		</blacklist>
+	</filter>
 
 </phpunit>
