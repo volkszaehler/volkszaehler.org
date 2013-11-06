@@ -3,7 +3,7 @@
 namespace Wrapper\View\HTTP;
 
 /**
- * HTTP request wrapper for testing
+ * HTTP request wrapper
  *
  * @package test
  * @author Andreas Goetz <cpuidle@gmx.de>

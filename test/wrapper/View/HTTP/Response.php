@@ -24,13 +24,11 @@
 namespace Wrapper\View\HTTP;
 
 /**
- * HTTP request
+ * HTTP request wrapper
  *
- * simple class to control the output buffering
- *
- * @author Steffen Vogel <info@steffenvogel.de>
- * @package http
- */
+ * @package test
+ * @author Andreas Goetz <cpuidle@gmx.de>
+*/
 class Response extends \Volkszaehler\View\HTTP\Response {
 
 	protected $contents;
