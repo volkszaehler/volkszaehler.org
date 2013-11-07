@@ -52,17 +52,8 @@ setlocale(LC_ALL, Util\Configuration::read('locale'));
 define('DOCTRINE_DIR', Util\Configuration::read('lib.doctrine') ? Util\Configuration::read('lib.doctrine') : 'Doctrine');
 define('JPGRAPH_DIR', Util\Configuration::read('lib.jpgraph') ? Util\Configuration::read('lib.jpgraph') : 'JpGraph');
 
-$classLoaders = array(
-        new Util\ClassLoader('Doctrine', DOCTRINE_DIR),
-        new Util\ClassLoader('Volkszaehler', VZ_DIR . '/lib')
-);
-
-foreach ($classLoaders as $loader) {
-        $loader->register(); // register on SPL autoload stack
-}
-
-
-
+/* @var $loader \Composer\Autoload\ClassLoader */
+require VZ_DIR . '/vendor/autoload.php';
 
 $_SERVER['REQUEST_METHOD']="get";
 $_SERVER['PATH_INFO']="bla.json";

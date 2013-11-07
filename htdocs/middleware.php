@@ -52,7 +52,7 @@ define('DOCTRINE_DIR', Util\Configuration::read('lib.doctrine') ? Util\Configura
 define('JPGRAPH_DIR', Util\Configuration::read('lib.jpgraph') ? Util\Configuration::read('lib.jpgraph') : 'JpGraph');
 
 /* @var $loader \Composer\Autoload\ClassLoader */
-$loader = require VZ_DIR . '/vendor/autoload.php';
+require VZ_DIR . '/vendor/autoload.php';
 
 $r = new Router();
 $r->run();
