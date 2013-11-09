@@ -28,8 +28,6 @@ use Volkszaehler\Util;
 
 define('VZ_DIR', realpath(__DIR__ . '/../..'));
 
-// class autoloading
-require_once VZ_DIR . '/lib/Util/ClassLoader.php';
 require_once VZ_DIR . '/lib/Util/Configuration.php';
 
 // load configuration
@@ -37,15 +35,8 @@ Util\Configuration::load(VZ_DIR . '/etc/volkszaehler.conf');
 
 define('DOCTRINE_DIR', Util\Configuration::read('lib.doctrine') ? Util\Configuration::read('lib.doctrine') : 'Doctrine');
 
-$classLoaders = array(
-	new Util\ClassLoader('Doctrine', DOCTRINE_DIR),
-	new Util\ClassLoader('Symfony', DOCTRINE_DIR . '/Symfony'),
-	new Util\ClassLoader('Volkszaehler', VZ_DIR . '/lib')
-);
-
-foreach ($classLoaders as $loader) {
-	$loader->register(); // register on SPL autoload stack
-}
+/* @var $loader \Composer\Autoload\ClassLoader */
+require VZ_DIR . '/vendor/autoload.php';
 
 $em = Volkszaehler\Router::createEntityManager(TRUE); // get admin credentials
 

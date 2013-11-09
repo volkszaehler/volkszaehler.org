@@ -35,7 +35,6 @@ shopt -s nocasematch
 # some configuration
 
 # please update after releases
-dt_tar=http://www.doctrine-project.org/downloads/DoctrineORM-2.2.0-full.tar.gz
 vz_tar=https://github.com/volkszaehler/volkszaehler.org/tarball/master
 #vz_tar=http://wiki.volkszaehler.org/_media/software/releases/volkszaehler.org-0.2.tar.gz
 
@@ -114,26 +113,6 @@ fi
 
 ###############################
 echo
-echo "doctrine setup..."
-
-ask "doctrine path?" /usr/local/lib/doctrine-orm
-dt_dir=$REPLY
-
-if [ -e "$dt_dir" ]; then
-	ask "$dt_dir already exists. overwrite?" n
-else
-	mkdir $dt_dir
-	REPLY=y
-fi
-
-if [ "$REPLY" == 'y' ]; then
-	echo "installing doctrine into $dt_dir"
-	wget -O - $dt_tar | tar xz -C $tmp_dir
-	cp -r $tmp_dir/Doctrine*/Doctrine/* $dt_dir/
-fi
-
-###############################
-echo
 echo "volkszaehler setup..."
 
 ask "volkszaehler path?" /var/www/volkszaehler.org
@@ -151,6 +130,13 @@ if [ "$REPLY" == 'y' ]; then
 	wget -O - $vz_tar | tar xz -C $tmp_dir
 	cp -r $tmp_dir/volkszaehler*/* $vz_dir/
 fi
+
+###############################
+echo
+echo "install dependencies..."
+
+cd $vz_dir
+composer install
 
 ###############################
 echo

@@ -24,6 +24,8 @@
 namespace Volkszaehler;
 
 use Volkszaehler\View;
+use Volkszaehler\View\HTTP\Response;
+use Volkszaehler\View\HTTP\Request;
 use Volkszaehler\Util;
 use Volkszaehler\View\HTTP;
 use Doctrine\ORM;
@@ -92,10 +94,7 @@ class Router {
 	/**
 	 * Constructor
 	 */
-	public function __construct() {
-		// initialize HTTP request & response (required to initialize view & controllers)
-		$request = new HTTP\Request();
-		$response = new HTTP\Response();
+	public function __construct(Request $request, Response $response) {
 
 		// initialize entity manager
 		$this->em = self::createEntityManager();

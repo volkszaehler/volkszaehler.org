@@ -29,14 +29,16 @@ namespace Volkszaehler;
 use Volkszaehler\Util;
 use Volkszaehler\Controller;
 
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+
 // enable strict error reporting
 error_reporting(E_ALL | E_STRICT);
 
 define('VZ_DIR', realpath(__DIR__ . '/..'));
 define('VZ_VERSION', '0.3');
 
-// class autoloading
-require_once VZ_DIR . '/lib/Util/ClassLoader.php';
 require_once VZ_DIR . '/lib/Util/Configuration.php';
 
 // load configuration
@@ -53,17 +55,14 @@ setlocale(LC_ALL, Util\Configuration::read('locale'));
 define('DOCTRINE_DIR', Util\Configuration::read('lib.doctrine') ? Util\Configuration::read('lib.doctrine') : 'Doctrine');
 define('JPGRAPH_DIR', Util\Configuration::read('lib.jpgraph') ? Util\Configuration::read('lib.jpgraph') : 'JpGraph');
 
-$classLoaders = array(
-	new Util\ClassLoader('Doctrine', DOCTRINE_DIR),
-	new Util\ClassLoader('Volkszaehler', VZ_DIR . '/lib')
-);
+/* @var $loader \Composer\Autoload\ClassLoader */
+require VZ_DIR . '/vendor/autoload.php';
 
-foreach ($classLoaders as $loader) {
-	$loader->register(); // register on SPL autoload stack
-}
+$serviceContainer = new ContainerBuilder();
+$loader = new XmlFileLoader($serviceContainer, new FileLocator(__DIR__));
+$loader->load(VZ_DIR . '/etc/services.xml');
 
-$r = new Router();
+$r = $serviceContainer->get('router');
 $r->run();
 $r->view->send();
 
-?>
