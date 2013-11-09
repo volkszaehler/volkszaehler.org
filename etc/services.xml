@@ -6,10 +6,18 @@
     <parameters>
     </parameters>
 -->
-    
+
     <services>
+
+        <service id="response" class="Volkszaehler\View\HTTP\Response" />
+
+        <service id="request" class="Volkszaehler\View\HTTP\Request" />
+
         <service id="router" class="Volkszaehler\Router">
+            <argument type="service" id="request" />
+            <argument type="service" id="response" />
         </service>
+
     </services>
 
 </container>
