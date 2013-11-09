@@ -5,3 +5,4 @@ misc/sql/demo/pulses.dummy.copy
 .settings/
 vendor/
 .idea
+/php_errors.log

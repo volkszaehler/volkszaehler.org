@@ -29,6 +29,10 @@ namespace Volkszaehler;
 use Volkszaehler\Util;
 use Volkszaehler\Controller;
 
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+
 // enable strict error reporting
 error_reporting(E_ALL | E_STRICT);
 
@@ -54,7 +58,11 @@ define('JPGRAPH_DIR', Util\Configuration::read('lib.jpgraph') ? Util\Configurati
 /* @var $loader \Composer\Autoload\ClassLoader */
 require VZ_DIR . '/vendor/autoload.php';
 
-$r = new Router();
+$serviceContainer = new ContainerBuilder();
+$loader = new XmlFileLoader($serviceContainer, new FileLocator(__DIR__));
+$loader->load(VZ_DIR . '/etc/services.xml');
+
+$r = $serviceContainer->get('router');
 $r->run();
 $r->view->send();
 
