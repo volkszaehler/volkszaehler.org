@@ -133,10 +133,28 @@ fi
 
 ###############################
 echo
+echo "install composer..."
+
+if [ `which composer` ]; then
+    COMPOSER=$(which composer)
+else
+    if [ `which composer.phar` ]; then
+        COMPOSER=$(which composer.phar)
+    else
+    	pushd $vz_dir
+	    php -r "eval('?>'.file_get_contents('https://getcomposer.org/installer'));"
+	    COMPOSER="$vz_dir/composer.phar"
+    	popd
+    fi
+fi
+
+###############################
+echo
 echo "install dependencies..."
 
-cd $vz_dir
-composer install
+pushd $vz_dir
+$COMPOSER install --no-dev
+popd
 
 ###############################
 echo
