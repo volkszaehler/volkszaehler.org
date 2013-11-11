@@ -35,7 +35,7 @@ error_reporting(E_ALL | E_STRICT);
 define('VZ_DIR', realpath(__DIR__ . '/..'));
 define('VZ_VERSION', '0.3');
 
-require_once VZ_DIR . '/lib/Util/Configuration.php';
+require VZ_DIR . '/vendor/autoload.php';
 
 // load configuration
 Util\Configuration::load(VZ_DIR . '/etc/volkszaehler.conf');
@@ -50,9 +50,6 @@ setlocale(LC_ALL, Util\Configuration::read('locale'));
 // define include dirs for vendor libs
 define('DOCTRINE_DIR', Util\Configuration::read('lib.doctrine') ? Util\Configuration::read('lib.doctrine') : 'Doctrine');
 define('JPGRAPH_DIR', Util\Configuration::read('lib.jpgraph') ? Util\Configuration::read('lib.jpgraph') : 'JpGraph');
-
-/* @var $loader \Composer\Autoload\ClassLoader */
-$loader = require VZ_DIR . '/vendor/autoload.php';
 
 $r = new Router();
 $r->run();
