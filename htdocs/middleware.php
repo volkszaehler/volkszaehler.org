@@ -28,9 +28,6 @@ namespace Volkszaehler;
 
 use Volkszaehler\Util;
 use Volkszaehler\Controller;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\Config\FileLocator;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 
 // enable strict error reporting
 error_reporting(E_ALL | E_STRICT);
@@ -53,10 +50,6 @@ setlocale(LC_ALL, Util\Configuration::read('locale'));
 // define include dirs for vendor libs
 define('DOCTRINE_DIR', Util\Configuration::read('lib.doctrine') ? Util\Configuration::read('lib.doctrine') : 'Doctrine');
 define('JPGRAPH_DIR', Util\Configuration::read('lib.jpgraph') ? Util\Configuration::read('lib.jpgraph') : 'JpGraph');
-
-$serviceContainer = new ContainerBuilder();
-$loader = new XmlFileLoader($serviceContainer, new FileLocator(__DIR__));
-$loader->load(VZ_DIR . '/etc/services.xml');
 
 $r = new Router();
 $r->run();

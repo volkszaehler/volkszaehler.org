@@ -25,9 +25,6 @@
  */
 
 use Volkszaehler\Util;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\Config\FileLocator;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 
 define('VZ_DIR', realpath(__DIR__ . '/../..'));
 
@@ -37,10 +34,6 @@ require VZ_DIR . '/vendor/autoload.php';
 Util\Configuration::load(VZ_DIR . '/etc/volkszaehler.conf');
 
 define('DOCTRINE_DIR', Util\Configuration::read('lib.doctrine') ? Util\Configuration::read('lib.doctrine') : 'Doctrine');
-
-$serviceContainer = new ContainerBuilder();
-$loader = new XmlFileLoader($serviceContainer, new FileLocator(__DIR__));
-$loader->load(VZ_DIR . '/etc/services.xml');
 
 $em = Volkszaehler\Router::createEntityManager(TRUE); // get admin credentials
 
