@@ -99,7 +99,7 @@ abstract class Definition {
 	protected static function load() {
 		static::$definitions = array();
 		
-		$json = Util\JSON::decode(file_get_contents(VZ_DIR . static::FILE));
+		$json = Util\JSON::decode(file_get_contents(__DIR__ . '/' . static::FILE));
 
 		foreach ($json as $property) {
 			static::$definitions[$property->name] = new static($property);

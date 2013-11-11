@@ -33,7 +33,7 @@ class PropertyDefinition extends Definition {
 	 *
 	 * @var string
 	 */
-	const FILE = '/lib/Definition/PropertyDefinition.json';
+	const FILE = 'PropertyDefinition.json';
 
 	/**
 	 * One of: string, integer, float, boolean, multiple, text
