@@ -6,6 +6,8 @@
         "phpunit/phpunit": "3.7.*"
     },
     "autoload": {
-        "classmap": ["lib/"]
+        "psr-0": {
+            "Volkszaehler\\": "lib/"
+        }
     }
 }
