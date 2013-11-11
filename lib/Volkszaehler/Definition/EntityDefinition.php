@@ -35,7 +35,7 @@ class EntityDefinition extends Definition {
 	 *
 	 * @var string
 	 */
-	const FILE = '/lib/Definition/EntityDefinition.json';
+	const FILE = 'EntityDefinition.json';
 
 	/**
 	 * List of required properties
