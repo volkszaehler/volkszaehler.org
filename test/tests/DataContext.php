@@ -34,18 +34,18 @@ abstract class DataContext extends Middleware
 	static function createChannel($title, $type, $resolution = null) {
 		$url = self::$mw . 'channel.json?operation=add&title=' . urlencode($title) . '&type=' . urlencode($type);
 		if ($resolution) $url .= '&resolution=' . $resolution;
-		$json = self::_getJson($url);
+		$json = self::getJsonRaw($url);
 
 		return ((isset($json->entity->uuid)) ? $json->entity->uuid : null);
 	}
 
 	static function deleteChannel($uuid) {
 		$url = self::$mw . 'channel/' . $uuid . '.json?operation=delete';
-		$json = self::_getJson($url);
+		$json = self::getJsonRaw($url);
 	}
 
 	protected function addDatapoint($ts, $value, $uuid = null) {
-		$url = self::$context . '/' . (($uuid) ?: self::$uuid) . 
+		$url = self::$context . '/' . (($uuid) ?: self::$uuid) .
 			   '.json?operation=add&ts=' . $ts . '&value=' . $value;
 		$this->getJson($url);
 	}
@@ -77,7 +77,7 @@ abstract class DataContext extends Middleware
 	 * Helper assertion to validate correct UUID
 	 */
 	protected function assertUUID() {
-		$this->assertEquals((isset($this->json->data->uuid) ? $this->json->data->uuid : null), self::$uuid, 
+		$this->assertEquals((isset($this->json->data->uuid) ? $this->json->data->uuid : null), self::$uuid,
 			"Wrong UUID. Expected " . self::$uuid . ", got " . $this->json->data->uuid);
 	}
 
@@ -101,13 +101,13 @@ abstract class DataContext extends Middleware
 
 		if (is_array($tuple)) {
 			for ($i=0; $i<sizeof($tuple); $i++) {
-				$this->assertEquals($realTuple[$i], $tuple[$i], 
-					$msg . ". Got " . print_r(array_slice($realTuple,0,sizeof($tuple)),1) . 
+				$this->assertEquals($realTuple[$i], $tuple[$i],
+					$msg . ". Got " . print_r(array_slice($realTuple,0,sizeof($tuple)),1) .
 					", expected " . print_r($tuple,1));
 			}
 		}
-		else $this->assertEquals($realTuple[1], $tuple, 
-					$msg . ". Got value " . print_r($realTuple[1],1) . 
+		else $this->assertEquals($realTuple[1], $tuple,
+					$msg . ". Got value " . print_r($realTuple[1],1) .
 					", expected " . $tuple);
 	}
 }

@@ -41,21 +41,24 @@ foreach ($classLoaders as $loader) {
 $loader = new \Volkszaehler\Util\ClassLoader('Wrapper', VZ_DIR . '/test/wrapper');
 $loader->register();
 
-abstract class Middleware extends PHPUnit_Framework_TestCase  
+abstract class Middleware extends PHPUnit_Framework_TestCase
 {
-	// middleware url (auto-detected or manually set)
-	static $mw = 'http://localhost/vz/middleware/';
+	// middleware url (basis for parsing)
+	static $mw = 'http://localhost/volkszaehler/middleware/';
 
+	// all basic members static for consistency
 	static $context;			// context base url
+	static $response;			// request response
+	static $url;				// request url
 
-	protected $url;				// request url
-	protected $response;		// request response
 	protected $json;			// decoded json response
 
 	/**
 	 * Setup evironment for executing 'fake' middleware call
 	 */
 	static function callMiddleware($url) {
+		self::$url = $url;
+
 		$request = new \Wrapper\View\HTTP\Request($url);
 		$response = new \Wrapper\View\HTTP\Response();
 
@@ -63,16 +66,17 @@ abstract class Middleware extends PHPUnit_Framework_TestCase
 		$r->run();
 		$r->view->send();
 
-		$result = $response->getResponseContents();
-		return($result);
+		self::$response = $response->getResponseContents();
+		return self::$response;
 	}
 
 	/**
 	 * Execute barebones JSON middleware request
 	 */
-	static function _getJson($url) {
+	static function getJsonRaw($url) {
 		$response = self::callMiddleware($url);
-		return (json_decode($response));
+		$json = json_decode($response);
+		return $json;
 	}
 
 	/**
@@ -82,10 +86,8 @@ abstract class Middleware extends PHPUnit_Framework_TestCase
 	 * - has exception with specific message ($hasException = message string)
 	 */
 	protected function getJson($url, $hasException = false) {
-		$this->url = $url;
-		$this->json = self::_getJson($url);
-
-		$this->assertTrue($this->json !== null, "Expected JSON got " . print_r($this->response,1));
+		$this->json = self::getJsonRaw($url);
+		$this->assertTrue($this->json !== null, "Expected JSON got " . print_r(self::$response,1));
 
 		if (isset($this->json)) {
 			if ($hasException) {
@@ -95,11 +97,13 @@ abstract class Middleware extends PHPUnit_Framework_TestCase
 					}
 				}
 			} else {
-				$this->assertFalse(isset($this->json->exception), 
-					'Expected no <exception> got ' . 
+				$this->assertFalse(isset($this->json->exception),
+					'Expected no <exception> got ' .
 					(isset($this->json->exception) ? print_r($this->json->exception,1) : '') . '.');
 			}
 		}
+
+		return $this->json;
 	}
 }
 
