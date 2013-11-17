@@ -135,7 +135,7 @@
     }
     
     private function json_getEntities() {
-        $json = file_get_contents(VZCOMPRESS2_VZPATH.'lib/Volkszaehler/Definition/EntityDefinition.json');
+        $json = file_get_contents(VZCOMPRESS2_VZPATH.'lib/Definition/EntityDefinition.json');
         
         //The JSON-File contains comments which violates the spec and derps PHPs decoder
         //Remove the headers...

@@ -33,6 +33,8 @@ require VZ_DIR . '/vendor/autoload.php';
 // load configuration
 Util\Configuration::load(VZ_DIR . '/etc/volkszaehler.conf');
 
+define('DOCTRINE_DIR', Util\Configuration::read('lib.doctrine') ? Util\Configuration::read('lib.doctrine') : 'Doctrine');
+
 $em = Volkszaehler\Router::createEntityManager(TRUE); // get admin credentials
 
 $helperSet = new \Symfony\Component\Console\Helper\HelperSet(array(
