@@ -107,11 +107,8 @@ class Router {
 			}
 		}
 		
-		// check for JpGraph
-		if (file_exists(JPGRAPH_DIR . '/jpgraph.php')) {
-			foreach (array('png', 'jpeg', 'jpg', 'gif') as $format) {
-				self::$viewMapping[$format] = 'Volkszaehler\View\JpGraph';
-			}
+		foreach (array('png', 'jpeg', 'jpg', 'gif') as $format) {
+			self::$viewMapping[$format] = 'Volkszaehler\View\JpGraph';
 		}
 
 		// initialize view
