@@ -29,9 +29,7 @@ use Volkszaehler\Model;
 
 define('VZ_DIR', realpath(__DIR__ . '/..'));
 
-include '../lib/Util/JSONDefinition.php';
-include '../lib/Model/Property.php';
-include '../lib/Util/JSON.php';
+require VZ_DIR . '/vendor/autoload.php';
 
 echo '<pre>';
 
