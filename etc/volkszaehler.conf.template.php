@@ -80,15 +80,6 @@ $config['db']['dbname']				= 'volkszaehler';
 //$config['db']['path']				= 'volkszaehler';
 
 /**
- * Vendor libs
- *
- * Set to NULL to use PHP's include path
- * See PHP doc for details: http://www.php.net/manual/en/ini.core.php#ini.include-path
- */
-$config['lib']['doctrine']			= VZ_DIR . '/lib/vendor/Doctrine';
-$config['lib']['jpgraph']			= VZ_DIR . '/lib/vendor/JpGraph';
-
-/**
  * Timezone for the middleware
  *
  * See PHP doc for details: http://www.php.net/manual/de/timezones.php

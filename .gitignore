@@ -3,4 +3,5 @@ misc/sql/demo/pulses.dummy.copy
 .project
 .buildpath
 .settings/
-lib/vendor/*
+vendor/
+.idea
