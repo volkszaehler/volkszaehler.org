@@ -52,7 +52,7 @@ class EntityDefinition extends Definition {
 	public $optional = array();
 
 	/**
-	 * Classname of intepreter (see lib/Interpreter/)
+	 * Classname of intepreter (see lib/Volkszaehler/Interpreter/)
 	 *
 	 * @var string
 	 */
@@ -66,7 +66,7 @@ class EntityDefinition extends Definition {
 	 public $style;
 
 	/**
-	 * Classname of model (see lib/Model/)
+	 * Classname of model (see lib/Volkszaehler/Model/)
 	 *
 	 * @var string
 	 */
