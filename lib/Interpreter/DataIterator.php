@@ -36,11 +36,11 @@ class DataIterator implements \Iterator, \Countable {
 	protected $current;	// the current data
 	protected $key;		// key
 	protected $rowKey;	// internal key for PDO statement
-	
+
 	protected $rowCount;	// num of readings in PDOStatement
 	protected $tupleCount;	// num of requested tuples
 	protected $packageSize; // num of rows we aggregate in each tuple
-	
+
 	protected $from;		// exact timestamps based on on query results
 	protected $to;			// from/to of Interpreter are based on the request parameters!
 	protected $firstValue; 	// value parameter of first database tuple
@@ -55,7 +55,7 @@ class DataIterator implements \Iterator, \Countable {
 	public function __construct(\PDOStatement $stmt, $rowCount, $tupleCount) {
 		$this->rowCount = $rowCount;
 		$this->tupleCount = $tupleCount;
-	
+
 		$this->stmt = $stmt;
 		$this->stmt->setFetchMode(\PDO::FETCH_NUM);
 
@@ -66,7 +66,7 @@ class DataIterator implements \Iterator, \Countable {
 		else { // sumarize
 			$this->packageSize = floor($this->rowCount / $this->tupleCount);
 			$this->tupleCount = floor($this->rowCount / $this->packageSize);
-			
+
 			if (fmod($this->rowCount, $this->packageSize) > 0) {
 				$this->tupleCount++;
 			}
@@ -74,6 +74,9 @@ class DataIterator implements \Iterator, \Countable {
 
 		// skipping first reading, just for getting first timestamp, value is remembered
  		list($this->from, $this->firstValue, $foo) = $this->stmt->fetch();
+
+		// ensure valid data range if we have 1 row only (not using iterator then)
+		if ($this->from) $this->to = $this->from;
 	}
 
 	/**
@@ -89,12 +92,12 @@ class DataIterator implements \Iterator, \Countable {
 
 			$this->rowKey++;
 		}
-		
+
 		$this->key++;
-		
+
 		if ($package[2])
 			$this->to = $package[0];
-		
+
 		return $this->current = $package;
 	}
 
@@ -123,7 +126,7 @@ class DataIterator implements \Iterator, \Countable {
 	public function getPackageSize() { return $this->packageSize; }
 	public function getFrom() { return $this->from; }
 	public function getTo() { return $this->to; }
-	
+
 	public function count() { return $this->tupleCount; }
 	public function key() { return $this->key; }
 	public function current() { return $this->current; }
