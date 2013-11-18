@@ -38,7 +38,7 @@ foreach ($classLoaders as $loader) {
 	$loader->register(); // register on SPL autoload stack
 }
 
-$loader = new \Volkszaehler\Util\ClassLoader('Wrapper', VZ_DIR . '/test/wrapper');
+$loader = new \Volkszaehler\Util\ClassLoader('Wrapper', VZ_DIR . '/test/Wrapper');
 $loader->register();
 
 abstract class Middleware extends PHPUnit_Framework_TestCase
