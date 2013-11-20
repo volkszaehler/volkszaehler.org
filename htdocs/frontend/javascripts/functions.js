@@ -96,7 +96,11 @@ vz.load = function(args) {
 					}
 				}
 				else {
-					throw new Exception(xhr.statusText, 'Unknown middleware response', xhr.status)
+					var msg = 'Unknown middleware response';
+					if (xhr.responseText) {
+						msg += ':<br/><br/>' + $(xhr.responseText).text().substring(0,300);
+					}
+					throw new Exception(xhr.statusText, msg, xhr.status)
 				}
 			}
 			catch (e) {
