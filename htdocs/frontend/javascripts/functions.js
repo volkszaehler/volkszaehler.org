@@ -101,9 +101,9 @@ vz.load = function(args) {
 					}
 				}
 				else {
-					var msg = xhr.requestUrl + ':<br/><br/>Unknown middleware response';
+					var msg = 'Unknown middleware response';
 					if (xhr.responseText) {
-						msg += '<br/><br/>' + $(xhr.responseText).text().substring(0,300);
+						msg += ':<br/><br/>' + $(xhr.responseText).text().substring(0,300);
 					}
 					throw new Exception(xhr.statusText, msg, xhr.status)
 				}
