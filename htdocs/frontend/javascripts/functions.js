@@ -86,19 +86,24 @@ vz.getPermalink = function() {
 vz.load = function(args) {
 	$.extend(args, {
 		accepts: 'application/json',
+ 		beforeSend: function (xhr, settings) {
+ 			// remember URL for potential error messages
+ 			xhr.requestUrl = settings.url;
+ 		},
 		error: function(xhr) {
 			try {
 				if (xhr.getResponseHeader('Content-type') == 'application/json') {
 					var json = $.parseJSON(xhr.responseText);
 				
 					if (json.exception) {
-						throw new Exception(json.exception.type, json.exception.message, (json.exception.code) ? json.exception.code : xhr.status);
+						var msg = xhr.requestUrl + ':<br/><br/>' + json.exception.message;
+						throw new Exception(json.exception.type, msg, (json.exception.code) ? json.exception.code : xhr.status);
 					}
 				}
 				else {
-					var msg = 'Unknown middleware response';
+					var msg = xhr.requestUrl + ':<br/><br/>Unknown middleware response';
 					if (xhr.responseText) {
-						msg += ':<br/><br/>' + $(xhr.responseText).text().substring(0,300);
+						msg += '<br/><br/>' + $(xhr.responseText).text().substring(0,300);
 					}
 					throw new Exception(xhr.statusText, msg, xhr.status)
 				}
