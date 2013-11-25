@@ -190,11 +190,16 @@ vz.parseUrlParams = function() {
 		var uuid = identifier[0];
 		var middleware = (identifier.length > 1) ? identifier[1] : vz.options.localMiddleware;
 		
-		vz.entities.push(new Entity({
+		var entity = new Entity({
 			uuid: uuid,
 			middleware: middleware,
 			cookie: save
-		}));
+		});
+	
+		// avoid double entries (note: obj comparision is not perfect!)
+		if (!$.inArray(entity, vz.entities)) {
+			vz.entities.push(entity);
+		}
 	});
 	
 	if (save) {
