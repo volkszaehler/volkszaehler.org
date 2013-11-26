@@ -82,11 +82,13 @@ $(document).ready(function() {
 	// start loading cookies/url params
 	vz.entities.loadCookie(); // load uuids from cookie
 	vz.options.loadCookies(); // load options from cookie
-	vz.parseUrlParams(); // parse additional url params (new uuid etc..)
 	
 	// set x axis limits _after_ loading options cookie
 	vz.options.plot.xaxis.max = new Date().getTime(); 
 	vz.options.plot.xaxis.min = vz.options.plot.xaxis.max - vz.options.interval;
+
+	// parse additional url params (new uuid etc e.g. for permalink) after loading defaults
+	vz.parseUrlParams();
 
 	// initialize user interface
 	vz.wui.init();
