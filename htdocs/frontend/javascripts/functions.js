@@ -197,7 +197,7 @@ vz.parseUrlParams = function() {
 		});
 	
 		// avoid double entries (note: obj comparision is not perfect!)
-		if (!$.inArray(entity, vz.entities)) {
+		if ($.inArray(entity, vz.entities) == -1) {
 			vz.entities.push(entity);
 		}
 	});
