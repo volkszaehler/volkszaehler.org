@@ -34,7 +34,7 @@ use Volkszaehler\Util;
 class SensorInterpreter extends Interpreter {
 
 	protected $consumption; // in Wms (Watt milliseconds)
-	
+
 	/**
 	 * Calculates the consumption
 	 *
@@ -63,29 +63,29 @@ class SensorInterpreter extends Interpreter {
 		$tuples = array();
 		$this->rows = $this->getData();
 
-		$last = $this->getFrom();
+		$ts_last = $this->getFrom();
 		foreach ($this->rows as $row) {
-			$delta = $row[0] - $last;
+			$delta = $row[0] - $ts_last;
 			$tuple = $callback(array(
 				(float) $row[0],
 				(float) $row[1] / $row[2],
 				(int) $row[2]
 			));
-			
+
 			if (is_null($this->max) || $tuple[1] > $this->max[1]) {
 				$this->max = $tuple;
 			}
-			
+
 			if (is_null($this->min) || $tuple[1] < $this->min[1]) {
 				$this->min = $tuple;
 			}
-			
+
 			$this->consumption += $tuple[1] * $delta;
-				
+
 			$tuples[] = $tuple;
-			$last = $row[0];
+			$ts_last = $row[0];
 		}
-		
+
 		return $tuples;
 	}
 }
