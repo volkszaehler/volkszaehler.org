@@ -136,7 +136,8 @@ abstract class Interpreter {
 			$sql = 'SELECT MAX(timestamp) AS timestamp, ' . static::groupExprSQL('value') . ' AS value, COUNT(timestamp) AS count'.
 				' FROM data'.
 				' WHERE channel_id = ?' . $sqlTimeFilter .
-				' GROUP BY ' . $sqlGroupFields;
+				' GROUP BY ' . $sqlGroupFields .
+				' ORDER BY timestamp ASC';
 		}
 		else {
 			$sqlRowCount = 'SELECT COUNT(*) FROM data WHERE channel_id = ?' . $sqlTimeFilter;
