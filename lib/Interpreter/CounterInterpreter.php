@@ -128,53 +128,19 @@ class CounterInterpreter extends Interpreter {
 	}
 
 	/**
-	 * Override Interpreter->runSQL
+	 * Return sql grouping expression
+	 *
+	 * Override Interpreter->groupExpr
 	 *
 	 * For precision when bundling tuples into packages
 	 * CounterInterpreter needs MAX instead of SUM.
-	 * Changes SQL queries accordingly.
 	 *
 	 * @author Andreas Götz <cpuidle@gmx.de>
-	 * @param string $sql
-	 * @param string $sqlParameters
+	 * @param string $expression sql parameter
+	 * @return string grouped sql expression
 	 */
-	protected function runSQL($sql, $sqlParameters) {
-		if ($this->groupBy) {
-			$sqlTimeFilter = self::buildDateTimeFilterSQL($this->from, $this->to, $foo);
-
-			$sqlGroupFields = self::buildGroupBySQL($this->groupBy);
-			if (!$sqlGroupFields)
-				throw new \Exception('Unknown group');
-
-			$sql = 'SELECT MAX(timestamp) AS timestamp, MAX(value) AS value, COUNT(timestamp) AS count'.
-				' FROM data'.
-				' WHERE channel_id = ?' . $sqlTimeFilter .
-				' GROUP BY ' . $sqlGroupFields;
-		}
-		elseif ($this->tupleCount && ($this->rowCount > $this->tupleCount)) {
-			$packageSize = floor($this->rowCount / $this->tupleCount);
-
-			if ($packageSize > 1) { // worth doing -> go
-				$foo = array();
-				$sqlTimeFilter = self::buildDateTimeFilterSQL($this->from, $this->to, $foo);
-
-				$this->rowCount = floor($this->rowCount / $packageSize);
-				// setting @row to packageSize-2 will make the first package contain 1 tuple only - as it's skipped anyway
-				// this pushes as much 'real' data as possible into the first used package
-				$this->conn->query('SET @row:=' . ($packageSize-2));
-				$sql = 'SELECT MAX(aggregate.timestamp) AS timestamp, MAX(aggregate.value) AS value, COUNT(aggregate.value) AS count '.
-					   'FROM ('.
-					   '	SELECT timestamp, value, @row:=@row+1 AS row '.
-					   ' 	FROM data WHERE channel_id=?' . $sqlTimeFilter .
-					   'ORDER BY timestamp ) AS aggregate '.
-					   'GROUP BY row DIV ' . $packageSize .' '.
-					   'ORDER BY timestamp ASC';
-			}
-		}
-
-		$stmt = $this->conn->executeQuery($sql, $sqlParameters); // query for data
-
-		return($stmt);
+	protected static function groupExprSQL($expression) {
+		return 'MAX(' . $expression . ')';
 	}
 }
 

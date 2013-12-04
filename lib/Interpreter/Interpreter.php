@@ -133,7 +133,7 @@ abstract class Interpreter {
 			if (!$sqlGroupFields)
 				throw new \Exception('Unknown group');
 			$sqlRowCount = 'SELECT COUNT(DISTINCT ' . $sqlGroupFields . ') FROM data WHERE channel_id = ?' . $sqlTimeFilter;
-			$sql = 'SELECT MAX(timestamp) AS timestamp, SUM(value) AS value, COUNT(timestamp) AS count'.
+			$sql = 'SELECT MAX(timestamp) AS timestamp, ' . static::groupExprSQL('value') . ' AS value, COUNT(timestamp) AS count'.
 				' FROM data'.
 				' WHERE channel_id = ?' . $sqlTimeFilter .
 				' GROUP BY ' . $sqlGroupFields;
@@ -166,7 +166,7 @@ abstract class Interpreter {
 	 */
 	protected function runSQL($sql, $sqlParameters) {
 		// potential to reduce result set - can't do this for already grouped SQL
-		if ($this->tupleCount && ($this->rowCount > $this->tupleCount) && !$this->groupBy) {
+		if (!$this->groupBy && $this->tupleCount && ($this->rowCount > $this->tupleCount)) {
 			$packageSize = floor($this->rowCount / $this->tupleCount);
 
 			if ($packageSize > 1) { // worth doing -> go
@@ -177,7 +177,8 @@ abstract class Interpreter {
 				// setting @row to packageSize-2 will make the first package contain 1 tuple only - as it's skipped anyway
 				// this pushes as much 'real' data as possible into the first used package
 				$this->conn->query('SET @row:=' . ($packageSize-2));
-				$sql = 'SELECT MAX(aggregate.timestamp) AS timestamp, SUM(aggregate.value) AS value, COUNT(aggregate.value) AS count '.
+				$sql = 'SELECT MAX(aggregate.timestamp) AS timestamp, ' .
+							static::groupExprSQL('aggregate.value') .' AS value, COUNT(aggregate.value) AS count '.
 					   'FROM ('.
 					   '	SELECT timestamp, value, @row:=@row+1 AS row '.
 					   ' 	FROM data WHERE channel_id=?' . $sqlTimeFilter .
@@ -190,6 +191,17 @@ abstract class Interpreter {
 		$stmt = $this->conn->executeQuery($sql, $sqlParameters); // query for data
 
 		return($stmt);
+	}
+
+	/**
+	 * Return sql grouping expression
+	 *
+	 * @author Andreas Götz <cpuidle@gmx.de>
+	 * @param string $expression sql parameter
+	 * @return string grouped sql expression
+	 */
+	protected static function groupExprSQL($expression) {
+		return 'SUM(' . $expression . ')';
 	}
 
 	/**
