@@ -37,7 +37,7 @@ class MeterInterpreter extends Interpreter {
 
 	protected $pulseCount;
 	protected $resolution;
-	
+
 	/**
 	 * Calculates the consumption
 	 *
@@ -74,7 +74,7 @@ class MeterInterpreter extends Interpreter {
 
 		$this->resolution = $this->channel->getProperty('resolution');
 		$this->pulseCount = 0;
-	
+
 		$ts_last = $this->getFrom();
 		foreach ($this->rows as $row) {
 			$delta = $row[0] - $ts_last;
@@ -83,25 +83,20 @@ class MeterInterpreter extends Interpreter {
 				(float) ($row[1] * 3.6e9) / ($this->resolution * $delta), // doing df/dt
 				(int) $row[2] // num of rows
 			));
-			
+
 			if (is_null($this->max) || $tuple[1] > $this->max[1]) {
 				$this->max = $tuple;
 			}
-			
+
 			if (is_null($this->min) || $tuple[1] < $this->min[1]) {
 				$this->min = $tuple;
 			}
-			
+
 			$this->pulseCount += $row[1];
 
 			$tuples[] = $tuple;
 			$ts_last = $row[0];
 		}
-
-		// in case of subtotaled queries (tupleCount) make sure consumption is correct
-		// this avoids the aliasing problems due to DataIterator dropping first record
-		if ($this->tupleCount && count($tuples))
-			$this->pulseCount += $this->rows->firstValue();
 
 		return $tuples;
 	}

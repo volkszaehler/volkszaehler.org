@@ -45,11 +45,11 @@ abstract class Interpreter {
 	protected $to;		// can be NULL!
 	protected $groupBy;	// user from/to from DataIterator for exact calculations!
 	protected $client;  // client type for specific optimizations
-	
+
 	protected $rowCount;	// number of rows in the database
 	protected $tupleCount;	// number of requested tuples
 	protected $rows;	// DataIterator instance for aggregating rows
-	
+
 	protected $min = NULL;
 	protected $max = NULL;
 
@@ -67,7 +67,7 @@ abstract class Interpreter {
 		$this->tupleCount = $tupleCount;
 		$this->client = $client;
 		$this->conn = $em->getConnection(); // get dbal connection from EntityManager
-		
+
 		// parse interval
 		if (isset($to))
 			$this->to = self::parseDateTimeString($to);
@@ -124,7 +124,7 @@ abstract class Interpreter {
 			}
 		}
 
-		// common conditions for following SQL queries	
+		// common conditions for following SQL queries
 		$sqlParameters = array($this->channel->getId());
 		$sqlTimeFilter = self::buildDateTimeFilterSQL($this->from, $this->to, $sqlParameters);
 
@@ -133,7 +133,7 @@ abstract class Interpreter {
 			if (!$sqlGroupFields)
 				throw new \Exception('Unknown group');
 			$sqlRowCount = 'SELECT COUNT(DISTINCT ' . $sqlGroupFields . ') FROM data WHERE channel_id = ?' . $sqlTimeFilter;
-			$sql = 'SELECT MAX(timestamp) AS timestamp, SUM(value) AS value, COUNT(timestamp) AS count'.
+			$sql = 'SELECT MAX(timestamp) AS timestamp, ' . static::groupExprSQL('value') . ' AS value, COUNT(timestamp) AS count'.
 				' FROM data'.
 				' WHERE channel_id = ?' . $sqlTimeFilter .
 				' GROUP BY ' . $sqlGroupFields;
@@ -147,7 +147,7 @@ abstract class Interpreter {
 		if ($this->rowCount <= 0)
 			return new \EmptyIterator();
 
-		// perform any optimizations, based on the actual number of rows
+		// perform any optimizations and run query
 		$stmt = $this->runSQL($sql, $sqlParameters);
 
 		return new DataIterator($stmt, $this->rowCount, $this->tupleCount);
@@ -156,7 +156,9 @@ abstract class Interpreter {
 	/**
 	 * Execute SQL after performing potential optimizations
 	 * Helper function to avoid duplicate code in derived classes
-	 * Reduces number of tuples returned from DB if possible
+	 *
+	 * Reduces number of tuples returned from DB if possible,
+	 * basically does what DataIterator->next does when bundling tuples into packages
 	 *
 	 * @author Andreas Götz <cpuidle@gmx.de>
 	 * @param string $sql
@@ -164,7 +166,7 @@ abstract class Interpreter {
 	 */
 	protected function runSQL($sql, $sqlParameters) {
 		// potential to reduce result set - can't do this for already grouped SQL
-		if ($this->tupleCount && ($this->rowCount > $this->tupleCount) && !$this->groupBy) {
+		if (!$this->groupBy && $this->tupleCount && ($this->rowCount > $this->tupleCount)) {
 			$packageSize = floor($this->rowCount / $this->tupleCount);
 
 			if ($packageSize > 1) { // worth doing -> go
@@ -175,11 +177,12 @@ abstract class Interpreter {
 				// setting @row to packageSize-2 will make the first package contain 1 tuple only - as it's skipped anyway
 				// this pushes as much 'real' data as possible into the first used package
 				$this->conn->query('SET @row:=' . ($packageSize-2));
-				$sql = 'SELECT MAX(aggregate.timestamp) AS timestamp, SUM(aggregate.value) AS value, COUNT(aggregate.value) AS count '.
+				$sql = 'SELECT MAX(aggregate.timestamp) AS timestamp, ' .
+							static::groupExprSQL('aggregate.value') .' AS value, COUNT(aggregate.value) AS count '.
 					   'FROM ('.
 					   '	SELECT timestamp, value, @row:=@row+1 AS row '.
-					   ' 	FROM data WHERE channel_id=?' . $sqlTimeFilter . 
-					   'ORDER BY timestamp ) AS aggregate '.
+					   ' 	FROM data WHERE channel_id=?' . $sqlTimeFilter .
+					   'ORDER BY timestamp) AS aggregate '.
 					   'GROUP BY row DIV ' . $packageSize .' '.
 					   'ORDER BY timestamp ASC';
 			}
@@ -188,6 +191,17 @@ abstract class Interpreter {
 		$stmt = $this->conn->executeQuery($sql, $sqlParameters); // query for data
 
 		return($stmt);
+	}
+
+	/**
+	 * Return sql grouping expression
+	 *
+	 * @author Andreas Götz <cpuidle@gmx.de>
+	 * @param string $expression sql parameter
+	 * @return string grouped sql expression
+	 */
+	protected static function groupExprSQL($expression) {
+		return 'SUM(' . $expression . ')';
 	}
 
 	/**
