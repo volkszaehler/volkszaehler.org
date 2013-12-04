@@ -195,9 +195,16 @@ vz.parseUrlParams = function() {
 			middleware: middleware,
 			cookie: save
 		});
-	
-		// avoid double entries (note: obj comparision is not perfect!)
-		if ($.inArray(entity, vz.entities) == -1) {
+
+		// avoid double entries
+		var knownEntity = false;
+		vz.entities.each(function(entity) {
+			if (entity.uuid == uuid) {
+				knownEntity = true;
+			}
+		});
+
+		if (!knownEntity) {
 			vz.entities.push(entity);
 		}
 	});
