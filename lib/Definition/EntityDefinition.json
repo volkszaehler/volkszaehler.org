@@ -163,9 +163,23 @@
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
-			"de" : "Gas",
-			"en" : "Gas",
-			"fr" : "Gaz"
+			"de" : "Gas (S0-Impulse)",
+			"en" : "Gas (S0-pulses)",
+			"fr" : "Gaz (S0)"
+		}
+	},
+	{
+		"name"			: "gas meter",
+		"required"		: ["resolution"],
+		"optional"		: ["tolerance", "cost", "local"],
+		"icon"			: "flame.png",
+		"unit"			: "m³/h",
+		"interpreter"		: "Volkszaehler\\Interpreter\\CounterInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
+		"translation"		: {
+			"de" : "Gas (Zaehlerstaende)",
+			"en" : "Gas (meter readings)",
 		}
 	},
 	{
