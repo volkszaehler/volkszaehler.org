@@ -179,7 +179,7 @@
 		"hasConsumption"	: true,
 		"translation"		: {
 			"de" : "Gas (Zaehlerstaende)",
-			"en" : "Gas (meter readings)",
+			"en" : "Gas (meter readings)"
 		}
 	},
 	{
