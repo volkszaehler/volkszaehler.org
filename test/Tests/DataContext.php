@@ -11,6 +11,7 @@ require_once('Middleware.php');
 abstract class DataContext extends Middleware
 {
 	static $uuid;
+	static $precision = 0.001;
 
 	/**
 	 * Initialize context
@@ -18,6 +19,8 @@ abstract class DataContext extends Middleware
 	static function setupBeforeClass() {
 		parent::setupBeforeClass();
 		self::$context = self::$mw . 'data';
+
+		self::$precision = pow(10, -\Volkszaehler\View\View::PRECISION);
 	}
 
 	/**
@@ -44,29 +47,32 @@ abstract class DataContext extends Middleware
 		$json = self::getJsonRaw($url);
 	}
 
-	protected function addDatapoint($ts, $value, $uuid = null) {
+	protected function addTuple($ts, $value, $uuid = null) {
 		$url = self::$context . '/' . (($uuid) ?: self::$uuid) .
 			   '.json?operation=add&ts=' . $ts . '&value=' . $value;
-		$this->getJson($url);
+		return $this->getJson($url);
 	}
 
-	protected function _getDatapoints($url, $from = null, $to = null, $group = null) {
+	protected function getTuplesByUrl($url, $from = null, $to = null, $group = null, $tuples = null) {
 		if ($from)  $url .= 'from=' . $from . '&';
 		if ($to) 	$url .= 'to=' . $to . '&';
 		if ($group) $url .= 'group=' . $group . '&';
+		if ($tuples) $url.= 'tuples=' . $tuples . '&';
 
 		$this->getJson($url);
 		$this->assertUUID();
+
+		return $this->json;
 	}
 
-	protected function getDatapoints($from = null, $to = null, $group = null) {
+	protected function getTuples($from = null, $to = null, $group = null, $tuples = null) {
 		$url = self::$context . '/' . self::$uuid . '.json?';
-		$this->_getDatapoints($url, $from, $to, $group);
+		return $this->getTuplesByUrl($url, $from, $to, $group, $tuples);
 	}
 
-	protected function getDatapointsRaw($from = null, $to = null, $group = null) {
+	protected function getTuplesRaw($from = null, $to = null, $group = null, $tuples = null) {
 		$url = self::$context . '/' . self::$uuid . '.json?client=raw&';
-		$this->_getDatapoints($url, $from, $to, $group);
+		return $this->getTuplesByUrl($url, $from, $to, $group, $tuples);
 	}
 
 	protected function debug() {
@@ -77,17 +83,35 @@ abstract class DataContext extends Middleware
 	 * Helper assertion to validate correct UUID
 	 */
 	protected function assertUUID() {
-		$this->assertEquals((isset($this->json->data->uuid) ? $this->json->data->uuid : null), self::$uuid,
+		$this->assertEquals(self::$uuid, (isset($this->json->data->uuid) ? $this->json->data->uuid : null),
 			"Wrong UUID. Expected " . self::$uuid . ", got " . $this->json->data->uuid);
 	}
 
 	/**
 	 * Helper assertion to validate header fields
 	 */
-	protected function assertHeader($consumption, $average, $rows) {
-		$this->assertEquals($consumption, $this->json->data->consumption);
-		$this->assertEquals($average, $this->json->data->average);
-		$this->assertEquals($rows, $this->json->data->rows);
+	protected function assertHeader($consumption, $average, $rows = null) {
+		$this->assertEquals($consumption, $this->json->data->consumption, "<consumption> mismatch", self::$precision);
+		$this->assertEquals($average, $this->json->data->average, "<average> mismatch", self::$precision);
+		if (isset($rows)) {
+			$this->assertEquals($rows, $this->json->data->rows, "<rows> mismatch");
+		}
+	}
+
+	/**
+	 * Helper assertion to validate from/to header fields
+	 */
+	protected function assertFromTo($from, $to) {
+		$this->assertEquals($from, $this->json->data->from, "<from> doesn't match request");
+		$this->assertEquals($to, $this->json->data->to, "<to> doesn't match request");
+	}
+
+	/**
+	 * Helper assertion to validate header min/max fields
+	 */
+	protected function assertMinMax($min, $max = null) {
+		$this->assertTuple($min, $this->json->data->min, "<min> tuple mismatch");
+		$this->assertTuple($max ?: $min, $this->json->data->max, "<max> tuple mismatch");
 	}
 
 	/**
@@ -101,14 +125,20 @@ abstract class DataContext extends Middleware
 
 		if (is_array($tuple)) {
 			for ($i=0; $i<sizeof($tuple); $i++) {
-				$this->assertEquals($realTuple[$i], $tuple[$i],
-					$msg . ". Got " . print_r(array_slice($realTuple,0,sizeof($tuple)),1) .
-					", expected " . print_r($tuple,1));
+				$this->assertEquals(
+					$tuple[$i], $realTuple[$i],
+					$msg . ". Got " . print_r(array_slice($realTuple, 0, sizeof($tuple)), 1) .
+					  ", expected " . print_r($tuple,1),
+					self::$precision);
 			}
 		}
-		else $this->assertEquals($realTuple[1], $tuple,
-					$msg . ". Got value " . print_r($realTuple[1],1) .
-					", expected " . $tuple);
+		else {
+			$this->assertEquals(
+					$tuple, $realTuple[1],
+					$msg . ". Got value " . $realTuple[1] .
+					        ", expected " . $tuple,
+					self::$precision);
+		}
 	}
 }
 

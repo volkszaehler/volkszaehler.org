@@ -15,8 +15,7 @@ class DataSensorTest extends DataContext
 	 */
 	static function setupBeforeClass() {
 		parent::setupBeforeClass();
-		if (!self::$uuid)
-			self::$uuid = self::createChannel('Sensor', 'powersensor');
+		self::$uuid = self::createChannel('Sensor', 'powersensor'/*, self::$resolution*/);
 	}
 
 	function testSensor() {

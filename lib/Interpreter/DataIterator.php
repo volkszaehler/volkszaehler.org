@@ -63,7 +63,7 @@ class DataIterator implements \Iterator, \Countable {
 			 $this->packageSize = 1;
 			 $this->tupleCount = $this->rowCount;
 		}
-		else { // sumarize
+		else { // summarize
 			$this->packageSize = floor($this->rowCount / $this->tupleCount);
 			$this->tupleCount = floor($this->rowCount / $this->packageSize);
 
@@ -84,11 +84,12 @@ class DataIterator implements \Iterator, \Countable {
 	 * @return next aggregated tuple
 	 */
 	public function next() {
-		$package = array(0, 0, 0);
+		$package = array(0, 0, 0, 0);
 		for ($i = 0; $i < $this->packageSize && $tuple = $this->stmt->fetch(); $i++) {
 			$package[0] = $tuple[0]; // last timestamp of package will be used
 			$package[1] += $tuple[1];
 			$package[2] += $tuple[2];
+			$package[3] = max($package[3], $tuple[1]); // courtesy for CounterInterpreter
 
 			$this->rowKey++;
 		}

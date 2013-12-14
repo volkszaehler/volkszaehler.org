@@ -49,15 +49,14 @@ class Channel extends Entity {
 		$this->data = new ArrayCollection();
 		$this->groups = new ArrayCollection();
 	}
-	
+
 	/**
 	 * Add a new data to the database
 	 */
 	public function addData(\Volkszaehler\Model\Data $data) {
 		$this->data->add($data);
 	}
-	
-	
+
 	/**
 	 * Purge data
 	 *
