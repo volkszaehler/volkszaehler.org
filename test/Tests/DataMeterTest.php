@@ -16,13 +16,13 @@ class DataMeterTest extends DataContext
 	// data properties
 	protected $ts1 =  3600000;
 	protected $ts2 = 10800000; // +2hr
-	protected $ts3 = 18000000; // +3hr
-	protected $ts4 = 19800000; // +3.5
+	protected $ts3 = 14400000; // +3hr
+	protected $ts4 = 16200000; // +3.5
 
 	protected $value1 = 1000;
-	protected $value2 = 1000;
-	protected $value3 = 2000;
-	protected $value4 = 2000;
+	protected $value2 = 1000;  // 10kWh @ resolution 100
+	protected $value3 = 2000;  // 20kWh @ resolution 100
+	protected $value4 = 2000;  // 20kWh @ resolution 100
 
 	/**
 	 * Create channel
@@ -62,9 +62,9 @@ class DataMeterTest extends DataContext
 	 * @depends testAddTuple
 	 */
 	function testGetTuple() {
-		$this->getTuples($this->ts1, $this->ts2);
+		$this->getTuples($this->ts1-1, $this->ts2);
 
-		// from/to expected to match single datapoint
+		// from/to expected to match actual data instead of request range
 		$this->assertFromTo($this->ts1, $this->ts1);
 		$this->assertHeader(0, 0, 1);
 
@@ -90,6 +90,31 @@ class DataMeterTest extends DataContext
 		$this->assertCount(1, $this->json->data->tuples);
 
 		$this->assertTuple(0, $this->makeTuple($this->ts1, $this->ts2, $this->value2));
+	}
+
+	/**
+	 * test if from=0 gets all tuples
+	 *
+	 * @depends testGetMultiple
+	 */
+	function testGetAllTuples() {
+		$this->getTuples(0);
+
+		$rows = 2;
+		$this->assertEquals($rows, $this->json->data->rows);
+		$this->assertCount($rows - 1, $this->json->data->tuples);
+	}
+
+	/**
+	 * test if from=now gets exactly the last tuple
+	 *
+	 * @depends testGetMultiple
+	 */
+	function testGetLastTuple() {
+		$tuples = $this->getTuplesRaw($this->ts1, $this->ts2);
+		$tuplesNow = $this->getTuples("now");
+
+		$this->assertEquals($tuples, $tuplesNow);
 	}
 
 	/**
@@ -196,18 +221,6 @@ class DataMeterTest extends DataContext
 		$this->assertCount(1, $this->json->data->tuples);
 
 		$this->assertTuple(0, $this->makeTuple($this->ts1, $this->ts3, $this->value2 + $this->value3, 2));
-	}
-
-	/**
-	 * test if from=now gets exactly the last tuple
-	 *
-	 * @depends testGetMultiple
-	 */
-	function testGetLastTuple() {
-		$tuples = $this->getTuplesRaw($this->ts2, $this->ts3);
-		$tuplesNow = $this->getTuples("now");
-
-		$this->assertEquals($tuples, $tuplesNow);
 	}
 
 	/**
