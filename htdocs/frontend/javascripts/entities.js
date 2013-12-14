@@ -70,6 +70,7 @@ vz.entities.loadData = function() {
 			queue.push(entity.loadData());
 		}
 	}, true); // recursive!
+	
 	return $.when.apply($, queue);
 };
 
