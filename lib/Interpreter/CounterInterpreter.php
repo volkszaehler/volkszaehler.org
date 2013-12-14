@@ -37,7 +37,7 @@ class CounterInterpreter extends Interpreter {
 
 	protected $valsum;
 	protected $resolution;
-	
+
 	/**
 	 * Calculates the consumption
 	 *
@@ -74,16 +74,17 @@ class CounterInterpreter extends Interpreter {
 
 		$this->resolution = $this->channel->getProperty('resolution');
 		$this->valsum = 0;
-		
-		foreach ($this->rows as $row) {
-			$val = $row[1] / $row[2]; // kind of revert what DataIterator::next did to our data
 
-			if (!isset($last_val)) { # get starting value from skipped first row
-				$last_ts = $this->rows->getFrom();
-				$last_val = $this->rows->firstValue();
-			}
-			if ($val === $last_val)
-				continue; # skip duplicate values
+		// get starting value from skipped first row
+		if ($this->rowCount > 0) {
+			$last_ts = $this->getFrom();
+			$last_val = $this->rows->firstValue();
+		}
+
+		foreach ($this->rows as $row) {
+			// instead of reverting what DataIterator->next did by $val = $row[1] / $row[2]
+			// get max value which DataIterator->next provides as courtesy
+			$val = $row[3];
 
 			$delta_ts = $row[0] - $last_ts; # time between now and row before
 			$delta_val = $val - $last_val;
@@ -94,15 +95,15 @@ class CounterInterpreter extends Interpreter {
 			));
 			$last_ts = $row[0];
 			$last_val = $val;
-			
+
 			if (is_null($this->max) || $tuple[1] > $this->max[1]) {
 				$this->max = $tuple;
 			}
-			
+
 			if (is_null($this->min) || $tuple[1] < $this->min[1]) {
 				$this->min = $tuple;
 			}
-			
+
 			$this->valsum += $delta_val;
 
 			$tuples[] = $tuple;
@@ -112,7 +113,7 @@ class CounterInterpreter extends Interpreter {
 		// this avoids the aliasing problems due to DataIterator dropping first record and last counter value averaged into package
 		// assumption is that counter values are increasing
 		if ($this->tupleCount && count($tuples)) {
-			// common conditions for following SQL queries	
+			// common conditions for following SQL queries
 			$sqlParameters = array($this->channel->getId());
 			$sqlTimeFilter = self::buildDateTimeFilterSQL($this->from, $this->to, $sqlParameters);
 
@@ -124,6 +125,22 @@ class CounterInterpreter extends Interpreter {
 		}
 
 		return $tuples;
+	}
+
+	/**
+	 * Return sql grouping expression
+	 *
+	 * Override Interpreter->groupExpr
+	 *
+	 * For precision when bundling tuples into packages
+	 * CounterInterpreter needs MAX instead of SUM.
+	 *
+	 * @author Andreas Götz <cpuidle@gmx.de>
+	 * @param string $expression sql parameter
+	 * @return string grouped sql expression
+	 */
+	protected static function groupExprSQL($expression) {
+		return 'MAX(' . $expression . ')';
 	}
 }
 

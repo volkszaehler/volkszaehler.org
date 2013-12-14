@@ -10,15 +10,19 @@ require_once('DataContext.php');
 
 class DataCounterTest extends DataContext
 {
+	// channel properties
 	static $resolution = 100;
 
-	protected $ts1 = 100000000;
-	protected $ts2 = 103600000;
-	protected $ts3 = 107200000;
+	// data properties
+	protected $ts1 =  3600000;
+	protected $ts2 =  7200000; // +1hr
+	protected $ts3 = 10800000; // +2hr
+	protected $ts4 = 12600000; // +2.5
 
 	protected $value1 = 1000;
 	protected $value2 = 3000;
 	protected $value3 = 7000;
+	protected $value4 = 8000;
 
 	/**
 	 * Create channel
@@ -36,7 +40,7 @@ class DataCounterTest extends DataContext
 		return($periodValue * 3600000 / ($to - $from));
 	}
 
-	function getTuple($from, $to, $fromValue, $toValue, $count = NULL) {
+	function makeTuple($from, $to, $fromValue, $toValue, $count = NULL) {
 		$consumption = $this->getConsumption($fromValue, $toValue);
 		$average = $this->getAverage($from, $to, $consumption);
 
@@ -47,74 +51,80 @@ class DataCounterTest extends DataContext
 		return($result);
 	}
 
-	function testAddDatapoint() {
-		$url = self::$context . '/' . self::$uuid . '.json?operation=add&ts=' . $this->ts1 . '&value=' . $this->value1;
-		$this->getJson($url);
+	function testAddTuple() {
+		$this->addTuple($this->ts1, $this->value1);
 
 		// doesn't return any data
 		$this->assertFalse(isset($this->json->data));
 	}
 
 	/**
-	 * @depends testAddDatapoint
+	 * @depends testAddTuple
 	 */
-	function testGetOneDatapoint() {
-		$url = self::$context . '/' . self::$uuid . '.json?from=' . $this->ts1 . "&to=" . $this->ts2;
-		$this->getJson($url);
+	function testGetTuple() {
+		$this->getTuples($this->ts1-1, $this->ts2);
 
-		$this->assertUUID();
-
-		// from/to expected to match single datapoint
-		$this->assertEquals($this->ts1, $this->json->data->from, "<from> doesn't match request");
-		$this->assertEquals($this->ts1, $this->json->data->to, "<to> doesn't match request");
+		// from/to expected to match actual data instead of request range
+		$this->assertFromTo($this->ts1, $this->ts1);
 		$this->assertHeader(0, 0, 1);
+
+		// tuples
+		$this->assertFalse(isset($this->json->data->tuples));
 	}
 
 	/**
-	 * @depends testAddDatapoint
+	 * @depends testAddTuple
+	 * @depends testGetTuple
 	 */
-	function testAddAnotherDatapoint() {
-		$url = self::$context . '/' . self::$uuid . '.json?operation=add&ts=' . $this->ts2 . '&value=' . $this->value2;
-		$this->getJson($url);
-	}
+	function testGetMultiple() {
+		$this->addTuple($this->ts2, $this->value2);
+		$this->getTuples($this->ts1, $this->ts2);
 
-	/**
-	 * @depends testAddDatapoint
-	 * @depends testAddAnotherDatapoint
-	 *
-	 * @todo getting interval start timestamp seems odd as the value is discarded?
-	 */
-	function testGetTwoDatapoints() {
-		$url = self::$context . '/' . self::$uuid . '.json?from=' . $this->ts1 . "&to=" . $this->ts2;
-		$this->getJson($url);
-
-		$this->assertUUID();
-
-		$this->assertEquals($this->ts1, $this->json->data->from, "<from> doesn't match request");
-		$this->assertEquals($this->ts2, $this->json->data->to, "<to> doesn't match request");
+		$this->assertFromTo($this->ts1, $this->ts2);
 
 		$consumption = $this->getConsumption($this->value1, $this->value2);
 		$average = $this->getAverage($this->ts1, $this->ts2, $consumption);
 		$this->assertHeader($consumption, $average, 2);
 
-		// timestamp of interval start
-		$this->assertTuple(0, $this->getTuple($this->ts1, $this->ts2, $this->value1, $this->value2));
+		// tuples
+		$this->assertCount(1, $this->json->data->tuples);
+
+		$this->assertTuple(0, $this->makeTuple($this->ts1, $this->ts2, $this->value1, $this->value2));
+	}
+	/**
+	 * test if from=0 gets all tuples
+	 *
+	 * @depends testGetMultiple
+	 */
+	function testGetAllTuples() {
+		$this->getTuples(0);
+
+		$rows = 2;
+		$this->assertEquals($rows, $this->json->data->rows);
+		$this->assertCount($rows - 1, $this->json->data->tuples);
+	}
+
+	/**
+	 * test if from=now gets exactly the last tuple
+	 *
+	 * @depends testGetMultiple
+	 */
+	function testGetLastTuple() {
+		$tuples = $this->getTuplesRaw($this->ts1, $this->ts2);
+		$tuplesNow = $this->getTuples("now");
+
+		$this->assertEquals($tuples, $tuplesNow);
 	}
 
 	/**
 	 * get data points outside request range
 	 *
-	 * @depends testAddDatapoint
-	 * @depends testAddAnotherDatapoint
+	 * @depends testGetMultiple
 	 */
 	function testGetEdgeDatapoints() {
-		$url = self::$context . '/' . self::$uuid . '.json?from=' . ($this->ts2 + 1). "&to=" . ($this->ts2 + 1000);
-		$this->getJson($url);
+		$this->getTuples($this->ts2, $this->ts2 + 1000);
 
-		$this->assertUUID();
-
-		$this->assertEquals($this->ts1, $this->json->data->from, "<from> doesn't match request");
-		$this->assertEquals($this->ts2, $this->json->data->to, "<to> doesn't match request");
+		$this->assertFromTo($this->ts1, $this->ts2);
 
 		$consumption = $this->getConsumption($this->value1, $this->value2);
 		$average = $this->getAverage($this->ts1, $this->ts2, $consumption);
@@ -124,78 +134,114 @@ class DataCounterTest extends DataContext
 	/**
 	 * only get data points inside request range
 	 *
-	 * @depends testAddDatapoint
-	 * @depends testAddAnotherDatapoint
+	 * @depends testGetEdgeDatapoints
 	 */
 	function testGetEdgeDatapointsRaw() {
-		$url = self::$context . '/' . self::$uuid . '.json?from=' . ($this->ts2 + 1). "&to=" . ($this->ts2 + 1000) . "&client=raw";
-		$this->getJson($url);
-
-		$this->assertUUID();
+		$this->getTuplesRaw($this->ts2 + 1, $this->ts2 + 1000);
 
 		// from/to expected 0 if rows=0
-		$this->assertEquals(0, $this->json->data->from, "<from> doesn't match request");
-		$this->assertEquals(0, $this->json->data->to, "<to> doesn't match request");
+		$this->assertFromTo(0, 0);
 		$this->assertHeader(0, 0, 0);
+
+		// tuples
+		$this->assertFalse(isset($this->json->data->tuples));
 	}
 
 	/**
-	 * @todo getting interval start timestamp seems odd as the value is discarded?
-	 *
-	 * @depends testAddDatapoint
-	 * @depends testAddAnotherDatapoint
+	 * @depends testGetMultiple
 	 */
-	function testThreeDatapointsAverageAndConsumption() {
-		// add 3rd datapoint with double value
-		$url = self::$context . '/' . self::$uuid . '.json?operation=add&ts=' . $this->ts3 . '&value=' . $this->value3;
-		$this->getJson($url);
+	function testMultipleAverageAndConsumption() {
+		// add 3rd datapoint
+		$this->addTuple($this->ts3, $this->value3);
 
 		// get data
-		$url = self::$context . '/' . self::$uuid . '.json?from=' . $this->ts1 . "&to=" . $this->ts3;
-		$this->getJson($url);
+		$this->getTuples($this->ts1, $this->ts3);
 
-		$this->assertUUID();
-
-		$this->assertEquals($this->ts1, $this->json->data->from, "<from> doesn't match request");
-		$this->assertEquals($this->ts3, $this->json->data->to, "<to> doesn't match request");
+		$this->assertFromTo($this->ts1, $this->ts3);
 
 		$consumption = $this->getConsumption($this->value1, $this->value3);
 		$average = $this->getAverage($this->ts1, $this->ts3, $consumption);
 		$this->assertHeader($consumption, $average, 3);
 
-		// timestamp of interval start
-		$this->assertTuple(0, $this->getTuple($this->ts1, $this->ts2, $this->value1, $this->value2));
-		$this->assertTuple(1, $this->getTuple($this->ts2, $this->ts3, $this->value2, $this->value3));
+		$this->assertMinMax(
+			$this->makeTuple($this->ts1, $this->ts2, $this->value1, $this->value2),
+			$this->makeTuple($this->ts2, $this->ts3, $this->value2, $this->value3));
 
-		$this->assertTuple($this->getTuple($this->ts1, $this->ts2, $this->value1, $this->value2), $this->json->data->min, "<min> tuple mismatch");
-		$this->assertTuple($this->getTuple($this->ts2, $this->ts3, $this->value2, $this->value3), $this->json->data->max, "<max> tuple mismatch");
+		// tuples
+		$this->assertCount(2, $this->json->data->tuples);
+
+		$this->assertTuple(0, $this->makeTuple($this->ts1, $this->ts2, $this->value1, $this->value2));
+		$this->assertTuple(1, $this->makeTuple($this->ts2, $this->ts3, $this->value2, $this->value3));
 	}
-	
+
 	/**
-	 * @todo getting interval start timestamp seems odd as the value is discarded?
-	 *
-	 * @depends testThreeDatapointsAverageAndConsumption
+	 * @depends testMultipleAverageAndConsumption
 	 */
-	function testThreeDatapointsAggregationByHour() {
+	function testMultipleGroupByHour() {
 		// get data
-		$url = self::$context . '/' . self::$uuid . '.json?from=' . $this->ts1 . "&to=" . $this->ts3 . "&group=hour";
-		$this->getJson($url);
+		$this->getTuples($this->ts1, $this->ts3, "hour");
 
-		$this->assertUUID();
-
-		$this->assertEquals($this->ts1, $this->json->data->from, "<from> doesn't match request");
-		$this->assertEquals($this->ts3, $this->json->data->to, "<to> doesn't match request");
+		$this->assertFromTo($this->ts1, $this->ts3);
 
 		$consumption = $this->getConsumption($this->value1, $this->value3);
 		$average = $this->getAverage($this->ts1, $this->ts3, $consumption);
 		$this->assertHeader($consumption, $average, 3);
 
-		// timestamp of interval start
-		$this->assertTuple(0, $this->getTuple($this->ts1, $this->ts2, $this->value1, $this->value2));
-		$this->assertTuple(1, $this->getTuple($this->ts2, $this->ts3, $this->value2, $this->value3));
+		$this->assertMinMax(
+			$this->makeTuple($this->ts1, $this->ts2, $this->value1, $this->value2),
+			$this->makeTuple($this->ts2, $this->ts3, $this->value2, $this->value3));
 
-		$this->assertTuple($this->getTuple($this->ts1, $this->ts2, $this->value1, $this->value2), $this->json->data->min, "<min> tuple mismatch");
-		$this->assertTuple($this->getTuple($this->ts2, $this->ts3, $this->value2, $this->value3), $this->json->data->max, "<max> tuple mismatch");
+		// tuples
+		$this->assertCount(2, $this->json->data->tuples);
+
+		$this->assertTuple(0, $this->makeTuple($this->ts1, $this->ts2, $this->value1, $this->value2));
+		$this->assertTuple(1, $this->makeTuple($this->ts2, $this->ts3, $this->value2, $this->value3));
+	}
+
+	/**
+	 * @depends testMultipleAverageAndConsumption
+	 */
+	function testMultiplePackaging() {
+		// get data - 1 tuple
+		$this->getTuples($this->ts1, $this->ts3, "", 1);
+
+		$this->assertFromTo($this->ts1, $this->ts3);
+
+		// even when packaged, raw number of DB rows (3) is returned
+		$consumption = $this->getConsumption($this->value1, $this->value3);
+		$average = $this->getAverage($this->ts1, $this->ts3, $consumption);
+		// 3 vs 1 result rows depends on if Interpreter->runSQL or DataIterator->next does iteration
+		$this->assertHeader($consumption, $average/*, 3*/);
+
+		// min/max are identical with the one tuple
+		$this->assertMinMax($this->makeTuple($this->ts1, $this->ts3, $this->value1, $this->value3));
+
+		// out of the 3 tuples, 1 has been used as starting point, the 2 remaining ones are packaged
+		$this->assertCount(1, $this->json->data->tuples);
+
+		$this->assertTuple(0, $this->makeTuple($this->ts1, $this->ts3, $this->value1, $this->value3, 2));
+	}
+
+	/**
+	 * @depends testMultipleGroupByHour
+	 */
+	function testMultipleGroupByHour2() {
+		$this->addTuple($this->ts4, $this->value4);
+
+		// get data
+		$this->getTuples($this->ts1, $this->ts4, "hour");
+
+		$this->assertFromTo($this->ts1, $this->ts4);
+
+		$consumption = $this->getConsumption($this->value1, $this->value4);
+		$average = $this->getAverage($this->ts1, $this->ts4, $consumption);
+		$this->assertHeader($consumption, $average, 3);
+
+		// tuples
+		$this->assertCount(2, $this->json->data->tuples);
+
+		$this->assertTuple(0, $this->makeTuple($this->ts1, $this->ts2, $this->value1, $this->value2));
+		$this->assertTuple(1, $this->makeTuple($this->ts2, $this->ts4, $this->value2, $this->value4));
 	}
 }
 
