@@ -41,7 +41,7 @@ abstract class Controller {
 	 * @param View $view
 	 * @param EntityManager $em
 	 */
-	public function __construct(View\View $view, \Doctrine\ORM\EntityManager $em) {
+	public function __construct(/*View\View*/ $view, \Doctrine\ORM\EntityManager $em) {
 		$this->view = $view;
 		$this->em = $em;
 	}
@@ -55,7 +55,7 @@ abstract class Controller {
 		if (!method_exists($this, $op)) {
 			throw new \Exception('Invalid context operation: \'' . $op . '\'');
 		}
-		
+
 		switch(count($arg)) { // improved performence
 			case 0: return $this->{$op}();
 			case 1: return $this->{$op}($arg[0]);

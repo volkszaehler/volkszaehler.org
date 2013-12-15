@@ -278,12 +278,12 @@ abstract class Interpreter {
 	 * @link http://de3.php.net/manual/en/datetime.formats.php
 	 * @todo add millisecond resolution
 	 *
-	 * @param string $ts string to parse
+	 * @param mixed $string int, float or string to parse
 	 * @param float $now in ms since 1970
 	 * @return float
 	 */
 	protected static function parseDateTimeString($string) {
-		if (ctype_digit($string)) { // handling as ms timestamp
+		if (is_numeric($string)) { // handling as ms timestamp
 			return (float) $string;
 		}
 		elseif ($ts = strtotime($string)) {
