@@ -33,6 +33,10 @@ vz.options = {
 	minTimeout: 2000,	// minimum refresh time in ms
 	interval: 24*60*60*1000, // 1 day
 	localMiddleware: '../middleware.php',
+	remoteMiddleware: [{
+		title: 'Volkszaehler Demo',
+		url: 'http://demo.volkszaehler.org/middleware.php'
+	}],
 	monthNames: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
 	dayNames: ['Son', 'Mon', 'Di', 'Mi', 'Do', 'Fr', 'Sam'],
 	lineWidthDefault: 2,
