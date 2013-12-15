@@ -1,0 +1,23 @@
+{
+    "name": "volkszaehler/volkszaehler",
+    "type": "project",
+    "homepage": "http://www.volkszaehler.org/",
+    "license": "GPL-3.0",
+    "support": {
+        "wiki": "http://wiki.volkszaehler.org/",
+        "email": "volkszaehler-dev@lists.volkszaehler.org",
+        "irc": "chat.freenode.net#volkszaehler.org"
+    },
+    "require": {
+        "doctrine/orm": "2.4.*",
+        "jpgraph/jpgraph": "dev-master"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "3.7.*"
+    },
+    "autoload": {
+        "psr-0": {
+            "Volkszaehler\\": "lib/"
+        }
+    }
+}

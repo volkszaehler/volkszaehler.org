@@ -24,8 +24,8 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
-include '../lib/Util/Random.php';
-include '../lib/Util/UUID.php';
+include '../lib/Volkszaehler/Util/Random.php';
+include '../lib/Volkszaehler/Util/UUID.php';
 
 use Volkszaehler\Model;
 use Volkszaehler\Util;
