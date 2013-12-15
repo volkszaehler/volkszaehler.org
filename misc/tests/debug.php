@@ -26,8 +26,9 @@
 
 define('VZ_DIR', realpath(__DIR__ . '/../..'));
 
+require VZ_DIR . '/vendor/autoload.php';
+
 use Volkszaehler\Util;
-include VZ_DIR . '/lib/Util/Debug.php';
 echo '<pre>';
 
 echo print_r(Util\Debug::getLoadAvg(), TRUE);

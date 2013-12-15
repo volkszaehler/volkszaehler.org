@@ -107,11 +107,8 @@ class Router {
 			}
 		}
 		
-		// check for JpGraph
-		if (file_exists(JPGRAPH_DIR . '/jpgraph.php')) {
-			foreach (array('png', 'jpeg', 'jpg', 'gif') as $format) {
-				self::$viewMapping[$format] = 'Volkszaehler\View\JpGraph';
-			}
+		foreach (array('png', 'jpeg', 'jpg', 'gif') as $format) {
+			self::$viewMapping[$format] = 'Volkszaehler\View\JpGraph';
 		}
 
 		// initialize view
@@ -202,10 +199,10 @@ class Router {
 			$config->setQueryCacheImpl($cache);
 		}
 
-		$driverImpl = $config->newDefaultAnnotationDriver(VZ_DIR . '/lib/Model');
+		$driverImpl = $config->newDefaultAnnotationDriver(VZ_DIR . '/lib/Volkszaehler/Model');
 		$config->setMetadataDriverImpl($driverImpl);
 
-		$config->setProxyDir(VZ_DIR . '/lib/Model/Proxy');
+		$config->setProxyDir(VZ_DIR . '/lib/Volkszaehler/Model/Proxy');
 		$config->setProxyNamespace('Volkszaehler\Model\Proxy');
 		$config->setAutoGenerateProxyClasses(Util\Configuration::read('devmode'));
 
