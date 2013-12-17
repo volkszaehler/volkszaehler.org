@@ -283,7 +283,7 @@ abstract class Interpreter {
 	 * @return float
 	 */
 	protected static function parseDateTimeString($string) {
-		if (is_numeric($string)) { // handling as ms timestamp
+		if (ctype_digit((string)$string)) { // handling as ms timestamp
 			return (float) $string;
 		}
 		elseif ($ts = strtotime($string)) {
