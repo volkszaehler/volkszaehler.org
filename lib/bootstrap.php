@@ -1,10 +1,9 @@
 <?php
 /**
- * Doctrine cli configuration
+ * Common loader code
  *
- * @author Steffen Vogel <info@steffenvogel.de>
- * @package doctrine
- * @copyright Copyright (c) 2011, The volkszaehler.org project
+ * @copyright Copyright (c) 2013, The volkszaehler.org project
+ * @package default
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
 /*
@@ -26,15 +25,25 @@
 
 use Volkszaehler\Util;
 
-define('VZ_DIR', realpath(__DIR__ . '/../..'));
+// enable strict error reporting
+error_reporting(E_ALL | E_STRICT);
 
-require VZ_DIR . '/lib/bootstrap.php';
+// Note: users of bootstrap.php can set VZ_DIR before calling bootstrap
+if (!defined('VZ_DIR')) {
+	define('VZ_DIR', realpath(__DIR__ . '/..'));
+}
+define('VZ_VERSION', '0.3');
 
-$em = Volkszaehler\Router::createEntityManager(TRUE); // get admin credentials
+require_once VZ_DIR . '/vendor/autoload.php';
 
-$helperSet = new \Symfony\Component\Console\Helper\HelperSet(array(
-	'db' => new \Doctrine\DBAL\Tools\Console\Helper\ConnectionHelper($em->getConnection()),
-	'em' => new \Doctrine\ORM\Tools\Console\Helper\EntityManagerHelper($em)
-));
+// load configuration
+Util\Configuration::load(VZ_DIR . '/etc/volkszaehler.conf');
 
-\Doctrine\ORM\Tools\Console\ConsoleRunner::run($helperSet);
+// set timezone
+$tz = (Util\Configuration::read('timezone')) ? Util\Configuration::read('timezone') : @date_default_timezone_get();
+date_default_timezone_set($tz);
+
+// set locale
+setlocale(LC_ALL, Util\Configuration::read('locale'));
+
+?>
