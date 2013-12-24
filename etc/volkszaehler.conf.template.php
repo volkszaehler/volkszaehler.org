@@ -73,6 +73,13 @@ $config['db']['dbname']				= 'volkszaehler';
 //$config['db']['admin']['password']		= 'admin_demo';
 
 /**
+ * Database aggregation
+ *
+ * See misc/tools/aggregation.php for details
+ */
+$config['aggregation'] = false;
+
+/**
  * Path of the SQLite database
  *
  * See Doctrine doc for details: http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en

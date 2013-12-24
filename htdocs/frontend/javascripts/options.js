@@ -41,6 +41,7 @@ vz.options = {
 	dayNames: ['Son', 'Mon', 'Di', 'Mi', 'Do', 'Fr', 'Sam'],
 	lineWidthDefault: 2,
 	lineWidthSelected: 4,
+	speedupFactor: 2,   // higher values give higher speedup but can produce chunky display
 };
 
 vz.options.plot = {

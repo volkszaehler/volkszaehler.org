@@ -64,15 +64,72 @@ vz.entities.loadCookie = function() {
 vz.entities.loadData = function() {
 	$('#overlay').html('<img src="images/loading.gif" alt="loading..." /><p>loading...</p>');
 
-	var queue = new Array;
+	// put each middleware into its own request
+	var hosts = {};
 	this.each(function(entity) {
 		if (entity.active && entity.definition && entity.definition.model == 'Volkszaehler\\Model\\Channel') {
-			queue.push(entity.loadData());
+			if (!hosts.hasOwnProperty(entity.middleware)) {
+				hosts[entity.middleware] = new Array();
+			}
+			hosts[entity.middleware].push(entity.uuid);
 		}
 	}, true); // recursive!
-	
+
+	var queue = new Array;
+	for (var host in hosts) {
+		if (hosts.hasOwnProperty(host)) {
+			queue.push(this.loadMultipleData(host, hosts[host]));
+		}
+	}
+
 	return $.when.apply($, queue);
 };
+
+vz.entities.loadMultipleData = function(middleware, uuids) {
+	var group;
+	// speedup middleware queries, requires options[aggregate] enabled
+	var delta = (vz.options.plot.xaxis.max - vz.options.plot.xaxis.min) / 3.6e6;
+	if (delta > 24 * vz.options.tuples/vz.options.speedupFactor) {
+		group = 'day';
+		if (delta > 24 * vz.options.tuples) tuples = vz.options.tuples;
+	}
+	else if (delta > vz.options.tuples/vz.options.speedupFactor) {
+		group = 'hour';
+		if (delta > vz.options.tuples) tuples = vz.options.tuples;
+	}
+
+	return vz.load({
+		controller: 'data',
+		url: middleware,
+		context: this,
+		data: {
+			from: Math.floor(vz.options.plot.xaxis.min),
+			to: Math.ceil(vz.options.plot.xaxis.max),
+			tuples: vz.options.tuples,
+			uuid: uuids,
+			group: group
+		},
+		success: function(json) {
+			var data = json.data;
+			for (var i=0; i<data.length; i++) {
+				if (!(data[i].tuples && data[i].tuples.length)) continue;
+
+				this.each(function(entity) {
+					// @todo assuming unique UUIDs across middlewares
+					if (entity.uuid !== data[i].uuid) return;
+
+					entity.data = data[i];
+					// allow negative values, e.g. for temperature sensors
+					if (data[i].min && data[i].min[1] < vz.options.plot.yaxes[entity.yaxis-1].min) {
+						vz.options.plot.yaxes[entity.yaxis-1].min = null;
+					}
+
+					entity.updateDOMRow();
+				}, true);
+			}
+		}
+	});
+}
 
 /**
  * Overwritten each iterator to iterate recursively throug all entities
