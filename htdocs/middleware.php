@@ -29,25 +29,10 @@ namespace Volkszaehler;
 use Volkszaehler\Util;
 use Volkszaehler\Controller;
 
-// enable strict error reporting
-error_reporting(E_ALL | E_STRICT);
-
 define('VZ_DIR', realpath(__DIR__ . '/..'));
-define('VZ_VERSION', '0.3');
 
-require VZ_DIR . '/vendor/autoload.php';
-
-// load configuration
-Util\Configuration::load(VZ_DIR . '/etc/volkszaehler.conf');
-
-// set timezone
-$tz = (Util\Configuration::read('timezone')) ? Util\Configuration::read('timezone') : @date_default_timezone_get();
-date_default_timezone_set($tz);
-
-// set locale
-setlocale(LC_ALL, Util\Configuration::read('locale'));
+require VZ_DIR . '/lib/bootstrap.php';
 
 $r = new Router();
 $r->run();
 $r->view->send();
-

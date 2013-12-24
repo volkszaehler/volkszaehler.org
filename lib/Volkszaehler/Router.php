@@ -193,10 +193,14 @@ class Router {
 	public static function createEntityManager($admin = FALSE) {
 		$config = new \Doctrine\ORM\Configuration;
 
-		if (extension_loaded('apc') && Util\Configuration::read('devmode') == FALSE) {
-			$cache = new \Doctrine\Common\Cache\ApcCache;
-			$config->setMetadataCacheImpl($cache);
-			$config->setQueryCacheImpl($cache);
+		if (Util\Configuration::read('devmode') == FALSE) {
+			$cache = null;
+			if (extension_loaded('apc'))
+				$cache = new \Doctrine\Common\Cache\ApcCache;
+			if ($cache) {
+				$config->setMetadataCacheImpl($cache);
+				$config->setQueryCacheImpl($cache);
+			}
 		}
 
 		$driverImpl = $config->newDefaultAnnotationDriver(VZ_DIR . '/lib/Volkszaehler/Model');

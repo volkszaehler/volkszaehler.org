@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<phpunit>
+<phpunit bootstrap="../lib/bootstrap.php">
 
   <testsuites>
     <testsuite name="Middleware">
@@ -7,17 +7,29 @@
     </testsuite>
   </testsuites>
 
-  <!-- This is required for VisualPHPUnit to work correctly -->
-  <listeners>
-    <!-- <listener class="PHPUnit_Util_Log_JSON"></listener> -->
-  </listeners>
+  <!-- exclude performance tests by default 
+
+  default excludes currently don't work due to a phpunit bug 
+
+  <groups>
+    <exclude>
+      <group>slow</group>
+    </exclude>
+  </groups>
+  -->
 
   <!-- configure code coverage -->
-	<filter>
-		<blacklist>
-			<directory suffix=".php">Wrapper</directory>
-			<directory suffix=".php">../lib/vendor</directory>
-		</blacklist>
-	</filter>
+  <filter>
+    <blacklist>
+      <directory suffix=".php">Wrapper</directory>
+      <directory suffix=".php">../vendor</directory>
+    </blacklist>
+  </filter>
+
+  <!-- This is required for VisualPHPUnit to work correctly
+  <listeners>
+    <listener class="PHPUnit_Util_Log_JSON"></listener>
+  </listeners>
+  -->
 
 </phpunit>

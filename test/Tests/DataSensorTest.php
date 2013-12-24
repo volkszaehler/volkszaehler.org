@@ -6,7 +6,7 @@
  * @author Andreas Götz <cpuidle@gmx.de>
  */
 
-require_once('DataContext.php');
+namespace Tests;
 
 class DataSensorTest extends DataContext
 {

@@ -6,12 +6,12 @@
  * @author Andreas Götz <cpuidle@gmx.de>
  */
 
-require_once('Middleware.php');
+namespace Tests;
 
 abstract class DataContext extends Middleware
 {
 	static $uuid;
-	static $precision = 0.001;
+	static $precision = 0.001;	// mimic View\PRECISION
 
 	/**
 	 * Initialize context
@@ -27,9 +27,9 @@ abstract class DataContext extends Middleware
 	 * Remove channel if initialized
 	 */
 	static function tearDownAfterClass() {
-		if (self::$uuid) {
-			self::deleteChannel(self::$uuid);
-			self::$uuid = null;
+		if (static::$uuid) {
+			self::deleteChannel(static::$uuid);
+			static::$uuid = null;
 		}
 		parent::tearDownAfterClass();
  	}
@@ -48,16 +48,17 @@ abstract class DataContext extends Middleware
 	}
 
 	protected function addTuple($ts, $value, $uuid = null) {
-		$url = self::$context . '/' . (($uuid) ?: self::$uuid) .
+		$url = self::$context . '/' . (($uuid) ?: static::$uuid) .
 			   '.json?operation=add&ts=' . $ts . '&value=' . $value;
 		return $this->getJson($url);
 	}
 
-	protected function getTuplesByUrl($url, $from = null, $to = null, $group = null, $tuples = null) {
+	protected function getTuplesByUrl($url, $from = null, $to = null, $group = null, $tuples = null, $extra = null) {
 		if ($from)  $url .= 'from=' . $from . '&';
 		if ($to) 	$url .= 'to=' . $to . '&';
 		if ($group) $url .= 'group=' . $group . '&';
-		if ($tuples) $url.= 'tuples=' . $tuples . '&';
+		if ($tuples)$url .= 'tuples=' . $tuples . '&';
+		if ($extra) $url .= $extra . '&';
 
 		$this->getJson($url);
 		$this->assertUUID();
@@ -66,12 +67,12 @@ abstract class DataContext extends Middleware
 	}
 
 	protected function getTuples($from = null, $to = null, $group = null, $tuples = null) {
-		$url = self::$context . '/' . self::$uuid . '.json?';
+		$url = self::$context . '/' . static::$uuid . '.json?';
 		return $this->getTuplesByUrl($url, $from, $to, $group, $tuples);
 	}
 
 	protected function getTuplesRaw($from = null, $to = null, $group = null, $tuples = null) {
-		$url = self::$context . '/' . self::$uuid . '.json?client=raw&';
+		$url = self::$context . '/' . static::$uuid . '.json?options=exact&';
 		return $this->getTuplesByUrl($url, $from, $to, $group, $tuples);
 	}
 
@@ -83,8 +84,8 @@ abstract class DataContext extends Middleware
 	 * Helper assertion to validate correct UUID
 	 */
 	protected function assertUUID() {
-		$this->assertEquals(self::$uuid, (isset($this->json->data->uuid) ? $this->json->data->uuid : null),
-			"Wrong UUID. Expected " . self::$uuid . ", got " . $this->json->data->uuid);
+		$this->assertEquals(static::$uuid, (isset($this->json->data->uuid) ? $this->json->data->uuid : null),
+			"Wrong UUID. Expected " . static::$uuid . ", got " . $this->json->data->uuid);
 	}
 
 	/**
