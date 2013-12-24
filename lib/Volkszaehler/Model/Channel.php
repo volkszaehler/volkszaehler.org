@@ -23,6 +23,7 @@
 
 namespace Volkszaehler\Model;
 
+use Volkszaehler\Util;
 use Doctrine\Common\Collections\ArrayCollection;
 
 /**
@@ -64,8 +65,19 @@ class Channel extends Entity {
 	 * @todo filter from & to
 	 */
 	public function clearData(\Doctrine\ORM\EntityManager $em) {
+		$em->getConnection()->beginTransaction();
+
 		$sql = 'DELETE FROM data WHERE channel_id = ?';
-		return $em->getConnection()->executeQuery($sql, array($this->id));
+		$res = $em->getConnection()->executeQuery($sql, array($this->id));
+
+		// clean aggregation table as well
+		if (Util\Configuration::read('aggregation')) {
+			$sql = 'DELETE FROM aggregate WHERE channel_id = ?';
+			$em->getConnection()->executeQuery($sql, array($this->id));
+		}
+
+		$em->getConnection()->commit();
+		return $res;
 	}
 }
 

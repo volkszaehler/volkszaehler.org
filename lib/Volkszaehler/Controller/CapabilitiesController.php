@@ -43,7 +43,7 @@ class CapabilitiesController extends Controller {
 	 */
 	public function get($section = NULL) {
 		$capabilities = array();
-		
+
 		if (is_null($section) || $section == 'configuration') {
 			$configuration = array(
 				'precision' => View\View::PRECISION,
@@ -51,52 +51,63 @@ class CapabilitiesController extends Controller {
 				'debug' => Util\Configuration::read('debug'),
 				'devmode' => Util\Configuration::read('devmode')
 			);
-			
+
 			$capabilities['configuration'] = $configuration;
 		}
-/*
-		// TODO fix COUNT performance on large INNODB tables
-		if (is_null($section) || $section == 'database') {
-			$conn = $this->em->getConnection(); // get dbal connection from EntityManager
 
-			$sql = 'SELECT ('.
-				   '	SELECT COUNT(1) '.
-				   '	FROM data'.
-				   ') AS rows, ('.
-				   '	SELECT SUM(data_length + index_length) '.
-				   '	FROM information_schema.tables '.
-				   '	WHERE table_schema = ?'.
-				   ') AS size';
+		// db statistics - only if specifically requested
+		if ($section == 'database') {
+			$conn = $this->em->getConnection(); // get DBAL connection from EntityManager
 
-			$res = $conn->fetchArray($sql, array(Util\Configuration::read('db.dbname')));
+			// estimate InnoDB tables to avoid performance penalty
+			$rows = $conn->fetchAssoc('EXPLAIN SELECT COUNT(id) FROM data USE INDEX (PRIMARY)');
+			if (isset($rows['rows']))
+				$rows = $rows['rows'];
+			else // get correct values for MyISAM
+				$rows = $conn->fetchColumn('SELECT COUNT(1) FROM data');
 
+			// database disc space consumption
+			$sql = 'SELECT SUM(data_length + index_length) '.
+				   'FROM information_schema.tables '.
+				   'WHERE table_schema = ?';
+			$size = $conn->fetchColumn($sql, array(Util\Configuration::read('db.dbname')));
+
+			$aggregation = Util\Configuration::read('aggregation');
 			$capabilities['database'] = array(
-				'rows' => $res[0],
-				'size' => $res[1]
+				'data_rows' => $rows,
+				'data_size' => $size,
+				'aggregation_enabled' => ($aggregation) ? 1 : 0
 			);
+
+			// aggregation table size
+			if ($aggregation) {
+				$agg_rows = $conn->fetchColumn('SELECT COUNT(1) FROM aggregate');
+				$capabilities['database']['aggregation_rows'] = $agg_rows;
+				$capabilities['database']['aggregation_ratio'] = ($agg_rows) ? $rows/$agg_rows : 0;
+			}
 		}
-*/				
+
 		if (is_null($section) || $section == 'formats') {
 			$capabilities['formats'] = array_keys(\Volkszaehler\Router::$viewMapping);
 		}
-		
+
 		if (is_null($section) || $section == 'contexts') {
 			$capabilities['contexts'] = array_keys(\Volkszaehler\Router::$controllerMapping);
 		}
-		
+
 		if (is_null($section) || $section == 'definitions') {
-			if (!is_null($section)) { // only caching when we doesn't request dynamic informations
+			if (!is_null($section)) { // only caching when we don't request dynamic informations
 				$this->view->setCaching('expires', time()+2*7*24*60*60); // cache for 2 weeks
 			}
-			
+
 			$capabilities['definitions']['entities'] = Definition\EntityDefinition::get();
 			$capabilities['definitions']['properties'] = Definition\PropertyDefinition::get();
 		}
-		
+
 		if (count($capabilities) == 0) {
 			throw new \Exception('Invalid capability identifier: \'' . $section . '\'');
 		}
-		
+
 		return array('capabilities' => $capabilities);
 	}
 }

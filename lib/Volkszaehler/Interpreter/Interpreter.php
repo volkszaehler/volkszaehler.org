@@ -25,6 +25,7 @@ namespace Volkszaehler\Interpreter;
 
 use Volkszaehler\Util;
 use Volkszaehler\Model;
+use Volkszaehler\Interpreter\SQL;
 use Doctrine\ORM;
 
 /**
@@ -39,19 +40,23 @@ abstract class Interpreter {
 	/**
 	 * @var Database connection
 	 */
-	protected $conn;	// PDO connection handle
+	protected $conn;		// PDO connection handle
 
-	protected $from;	// request parameters
-	protected $to;		// can be NULL!
-	protected $groupBy;	// user from/to from DataIterator for exact calculations!
-	protected $client;  // client type for specific optimizations
+	protected $optimizer;	// db-specific SQL implementation and optmization
+
+	protected $from;		// request parameters
+	protected $to;			// can be NULL!
+	protected $groupBy;		// user from/to from DataIterator for exact calculations!
+	protected $options;  	// additional non-standard options
 
 	protected $rowCount;	// number of rows in the database
 	protected $tupleCount;	// number of requested tuples
-	protected $rows;	// DataIterator instance for aggregating rows
+	protected $rows;		// DataIterator instance for aggregating rows
 
 	protected $min = NULL;
 	protected $max = NULL;
+
+	const OPTIONS_SEPARATOR = ',';
 
 	/**
 	 * Constructor
@@ -61,11 +66,11 @@ abstract class Interpreter {
 	 * @param integer $from timestamp in ms since 1970
 	 * @param integer $to timestamp in ms since 1970
 	 */
-	public function __construct(Model\Channel $channel, ORM\EntityManager $em, $from, $to, $tupleCount, $groupBy, $client = 'unknown') {
+	public function __construct(Model\Channel $channel, ORM\EntityManager $em, $from, $to, $tupleCount = null, $groupBy = null, $options = null) {
 		$this->channel = $channel;
 		$this->groupBy = $groupBy;
 		$this->tupleCount = $tupleCount;
-		$this->client = $client;
+		$this->options = explode(self::OPTIONS_SEPARATOR, $options);
 		$this->conn = $em->getConnection(); // get dbal connection from EntityManager
 
 		// parse interval
@@ -80,6 +85,18 @@ abstract class Interpreter {
 		if (isset($this->from) && isset($this->to) && $this->from > $this->to) {
 			throw new \Exception('from is larger than to parameter');
 		}
+
+		// add db-specific SQL optimizations
+		$class = SQL\SQLOptimizer::factory();
+		$this->optimizer = new $class($this, $this->conn);
+	}
+
+	/**
+	 * Check if option is specified
+	 * @param  string  $str option name
+	 */
+	private function hasOption($str) {
+		return in_array($str, $this->options);
 	}
 
 	/**
@@ -107,7 +124,7 @@ abstract class Interpreter {
 	 * @return Volkszaehler\DataIterator
 	 */
 	protected function getData() {
-		if ($this->client !== 'raw') {
+		if (!$this->hasOption('exact')) {
 			// get timestamps of preceding and following data points as a graciousness
 			// for the frontend to be able to draw graphs to the left and right borders
 			if (isset($this->from)) {
@@ -124,6 +141,9 @@ abstract class Interpreter {
 			}
 		}
 
+		// set parameters; repeat if modified after setting
+		$this->optimizer->setParameters($this->from, $this->to, $this->tupleCount, $this->groupBy);
+
 		// common conditions for following SQL queries
 		$sqlParameters = array($this->channel->getId());
 		$sqlTimeFilter = self::buildDateTimeFilterSQL($this->from, $this->to, $sqlParameters);
@@ -132,66 +152,39 @@ abstract class Interpreter {
 			$sqlGroupFields = self::buildGroupBySQL($this->groupBy);
 			if (!$sqlGroupFields)
 				throw new \Exception('Unknown group');
+
 			$sqlRowCount = 'SELECT COUNT(DISTINCT ' . $sqlGroupFields . ') FROM data WHERE channel_id = ?' . $sqlTimeFilter;
-			$sql = 'SELECT MAX(timestamp) AS timestamp, ' . static::groupExprSQL('value') . ' AS value, COUNT(timestamp) AS count'.
-				' FROM data'.
-				' WHERE channel_id = ?' . $sqlTimeFilter .
-				' GROUP BY ' . $sqlGroupFields .
-				' ORDER BY timestamp ASC';
+			$sql = 'SELECT MAX(timestamp) AS timestamp, ' . static::groupExprSQL('value') . ' AS value, COUNT(timestamp) AS count ' .
+				   'FROM data ' .
+				   'WHERE channel_id = ?' . $sqlTimeFilter . ' ' .
+				   'GROUP BY ' . $sqlGroupFields . ' ' .
+				   'ORDER BY timestamp ASC';
 		}
 		else {
-			$sqlRowCount = 'SELECT COUNT(*) FROM data WHERE channel_id = ?' . $sqlTimeFilter;
+			$sqlRowCount = 'SELECT COUNT(1) FROM data WHERE channel_id = ?' . $sqlTimeFilter;
 			$sql = 'SELECT timestamp, value, 1 AS count FROM data WHERE channel_id=?' . $sqlTimeFilter . ' ORDER BY timestamp ASC';
 		}
 
-		$this->rowCount = (int) $this->conn->fetchColumn($sqlRowCount, $sqlParameters, 0);
+		// optimize sql
+		$sqlParametersRowCount = $sqlParameters;
+		if (!$this->hasOption('slow')) {
+			$this->optimizer->optimizeRowCountSQL($sqlRowCount, $sqlParametersRowCount);
+		}
+
+		$this->rowCount = (int) $this->conn->fetchColumn($sqlRowCount, $sqlParametersRowCount, 0);
+
 		if ($this->rowCount <= 0)
 			return new \EmptyIterator();
 
-		// perform any optimizations and run query
-		$stmt = $this->runSQL($sql, $sqlParameters);
-
-		return new DataIterator($stmt, $this->rowCount, $this->tupleCount);
-	}
-
-	/**
-	 * Execute SQL after performing potential optimizations
-	 * Helper function to avoid duplicate code in derived classes
-	 *
-	 * Reduces number of tuples returned from DB if possible,
-	 * basically does what DataIterator->next does when bundling tuples into packages
-	 *
-	 * @author Andreas Götz <cpuidle@gmx.de>
-	 * @param string $sql
-	 * @param string $sqlParameters
-	 */
-	protected function runSQL($sql, $sqlParameters) {
-		// potential to reduce result set - can't do this for already grouped SQL
-		if (!$this->groupBy && $this->tupleCount && ($this->rowCount > $this->tupleCount)) {
-			$packageSize = floor($this->rowCount / $this->tupleCount);
-
-			if ($packageSize > 1) { // worth doing -> go
-				$foo = array();
-				$sqlTimeFilter = self::buildDateTimeFilterSQL($this->from, $this->to, $foo);
-
-				$this->rowCount = floor($this->rowCount / $packageSize);
-				// setting @row to packageSize-2 will make the first package contain 1 tuple only - as it's skipped anyway
-				// this pushes as much 'real' data as possible into the first used package
-				$this->conn->query('SET @row:=' . ($packageSize-2));
-				$sql = 'SELECT MAX(aggregate.timestamp) AS timestamp, ' .
-							static::groupExprSQL('aggregate.value') .' AS value, COUNT(aggregate.value) AS count '.
-					   'FROM ('.
-					   '	SELECT timestamp, value, @row:=@row+1 AS row '.
-					   ' 	FROM data WHERE channel_id=?' . $sqlTimeFilter .
-					   'ORDER BY timestamp) AS aggregate '.
-					   'GROUP BY row DIV ' . $packageSize .' '.
-					   'ORDER BY timestamp ASC';
-			}
+		// optimize sql
+		if (!$this->hasOption('slow')) {
+			$this->optimizer->optimizeDataSQL($sql, $sqlParameters);
 		}
 
-		$stmt = $this->conn->executeQuery($sql, $sqlParameters); // query for data
+		// run query
+		$stmt = $this->conn->executeQuery($sql, $sqlParameters);
 
-		return($stmt);
+		return new DataIterator($stmt, $this->rowCount, $this->tupleCount);
 	}
 
 	/**
@@ -201,7 +194,7 @@ abstract class Interpreter {
 	 * @param string $expression sql parameter
 	 * @return string grouped sql expression
 	 */
-	protected static function groupExprSQL($expression) {
+	public static function groupExprSQL($expression) {
 		return 'SUM(' . $expression . ')';
 	}
 
@@ -210,43 +203,10 @@ abstract class Interpreter {
 	 *
 	 * @param string $groupBy
 	 * @return string the sql part
-	 * @todo make compatible with: MSSql (Transact-SQL), Sybase, Firebird/Interbase, IBM, Informix, MySQL, Oracle, DB2, PostgreSQL, SQLite
 	 */
-	protected static function buildGroupBySQL($groupBy) {
-		$ts = 'FROM_UNIXTIME(timestamp/1000)';	// just for saving space
-
-		switch ($groupBy) {
-			case 'year':
-				return 'YEAR(' . $ts . ')';
-				break;
-
-			case 'month':
-				return 'YEAR(' . $ts . '), MONTH(' . $ts . ')';
-				break;
-
-			case 'week':
-				return 'YEAR(' . $ts . '), WEEKOFYEAR(' . $ts . ')';
-				break;
-
-			case 'day':
-				return 'YEAR(' . $ts . '), DAYOFYEAR(' . $ts . ')';
-				break;
-
-			case 'hour':
-				return 'YEAR(' . $ts . '), DAYOFYEAR(' . $ts . '), HOUR(' . $ts . ')';
-				break;
-
-			case 'minute':
-				return 'YEAR(' . $ts . '), DAYOFYEAR(' . $ts . '), HOUR(' . $ts . '), MINUTE(' . $ts . ')';
-				break;
-
-			case 'second':
-				return 'YEAR(' . $ts . '), DAYOFYEAR(' . $ts . '), HOUR(' . $ts . '), MINUTE(' . $ts . '), SECOND(' . $ts . ')';
-				break;
-
-			default:
-				return FALSE;
-		}
+	public static function buildGroupBySQL($groupBy) {
+		// call db-specific version
+		return SQL\SQLOptimizer::buildGroupBySQL($groupBy);
 	}
 
 	/**
@@ -256,7 +216,7 @@ abstract class Interpreter {
 	 * @param integer $to timestamp in ms since 1970
 	 * @return string the sql part
 	 */
-	protected static function buildDateTimeFilterSQL($from = NULL, $to = NULL, &$parameters) {
+	public static function buildDateTimeFilterSQL($from = NULL, $to = NULL, &$parameters) {
 		$sql = '';
 
 		if (isset($from)) {
@@ -300,6 +260,7 @@ abstract class Interpreter {
 
 	public function getEntity() { return $this->channel; }
 	public function getRowCount() { return $this->rowCount; }
+	public function setRowCount($count) { $this->rowCount = $count; }
 	public function getTupleCount() { return $this->tupleCount; }
 	public function setTupleCount($count) { $this->tupleCount = $count; }
 	public function getFrom() { return ($this->rowCount > 0) ? $this->rows->getFrom() : NULL; }
