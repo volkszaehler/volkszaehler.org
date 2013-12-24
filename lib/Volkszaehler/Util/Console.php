@@ -36,12 +36,13 @@ class Console {
 	/**
 	 * @param array $options Associative short/long options array in getopt syntax
 	 */
-	public function __construct($argv, $parameters) {
+	public function __construct($parameters) {
 		$this->parameters = $parameters;
-
 		$this->options = getopt(join('', array_keys($parameters)), array_values($parameters));
 
 		$this->commands = array();
+		$argv = $GLOBALS['argv'];
+
 		for ($i=1; $i<count($argv); $i++) {
 			$arg = $argv[$i];
 			if (preg_match('#^[-/]+(.+)#', $arg, $m)) {
@@ -74,7 +75,7 @@ class Console {
 	 * @param  string $parameter short or long parameter name
 	 * @return array         	 options, FALSE if not set
 	 */
-	function getOption($parameter, $default = false) {
+	function getMultiOption($parameter, $default = array()) {
 		$candidates = array($parameter);
 
 		// add matching short/long options to candidates
@@ -91,6 +92,8 @@ class Console {
 		foreach ($candidates as $candidate) {
 			if (isset($this->options[$candidate])) {
 				$optVal = $this->options[$candidate];
+ 				// use true to indicate option is set
+				if ($optVal == false) $optVal = true;
 				if (is_array($optVal))
 					$val = array_merge($val, $optVal);
 				else
@@ -99,6 +102,18 @@ class Console {
 		}
 
 		return count($val) ? $val : $default;
+	}
+
+	/**
+	 * Get short or long options value
+	 * @param  string $parameter short or long parameter name
+	 * @return mixed         	 option value, true if set
+	 */
+	function getSimpleOption($parameter, $default = null) {
+		// make sure default is passed as array
+		$default = is_array($default) ? $default : array($default);
+		$res = $this->getMultiOption($parameter, $default);
+		return $res[0];
 	}
 
 	/**
