@@ -4,7 +4,7 @@ language: php
 branches: 
     only: 
        - master-travis
-       - travis
+       - dev
 
 php:
     - "5.5"
@@ -25,14 +25,10 @@ notifications:
 # irc: "chat.freenode.net#volkszaehler.org"
 
 before_install:
-#    - composer self-update
+    - composer self-update
 
 install:
-#    - composer install
-    - mkdir doctrine
-    - wget -O - http://www.doctrine-project.org/downloads/DoctrineORM-2.2.0-full.tar.gz | tar xz -C doctrine
-    - mkdir lib/vendor/Doctrine
-    - cp -r doctrine/Doctrine*/Doctrine/* lib/vendor/Doctrine/
+    - composer install
 
 before_script:
     - cp etc/volkszaehler.conf.template.php etc/volkszaehler.conf.php
@@ -66,9 +62,12 @@ before_script:
 
     - sh -c "if [ '$DB' = 'mysql' ]; then cat misc/sql/schema.sql | mysql -u $USER $DATABASE; fi;"
     - sh -c "if [ '$DB' = 'pgsql' ]; then cat misc/sql/schema.sql | psql -U postgres $DATABASE; fi;"
-    - sh -c "if [ '$DB' = 'sqlite' ]; then cat misc/sql/schema.sql | sqlite3 sqlite.db3; fi;"
-    - sh -c "if [ '$DB' = 'sqlite' ]; then sqlite3 sqlite.db3 .dump; fi;"
+    - sh -c "if [ '$DB' = 'sqlite' ]; then cat misc/sql/schema.sql | sqlite3 sqlite.db3; sqlite3 sqlite.db3 .dump; fi;"
 
 script: 
     - cd test
-    - phpunit --configuration phpunit.xml --coverage-text
+    - phpunit --exclude-group slow --exclude-group aggregation --coverage-text
+
+    # re-run with aggregation enabled
+    - sed -i "s/\?>/\$config['aggregation']\ =\ true;\n?>/" ../etc/volkszaehler.conf.php
+    - sh -c "if [ '$DB' = 'mysql' ]; then phpunit --exclude-group slow --coverage-text; fi;"
