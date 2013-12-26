@@ -6,42 +6,9 @@
  * @author Andreas Götz <cpuidle@gmx.de>
  */
 
-// enable strict error reporting
-error_reporting(E_ALL | E_STRICT);
+namespace Tests;
 
-if (!defined('VZ_DIR')) define('VZ_DIR', realpath(__DIR__ . '/../..'));
-if (!defined('VZ_VERSION')) define('VZ_VERSION', '0.3');
-
-require_once VZ_DIR . '/lib/Util/ClassLoader.php';
-require_once VZ_DIR . '/lib/Util/Configuration.php';
-
-// load configuration\Volkszaehler\
-\Volkszaehler\Util\Configuration::load(VZ_DIR . '/etc/volkszaehler.conf');
-
-// set timezone
-$tz = (\Volkszaehler\Util\Configuration::read('timezone')) ? \Volkszaehler\Util\Configuration::read('timezone') : @date_default_timezone_get();
-date_default_timezone_set($tz);
-
-// set locale
-setlocale(LC_ALL, \Volkszaehler\Util\Configuration::read('locale'));
-
-// define include dirs for vendor libs
-if (!defined('DOCTRINE_DIR')) define('DOCTRINE_DIR', \Volkszaehler\Util\Configuration::read('lib.doctrine') ? \Volkszaehler\Util\Configuration::read('lib.doctrine') : 'Doctrine');
-if (!defined('JPGRAPH_DIR')) define('JPGRAPH_DIR', \Volkszaehler\Util\Configuration::read('lib.jpgraph') ? \Volkszaehler\Util\Configuration::read('lib.jpgraph') : 'JpGraph');
-
-$classLoaders = array(
-	new \Volkszaehler\Util\ClassLoader('Doctrine', DOCTRINE_DIR),
-	new \Volkszaehler\Util\ClassLoader('Volkszaehler', VZ_DIR . '/lib')
-);
-
-foreach ($classLoaders as $loader) {
-	$loader->register(); // register on SPL autoload stack
-}
-
-$loader = new \Volkszaehler\Util\ClassLoader('Wrapper', VZ_DIR . '/test/Wrapper');
-$loader->register();
-
-abstract class Middleware extends PHPUnit_Framework_TestCase
+abstract class Middleware extends \PHPUnit_Framework_TestCase
 {
 	// middleware url (basis for parsing)
 	static $mw = 'http://localhost/volkszaehler/middleware/';

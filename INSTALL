@@ -1,3 +1,8 @@
 There is an small script named install.sh which should do the installation for you.
 
 For more info refer to the wiki: http://wiki.volkszaehler.org/howto/getstarted
+
+== Dependencies ==
+1. Get composer (http://getcomposer.org/)
+2. Run "composer install"
+2a. If you are a developer run "composer --dev update"

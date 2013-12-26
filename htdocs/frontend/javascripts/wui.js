@@ -107,24 +107,25 @@ vz.wui.dialogs.init = function() {
 	$('#entity-add.dialog > div').tabs({
 		activate: function(event, ui) { // lazy loading public entities
 			if (ui.newTab.attr('aria-controls') == 'entity-public') {
-				vz.load({
-					controller: 'entity',
-					success: function(json) {
-						var public = new Array;
-						json.entities.each(function(index, json) {
-							public.push(new Entity(json));
-						});
+				// populate MW entities (vz.middleware[0] is the default local)
+				vz.middleware.forEach(function(middleware, idx) {
+					vz.load({
+						controller: 'entity',
+						url: middleware.url,
+						success: function(json) {
+							var public = new Array;
+							json.entities.each(function(index, json) {
+								public.push(new Entity(json));
+							});
 
-						public.sort(Entity.compare);
-						vz.middleware[0].public = public;
-				
-						$('#entity-public-entity').empty();
-						public.each(function(index, entity) {
-							$('#entity-public-entity').append(
-								$('<option>').html(entity.title).val(entity.uuid).data('entity', entity)
-							);
-						});
-					}
+							public.sort(Entity.compare);
+							vz.middleware[idx].public = public;
+					
+							if (idx == 0) {
+								populateEntities(vz.middleware[idx]);
+							}
+						}
+					});
 				});
 			}
 		}
@@ -144,12 +145,25 @@ vz.wui.dialogs.init = function() {
 
 	// set defaults
 	$('#entity-subscribe-middleware').val(vz.options.localMiddleware);
-	$('#entity-public-middleware').append($('<option>').val(vz.options.localMiddleware).text('Local (default)'));
+	// add middlewares
+	vz.middleware.forEach(function(middleware, idx) {
+		$('#entity-public-middleware').append($('<option>').val(middleware.url).text(middleware.title));
+	});
 	$('#entity-create-middleware').val(vz.options.localMiddleware);
 	$('#entity-subscribe-cookie').attr('checked', 'checked');
 	$('#entity-public-cookie').attr('checked', 'checked');
 	
 	// actions
+	$('#entity-public-middleware').change(function() {
+		var title = $('#entity-public-middleware option:selected').text();
+		vz.middleware.forEach(function(middleware) {
+			// populate entities for selected middleware
+			if (middleware.title == title) {
+				populateEntities(middleware);
+			}
+		});
+	});
+
 	$('#entity-subscribe input[type=button]').click(function() {
 		try {
 			var entity = new Entity({
@@ -195,6 +209,17 @@ vz.wui.dialogs.init = function() {
 			$('#entity-add').dialog('close');
 		}
 	});
+
+	function populateEntities(middleware) {
+		var public = middleware.public;
+
+		$('#entity-public-entity').empty();
+		public.each(function(index, entity) {
+			$('#entity-public-entity').append(
+				$('<option>').html(entity.title).val(entity.uuid).data('entity', entity)
+			);
+		});
+	}
 
 	// show available properties for selected type
 	function addProperties(proplist, className) {
@@ -252,7 +277,6 @@ vz.wui.dialogs.init = function() {
 		addProperties(vz.capabilities.definitions.entities[$(this)[0].selectedIndex].optional, "optional");
 	});
 	$('#entity-create select').change();
-	
 	
 	$('#entity-create form').submit(function() {
 		var def = $('select[name=type] option:selected', this).data('definition');
@@ -318,7 +342,6 @@ vz.wui.zoom = function(from, to) {
 	if (vz.options.plot.xaxis.min < 0) {
 		vz.options.plot.xaxis.min = 0;
 	}
-	
 	
 	vz.options.plot.yaxes.each(function(i) {
 		vz.options.plot.yaxes[i].max = null; // autoscaling

@@ -54,12 +54,10 @@ class Router extends \Volkszaehler\Router {
 				$this->debug = new Util\Debug($debugLevel, $this->em);
 			}
 		}
-		
+
 		// check for JpGraph
-		if (file_exists(JPGRAPH_DIR . '/jpgraph.php')) {
-			foreach (array('png', 'jpeg', 'jpg', 'gif') as $format) {
-				self::$viewMapping[$format] = 'Volkszaehler\View\JpGraph';
-			}
+		foreach (array('png', 'jpeg', 'jpg', 'gif') as $format) {
+			self::$viewMapping[$format] = 'Volkszaehler\View\JpGraph';
 		}
 
 		// initialize view
@@ -68,7 +66,7 @@ class Router extends \Volkszaehler\Router {
 
 		if (!array_key_exists($this->format, self::$viewMapping)) {
 			$this->view = new View\JSON($request, $response); // fallback view
-			
+
 			if (empty($this->pathInfo)) {
 				throw new \Exception('Missing or invalid PATH_INFO');
 			}

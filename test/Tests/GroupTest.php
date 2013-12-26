@@ -6,7 +6,7 @@
  * @author Andreas Götz <cpuidle@gmx.de>
  */
 
-require_once('Middleware.php');
+namespace Tests;
 
 class GroupTest extends Middleware
 {

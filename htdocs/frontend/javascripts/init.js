@@ -71,8 +71,19 @@ $(document).ready(function() {
 	// initialize variables
 	vz.middleware.push({ // default middleware
 		url: vz.options.localMiddleware,
+		title: 'Local (default)',
 		public: [ ] // public entities
 		/* capabilities: { } */
+	});
+
+	// remote middleware(s)
+	vz.options.remoteMiddleware.forEach(function(middleware) {
+		vz.middleware.push({
+			url: middleware.url,
+			title: middleware.title,
+			public: [ ] // public entities
+			/* capabilities: { } */
+		});
 	});
 	
 	// TODO make language/translation dependent (vz.options.language)

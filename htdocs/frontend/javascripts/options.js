@@ -33,10 +33,15 @@ vz.options = {
 	minTimeout: 2000,	// minimum refresh time in ms
 	interval: 24*60*60*1000, // 1 day
 	localMiddleware: '../middleware.php',
+	remoteMiddleware: [{
+		title: 'Volkszaehler Demo',
+		url: 'http://demo.volkszaehler.org/middleware.php'
+	}],
 	monthNames: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
 	dayNames: ['Son', 'Mon', 'Di', 'Mi', 'Do', 'Fr', 'Sam'],
 	lineWidthDefault: 2,
 	lineWidthSelected: 4,
+	speedupFactor: 2,   // higher values give higher speedup but can produce chunky display
 };
 
 vz.options.plot = {

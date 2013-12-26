@@ -139,7 +139,7 @@ class CounterInterpreter extends Interpreter {
 	 * @param string $expression sql parameter
 	 * @return string grouped sql expression
 	 */
-	protected static function groupExprSQL($expression) {
+	public static function groupExprSQL($expression) {
 		return 'MAX(' . $expression . ')';
 	}
 }

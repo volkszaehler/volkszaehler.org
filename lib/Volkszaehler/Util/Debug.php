@@ -79,20 +79,20 @@ class Debug {
 			$level = self::$instance->level;
 
 			$message = array('message' => $message);
-
+			
 			if ($level > 2) {
 				$message['file'] = $info['file'];
 				$message['line'] = $info['line'];
 			}
-
+			
 			if ($level > 4) {
 				$message['args'] = array_slice($info['args'], 1);
 			}
-
+			
 			if ($level > 5) {
 				$message['trace'] = array_slice($trace, 1);
 			}
-
+			
 			self::$instance->messages[] = $message;
 		}
 	}
@@ -114,6 +114,30 @@ class Debug {
 	public function getQueries() { return $this->sqlLogger->queries; }
 
 	/**
+	 * getParametrizedQuery helper function
+	 */
+	private static function formatSQLParameter($para) {
+		if (is_numeric($para)) {
+			return $para;
+		}
+		elseif (is_string($para)) {
+			return (strtoupper($para) == 'NULL') ?: "'" . $para . "'";
+		}
+		return $para;
+	}
+
+	/**
+	 * @return format SQL string with parameters
+	 * @author Andreas Goetz <cpuidle@gmx.de>
+	 */
+	public static function getParametrizedQuery($sql, $sqlParameters) {
+		while (count($sqlParameters)) {
+			$sql = preg_replace('/\?/', self::formatSQLParameter(array_shift($sqlParameters)), $sql, 1);
+		}
+		return $sql;
+	}
+
+	/**
 	 * @return 2 dimensional array with messages
 	 */
 	public function getMessages() { return $this->messages; }
@@ -123,15 +147,15 @@ class Debug {
 	 * @todo encapsulate in state class? or inherit from singleton class?
 	 */
 	public static function getInstance() { return self::$instance; }
-
+	
 	/**
 	 * @return integer current debug level
 	 */
 	 public function getLevel() { return $this->level; }
-
+	
 	/**
 	 * Tries to determine the current SHA1 hash of your git commit
-	 *
+	 * 
 	 * @return string the hash
 	 */
 	public static function getCurrentCommit() {
@@ -146,17 +170,17 @@ class Debug {
 			return FALSE;
 		}
 	}
-
+	
 	public static function getPhpVersion() {
 		return phpversion();
 	}
-
+	
 	/**
 	 * Get average server load
 	 *
 	 * @return array average load (1min, 5min, 15min)
 	 */
-	public static function getLoadAvg() {
+	public static function getLoadAvg() { 
 		if (function_exists('sys_getloadvg')) {
 			$load = sys_getloadvg();
 		}
@@ -167,10 +191,10 @@ class Debug {
 		elseif (function_exists('shell_exec')) {
 			$load = explode(', ', substr(shell_exec('uptime'), -16));
 		}
-
+		
 		return (isset($load)) ? array_map('floatval', $load) : FALSE;
 	}
-
+	
 	/**
 	 * Get server uptime
 	 *

@@ -45,12 +45,12 @@ class DataController extends Controller {
 		$tuples = $this->view->request->getParameter('tuples');
 		$groupBy = $this->view->request->getParameter('group');
 		$tsFmt = $this->view->request->getParameter('tsfmt');
-		$client = strtolower($this->view->request->getParameter('client'));
+		$options = $this->view->request->getParameter('options');
 
 		// single entity
 		if ($entity) {
 			$class = $entity->getDefinition()->getInterpreter();
-			return new $class($entity, $this->em, $from, $to, $tuples, $groupBy, $client);
+			return new $class($entity, $this->em, $from, $to, $tuples, $groupBy, $options);
 		}
 
 		// multiple UUIDs
@@ -104,7 +104,7 @@ class DataController extends Controller {
 				$this->em->getConnection()->commit();
 			}
 			catch (Exception $e) {
-				$this->em->getConnection()->rollback(); 
+				$this->em->getConnection()->rollback();
 				throw($e);
 			}
 		} catch (Util\JSONException $e) { /* fallback to old method */
@@ -114,11 +114,11 @@ class DataController extends Controller {
 			if (is_null($timestamp)) {
 				$timestamp = (double) round(microtime(TRUE) * 1000);
 			}
-			
+
 			if (is_null($value)) {
 				$value = 1;
 			}
-		
+
 			$channel->addData(new Model\Data($channel, $timestamp, $value));
 			$this->em->flush();
 		}

@@ -27,10 +27,6 @@ use Volkszaehler\Interpreter;
 use Volkszaehler\Model;
 use Volkszaehler\Util;
 
-require_once JPGRAPH_DIR . '/jpgraph.php';
-require_once JPGRAPH_DIR . '/jpgraph_line.php';
-require_once JPGRAPH_DIR . '/jpgraph_date.php';
-
 /**
  * Plotting and graphing of data on the server side
  *
