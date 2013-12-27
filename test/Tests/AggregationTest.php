@@ -188,6 +188,39 @@ class AggregationTest extends DataContextPerformance
 	 * @group aggregation
 	 */
 	function testAggregateOptimizer() {
+		$agg = new Util\Aggregation(self::$conn);
+		// at this point we have aggregates for 'hour' and 'day'
+		$agg->aggregate(self::$uuid, 'hour', 'delta');
+
+		$typeHour = Util\Aggregation::getAggregationLevelTypeValue('hour');
+		$typeDay = Util\Aggregation::getAggregationLevelTypeValue('day');
+
+		// day: 2 rows of aggregation data, day first
+		$opt = $agg->getOptimalAggregationLevel(self::$uuid);
+		$ref = array(
+			array(
+				'level' => 'day',
+				'type' => $typeDay,
+				'count' => $this->countAggregationRows(self::$uuid, $typeDay)),
+			array(
+				'level' => 'hour',
+				'type' => $typeHour,
+				'count' => $this->countAggregationRows(self::$uuid, $typeHour)));
+		$this->assertEquals($ref, $opt);
+
+		// hour: 1 row of aggregation data
+		$opt = $agg->getOptimalAggregationLevel(self::$uuid, 'hour');
+		$ref = array(array(
+			'level' => 'hour',
+			'type' => $typeHour,
+			'count' => $this->countAggregationRows(self::$uuid, $typeHour)));
+		$this->assertEquals($ref, $opt);
+
+		// minute: no aggregation data => false
+		$typeMinute = Util\Aggregation::getAggregationLevelTypeValue('minute');
+		$opt = $agg->getOptimalAggregationLevel(self::$uuid, 'minute');
+		$this->assertFalse($opt);
+
 		// 3 data, cannot use daily aggregates for hourly request
 		$this->getTuplesRaw(strtotime('2 days ago 0:00') * 1000, strtotime('1 days ago 0:00') * 1000, 'hour');
 		$this->assertEquals(3, $this->json->data->rows, 'Possibly wrong aggregation level chosen by optimizer');
