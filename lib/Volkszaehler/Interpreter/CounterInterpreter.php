@@ -82,19 +82,17 @@ class CounterInterpreter extends Interpreter {
 		}
 
 		foreach ($this->rows as $row) {
+			$delta_ts = $row[0] - $last_ts; # time between now and row before
+
 			// instead of reverting what DataIterator->next did by $val = $row[1] / $row[2]
 			// get max value which DataIterator->next provides as courtesy
-			$val = $row[3];
-
-			$delta_ts = $row[0] - $last_ts; # time between now and row before
-			$delta_val = $val - $last_val;
+			$delta_val = $row[3] - $last_val;
 			$tuple = $callback(array(
-				(float) $last_ts, // timestamp of interval start
+				(float) ($last_ts = $row[0]), // timestamp of interval end
 				(float) ($delta_val / $this->resolution) * 3.6e9 / $delta_ts, // doing df/dt
 				(int) $row[2] // num of rows
 			));
-			$last_ts = $row[0];
-			$last_val = $val;
+			$last_val = $row[3];
 
 			if (is_null($this->max) || $tuple[1] > $this->max[1]) {
 				$this->max = $tuple;
@@ -107,21 +105,6 @@ class CounterInterpreter extends Interpreter {
 			$this->valsum += $delta_val;
 
 			$tuples[] = $tuple;
-		}
-
-		// in case of subtotaled queries (tupleCount) make sure consumption is correct
-		// this avoids the aliasing problems due to DataIterator dropping first record and last counter value averaged into package
-		// assumption is that counter values are increasing
-		if ($this->tupleCount && count($tuples)) {
-			// common conditions for following SQL queries
-			$sqlParameters = array($this->channel->getId());
-			$sqlTimeFilter = self::buildDateTimeFilterSQL($this->from, $this->to, $sqlParameters);
-
-			$first = $this->rows->firstValue();
-			$last  = $this->conn->fetchColumn('SELECT value FROM data WHERE channel_id=?' . $sqlTimeFilter . ' ORDER BY timestamp DESC LIMIT 1', $sqlParameters);
-
-			if ($first && $last)
-				$this->valsum = $last - $first;
 		}
 
 		return $tuples;
