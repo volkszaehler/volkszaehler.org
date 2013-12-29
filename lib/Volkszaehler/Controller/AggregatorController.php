@@ -39,7 +39,7 @@ class AggregatorController extends EntityController {
 	 */
 	public function get($identifier = NULL) {
 		$aggregator = parent::get($identifier);
-		
+
 		if (is_array($aggregator)) { // filter public entities
 			return array('channels' => array_values(array_filter($aggregator['entities'], function($agg) {
 				return ($agg instanceof Model\Aggregator);
@@ -74,16 +74,16 @@ class AggregatorController extends EntityController {
 		else {	// create new aggregator
 			$type = $this->view->request->getParameter('type');
 
-			if (!isset($ype)) {
+			if (!isset($type)) {
 				$type = 'group';
 			}
-		
+
 			$aggregator = new Model\Aggregator($type);
 			$parameters = array_merge(
 				$this->view->request->getParameters('post'),
 				$this->view->request->getParameters('get')
 			);
-		
+
 			$this->setProperties($aggregator, $parameters);
 			$this->em->persist($aggregator);
 		}
