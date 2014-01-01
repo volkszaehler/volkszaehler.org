@@ -78,17 +78,20 @@ try:
   f= urllib2.urlopen(url);
   jsonstr=f.read();
   if (args.eval is None):
-     print jsonstr;
+    print jsonstr;
   else:
-     obj=json.loads(jsonstr);
-     for ev in args.eval.split(",") :
-       try:
-         obj=obj[ev]
-       except KeyError:
-         print "Key: "+ev+" not found in str: "+jsonstr;
-     print obj;
+    obj=json.loads(jsonstr);
+    for ev in args.eval.split(",") :
+      if (isinstance(obj,(list,tuple))):
+        try:
+          ev=int(ev) # array access
+        except: pass
+      try:
+        obj=obj[ev]
+      except KeyError:
+        print "Key: "+ev+" not found in str: "+jsonstr;
+    print obj;
   exit(0);
 except urllib2.HTTPError,error:
   print error.read();
   exit(1);
-    
