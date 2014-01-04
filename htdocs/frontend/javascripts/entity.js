@@ -47,7 +47,8 @@ Entity.prototype.parseJSON = function(json) {
 	// parse children
 	if (this.children) {
 		for (var i = 0; i < this.children.length; i++) {
-			this.children[i].middleware = this.middleware; // children inherit parent middleware		
+			// @todo check if setting middleware is really possible here
+			this.children[i].middleware = this.middleware; // children inherit parent middleware
 			this.children[i] = new Entity(this.children[i]);
 			this.children[i].parent = this;
 		}
@@ -78,6 +79,19 @@ Entity.prototype.parseJSON = function(json) {
 		this.color = vz.options.plot.colors[Entity.colors++ % vz.options.plot.colors.length];
 	}
 };
+
+/**
+ * Set middleware on entity and and inherit to children
+ * @var middleware url
+ */
+Entity.prototype.setMiddleware = function(middleware) {
+	this.middleware = middleware;
+	if (this.children) {
+		for (var i = 0; i < this.children.length; i++) {
+			this.children[i].middleware = this.middleware;
+		}
+	}
+}
 
 /**
  * Query middleware for details
