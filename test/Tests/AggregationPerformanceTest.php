@@ -50,7 +50,7 @@ class AggregationPerformanceTest extends DataContextPerformance
 	 */
 	function setUp() {
 		static::clearCache();
-		static::$time = microtime(true);
+		parent::setUp();
 	}
 
 	/**
@@ -82,11 +82,21 @@ class AggregationPerformanceTest extends DataContextPerformance
 		}
 	}
 
+	/**
+	 * @depends testAggregation
+	 * @group aggregation
+	 * @group slow
+	 */
 	// function testGetAllData() {
 	// 	$this->getTuplesByUrl(self::$base, 1, '1.2.2000', null, null, 'options=slow');
 	// 	$this->perf("GetAllPerf");
 	// }
 
+	/**
+	 * @depends testAggregation
+	 * @group aggregation
+	 * @group slow
+	 */
 	// function testGetAllData2() {
 	// 	$this->getTuplesByUrl(self::$base, 1, '1.2.2000', null, null);
 	// 	$this->perf("GetAllPerf (opt)", true);
