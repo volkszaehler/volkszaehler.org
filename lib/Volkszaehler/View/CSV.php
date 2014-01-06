@@ -51,17 +51,14 @@ class CSV extends View {
 
 		$this->response->setHeader('Content-type', 'text/csv');
 	}
-	
+
 	/**
 	 * Add object to output
 	 *
 	 * @param mixed $data
 	 */
 	public function add($data) {
-		if ($data instanceof Interpreter\AggregatorInterpreter) {
-			$this->addAggregateData($data);
-		}
-		elseif ($data instanceof Interpreter\Interpreter) {
+		if ($data instanceof Interpreter\Interpreter) {
 			$this->addData($data);
 		}
 		elseif (is_array($data) && isset($data[0]) && $data[0] instanceof Interpreter\Interpreter) {
@@ -77,7 +74,7 @@ class CSV extends View {
 			throw new \Exception('Can\'t show: \'' . get_class($data) . '\'');
 		}
 	}
-	
+
 	/**
 	 * Add debugging information include queries and messages to output queue
 	 *
@@ -87,8 +84,8 @@ class CSV extends View {
 		echo '# level: ' . $debug->getLevel() . PHP_EOL;
 		echo '# database: ' . Util\Configuration::read('db.driver') . PHP_EOL;
 		echo '# time: ' . $debug->getExecutionTime() . PHP_EOL;
-		
-		if ($uptime = Util\Debug::getUptime()) echo '# uptime: ' . $uptime*1000;		
+
+		if ($uptime = Util\Debug::getUptime()) echo '# uptime: ' . $uptime*1000;
 		if ($load = Util\Debug::getLoadAvg()) echo '# load: ' . implode(', ', $load) . PHP_EOL;
 		if ($commit = Util\Debug::getCurrentCommit()) echo '# commit-hash: ' . $commit;
 		if ($version = Util\Debug::getPhpVersion()) echo '# php-version: ' . $version;
@@ -104,7 +101,7 @@ class CSV extends View {
 			}
 		}
 	}
-	
+
 	/**
 	 * Add exception to output queue
 	 *
@@ -117,29 +114,6 @@ class CSV extends View {
 		if (Util\Debug::isActivated()) {
 			echo "#\tfile: " . $exception->getFile() . PHP_EOL;
 			echo "#\tline: " . $exception->getLine() . PHP_EOL;
-		}
-	}
-
-	/**
-	 * Add aggregate data object to output queue
-	 *
-	 * @param $interpreter
-	 * @todo  Aggregate first- this deviates from json view behaviour and breaks min/max etc
-	 */
-	protected function addAggregateData($interpreter) {
-		// run first & buffer children to make min/max work
-		ob_start();
-		foreach ($interpreter->getChildrenInterpreter() as $childInterpreter) {
-			$this->addData($childInterpreter, true);
-		}
-		$children = ob_get_contents();
-		ob_end_clean();
-
-		$this->addData($interpreter);
-		
-		if (isset($children)) {
-			echo '# children: ' . PHP_EOL;
-			echo($children);
 		}
 	}
 
@@ -170,36 +144,36 @@ class CSV extends View {
 				'creation-date="' .  date(DATE_RFC2822, $interpreter->getTo()/1000). '"'
 			);
 		}
-		
+
 		$tuples = $interpreter->processData(
 			function($tuple) {
 				return array(
 					$tuple[0],
 					View::formatNumber($tuple[1]),
 					$tuple[2]
-				); 
+				);
 			}
 		);
-		
+
 		$min = $interpreter->getMin();
 		$max = $interpreter->getMax();
 		$average = $interpreter->getAverage();
 		$consumption = $interpreter->getConsumption();
-		
+
 		$from = $this->formatTimestamp($interpreter->getFrom());
 		$to = $this->formatTimestamp($interpreter->getTo());
 
 		echo '# uuid: ' . $interpreter->getEntity()->getUuid() . PHP_EOL;
-		
+
 		if (isset($from)) echo '# from: ' . $from . PHP_EOL;
 		if (isset($to)) echo '# to: ' . $to . PHP_EOL;
 		if (isset($min)) echo '# min: ' . $this->formatTimestamp($min[0]) . ' => ' . View::formatNumber($min[1]) . PHP_EOL;
 		if (isset($max)) echo '# max: ' . $this->formatTimestamp($max[0]) . ' => ' . View::formatNumber($max[1]) . PHP_EOL;
 		if (isset($average))  echo '# average: ' . View::formatNumber($average) . PHP_EOL;
 		if (isset($consumption)) echo '# consumption: ' . View::formatNumber($consumption) . PHP_EOL;
-			
+
 		echo '# rows: ' . $interpreter->getRowCount() . PHP_EOL;
-		
+
 		if (isset($tuples)) {
 			// Aggregators don't return tuples
 			foreach ($tuples as $tuple) {

@@ -44,7 +44,7 @@ class XML extends View {
 	 * @var DOMNode reference to the XML root node
 	 */
 	protected $xmlRoot;
-	
+
 	/**
 	 * Constructor
 	 *
@@ -68,10 +68,7 @@ class XML extends View {
 	 * @param mixed $data
 	 */
 	public function add($data) {
-		if ($data instanceof Interpreter\AggregatorInterpreter) {
-			$this->addAggregateData($data);
-		}
-		elseif ($data instanceof Interpreter\Interpreter) {
+		if ($data instanceof Interpreter\Interpreter) {
 			$this->addData($data);
 			// clean unneeded ids
 			if ($xmlElement = $this->xmlDoc->getElementById('data')) {
@@ -106,8 +103,8 @@ class XML extends View {
 	 * @return string the output
 	 */
 	protected function render() {
-		$this->response->setHeader('Content-type', 'application/xml; charset=UTF-8');		
-	
+		$this->response->setHeader('Content-type', 'application/xml; charset=UTF-8');
+
 		echo $this->xmlDoc->saveXML();
 	}
 
@@ -132,7 +129,7 @@ class XML extends View {
 	 * @return DOMElement
 	 */
 	protected function convertEntity(Model\Entity $entity) {
-		$xmlEntity = $this->xmlDoc->createElement('entity');		
+		$xmlEntity = $this->xmlDoc->createElement('entity');
 
 		$xmlEntity->appendChild($this->xmlDoc->createElement('uuid', $entity->getUuid()));
 		$xmlEntity->appendChild($this->xmlDoc->createElement('type', $entity->getType()));
@@ -177,16 +174,16 @@ class XML extends View {
 		$xmlDebug->setAttribute('level', $debug->getLevel());
 		$xmlDebug->appendChild($this->xmlDoc->createElement('time', $debug->getExecutionTime()));
 
-		if ($uptime = Util\Debug::getUptime()) $xmlDebug->appendChild($this->xmlDoc->createElement('uptime', $uptime*1000));		
+		if ($uptime = Util\Debug::getUptime()) $xmlDebug->appendChild($this->xmlDoc->createElement('uptime', $uptime*1000));
 		if ($load = Util\Debug::getLoadAvg()) $xmlDebug->appendChild($this->xmlDoc->createElement('load', implode(', ', $load)));
 		if ($commit = Util\Debug::getCurrentCommit()) $xmlDebug->appendChild($this->xmlDoc->createElement('commit-hash', $commit));
 		if ($version = Util\Debug::getPhpVersion()) $xmlDebug->appendChild($this->xmlDoc->createElement('php-version', $version));
-		
+
 		$xmlMessages = $this->xmlDoc->createElement('messages');
 		foreach ($debug->getMessages() as $message) {
 			$xmlMessages->appendChild($this->convertMessage($message));
 		}
-		
+
 		$xmlDebug->appendChild($xmlMessages);
 		$xmlDebug->appendChild($this->convertArray($debug->getQueries(), 'queries', 'query'));
 		$this->xmlRoot->appendChild($xmlDebug);
@@ -215,7 +212,7 @@ class XML extends View {
 
 		$this->xmlRoot->appendChild($xmlException);
 	}
-	
+
 	/**
 	 * Converts message to DOMElement
 	 *
@@ -231,7 +228,7 @@ class XML extends View {
 		if (isset($message['line'])) $xmlMessage->appendChild($this->xmlDoc->createElement('line', $message['line']));
 		if (isset($message['args'])) $xmlMessage->appendChild($this->convertArray($message['args'], 'args', 'arg'));
 		if (isset($message['trace'])) $xmlMessage->appendChild($this->convertTrace($message['trace']));
-		
+
 		return $xmlMessage;
 	}
 
@@ -249,27 +246,6 @@ class XML extends View {
 			$xmlElement->setIdAttribute('id', true);
 		}
 		return($xmlElement);
-	}
-
-	/**
-	 * Add aggregate data object to output queue
-	 *
-	 * @param $interpreter
-	 */
-	protected function addAggregateData($interpreter) {
-		// child entities first to ensure min/max etc are populated
-		foreach ($interpreter->getChildrenInterpreter() as $childInterpreter) {
-			$this->addData($childInterpreter, true);
-		}
-		$this->addData($interpreter);
-
-		// clean unneeded ids
-		if ($xmlElement = $this->xmlDoc->getElementById('data')) {
-			$xmlElement->removeAttribute('id');
-		}
-		if ($xmlElement = $this->xmlDoc->getElementById('children')) {
-			$xmlElement->removeAttribute('id');
-		}
 	}
 
 	/**
@@ -302,10 +278,10 @@ class XML extends View {
 	 */
 	protected function addData($interpreter, $children = false) {
 		$xmlDoc = $this->xmlDoc;
-		$xmlData = ($children) ? $this->xmlDoc->createElement('data') 
+		$xmlData = ($children) ? $this->xmlDoc->createElement('data')
 							   : $this->obtainElementById('data');
 		$xmlTuples = $this->xmlDoc->createElement('tuples');
-		
+
 		$data = $interpreter->processData(
 			function($tuple) use ($xmlDoc, $xmlTuples) {
 				$xmlTuple = $xmlDoc->createElement('tuple');
@@ -313,47 +289,47 @@ class XML extends View {
 				$xmlTuple->setAttribute('value', View::formatNumber($tuple[1]));
 				$xmlTuple->setAttribute('count', $tuple[2]);
 				$xmlTuples->appendChild($xmlTuple);
-				
+
 				return $tuple;
 			}
 		);
-		
+
 		$from = $interpreter->getFrom();
 		$to = $interpreter->getTo();
 		$min = $interpreter->getMin();
 		$max = $interpreter->getMax();
 		$average = $interpreter->getAverage();
 		$consumption = $interpreter->getConsumption();
-		
+
 		$xmlData->appendChild($this->xmlDoc->createElement('uuid', $interpreter->getEntity()->getUuid()));
-		if (isset($from)) 
+		if (isset($from))
 			$xmlData->appendChild($this->xmlDoc->createElement('from', $from));
-			
-		if (isset($to)) 
+
+		if (isset($to))
 			$xmlData->appendChild($this->xmlDoc->createElement('to', $to));
-			
+
 		if (isset($min)) {
 			$xmlMin = $this->xmlDoc->createElement('min');
 			$xmlMin->setAttribute('timestamp', $min[0]);
 			$xmlMin->setAttribute('value', $min[1]);
 			$xmlData->appendChild($xmlMin);
 		}
-			
+
 		if (isset($max)) {
 			$xmlMax = $this->xmlDoc->createElement('max');
 			$xmlMax->setAttribute('timestamp', $max[0]);
 			$xmlMax->setAttribute('value', $max[1]);
 			$xmlData->appendChild($xmlMax);
 		}
-			
-		if (isset($average)) 
+
+		if (isset($average))
 			$xmlData->appendChild($this->xmlDoc->createElement('average', View::formatNumber($average)));
-			
+
 		if (isset($consumption))
 			$xmlData->appendChild($this->xmlDoc->createElement('consumption', View::formatNumber($consumption)));
-			
+
 		$xmlData->appendChild($this->xmlDoc->createElement('rows', $interpreter->getRowCount()));
-		
+
 		if (($interpreter->getTupleCount() > 0 || is_null($interpreter->getTupleCount())) && count($data) > 0)
 			$xmlData->appendChild($xmlTuples);
 
@@ -388,7 +364,7 @@ class XML extends View {
 			if (is_null($value)) {
 				$value = 'null';
 			}
-			
+
 			if (is_array($value) || $value instanceof Util\JSON || $value instanceof \stdClass) {
 				$xmlArray->appendChild($this->convertArray($value, $key));
 			}
@@ -402,7 +378,7 @@ class XML extends View {
 				$xmlArray->appendChild($this->xmlDoc->createElement($key, 'object:' . get_class($value)));
 			}
 		}
-		
+
 		return $xmlArray;
 	}
 
@@ -421,7 +397,7 @@ class XML extends View {
 			$xmlTrace->setAttribute('step', $step);
 
 			foreach ($trace as $key => $value) {
-				switch ($key) {	
+				switch ($key) {
 					case 'args':
 						$xmlTrace->appendChild($this->convertArray($value, 'args', 'arg'));
 						break;
