@@ -50,8 +50,7 @@ class SQLOptimizer {
 	 * @return SQL\SQLOptimizer 	  instantiated class or false
 	 */
 	public static function factory() {
-		$dbConfig = Util\Configuration::read('db');
-		switch ($dbConfig['driver']) {
+		switch (Util\Configuration::read('db.driver')) {
 			case 'pdo_mysql':
 				if (Util\Configuration::read('aggregation')) {
 					$class = __NAMESPACE__ . '\MySQLAggregateOptimizer';
