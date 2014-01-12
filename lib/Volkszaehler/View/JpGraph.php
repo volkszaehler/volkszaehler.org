@@ -77,6 +77,12 @@ class JpGraph extends View {
 	public function __construct(HTTP\Request $request, HTTP\Response $response, $format = 'png') {
 		parent::__construct($request, $response);
 
+		// load JpGraph
+		// @todo check if this code should be static
+ 		\JpGraph\JpGraph::load();
+ 		\JpGraph\JpGraph::module('date');
+ 		\JpGraph\JpGraph::module('line');
+
 		// to enabled jpgraphs graphical exception handler
 		restore_exception_handler();
 
@@ -143,7 +149,7 @@ class JpGraph extends View {
 		if (is_null($interpreter->getTupleCount())) {
 			$interpreter->setTupleCount($this->width);
 		}
-		
+
 		$data = $interpreter->processData(function($tuple) {
 			$tuple[0] /= 1000;
 			return $tuple;
