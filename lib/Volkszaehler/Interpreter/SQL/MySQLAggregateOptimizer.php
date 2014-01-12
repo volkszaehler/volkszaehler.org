@@ -50,6 +50,10 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 	protected $aggFrom;
 	protected $aggTo;
 
+	protected $aggValid;	// result of validateAggregationUsage
+	protected $aggLevel;	// chosen aggregation level
+	protected $aggType;		// numeric value of aggregation level
+
 	protected $sqlTimeFilter;
 	protected $sqlTimeFilterPre;
 	protected $sqlTimeFilterPost;
@@ -62,24 +66,38 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 		$this->aggregator = new Util\Aggregation($this->conn);
 	}
 
-	public function optimizeRowCountSQL(&$sqlRowCount, &$sqlParameters) {
-		$aggregationValid = false;
+	/**
+	 * Validate use of aggregation table
+	 *
+	 * 	1. find matching aggregation level <= $this->groupBy or highest level
+	 * 	2. calculate if matching timestamps found
+	 *
+	 * @return boolean	Aggregation table usage validity
+	 */
+	private function validateAggregationUsage() {
+		if ($this->aggValid === null) {
+			$this->aggValid = false;
 
-		// run optimizer to get best (highest) applicable aggregation level
-		$aggregationLevel = $this->aggregator->getOptimalAggregationLevel($this->channel->getUuid(), $this->groupBy);
-		if ($aggregationLevel) {
-			// choose highest level
-			$aggregationLevel = $aggregationLevel[0]['level'];
+			$aggregationLevel = $this->aggregator->getOptimalAggregationLevel($this->channel->getUuid(), $this->groupBy);
+			if ($aggregationLevel) {
+				// choose highest level
+				$this->aggLevel = $aggregationLevel[0]['level'];
 
-			// numeric value of desired aggregation level
-			$type = Util\Aggregation::getAggregationLevelTypeValue($aggregationLevel);
+				// numeric value of desired aggregation level
+				$this->aggType = Util\Aggregation::getAggregationLevelTypeValue($this->aggLevel);
 
-			// valid boundaries?
-			$aggregationValid = $this->getAggregationBoundary($aggregationLevel);
+				// valid boundaries?
+				$this->aggValid = $this->getAggregationBoundary();
+			}
 		}
 
-		if ($aggregationValid) {
-			$sqlParameters = $this->buildAggregationTableParameters($type);
+		return $this->aggValid;
+	}
+
+	public function optimizeRowCountSQL(&$sqlRowCount, &$sqlParameters) {
+		if ($optimize = $this->validateAggregationUsage()) {
+			// numeric value of desired aggregation level
+			$sqlParameters = $this->buildAggregationTableParameters();
 
 			if ($this->groupBy) {
 				// optimize grouped count statement by applying aggregation table
@@ -108,28 +126,19 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 		}
 
 		// get upstream optimization
-		return ($aggregationValid) ?: parent::optimizeDataSQL($sql, $sqlParameters);
+		return ($optimize) ?: parent::optimizeDataSQL($sql, $sqlParameters);
 	}
 
 	public function optimizeDataSQL(&$sql, &$sqlParameters) {
-		$aggregationValid = false;
-		// run optimizer to get best (highest) applicable aggregation level
-		$aggregationLevel = $this->aggregator->getOptimalAggregationLevel($this->channel->getUuid(), $this->groupBy);
-		if ($aggregationLevel) {
-			// choose highest level
-			$aggregationLevel = $aggregationLevel[0]['level'];
+		$optimize = false;
 
-			// numeric value of desired aggregation level
-			$type = Util\Aggregation::getAggregationLevelTypeValue($aggregationLevel);
+		if ($this->validateAggregationUsage()) {
 
-			// valid boundaries?
-			$aggregationValid = $this->getAggregationBoundary($aggregationLevel);
-		}
-
-		if ($aggregationValid) {
 			if ($this->groupBy) {
+				$optimize = true;
+
 				// optimize grouped statement
-				$sqlParameters = $this->buildAggregationTableParameters($type);
+				$sqlParameters = $this->buildAggregationTableParameters();
 				$sqlGroupFields = $this->interpreter->buildGroupBySQL($this->groupBy);
 
 				// 	   table:   --DATA-- -----aggregate----- -DATA-
@@ -155,10 +164,10 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 				$packageSize = floor($this->rowCount / $this->tupleCount);
 
 				// shift aggregation boundary start by 1 unit to make sure first tuple is not aggregated
-				$aggregationValid = $packageSize > 1 && $this->getAggregationBoundary($aggregationLevel, 1);
+				$optimize = $packageSize > 1 && $this->getAggregationBoundary(1);
 
-				if ($aggregationValid) {
-					$sqlParameters = $this->buildAggregationTableParameters($type);
+				if ($optimize) {
+					$sqlParameters = $this->buildAggregationTableParameters();
 
 					// 	   table:   --DATA-- -----aggregate----- -DATA-
 					$sql = 'SELECT timestamp, value, 1 AS count, @row:=@row+1 AS row ' .
@@ -181,14 +190,14 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 		}
 
 		// get upstream optimization
-		return ($aggregationValid) ?: parent::optimizeDataSQL($sql, $sqlParameters);
+		return ($optimize) ?: parent::optimizeDataSQL($sql, $sqlParameters);
 	}
 
 	/**
 	 * Build SQL parameters for aggregation table access given timestamp boundaries
 	 * @author Andreas Goetz <cpuidle@gmx.de>
 	 */
-	private function buildAggregationTableParameters($type) {
+	private function buildAggregationTableParameters() {
 		$sqlParameters = array($this->channel->getId());
 
 		// timestamp:   from ... aggFrom ..... aggTo ... to
@@ -197,7 +206,7 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 		// 	   table:   --data-- -----aggregate----- -DATA-
 		$this->sqlTimeFilterPost = self::buildDateTimeFilterSQL($this->aggTo, $this->to, $sqlParameters, false, '');
 
-		array_push($sqlParameters, $this->channel->getId(), $type);
+		array_push($sqlParameters, $this->channel->getId(), $this->aggType);
 		// 	   table:   --data-- -----AGGREGATE----- -data-
 		$this->sqlTimeFilter = self::buildDateTimeFilterSQL($this->aggFrom, $this->aggTo, $sqlParameters, true);
 
@@ -214,18 +223,17 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 	 * @return boolean true: aggregate table contains data, aggFrom/aggTo contains valid range
 	 * @author Andreas Goetz <cpuidle@gmx.de>
 	 */
-	private function getAggregationBoundary($level, $aggFromDelta = null) {
-		$type = Util\Aggregation::getAggregationLevelTypeValue($level);
-		$dateFormat = Util\Aggregation::getAggregationDateFormat($level); // day = "%Y-%m-%d"
+	private function getAggregationBoundary($aggFromDelta = null) {
+		$dateFormat = Util\Aggregation::getAggregationDateFormat($this->aggLevel); // day = "%Y-%m-%d"
 
 		// aggFrom becomes beginning of first period with aggregate data
-		$sqlParameters = array($this->channel->getId(), $type, $this->from);
+		$sqlParameters = array($this->channel->getId(), $this->aggType, $this->from);
 		if (isset($aggFromDelta)) {
 			// shift 'left' border of aggregate table use by $aggFromDelta units
 			$sql = 'SELECT UNIX_TIMESTAMP(' .
 				   'DATE_ADD(' .
 					   'FROM_UNIXTIME(MIN(timestamp) / 1000, ' . $dateFormat . '), ' .
-					   'INTERVAL ' . $aggFromDelta . ' ' . $level .
+					   'INTERVAL ' . $aggFromDelta . ' ' . $this->aggLevel .
 				   ')) * 1000 ' .
 			 	   'FROM aggregate WHERE channel_id=? AND type=? AND timestamp>=?';
 		}
@@ -240,11 +248,11 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 		// aggregate table contains relevant data?
 		if (isset($this->aggFrom)) {
 			// aggTo becomes beginning of first period without aggregate data
-			$sqlParameters = array($this->channel->getId(), $type);
+			$sqlParameters = array($this->channel->getId(), $this->aggType);
 			$sql = 'SELECT UNIX_TIMESTAMP(' .
 				   'DATE_ADD(' .
 						'FROM_UNIXTIME(MAX(timestamp) / 1000, ' . $dateFormat . '), ' .
-						'INTERVAL 1 ' . $level .
+						'INTERVAL 1 ' . $this->aggLevel .
 				   ')) * 1000 ' .
 				   'FROM aggregate WHERE channel_id=? AND type=?';
 			if (isset($this->to)) {

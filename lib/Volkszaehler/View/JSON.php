@@ -87,10 +87,7 @@ class JSON extends View {
 	 * @param mixed $data
 	 */
 	public function add($data) {
-		if ($data instanceof Interpreter\AggregatorInterpreter) {
-			$this->addAggregateData($data);
-		}
-		elseif ($data instanceof Interpreter\Interpreter) {
+		if ($data instanceof Interpreter\Interpreter) {
 			$this->addData($data);
 		}
 		elseif (is_array($data) && isset($data[0]) && $data[0] instanceof Interpreter\Interpreter) {
@@ -161,12 +158,12 @@ class JSON extends View {
 		$jsonDebug['level'] = $debug->getLevel();
 		if ($dbDriver = Util\Configuration::read('db.driver')) $jsonDebug['database'] = $dbDriver;
 		$jsonDebug['time'] = $debug->getExecutionTime();
-			
-		if ($uptime = Util\Debug::getUptime()) $jsonDebug['uptime'] = $uptime*1000;		
+
+		if ($uptime = Util\Debug::getUptime()) $jsonDebug['uptime'] = $uptime*1000;
 		if ($load = Util\Debug::getLoadAvg()) $jsonDebug['load'] = $load;
 		if ($commit = Util\Debug::getCurrentCommit()) $jsonDebug['commit-hash'] = $commit;
 		if ($version = Util\Debug::getPhpVersion()) $jsonDebug['php-version'] = $version;
-		
+
 		$jsonDebug['messages'] = $debug->getMessages();
 		$jsonDebug['queries'] = array_values($debug->getQueries());
 
@@ -202,19 +199,6 @@ class JSON extends View {
 	}
 
 	/**
-	 * Add aggregate data object to output queue
-	 *
-	 * @param $interpreter
-	 */
-	protected function addAggregateData($interpreter) {
-		// child entities first to ensure min/max etc are populated
-		foreach ($interpreter->getChildrenInterpreter() as $childInterpreter) {
-			$this->addData($childInterpreter, true);
-		}
-		$this->addData($interpreter);
-	}
-
-	/**
 	 * Add multiple data objects to output queue
 	 *
 	 * @param $interpreter
@@ -243,7 +227,7 @@ class JSON extends View {
 				);
 			}
 		);
-		
+
 		$from = 0 + $interpreter->getFrom();
 		$to = 0 + $interpreter->getTo();
 		$min = $interpreter->getMin();
@@ -259,9 +243,9 @@ class JSON extends View {
 		if (isset($max)) $wrapper['max'] = $max;
 		if (isset($average)) $wrapper['average'] = View::formatNumber($average);
 		if (isset($consumption)) $wrapper['consumption'] = View::formatNumber($consumption);
-			
+
 		$wrapper['rows'] = $interpreter->getRowCount();
-		
+
 		if (($interpreter->getTupleCount() > 0 || is_null($interpreter->getTupleCount())) && count($data) > 0)
 			$wrapper['tuples'] = $data;
 
@@ -282,7 +266,7 @@ class JSON extends View {
 		if (is_null($refNode)) {
 			$refNode = array();
 		}
-		
+
 		foreach ($data as $index => $value) {
 			if ($value instanceof Util\JSON || is_array($value)) {
 				$this->addArray($value, $refNode[$index]);

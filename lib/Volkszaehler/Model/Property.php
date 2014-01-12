@@ -74,7 +74,7 @@ class Property {
 		$this->entity = $entity;
 		$this->key = $key;
 		$this->value = $value;
-		
+
 		// TODO should we really validate each property? Could be a performence bottleneck!
 		$this->validate();
 	}
@@ -95,6 +95,15 @@ class Property {
 		else {
 			settype($this->value, $type);
 		}
+	}
+
+	/**
+	 * Undo type cast to prevent Doctrine storing unmodified properties
+	 *
+	 * @PreFlush
+	 */
+	public function uncast() {
+		settype($this->value, 'string');
 	}
 
 	/**
@@ -120,7 +129,7 @@ class Property {
 	/*
 	 * Setter & getter
 	 */
-	 
+
 	public function getKey() { return $this->key; }
 	public function getValue() { return $this->value; }
 	public function getDefinition() { return Definition\PropertyDefinition::get($this->key); }

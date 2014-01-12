@@ -91,7 +91,9 @@ class Aggregation {
 	 * @return integer       aggregation level numeric value
 	 */
 	public static function getAggregationLevelTypeValue($level) {
-		$type = array_search($level, self::getAggregationLevels(), true);
+		if (($type = array_search($level, self::getAggregationLevels(), true)) === false) {
+			throw new \Exception('Invalid aggretation level \'' . $level . '\'');
+		};
 		return($type);
 	}
 
@@ -122,10 +124,8 @@ class Aggregation {
 			$sqlParameters[] = self::getAggregationLevelTypeValue($targetLevel);
 			$sql .= 'AND aggregate.type <= ? ';
 		}
-		else {
-			$sql .= 'AND count > 0 ';
-		}
 		$sql.= 'GROUP BY type ' .
+			   'HAVING count > 0 ' .
 			   'ORDER BY type DESC';
 
 		$rows = $this->conn->fetchAll($sql, $sqlParameters);

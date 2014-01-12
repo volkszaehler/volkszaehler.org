@@ -115,7 +115,9 @@ vz.wui.dialogs.init = function() {
 						success: function(json) {
 							var public = new Array;
 							json.entities.each(function(index, json) {
-								public.push(new Entity(json));
+								var entity = new Entity(json);
+								entity.setMiddleware(middleware.url);
+								public.push(entity);
 							});
 
 							public.sort(Entity.compare);

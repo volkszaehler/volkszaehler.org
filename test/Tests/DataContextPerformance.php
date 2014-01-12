@@ -9,6 +9,7 @@
 namespace Tests;
 
 use Volkszaehler\Util;
+use Volkszaehler\Controller;
 use Volkszaehler\Model;
 use Doctrine\DBAL;
 
@@ -32,16 +33,16 @@ class DataContextPerformance extends DataContext
 		self::$conn = self::$em->getConnection();
 	}
 
+	/**
+	 * Run before each test
+	 */
+	function setUp() {
+		self::$time = microtime(true);
+	}
+
 	protected static function getChannelByUUID($uuid) {
-		$dql = 'SELECT a, p
-			FROM Volkszaehler\Model\Entity a
-			LEFT JOIN a.properties p
-			WHERE a.uuid = :uuid';
-
-		$q = self::$em->createQuery($dql);
-		$q->setParameter('uuid', $uuid);
-
-		return $q->getSingleResult();
+		$ec = new Controller\EntityController(null, self::$em);
+		return $ec->get($uuid);
 	}
 
 	protected static function countRows($uuid, $table = 'data') {
@@ -77,7 +78,7 @@ class DataContextPerformance extends DataContext
 		while (strlen($msg) < self::MSG_WIDTH) {
 			$msg .= '.';
 		}
-		return $msg  . ' ';
+		return $msg . ' ';
 	}
 
 	protected function perf($msg, $speedup = false) {
