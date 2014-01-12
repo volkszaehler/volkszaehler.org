@@ -53,10 +53,11 @@ class AggregatorInterpreter extends Interpreter {
 	 * @param integer $from timestamp in ms since 1970
 	 * @param integer $to timestamp in ms since 1970
 	 * @todo handle channels in nested aggregators
+	 * @todo handle child entities of different units
 	 */
 	public function __construct(Model\Aggregator $aggregator, ORM\EntityManager $em, $from, $to, $tupleCount, $groupBy) {
 		$this->aggregator = $aggregator;
-		
+
 		foreach ($aggregator->getChildren() as $child) {
 			if ($child instanceof Model\Channel) {
 				$class = $child->getDefinition()->getInterpreter();

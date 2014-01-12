@@ -38,7 +38,7 @@ class CSV extends View {
 	const DELIMITER = ';';
 	const ENCLOSURE = '"';
 
-	protected $csv = array();
+	protected $headerSent;
 
 	/**
 	 * constructor
@@ -46,10 +46,11 @@ class CSV extends View {
 	public function __construct(HTTP\Request  $request, HTTP\Response $response) {
 		parent::__construct($request, $response);
 
+		$this->response->setHeader('Content-type', 'text/csv');
+		$this->headerSent = false;
+
 		echo '# source: volkszaehler.org' . PHP_EOL;
 		echo '# version: ' . VZ_VERSION . PHP_EOL;
-
-		$this->response->setHeader('Content-type', 'text/csv');
 	}
 
 	/**
@@ -62,7 +63,9 @@ class CSV extends View {
 			$this->addData($data);
 		}
 		elseif (is_array($data) && isset($data[0]) && $data[0] instanceof Interpreter\Interpreter) {
-			$this->addMultipleData($data);
+			foreach ($data as $interpreter) {
+				$this->add($interpreter);
+			}
 		}
 		elseif ($data instanceof \Exception) {
 			$this->addException($data);
@@ -118,31 +121,30 @@ class CSV extends View {
 	}
 
 	/**
-	 * Add multiple data objects to output queue
-	 *
-	 * @param $interpreter
-	 */
-	protected function addMultipleData($data) {
-		for ($i=0; $i<count($data); $i++) {
-			$this->addData($data[$i], $i>0);
-		}
-	}
-
-	/**
 	 * Add data to output queue
 	 *
 	 * @param Interpreter\InterpreterInterface $interpreter
 	 * @param boolean $children
 	 * @todo  Aggregate first is assumed- this deviates from json view behaviour
 	 */
-	protected function addData(Interpreter\Interpreter $interpreter, $children = false) {
-		if ($children == false) {
+	protected function addData(Interpreter\Interpreter $interpreter) {
+		if ($this->headerSent == false) {
+			$this->headerSent = true;
 			$this->response->setHeader(
 				'Content-Disposition',
 				'attachment; ' .
 				'filename="' . strtolower($interpreter->getEntity()->getProperty('title')) . '.csv" ' .
 				'creation-date="' .  date(DATE_RFC2822, $interpreter->getTo()/1000). '"'
 			);
+		}
+
+		echo PHP_EOL; // UUID delimiter
+		echo '# uuid: ' . $interpreter->getEntity()->getUuid() . PHP_EOL;
+		echo '# title: ' . $interpreter->getEntity()->getProperty('title') . PHP_EOL;
+
+		if ($interpreter instanceof Interpreter\AggregatorInterpreter) {
+			// min/ max etc are not populated if $children->processData hasn't been called
+			return;
 		}
 
 		$tuples = $interpreter->processData(
@@ -162,8 +164,6 @@ class CSV extends View {
 
 		$from = $this->formatTimestamp($interpreter->getFrom());
 		$to = $this->formatTimestamp($interpreter->getTo());
-
-		echo '# uuid: ' . $interpreter->getEntity()->getUuid() . PHP_EOL;
 
 		if (isset($from)) echo '# from: ' . $from . PHP_EOL;
 		if (isset($to)) echo '# to: ' . $to . PHP_EOL;
