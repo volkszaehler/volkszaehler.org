@@ -79,7 +79,7 @@ class MeterInterpreter extends Interpreter {
 		foreach ($this->rows as $row) {
 			$delta = $row[0] - $ts_last;
 			$tuple = $callback(array(
-				(float) $ts_last, // timestamp of interval start
+				(float) ($ts_last = $row[0]), // timestamp of interval end
 				(float) ($row[1] * 3.6e9) / ($this->resolution * $delta), // doing df/dt
 				(int) $row[2] // num of rows
 			));
@@ -95,7 +95,6 @@ class MeterInterpreter extends Interpreter {
 			$this->pulseCount += $row[1];
 
 			$tuples[] = $tuple;
-			$ts_last = $row[0];
 		}
 
 		return $tuples;

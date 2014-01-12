@@ -44,7 +44,7 @@ class DataMeterTest extends DataContext
 		$consumption = $this->getConsumption($rawValue);
 		$average = $this->getAverage($from, $to, $consumption);
 
-		$result = array($from, $average);
+		$result = array($to, $average);
 		if ($count) $result[] = $count;
 
 		// timestamp of interval start

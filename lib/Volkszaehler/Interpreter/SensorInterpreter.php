@@ -67,7 +67,7 @@ class SensorInterpreter extends Interpreter {
 		foreach ($this->rows as $row) {
 			$delta = $row[0] - $ts_last;
 			$tuple = $callback(array(
-				(float) $row[0],
+				(float) ($ts_last = $row[0]), // timestamp of interval end
 				(float) $row[1] / $row[2],
 				(int) $row[2]
 			));
@@ -83,7 +83,6 @@ class SensorInterpreter extends Interpreter {
 			$this->consumption += $tuple[1] * $delta;
 
 			$tuples[] = $tuple;
-			$ts_last = $row[0];
 		}
 
 		return $tuples;
