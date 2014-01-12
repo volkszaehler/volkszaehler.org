@@ -39,17 +39,27 @@ var Exception = function(type, message, code) {
  */
 vz.getLink = function(format) {
 	var entities = new Array;
+	var middleware = '';
 	vz.entities.each(function(entity, parent) {
 		if (entity.active) {
-			entities.push(entity);
+			if (entities.length == 0) {
+				middleware = entity.middleware;
+			}
+			if (entity.middleware == middleware) {
+				entities.push(entity);
+			}
+			else {
+				// TODO add warning for entities from secondary MW
+			}
 		}
 	}, true); // recursive!
-	
-	var entity = entities[0]; // TODO handle other entities
-	
-	return entity.middleware + '/data/' + entity.uuid + '.' + format + '?' + $.param({
+
+	return entities[0].middleware + '/data.' + format + '?' + $.param({
 		from: Math.floor(vz.options.plot.xaxis.min),
-		to: Math.ceil(vz.options.plot.xaxis.max)
+		to: Math.ceil(vz.options.plot.xaxis.max),
+		uuid: entities.map(function(entity) {
+			return entity.uuid;
+		})
 	});
 };
 

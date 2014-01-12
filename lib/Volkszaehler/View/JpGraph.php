@@ -128,9 +128,9 @@ class JpGraph extends View {
 		if ($data instanceof Interpreter\Interpreter) {
 			$this->addData($data);
 		}
-		elseif($data instanceof Interpreter\AggregatorInterpreter) {
-			foreach ($data->getChildrenInterpreter() as $childInterpreter) {
-				$this->add($childInterpreter);
+		elseif (is_array($data) && isset($data[0]) && $data[0] instanceof Interpreter\Interpreter) {
+			foreach ($data as $interpreter) {
+				$this->add($interpreter);
 			}
 		}
 		else {
