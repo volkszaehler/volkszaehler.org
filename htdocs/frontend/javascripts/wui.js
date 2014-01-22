@@ -603,15 +603,17 @@ vz.wui.drawPlot = function () {
 		if (entity.active && entity.definition && entity.definition.model == 'Volkszaehler\\Model\\Channel' &&
 		    entity.data && entity.data.tuples && entity.data.tuples.length > 0) {
 			var tuples = entity.data.tuples;
-			// mangle data for "steps" curves
-			if (tuples && tuples.length > 0 && tuples.last) {
-				tuples.push([entity.data.to, tuples.last()[1], 1]);
-				tuples.push([entity.data.to, null, 1]);
+			// mangle data for "steps" curves by shifting one ts left ("step-before")
+			if (tuples && tuples.length > 0 && entity.style == "steps") {
+				tuples.unshift([entity.data.from, 1, 1]); // add new first ts
+				for (var i=0; i<tuples.length-1; i++) {
+					tuples[i][1] = tuples[i+1][1];
+				}
 			}
 			var serie = {
 				data: tuples,
 				color: entity.color,
-				label : entity.title,
+				label: entity.title,
 				title: entity.title,
 				unit : entity.definition.unit,
 				lines: {
