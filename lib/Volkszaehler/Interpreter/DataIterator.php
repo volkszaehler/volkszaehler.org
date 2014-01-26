@@ -89,8 +89,10 @@ class DataIterator implements \Iterator, \Countable {
 			$package[0] = $tuple[0]; // last timestamp of package will be used
 			$package[1] += $tuple[1];
 			$package[2] += $tuple[2];
-			$package[3] = max($package[3], $tuple[1]); // courtesy for CounterInterpreter
-
+			if ($tuple[1] > 0 )
+			    $package[3] = max($package[3], $tuple[1]); // courtesy for CounterInterpreter
+			else
+			    $package[3] = min($package[3], $tuple[1]); // courtesy for CounterInterpreter
 			$this->rowKey++;
 		}
 
