@@ -59,7 +59,7 @@ Entity.prototype.parseJSON = function(json) {
 	// setting defaults	
 	if (this.type !== undefined) {
 		this.definition = vz.capabilities.definitions.get('entities', this.type);
-		this.yaxis = this.type == 'temperature' || this.type == 'flow' || this.type == 'gas' ? 2 : 1;
+		this.yaxis = ($.inArray(this.type, vz.options.y2axis) !== -1) ? 2 : 1;
 		
 		if (this.style === undefined) {
 			if (this.definition.style) {
