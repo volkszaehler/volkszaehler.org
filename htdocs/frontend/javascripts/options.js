@@ -39,6 +39,7 @@ vz.options = {
 	}],
 	monthNames: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
 	dayNames: ['Son', 'Mon', 'Di', 'Mi', 'Do', 'Fr', 'Sam'],
+	y2axis: ['temperature', 'flow', 'gas', 'gas meter', 'valve'],
 	lineWidthDefault: 2,
 	lineWidthSelected: 4,
 	speedupFactor: 2,   // higher values give higher speedup but can produce chunky display
