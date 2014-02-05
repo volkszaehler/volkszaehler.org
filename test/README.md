@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/andig/volkszaehler.org.png?branch=master-travis)](https://travis-ci.org/andig/volkszaehler.org)
+
 # Unit tests
 
 Unit testing checks middleware functionality by executing HTTP JSON requests and validating the response.

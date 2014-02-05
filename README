@@ -12,7 +12,7 @@ volkszaehler.org/
  |_ misc/
  |   |_ controller/
  |   |   |_ vzlogger/		command line tool to log meters/sensors
- |   |   |_ mbus/               a controler for mbus/messbus
+ |   |   |_ mbus/               a controller for mbus/messbus
  |   |   \_ batch/		batch scripts for logging (prototypes)
  |   |
  |   |_ docs/			documentation
@@ -23,6 +23,8 @@ volkszaehler.org/
  |   |
  |   |_ tools/			scripts for imports, installation etc.
  |   \_ tests/			simple tests for middleware classes
+ |
+ |_ test/			PHPUnit test cases
  \_ var/			SQLite database (optional)
 
 Wiki: http://wiki.volkszaehler.org
