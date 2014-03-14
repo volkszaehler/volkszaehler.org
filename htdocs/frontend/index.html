@@ -5,7 +5,7 @@
 <head>
 	<title>volkszaehler.org - web frontend</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	
+
 	<link rel="shortcut icon" type="image/x-icon" href="../favicon.ico" />
 	<link rel="apple-touch-icon-precomposed" href="../favicon.ico" />
 	<!-- to support android versions newer than 2.3 -->
@@ -18,7 +18,7 @@
 	<script type="text/javascript" src="http://code.jquery.com/ui/1.10.1/jquery-ui.min.js"></script>
 	<script type="text/javascript" src="javascripts/jquery/jquery.treeTable.js"></script>
 	<script type="text/javascript" src="javascripts/jquery/jquery-extensions.js"></script>
-	
+
 	<!--[if IE]><script language="javascript" type="text/javascript" src="javascripts/flot/excanvas.min.js"></script><![endif]-->
 	<script type="text/javascript" src="javascripts/flot/jquery.flot.js"></script>
 	<script type="text/javascript" src="javascripts/flot/jquery.flot.crosshair.js"></script>
@@ -36,10 +36,10 @@
 			document.title = "Volkszaehler";
 		}
 	</script>
-	
+
 	<link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.10.1/themes/base/minified/jquery-ui.min.css" />
 	<link rel="stylesheet" type="text/css" href="stylesheets/jquery-treeTable.css" />
-	<link rel="stylesheet" type="text/css" href="stylesheets/jquery-ui-custom.css" />	
+	<link rel="stylesheet" type="text/css" href="stylesheets/jquery-ui-custom.css" />
 	<link rel="stylesheet" type="text/css" href="stylesheets/style.css" />
 </head>
 <body>
@@ -63,7 +63,7 @@
 	<div id="plot">
 		<div id="flot"></div>
 		<div id="overlay"></div>
-	</div>	
+	</div>
 
 <div id="accordion">
 	<div id="controls">
@@ -78,7 +78,7 @@
 		<button value="zoom-month">Monat</button>
 		<button value="zoom-year">Jahr</button>
 	</div>
-	
+
 		<h3><img src="images/table.png" alt="" /> Kanäle</h3>
 		<div id="entity-list">
 		<table>
@@ -88,13 +88,13 @@
 					<th></th>
 					<th>Titel</th>
 					<th>Typ</th>
-					<th>Min.</th>
-					<th>Max.</th>
-					<th>&empty;</th>
-					<th>aktuell</th>
-					<th>Verbrauch</th>
-					<th>Kosten</th>
-					<th>Aktion</th>
+					<th class="right">Min.</th>
+					<th class="right">Max.</th>
+					<th class="right">&empty;</th>
+					<th class="right">aktuell</th>
+					<th class="right">Verbrauch</th>
+					<th class="right">Kosten</th>
+					<th class="right">Aktion</th>
 				</tr>
 			</thead>
 			<tbody></tbody>

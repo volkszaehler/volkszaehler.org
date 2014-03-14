@@ -1,6 +1,6 @@
 /**
  * Javascript functions for the frontend
- * 
+ *
  * @author Florian Ziegler <fz@f10-home.de>
  * @author Justin Otherguy <justin@justinotherguy.org>
  * @author Steffen Vogel <info@steffenvogel.de>
@@ -10,16 +10,16 @@
  */
 /*
  * This file is part of volkzaehler.org
- * 
+ *
  * volkzaehler.org is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or any later version.
- * 
+ *
  * volkzaehler.org is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -29,7 +29,7 @@
  */
 vz.wui.init = function() {
 	vz.options.tuples = Math.round($('#flot').width() / 3);
-	
+
 	// initialize dropdown accordion
 	$('#accordion h3').click(function() {
 		$(this).next().toggle('fast', function() {
@@ -41,16 +41,16 @@ vz.wui.init = function() {
 				break;
 			}
 		});
-		
+
 		return false;
 	}).next().hide();
 	$('#entity-list').show(); // open entity list by default
-	
+
 	// buttons
 	$('button, input[type=button],[type=image],[type=submit]').button();
 	$('button[name=options-save]').click(vz.options.saveCookies);
 	$('button[name=entity-add]').click(this.dialogs.init);
-	
+
 	$('#export select').change(function(event) {
 		switch ($(this).val()) {
 			case 'permalink':
@@ -61,15 +61,15 @@ vz.wui.init = function() {
 			case 'xml':
 				window.location = vz.getLink($(this).val());
 				break;
-				
+
 		}
 		$('#export option[value=default]').attr('selected', true);
 	});
-	
+
 	// bind plot actions
 	$('#controls button').click(this.handleControls);
 	$('#controls').buttonset();
-	
+
 	// auto refresh
 	if (vz.options.refresh) {
 		$('#refresh').prop('checked', true);
@@ -85,7 +85,7 @@ vz.wui.init = function() {
 			vz.wui.clearTimeout();
 		}
 	});
-	
+
 	// toggle all channels
 	$('#entity-toggle').click(function() {
 		vz.entities.each(function(entity, parent) {
@@ -122,7 +122,7 @@ vz.wui.dialogs.init = function() {
 
 							public.sort(Entity.compare);
 							vz.middleware[idx].public = public;
-					
+
 							if (idx == 0) {
 								populateEntities(vz.middleware[idx]);
 							}
@@ -132,7 +132,7 @@ vz.wui.dialogs.init = function() {
 			}
 		}
 	});
-	
+
 	// show available entity types
 	vz.capabilities.definitions.entities.each(function(index, def) {
 		$('#entity-create select[name=type]').append(
@@ -154,7 +154,7 @@ vz.wui.dialogs.init = function() {
 	$('#entity-create-middleware').val(vz.options.localMiddleware);
 	$('#entity-subscribe-cookie').attr('checked', 'checked');
 	$('#entity-public-cookie').attr('checked', 'checked');
-	
+
 	// actions
 	$('#entity-public-middleware').change(function() {
 		var title = $('#entity-public-middleware option:selected').text();
@@ -172,11 +172,11 @@ vz.wui.dialogs.init = function() {
 				uuid: $('#entity-subscribe-uuid').val(),
 				cookie: Boolean($('#entity-subscribe-cookie').attr('checked'))
 			});
-			
+
 			if (middleware = $('#entity-subscribe-middleware').val()) {
 				entity.middleware = middleware;
 			}
-			
+
 			entity.loadDetails().done(function() {
 				vz.entities.push(entity);
 				vz.entities.saveCookie();
@@ -191,14 +191,14 @@ vz.wui.dialogs.init = function() {
 			$('#entity-add').dialog('close');
 		}
 	});
-	
+
 	$('#entity-public input[type=button]').click(function() {
 		var entity = $('#entity-public-entity option:selected').data('entity');
-	
+
 		try {
 			entity.cookie = Boolean($('#entity-public-cookie').attr('checked'));
 			entity.middleware = $('#entity-public-middleware option:selected').val();
-			
+
 			vz.entities.push(entity);
 			vz.entities.saveCookie();
 			vz.entities.showTable();
@@ -234,22 +234,22 @@ vz.wui.dialogs.init = function() {
 						.append(
 							$('<td>').text(propdef.translation[vz.options.language])
 						);
-					
+
 					switch (propdef.type) {
 						case 'float':
 						case 'integer':
 						case 'string':
 							cntrl = $('<input>').attr("type", "text");
 							break;
-							
+
 						case 'text':
 							cntrl = $('<textarea>');
 							break;
-					
+
 						case 'boolean':
 							cntrl = $('<input>').attr("type", "checkbox");
 							break;
-						
+
 						case 'multiple':
 							cntrl = $('<select>').attr("Size", "1");
 							propdef.options.each(function(optindex, optdef) {
@@ -259,7 +259,7 @@ vz.wui.dialogs.init = function() {
 							});
 							break;
 					}
-					
+
 					if (cntrl != null) {
 						row.addClass(className);
 						cntrl.attr("name", propdef.name);
@@ -270,20 +270,20 @@ vz.wui.dialogs.init = function() {
 			});
 		});
 	}
-	
+
 	$('#entity-create select').change(function() {
 		$('#entity-create form table .required').remove();
 		$('#entity-create form table .optional').remove();
-		
+
 		addProperties(vz.capabilities.definitions.entities[$(this)[0].selectedIndex].required, "required");
 		addProperties(vz.capabilities.definitions.entities[$(this)[0].selectedIndex].optional, "optional");
 	});
 	$('#entity-create select').change();
-	
+
 	$('#entity-create form').submit(function() {
 		var def = $('select[name=type] option:selected', this).data('definition');
 		var properties = {};
-		
+
 		$(this).serializeArray().each(function(index, value) {
 			if (value.value != '') {
 				properties[value.name] = value.value;
@@ -297,7 +297,7 @@ vz.wui.dialogs.init = function() {
 			type: 'POST',
 			success: function(json) {
 				var entity = new Entity(json.entity);
-				
+
 				try {
 					entity.cookie = Boolean($('#entity-create-cookie').attr('checked'));
 					entity.middleware = $('#entity-create-middleware').val();
@@ -310,15 +310,15 @@ vz.wui.dialogs.init = function() {
 				catch (e) {
 					vz.wui.dialogs.exception(e);
 				}
-				finally {	
+				finally {
 					$('#entity-add').dialog('close');
 				}
 			}
 		});
-		
+
 		return false;
 	});
-	
+
 	// update event handler after lazy loading
 	$('button[name=entity-add]').unbind('click', this.init);
 	$('button[name=entity-add]').click(function() {
@@ -340,16 +340,16 @@ vz.wui.zoom = function(from, to) {
 	}
 
 	vz.wui.tmaxnow = (vz.options.plot.xaxis.max >= (now - 1000));
-	
+
 	if (vz.options.plot.xaxis.min < 0) {
 		vz.options.plot.xaxis.min = 0;
 	}
-	
+
 	vz.options.plot.yaxes.each(function(i) {
 		vz.options.plot.yaxes[i].max = null; // autoscaling
 		vz.options.plot.yaxes[i].min = 0; // fixed to 0
 	});
-	
+
 	vz.entities.loadData().done(vz.wui.drawPlot);
 };
 
@@ -393,7 +393,7 @@ vz.wui.updateLegend = function() {
 	vz.wui.updateLegendTimeout = null;
 
 	var pos = vz.wui.latestPosition;
-	
+
         var axes = vz.plot.getAxes();
         if (pos.x < axes.xaxis.min || pos.x > axes.xaxis.max ||
 	    pos.y < axes.yaxis.min || pos.y > axes.yaxis.max)
@@ -533,10 +533,10 @@ vz.wui.setTimeout = function() {
 		window.clearTimeout(vz.wui.timeout);
 		vz.wui.timeout = null;
 	}
-	
+
 	var t = Math.max((vz.options.plot.xaxis.max - vz.options.plot.xaxis.min) / vz.options.tuples, vz.options.minTimeout);
 	vz.wui.timeout = window.setTimeout(vz.wui.refresh, t);
-	
+
 	$('#refresh-time').html('(' + Math.round(t / 1000) + ' s)');
 };
 
@@ -545,7 +545,7 @@ vz.wui.setTimeout = function() {
  */
 vz.wui.clearTimeout = function(text) {
 	$('#refresh-time').html(text || '');
-	
+
 	var rc = window.clearTimeout(vz.wui.timeout);
 	vz.wui.timeout = null;
 	return rc;
@@ -563,14 +563,18 @@ vz.wui.clearTimeout = function(text) {
 vz.wui.formatNumber = function(number, prefix) {
 	var siPrefixes = ['k', 'M', 'G', 'T'];
 	var siIndex = 0;
-	
+
 	while (prefix && Math.abs(number) > 1000 && siIndex < siPrefixes.length-1) {
 		number /= 1000;
 		siIndex++;
 	}
-	
-	number = Math.round(number * Math.pow(10, vz.options.precision)) / Math.pow(10, vz.options.precision); // rounding
-	
+
+    // avoid infinities/NaN
+	if (number > 0) {
+		var precision = Math.max(0, vz.options.precision - Math.floor(Math.log(number)/Math.LN10));
+		number = Math.round(number * Math.pow(10, precision)) / Math.pow(10, precision); // rounding
+	}
+
 	if (prefix) {
 		number += (siIndex > 0) ? ' ' + siPrefixes[siIndex-1] : ' ';
 	}
@@ -581,10 +585,10 @@ vz.wui.formatNumber = function(number, prefix) {
 vz.wui.updateHeadline = function() {
 	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
 	var format = '%B %d. %b %y';
-	
+
 	if (delta < 3*24*3600*1000) format += ' %h:%M'; // under 3 days
 	if (delta < 5*60*1000) format += ':%S'; // under 5 minutes
-	
+
 	var from = $.plot.formatDate(new Date(vz.options.plot.xaxis.min), format, vz.options.monthNames, vz.options.dayNames, true);
 	var to = $.plot.formatDate(new Date(vz.options.plot.xaxis.max), format, vz.options.monthNames, vz.options.dayNames, true);
 	$('#title').html(from + ' - ' + to);
@@ -629,11 +633,11 @@ vz.wui.drawPlot = function () {
 
 			entity.index = index;
 			++index;
-			
+
 			series.push(serie);
 		}
 	}, true);
-	
+
 	if (series.length == 0) {
 		$('#overlay').html('<img src="images/empty.png" alt="no data..." /><p>nothing to plot...</p>');
 		series.push({}); // add empty dataset to show axes
@@ -641,7 +645,7 @@ vz.wui.drawPlot = function () {
 	else {
 		$('#overlay').empty();
 	}
-	
+
 	var flot = $('#flot');
 	vz.plot = $.plot(flot, series, vz.options.plot);
 
@@ -650,7 +654,7 @@ vz.wui.drawPlot = function () {
 		var pos = 'position:absolute; left:40px; top:5px;';
 		var legend = $('<div id="legend" style="'+pos+'width:'+flot.width()+'"> </div>');
 		flot.append(legend);
-	
+
 		vz.plot.getOptions().legend.show = true;
 		vz.plot.getOptions().legend.container = legend; // $('#legend');
 		vz.plot.setupGrid();
