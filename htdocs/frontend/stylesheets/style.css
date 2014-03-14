@@ -13,7 +13,7 @@ table {
 
 tr th {
 	border-bottom: 2px solid grey;
-	
+
 	text-align: left;
 	font-size: 0.9em;
 }
@@ -137,7 +137,7 @@ select.icons option {
 	padding: 10px;
 }
 
-.ops {
+.right, .ops {
 	text-align: right;
 }
 
