@@ -222,8 +222,8 @@ vz.wui.dialogs.init = function() {
 		$('#entity-public-middleware').append($('<option>').val(middleware.url).text(middleware.title));
 	});
 	$('#entity-create-middleware').val(vz.options.localMiddleware);
-	$('#entity-subscribe-cookie').prop('checked', 'checked');
-	$('#entity-public-cookie').prop('checked', 'checked');
+	$('#entity-subscribe-cookie').attr('checked', 'checked');
+	$('#entity-public-cookie').attr('checked', 'checked');
 
 	// actions
 	$('#entity-public-middleware').change(function() {
