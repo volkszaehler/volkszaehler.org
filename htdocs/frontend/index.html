@@ -5,7 +5,7 @@
 <head>
 	<title>volkszaehler.org - web frontend</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	
+
 	<link rel="shortcut icon" type="image/x-icon" href="../favicon.ico" />
 	<link rel="apple-touch-icon-precomposed" href="../favicon.ico" />
 	<!-- to support android versions newer than 2.3 -->
@@ -18,7 +18,7 @@
 	<script type="text/javascript" src="http://code.jquery.com/ui/1.10.1/jquery-ui.min.js"></script>
 	<script type="text/javascript" src="javascripts/jquery/jquery.treeTable.js"></script>
 	<script type="text/javascript" src="javascripts/jquery/jquery-extensions.js"></script>
-	
+
 	<!--[if IE]><script language="javascript" type="text/javascript" src="javascripts/flot/excanvas.min.js"></script><![endif]-->
 	<script type="text/javascript" src="javascripts/flot/jquery.flot.js"></script>
 	<script type="text/javascript" src="javascripts/flot/jquery.flot.crosshair.js"></script>
@@ -36,10 +36,10 @@
 			document.title = "Volkszaehler";
 		}
 	</script>
-	
+
 	<link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.10.1/themes/base/minified/jquery-ui.min.css" />
 	<link rel="stylesheet" type="text/css" href="stylesheets/jquery-treeTable.css" />
-	<link rel="stylesheet" type="text/css" href="stylesheets/jquery-ui-custom.css" />	
+	<link rel="stylesheet" type="text/css" href="stylesheets/jquery-ui-custom.css" />
 	<link rel="stylesheet" type="text/css" href="stylesheets/style.css" />
 </head>
 <body>
@@ -63,7 +63,7 @@
 	<div id="plot">
 		<div id="flot"></div>
 		<div id="overlay"></div>
-	</div>	
+	</div>
 
 <div id="accordion">
 	<div id="controls">
@@ -78,7 +78,7 @@
 		<button value="zoom-month">Monat</button>
 		<button value="zoom-year">Jahr</button>
 	</div>
-	
+
 		<h3><img src="images/table.png" alt="" /> Kanäle</h3>
 		<div id="entity-list">
 		<table>
@@ -175,6 +175,14 @@
 			</form>
 		</div>
 	</div>
+</div>
+
+<div id="entity-edit" class="dialog">
+	<form method="get" target="_blank">
+		<table>
+			<tr class="property"><th>Eigenschaft</th><th>Wert</th></tr>
+		</table>
+	</form>
 </div>
 </body>
 </html>
