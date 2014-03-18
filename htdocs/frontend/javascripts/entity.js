@@ -154,7 +154,7 @@ Entity.prototype.showDetails = function() {
 		width: 480,
 		resizable: false,
 		buttons : {
-			'Löschen' : function() {
+			'Löschen': function() {
 				$('#entity-delete').dialog({ // confirm prompt
 					resizable: false,
 					modal: true,
@@ -210,7 +210,7 @@ Entity.prototype.showDetails = function() {
 							var properties = {};
 
 							$(this).find('form').serializeArray().each(function(index, value) {
-								if (value.value != '') {
+								if (value.value != '' || entity[value.name]) {
 									properties[value.name] = value.value;
 								}
 							});
