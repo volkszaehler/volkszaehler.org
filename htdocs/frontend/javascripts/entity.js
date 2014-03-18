@@ -147,66 +147,6 @@ Entity.prototype.showDetails = function() {
 	var entity = this;
 	var dialog = $('<div>');
 
-	// show available properties for entity for editing (adapted from wui.js)
-	function addProperties(proplist, className, entity) {
-		var immutable = ['resolution']; // unchangeable attributes
-		proplist.each(function(index, def) {
-			vz.capabilities.definitions.properties.each(function(propindex, propdef) {
-				if (def == propdef.name) {
-					var val = (typeof entity[def] != 'undefined') ? entity[def] : null;
-
-					var cntrl = null;
-					var row = $('<tr>')
-						.addClass("property")
-						.append(
-							$('<td>').text(propdef.translation[vz.options.language])
-						);
-
-					switch (propdef.type) {
-						case 'float':
-						case 'integer':
-						case 'string':
-							cntrl = $('<input size="36">').attr("type", "text");
-							cntrl.val(val);
-							break;
-
-						case 'text':
-							cntrl = $('<textarea>');
-							cntrl.val(val);
-							break;
-
-						case 'boolean':
-							cntrl = $('<input>').attr("type", "checkbox");
-							cntrl.attr('checked', val);
-							break;
-
-						case 'multiple':
-							cntrl = $('<select>').attr("Size", "1");
-							propdef.options.each(function(optindex, optdef) {
-								cntrl.append(
-									$('<option>').html(optdef).val(optdef)
-								);
-							});
-
-							cntrl.find('option[value="' + val + '"]').attr('selected', 'selected');
-							break;
-					}
-
-					if (cntrl != null) {
-						// unchangeable attribute?
-						if (immutable.indexOf(def) >= 0) {
-							cntrl.attr('disabled', true);
-						}
-						row.addClass(className);
-						cntrl.attr("name", propdef.name);
-						row.append($('<td>').append(cntrl));
-						$('#entity-edit form table').append(row);
-					}
-				}
-			});
-		});
-	}
-
 	dialog.addClass('details')
 	.append(this.getDOMDetails())
 	.dialog({
@@ -253,8 +193,9 @@ Entity.prototype.showDetails = function() {
 				// add properties for entity
 				vz.capabilities.definitions.entities.some(function(entityprops) {
 					if (entityprops.name == entity.type) {
-						addProperties(entityprops.required, "required", entity);
-						addProperties(entityprops.optional, "optional", entity);
+						var container = $('#entity-edit form table');
+						vz.wui.dialogs.addProperties(container, entityprops.required, "required", entity);
+						vz.wui.dialogs.addProperties(container, entityprops.optional, "optional", entity);
 						return true;
 					}
 				});
