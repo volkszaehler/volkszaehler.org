@@ -125,11 +125,10 @@ class AggregatorInterpreter extends Interpreter {
 	 */
 	public function getAverage() {
 		$sum = 0;
-
 		foreach ($this->childrenInterpreter as $interpreter) {
 			$sum += $interpreter->getAverage();
 		}
-		return ($sum / count($this->childrenInterpreter));
+		return (count($this->childrenInterpreter)) ? $sum / count($this->childrenInterpreter) : null;
 	}
 
 	/*
