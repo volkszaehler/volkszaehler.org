@@ -133,11 +133,6 @@ vz.wui.dialogs.addProperties = function(container, proplist, className, entity) 
 
 				// editing?
 				if (entity && cntrl != null) {
-					// var immutable = ['resolution']; // unchangeable attributes when editing
-					// if (immutable.indexOf(def) >= 0) { // unchangeable attribute?
-					// 	cntrl.attr('disabled', true);
-					// }
-
 					// set current value
 					var val = (entity && typeof entity[def] != 'undefined') ? entity[def] : null;
 					switch (propdef.type) {
@@ -227,8 +222,8 @@ vz.wui.dialogs.init = function() {
 		$('#entity-public-middleware').append($('<option>').val(middleware.url).text(middleware.title));
 	});
 	$('#entity-create-middleware').val(vz.options.localMiddleware);
-	$('#entity-subscribe-cookie').attr('checked', 'checked');
-	$('#entity-public-cookie').attr('checked', 'checked');
+	$('#entity-subscribe-cookie').prop('checked', 'checked');
+	$('#entity-public-cookie').prop('checked', 'checked');
 
 	// actions
 	$('#entity-public-middleware').change(function() {
@@ -245,7 +240,7 @@ vz.wui.dialogs.init = function() {
 		try {
 			var entity = new Entity({
 				uuid: $('#entity-subscribe-uuid').val(),
-				cookie: Boolean($('#entity-subscribe-cookie').attr('checked'))
+				cookie: Boolean($('#entity-subscribe-cookie').prop('checked'))
 			});
 
 			if (middleware = $('#entity-subscribe-middleware').val()) {
@@ -271,7 +266,7 @@ vz.wui.dialogs.init = function() {
 		var entity = $('#entity-public-entity option:selected').data('entity');
 
 		try {
-			entity.cookie = Boolean($('#entity-public-cookie').attr('checked'));
+			entity.cookie = Boolean($('#entity-public-cookie').prop('checked'));
 			entity.middleware = $('#entity-public-middleware option:selected').val();
 
 			vz.entities.push(entity);
@@ -327,7 +322,7 @@ vz.wui.dialogs.init = function() {
 				var entity = new Entity(json.entity);
 
 				try {
-					entity.cookie = Boolean($('#entity-create-cookie').attr('checked'));
+					entity.cookie = Boolean($('#entity-create-cookie').prop('checked'));
 					entity.middleware = $('#entity-create-middleware').val();
 
 					vz.entities.push(entity);

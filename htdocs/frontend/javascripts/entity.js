@@ -191,11 +191,11 @@ Entity.prototype.showDetails = function() {
 				$('#entity-edit form table .optional').remove();
 
 				// add properties for entity
-				vz.capabilities.definitions.entities.some(function(entityprops) {
-					if (entityprops.name == entity.type) {
+				vz.capabilities.definitions.entities.some(function(entities) {
+					if (entities.name == entity.type) {
 						var container = $('#entity-edit form table');
-						vz.wui.dialogs.addProperties(container, entityprops.required, "required", entity);
-						vz.wui.dialogs.addProperties(container, entityprops.optional, "optional", entity);
+						vz.wui.dialogs.addProperties(container, entities.required, "required", entity);
+						vz.wui.dialogs.addProperties(container, entities.optional, "optional", entity);
 						return true;
 					}
 				});
