@@ -336,7 +336,7 @@
 	{
 		"name"			: "photo",
 		"type"			: "string",
-		"pattern"		: "\/^(https?|ftp):\/\/[a-z0-9-.]+\\.[a-z]{2,6}(\/\\S*)?$\/i", // url
+		"pattern"		: "#^(https?|ftp):\/\/[a-z0-9-.]+\\.[a-z]{2,6}(\/\\S*)?$#i", // url
 		"translation"		: {
 			"de" : "Foto (URL)",
 			"en" : "Photo (URL)"
@@ -345,7 +345,7 @@
 	{
 		"name"			: "link",
 		"type"			: "string",
-		"pattern"		: "\/^(https?|ftp):\/\/[a-z0-9-.]+\\.[a-z]{2,6}(\/\\S*)?$\/i", // url		
+		"pattern"		: "#^(https?|ftp):\/\/[a-z0-9-.]+\\.[a-z]{2,6}(\/\\S*)?$#i", // url
 		"translation"		: {
 			"de" : "Hyperlink",
 			"en" : "Hyperlink"
@@ -402,10 +402,10 @@
 	{
 		"name"			: "local",
 		"type"			: "string",
-		"pattern"		: "\/^(https?|ftp):\/\/[a-z0-9-.]+\\.[a-z]{2,6}(\/\\S*)?$\/i", // url		
+		"pattern"		: "#^(https?|ftp):\/\/[a-z0-9-.]+\\.[a-z]{2,6}(\/\\S*)?$#i", // url
 		"translation"		: {
 			"de" : "Lokale Adresse",
 			"en" : "Local Address"
 		}
-	}	
+	}
 ]
