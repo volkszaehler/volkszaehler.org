@@ -90,7 +90,7 @@ class Aggregator extends Entity {
 
 		if ($recursive) {
 			foreach ($this->children as $child) {
-				if ($child->contains($entity, $recursive)) {
+				if ($child instanceof Aggregator && $child->contains($entity, $recursive)) {
 					return TRUE;
 				}
 			}
