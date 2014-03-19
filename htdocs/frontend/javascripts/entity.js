@@ -282,7 +282,12 @@ Entity.prototype.getDOMDetails = function(edit) {
 				}
 
 				if (property == 'cost') {
-					value = Number(value * 1000 * 100).toFixed(2) + ' ct/k' + vz.wui.formatConsumptionUnit(this.definition.unit); // ct per kWh
+					if (this.definition.unit == 'W') {
+						value = Number(value * 1000 * 100).toFixed(2) + ' ct/k' + vz.wui.formatConsumptionUnit(this.definition.unit); // ct per kWh
+					}
+					else {
+						value = Number(value * 100).toFixed(2) + ' ct/' + vz.wui.formatConsumptionUnit(this.definition.unit); // ct per m3 etc
+					}
 				}
 
 				data.append($('<tr>')
