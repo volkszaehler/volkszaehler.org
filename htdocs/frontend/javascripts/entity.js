@@ -239,7 +239,7 @@ Entity.prototype.getDOMDetails = function(edit) {
 					.css('padding-left', 5)
 					.css('padding-right', 5);
 				break;
-				
+
 			case 'cookie':
 				var title = 'Cookie';
 				value = '<img src="images/' + ((this.cookie) ? 'tick' : 'cross') + '.png" alt="' + ((value) ? 'ja' : 'nein') + '" />';
@@ -282,8 +282,8 @@ Entity.prototype.getDOMDetails = function(edit) {
 				}
 
 				if (property == 'cost') {
-						value = Number(value * 1000 * 100).toFixed(2) + ' ct/k' + this.definition.unit + 'h'; // ct per kWh
-						}
+					value = Number(value * 1000 * 100).toFixed(2) + ' ct/k' + vz.wui.formatConsumptionUnit(this.definition.unit); // ct per kWh
+				}
 
 				data.append($('<tr>')
 					.addClass('property')
@@ -423,14 +423,7 @@ Entity.prototype.updateDOMRow = function() {
 			.text(vz.wui.formatNumber(this.data.tuples.last()[1], true) + this.definition.unit);
 
 		if (this.data.consumption) {
-			var suffix = '/h';
-			var unit = this.definition.unit;
-			if (this.definition.unit.indexOf(suffix, unit.length - suffix.length) !== -1) {
-				unit = unit.substring(0, unit.length - suffix.length);
-			}
-			else {
-				unit += 'h';
-			}
+			var unit = vz.wui.formatConsumptionUnit(this.definition.unit);
 			$('.consumption', row)
 				.text(vz.wui.formatNumber(this.data.consumption, true) + unit)
 				.attr('title', vz.wui.formatNumber(this.data.consumption * (year/delta), true) + unit + '/Jahr');
