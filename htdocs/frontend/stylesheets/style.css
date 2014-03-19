@@ -13,13 +13,13 @@ table {
 
 tr th {
 	border-bottom: 2px solid grey;
-	
+
 	text-align: left;
 	font-size: 0.9em;
 }
 
 tr.optional {
-  color: silver;
+  color: grey;
 }
 
 tr.property td {

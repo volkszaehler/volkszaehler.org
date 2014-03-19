@@ -57,7 +57,7 @@ class EntityDefinition extends Definition {
 	 * @var string
 	 */
 	public $interpreter;
-	
+
 	/**
 	 * Style for plotting
 	 *
@@ -95,24 +95,24 @@ class EntityDefinition extends Definition {
 	 * @var array holds definitions
 	 */
 	protected static $definitions = NULL;
-	
+
 	/**
 	 * Properties required/optional by default for all Entity types
 	 * @var array
 	 */
 	static protected $defaultRequired = array('title');
-	static protected $defaultOptional = array('description', 'public', 'color', 'active', 'style', 'details:', 'owner:', 'address:', 'link');
-	
+	static protected $defaultOptional = array('public', 'color', 'style', 'active', 'description', 'details:', 'owner:', 'address:', 'link');
+
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * Adding default properties
 	 */
 	 protected function __construct($object) {
 	 	parent::__construct($object);
-	 	
-	 	$this->required = array_merge($this->required, self::$defaultRequired);
-	 	$this->optional = array_merge($this->optional, self::$defaultOptional);
+
+	 	$this->required = array_merge(self::$defaultRequired, $this->required);
+	 	$this->optional = array_merge(self::$defaultOptional, $this->optional);
 	 }
 
 	/*
