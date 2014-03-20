@@ -154,9 +154,6 @@ Entity.prototype.showDetails = function() {
 		width: 480,
 		resizable: false,
 		buttons : {
-			'Schließen': function() {
-				$(this).dialog('close');
-			},
 			'Löschen' : function() {
 				$('#entity-delete').dialog({ // confirm prompt
 					resizable: false,
@@ -188,6 +185,67 @@ Entity.prototype.showDetails = function() {
 						}
 					}
 				});
+			},
+			'Bearbeiten': function() {
+				$('#entity-edit form table .required').remove();
+				$('#entity-edit form table .optional').remove();
+
+				// add properties for entity
+				vz.capabilities.definitions.entities.some(function(entities) {
+					if (entities.name == entity.type) {
+						var container = $('#entity-edit form table');
+						vz.wui.dialogs.addProperties(container, entities.required, "required", entity);
+						vz.wui.dialogs.addProperties(container, entities.optional, "optional", entity);
+						return true;
+			}
+				});
+
+				$('#entity-edit').dialog({
+					resizable: false,
+					modal: true,
+					title: 'Bearbeiten von ' + entity.title,
+					width: 600,
+					buttons: {
+						'Speichern': function() { // adapted from #entity-create
+							var properties = {};
+
+							$(this).find('form').serializeArray().each(function(index, value) {
+								if (value.value != '' || entity[value.name]) {
+									properties[value.name] = value.value;
+		}
+	});
+
+							vz.load({
+								controller: 'entity',
+								identifier: entity.uuid,
+								url: entity.middleware,
+								data: properties,
+								type: 'PULL', // edit
+								success: function(json) {
+									entity.parseJSON(json.entity); // update entity
+
+									try {
+										vz.entities.showTable();
+										vz.entities.loadData().done(vz.wui.drawPlot);
+									}
+									catch (e) {
+										vz.wui.dialogs.exception(e);
+									}
+									finally {
+										$('#entity-edit').dialog('close');
+										dialog.dialog('close'); // close parent dialog
+									}
+								}
+							});
+						},
+						'Abbrechen': function() {
+							$(this).dialog('close');
+						}
+					}
+				});
+			},
+			'Schließen': function() {
+				$(this).dialog('close');
 			}
 		}
 	});

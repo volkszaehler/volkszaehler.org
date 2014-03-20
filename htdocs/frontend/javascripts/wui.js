@@ -94,6 +94,76 @@ vz.wui.init = function() {
 	});
 };
 
+// show available properties for selected type
+vz.wui.dialogs.addProperties = function(container, proplist, className, entity) {
+	proplist.each(function(index, def) {
+		vz.capabilities.definitions.properties.each(function(propindex, propdef) {
+			if (def == propdef.name) {
+				var cntrl = null;
+				var row = $('<tr>')
+					.addClass("property")
+					.append(
+						$('<td>').text(propdef.translation[vz.options.language])
+					);
+
+				switch (propdef.type) {
+					case 'float':
+					case 'integer':
+					case 'string':
+						cntrl = $('<input size="36">').attr("type", "text");
+						break;
+
+					case 'text':
+						cntrl = $('<textarea>');
+						break;
+
+					case 'boolean':
+						cntrl = $('<input>').attr("type", "checkbox");
+						break;
+
+					case 'multiple':
+						cntrl = $('<select>').attr("Size", "1");
+						propdef.options.each(function(optindex, optdef) {
+							cntrl.append(
+								$('<option>').html(optdef).val(optdef)
+							);
+						});
+						break;
+				}
+
+				// editing?
+				if (entity && cntrl != null) {
+					// set current value
+					var val = (entity && typeof entity[def] != 'undefined') ? entity[def] : null;
+					switch (propdef.type) {
+						case 'float':
+						case 'integer':
+						case 'string':
+						case 'text':
+							cntrl.val(val);
+							break;
+
+						case 'boolean':
+							cntrl.attr('checked', val);
+							break;
+
+						case 'multiple':
+							cntrl.find('option[value="' + val + '"]').attr('selected', 'selected');
+							break;
+					}
+				}
+
+				if (cntrl != null) {
+					row.addClass(className);
+					cntrl.attr("name", propdef.name);
+					row.append($('<td>').append(cntrl));
+					container.append(row);
+				}
+			}
+		});
+	});
+}
+
 /**
  * Initialize dialogs
  */
@@ -101,7 +171,7 @@ vz.wui.dialogs.init = function() {
 	// initialize dialogs
 	$('#entity-add.dialog').dialog({
 		title: unescape('Kanal hinzuf%FCgen'),
-		width: 530,
+		width: 650,
 		resizable: false
 	});
 	$('#entity-add.dialog > div').tabs({
@@ -170,7 +240,7 @@ vz.wui.dialogs.init = function() {
 		try {
 			var entity = new Entity({
 				uuid: $('#entity-subscribe-uuid').val(),
-				cookie: Boolean($('#entity-subscribe-cookie').attr('checked'))
+				cookie: Boolean($('#entity-subscribe-cookie').prop('checked'))
 			});
 
 			if (middleware = $('#entity-subscribe-middleware').val()) {
@@ -196,7 +266,7 @@ vz.wui.dialogs.init = function() {
 		var entity = $('#entity-public-entity option:selected').data('entity');
 
 		try {
-			entity.cookie = Boolean($('#entity-public-cookie').attr('checked'));
+			entity.cookie = Boolean($('#entity-public-cookie').prop('checked'));
 			entity.middleware = $('#entity-public-middleware option:selected').val();
 
 			vz.entities.push(entity);
@@ -223,60 +293,13 @@ vz.wui.dialogs.init = function() {
 		});
 	}
 
-	// show available properties for selected type
-	function addProperties(proplist, className) {
-		proplist.each(function(index, def) {
-			vz.capabilities.definitions.properties.each(function(propindex, propdef) {
-				if (def == propdef.name) {
-					var cntrl = null;
-					var row = $('<tr>')
-						.addClass("property")
-						.append(
-							$('<td>').text(propdef.translation[vz.options.language] + ':')
-						);
-
-					switch (propdef.type) {
-						case 'float':
-						case 'integer':
-						case 'string':
-							cntrl = $('<input>').attr("type", "text");
-							break;
-
-						case 'text':
-							cntrl = $('<textarea>');
-							break;
-
-						case 'boolean':
-							cntrl = $('<input>').attr("type", "checkbox");
-							break;
-
-						case 'multiple':
-							cntrl = $('<select>').attr("Size", "1");
-							propdef.options.each(function(optindex, optdef) {
-								cntrl.append(
-									$('<option>').html(optdef)
-								);
-							});
-							break;
-					}
-
-					if (cntrl != null) {
-						row.addClass(className);
-						cntrl.attr("name", propdef.name);
-						row.append($('<td>').append(cntrl));
-						$('#entity-create form table').append(row);
-					}
-				}
-			});
-		});
-	}
-
 	$('#entity-create select').change(function() {
 		$('#entity-create form table .required').remove();
 		$('#entity-create form table .optional').remove();
 
-		addProperties(vz.capabilities.definitions.entities[$(this)[0].selectedIndex].required, "required");
-		addProperties(vz.capabilities.definitions.entities[$(this)[0].selectedIndex].optional, "optional");
+		var container = $('#entity-create form table');
+		vz.wui.dialogs.addProperties(container, vz.capabilities.definitions.entities[$(this)[0].selectedIndex].required, "required");
+		vz.wui.dialogs.addProperties(container, vz.capabilities.definitions.entities[$(this)[0].selectedIndex].optional, "optional");
 	});
 	$('#entity-create select').change();
 
@@ -299,7 +322,7 @@ vz.wui.dialogs.init = function() {
 				var entity = new Entity(json.entity);
 
 				try {
-					entity.cookie = Boolean($('#entity-create-cookie').attr('checked'));
+					entity.cookie = Boolean($('#entity-create-cookie').prop('checked'));
 					entity.middleware = $('#entity-create-middleware').val();
 
 					vz.entities.push(entity);
