@@ -153,6 +153,40 @@ vz.wui.dialogs.addProperties = function(container, proplist, className, entity) 
 					}
 				}
 
+				switch (propdef.name) {
+					case 'fillstyle':
+						cntrl = $('<div id="slider"></div>').slider({
+							value: (entity) ? entity[def] : 0,
+							min: propdef.min,
+							max: propdef.max,
+							step: (propdef.max - propdef.min) / 5,
+							slide: function(event, ui) {
+								$('.simpleColorChooser').hide();
+								$('#slider input').val(ui.value);
+							}
+						})
+						.append($('<input>')
+							.attr('type', 'hidden').attr("name", propdef.name)
+							.val((entity) ? entity[def] : 0)
+						);
+						break;
+
+					case 'color':
+						cntrl = $('<input>')
+							.attr('type', 'hidden').attr("name", propdef.name)
+							.val((entity) ? entity[def] : 'aqua');
+						$.cachedScript('javascripts/jquery/jquery.simple-color.min.js').done(function() {
+							// cntrl.attr('id', 'colorValue');
+							cntrl.simpleColor({
+								cellWidth: 16,
+								cellHeight: 16,
+								chooserCSS: { "border-color": "#a7a7a7", "z-index": 20 }, // above slider
+								displayCSS: { "border-color": "#a7a7a7" } // similar to style.css
+							});
+						});
+						break;
+				}
+
 				if (cntrl != null) {
 					row.addClass(className);
 					cntrl.attr("name", propdef.name);
@@ -642,7 +676,8 @@ vz.wui.drawPlot = function () {
 				lines: {
 					show: (entity.style == 'lines' || entity.style == 'steps'),
 					steps: (entity.style == 'steps'),
-					lineWidth: (index == vz.wui.selectedChannel ? vz.options.lineWidthSelected : vz.options.lineWidthDefault)
+					lineWidth: (index == vz.wui.selectedChannel ? vz.options.lineWidthSelected : vz.options.lineWidthDefault),
+					fill: (typeof entity.fillstyle != 'undefined') ? entity.fillstyle : false
 				},
 				points: {
 					show: (entity.style == 'points')
