@@ -197,7 +197,7 @@ Entity.prototype.showDetails = function() {
 						vz.wui.dialogs.addProperties(container, entities.required, "required", entity);
 						vz.wui.dialogs.addProperties(container, entities.optional, "optional", entity);
 						return true;
-			}
+					}
 				});
 
 				$('#entity-edit').dialog({
@@ -212,8 +212,8 @@ Entity.prototype.showDetails = function() {
 							$(this).find('form').serializeArray().each(function(index, value) {
 								if (value.value != '' || entity[value.name]) {
 									properties[value.name] = value.value;
-		}
-	});
+								}
+							});
 
 							vz.load({
 								controller: 'entity',
@@ -294,6 +294,17 @@ Entity.prototype.getDOMDetails = function(edit) {
 				var title = 'Cookie';
 				value = '<img src="images/' + ((this.cookie) ? 'tick' : 'cross') + '.png" alt="' + ((value) ? 'ja' : 'nein') + '" />';
 				break;
+
+			case 'active':
+				var value = '<img src="images/' + ((this.active) ? 'tick' : 'cross') + '.png" alt="' + ((this.active) ? 'ja' : 'nein') + '" />';
+				break;
+			case 'style':
+				switch (this.style) {
+					case 'lines': var value = 'Linien'; break;
+					case 'steps': var value = 'Stufen'; break;
+					case 'points': var value = 'Punkte'; break;
+				}
+				break;
 		}
 
 		data.append($('<tr>')
@@ -323,7 +334,12 @@ Entity.prototype.getDOMDetails = function(edit) {
 
 				switch (property) {
 					case 'cost':
-						value = Number(value * 1000 * 100).toFixed(2) + ' ct/k' + this.definition.unit + 'h'; // ct per kWh
+						if (this.definition.unit == 'W') {
+							value = Number(value * 1000 * 100).toFixed(2) + ' ct/k' + vz.wui.formatConsumptionUnit(this.definition.unit); // ct per kWh
+						}
+						else {
+							value = Number(value * 100).toFixed(2) + ' ct/' + vz.wui.formatConsumptionUnit(this.definition.unit); // ct per m3 etc
+						}
 						break;
 
 					case 'color':
@@ -480,10 +496,12 @@ Entity.prototype.updateDOMRow = function() {
 			$('.last', row)
 			.text(vz.wui.formatNumber(this.data.tuples.last()[1], true) + this.definition.unit);
 
-		if (this.data.consumption)
+		if (this.data.consumption) {
+			var unit = vz.wui.formatConsumptionUnit(this.definition.unit);
 			$('.consumption', row)
-			.text(vz.wui.formatNumber(this.data.consumption, true) + this.definition.unit + 'h')
-			.attr('title', vz.wui.formatNumber(this.data.consumption * (year/delta), true) + this.definition.unit + 'h' + '/Jahr');
+				.text(vz.wui.formatNumber(this.data.consumption, true) + unit)
+				.attr('title', vz.wui.formatNumber(this.data.consumption * (year/delta), true) + unit + '/Jahr');
+		}
 
 		if (this.cost) {
 			$('.cost', row)
