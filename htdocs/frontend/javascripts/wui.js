@@ -592,7 +592,11 @@ vz.wui.formatNumber = function(number, prefix) {
 		siIndex++;
 	}
 
-	number = Math.round(number * Math.pow(10, vz.options.precision)) / Math.pow(10, vz.options.precision); // rounding
+    // avoid infinities/NaN
+	if (number > 0) {
+		var precision = Math.max(0, vz.options.precision - Math.floor(Math.log(number)/Math.LN10));
+		number = Math.round(number * Math.pow(10, precision)) / Math.pow(10, precision); // rounding
+	}
 
 	if (prefix) {
 		number += (siIndex > 0) ? ' ' + siPrefixes[siIndex-1] : ' ';
