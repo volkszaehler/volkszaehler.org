@@ -165,6 +165,12 @@ class JSON extends View {
 		if ($version = Util\Debug::getPhpVersion()) $jsonDebug['php-version'] = $version;
 
 		$jsonDebug['messages'] = $debug->getMessages();
+
+		// SQL statements
+		$this->getSQLTimes($debug->getQueries());
+		$jsonDebug['sqlTotalTime'] = $this->sqlTotalTime;
+		$jsonDebug['sqlWorstTime'] = $this->sqlWorstTime;
+
 		$jsonDebug['queries'] = array_values($debug->getQueries());
 
 		$this->json['debug'] = $jsonDebug;
