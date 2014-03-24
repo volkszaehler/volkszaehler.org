@@ -157,7 +157,7 @@ abstract class View {
 
 	/**
 	 * format timestamp according to request
-     */
+	 */
 	public function formatTimestamp($ts) {
 		switch ($this->request->getParameter('tsfmt')) {
 			case 'sql':
