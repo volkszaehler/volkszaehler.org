@@ -447,7 +447,7 @@ Entity.prototype.activate = function(state, parent, recursive) {
 	this.active = state;
 	var queue = new Array;
 
-	$('#entity-' + this.uuid + ((parent) ? '.child-of-entity-' + parent.uuid : '') + ' input[type=checkbox]').attr('checked', state);
+	$('#entity-' + this.uuid + ((parent) ? '.child-of-entity-' + parent.uuid : '') + ' input[type=checkbox]').prop('checked', state);
 
 	if (this.active) {
 		queue.push(this.loadData()); // reload data
