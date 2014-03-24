@@ -137,7 +137,7 @@ select.icons option {
 	padding: 10px;
 }
 
-.right, .ops {
+.ops, .min, .max, .average, .last, .consumption, .cost {
 	text-align: right;
 }
 
