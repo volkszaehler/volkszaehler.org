@@ -626,7 +626,11 @@ vz.wui.formatNumber = function(number, prefix) {
 		siIndex++;
 	}
 
-	number = Math.round(number * Math.pow(10, vz.options.precision)) / Math.pow(10, vz.options.precision); // rounding
+    // avoid infinities/NaN
+	if (number > 0) {
+		var precision = Math.max(0, vz.options.precision - Math.floor(Math.log(number)/Math.LN10));
+		number = Math.round(number * Math.pow(10, precision)) / Math.pow(10, precision); // rounding
+	}
 
 	if (prefix) {
 		number += (siIndex > 0) ? ' ' + siPrefixes[siIndex-1] : ' ';
@@ -634,6 +638,20 @@ vz.wui.formatNumber = function(number, prefix) {
 
 	return number;
 };
+
+/**
+ * Convert units into hourly consumption unit
+ */
+vz.wui.formatConsumptionUnit = function(unit) {
+	var suffix = '/h';
+	if (unit.indexOf(suffix, unit.length - suffix.length) !== -1) {
+		unit = unit.substring(0, unit.length - suffix.length);
+	}
+	else {
+		unit += 'h';
+	}
+	return unit;
+}
 
 vz.wui.updateHeadline = function() {
 	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;

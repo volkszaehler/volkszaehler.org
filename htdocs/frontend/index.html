@@ -13,13 +13,19 @@
 	<meta name="apple-mobile-web-app-capable" content="yes" />
 	<meta name="apple-mobile-web-app-status-bar-style" content="black" />
 
+	<!-- CSS before JS -->
+	<link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.10.1/themes/base/minified/jquery-ui.min.css" />
+	<link rel="stylesheet" type="text/css" href="stylesheets/jquery-treeTable.css" />
+	<link rel="stylesheet" type="text/css" href="stylesheets/jquery-ui-custom.css" />
+	<link rel="stylesheet" type="text/css" href="stylesheets/style.css" />
+
 	<!-- jQuery -->
-	<script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
-	<script type="text/javascript" src="http://code.jquery.com/ui/1.10.1/jquery-ui.min.js"></script>
+	<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+	<script type="text/javascript" src="http://code.jquery.com/ui/1.10.4/jquery-ui.min.js"></script>
 	<script type="text/javascript" src="javascripts/jquery/jquery.treeTable.js"></script>
 	<script type="text/javascript" src="javascripts/jquery/jquery-extensions.js"></script>
 
-	<!--[if IE]><script language="javascript" type="text/javascript" src="javascripts/flot/excanvas.min.js"></script><![endif]-->
+	<!--[if lte IE 8]><script language="javascript" type="text/javascript" src="javascripts/flot/excanvas.min.js"></script><![endif]-->
 	<script type="text/javascript" src="javascripts/flot/jquery.flot.js"></script>
 	<script type="text/javascript" src="javascripts/flot/jquery.flot.crosshair.js"></script>
 	<script type="text/javascript" src="javascripts/flot/jquery.flot.selection.js"></script>
@@ -36,11 +42,6 @@
 			document.title = "Volkszaehler";
 		}
 	</script>
-
-	<link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.10.1/themes/base/minified/jquery-ui.min.css" />
-	<link rel="stylesheet" type="text/css" href="stylesheets/jquery-treeTable.css" />
-	<link rel="stylesheet" type="text/css" href="stylesheets/jquery-ui-custom.css" />
-	<link rel="stylesheet" type="text/css" href="stylesheets/style.css" />
 </head>
 <body>
 <div id="header"></div>
@@ -88,13 +89,13 @@
 					<th></th>
 					<th>Titel</th>
 					<th>Typ</th>
-					<th>Min.</th>
-					<th>Max.</th>
-					<th>&empty;</th>
-					<th>aktuell</th>
-					<th>Verbrauch</th>
-					<th>Kosten</th>
-					<th>Aktion</th>
+					<th class="right">Min.</th>
+					<th class="right">Max.</th>
+					<th class="right">&empty;</th>
+					<th class="right">aktuell</th>
+					<th class="right">Verbrauch</th>
+					<th class="right">Kosten</th>
+					<th class="right">Aktion</th>
 				</tr>
 			</thead>
 			<tbody></tbody>
