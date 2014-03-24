@@ -361,26 +361,8 @@
 	},
 	{
 		"name"			: "color",
-		"type"			: "multiple",
-		"options" : [
-			"aqua",
-			"black",
-			"blue",
-			"fuchsia",
-			"gray",
-			"grey",
-			"green",
-			"lime",
-			"maroon",
-			"navy",
-			"olive",
-			"purple",
-			"red",
-			"silver",
-			"teal",
-			"white",
-			"yellow"
-		],
+		"type"			: "string",
+		"pattern"		: "#^aqua|black|blue|fuchsia|gray|grey|green|lime|maroon|navy|olive|purple|red|silver|teal|white|yellow|[0-9a-f]{6}|[0-9a-f]{3}$#i",
 		"translation"		: {
 			"de" : "Farbe",
 			"en" : "color"
@@ -397,6 +379,16 @@
 		"translation"		: {
 			"de" : "Style",
 			"en" : "Plotting style"
+		}
+	},
+	{
+		"name"			: "fillstyle",
+		"type"			: "float",
+		"min"			: 0,
+		"max"			: 1,
+		"translation"		: {
+			"de" : "Füllgrad",
+			"en" : "Opacity"
 		}
 	},
 	{

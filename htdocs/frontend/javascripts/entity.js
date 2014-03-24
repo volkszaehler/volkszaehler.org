@@ -407,12 +407,12 @@ Entity.prototype.getDOMRow = function(parent) {
 			)
 		)
 		.append($('<td>').text(this.definition.translation[vz.options.language])) // channel type
-		.append($('<td>').addClass('right min'))		// min
-		.append($('<td>').addClass('right max'))		// max
-		.append($('<td>').addClass('right average'))		// avg
-		.append($('<td>').addClass('right last'))		// last value
-		.append($('<td>').addClass('right consumption'))	// consumption
-		.append($('<td>').addClass('right cost'))		// costs
+		.append($('<td>').addClass('min'))		// min
+		.append($('<td>').addClass('max'))		// max
+		.append($('<td>').addClass('average'))		// avg
+		.append($('<td>').addClass('last'))		// last value
+		.append($('<td>').addClass('consumption'))	// consumption
+		.append($('<td>').addClass('cost'))		// costs
 		.append($('<td>')				// operations
 			.addClass('ops')
 			.append($('<input>')
