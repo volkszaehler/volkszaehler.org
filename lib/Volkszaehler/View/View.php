@@ -55,6 +55,13 @@ abstract class View {
 	protected $response;
 
 	/**
+	 * SQL queries analysis result (debug mode)
+	 * @var float
+	 */
+	protected $sqlTotalTime;
+	protected $sqlWorstTime;
+
+	/**
 	 * Constructor
 	 *
 	 * @param HTTP\Request $request
@@ -137,7 +144,7 @@ abstract class View {
 				throw new \Exception('Unknown caching mode: \'' . $mode . '\'');
 		}
 	}
-	
+
 	/**
 	 * Round decimal numbers to given precision
 	 *
@@ -150,7 +157,7 @@ abstract class View {
 
 	/**
 	 * format timestamp according to request
-         */
+	 */
 	public function formatTimestamp($ts) {
 		switch ($this->request->getParameter('tsfmt')) {
 			case 'sql':
@@ -162,6 +169,19 @@ abstract class View {
 				return 0 + $ts;
 			default:
 				throw new \Exception('Unknown timefmt');
+		}
+	}
+
+	/**
+	 * Analyze SQL statements
+	 * @param  array $queries sql queries from logger
+	 */
+	protected function getSQLTimes($queries) {
+		foreach ($queries as $query) {
+			$this->sqlTotalTime += $query['executionMS'];
+			if ($query['executionMS'] > $this->sqlWorstTime) {
+				$this->sqlWorstTime = $query['executionMS'];
+			}
 		}
 	}
 
