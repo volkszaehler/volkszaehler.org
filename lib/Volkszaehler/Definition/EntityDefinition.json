@@ -120,8 +120,8 @@
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
-			"de" : "Elektr. Energie (S0)",
-			"en" : "Electr. Energy (s0)"
+			"de" : "El. Energie (S0-Impulse)",
+			"en" : "El. Energy (s0-pulses)"
 		}
 	},
 	{
@@ -134,8 +134,8 @@
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
-			"de" : "Elektr. Energie (aktuell)",
-			"en" : "Electr. Energy (actual)"
+			"de" : "El. Energie (Leistungswerte)",
+			"en" : "El. Energy (power readings)"
 		}
 	},
 	{
@@ -149,8 +149,8 @@
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
-			"de" : "Elektr. Energie (Stand)",
-			"en" : "Electr. Energy (absolute)"
+			"de" : "El. Energie (Zaehlerstaende)",
+			"en" : "El. Energy (absolute meter readings)"
 		}
 	},		
 	{
@@ -163,8 +163,8 @@
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
-			"de" : "Gas (S0)",
-			"en" : "Gas (S0)",
+			"de" : "Gas (S0-Impulse)",
+			"en" : "Gas (S0-pulses)",
 			"fr" : "Gaz (S0)"
 		}
 	},
@@ -178,8 +178,8 @@
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
-			"de" : "Gas (Stand)",
-			"en" : "Gas (absolute)"
+			"de" : "Gas (Zaehlerstaende)",
+			"en" : "Gas (meter readings)"
 		}
 	},
 	{
