@@ -120,8 +120,8 @@
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
-			"de" : "Elektrische Energie (S0-Impulse)",
-			"en" : "Electric Energy (s0-pulses)"
+			"de" : "El. Energie (S0-Impulse)",
+			"en" : "El. Energy (s0-pulses)"
 		}
 	},
 	{
@@ -134,8 +134,8 @@
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
-			"de" : "Elektrische Energie (Leistungswerte)",
-			"en" : "Electric Energy (power readings)"
+			"de" : "El. Energie (Leistungswerte)",
+			"en" : "El. Energy (power readings)"
 		}
 	},
 	{
@@ -149,8 +149,8 @@
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
-			"de" : "Elektrische Energie (Zaehlerstaende)",
-			"en" : "Electric Energy (absolute meter readings)"
+			"de" : "El. Energie (Zaehlerstaende)",
+			"en" : "El. Energy (absolute meter readings)"
 		}
 	},		
 	{
