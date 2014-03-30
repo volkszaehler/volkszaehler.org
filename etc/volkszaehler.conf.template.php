@@ -64,6 +64,14 @@ $config['db']['password']			= 'demo';
 $config['db']['dbname']				= 'volkszaehler';
 
 /**
+ * Connection encoding
+ *
+ * The Volkszaehler middleware doesn't modify client encoding but the frontend uses utf-8.
+ * Setting the db connection encoding to utf-8 ensures that the DB is able to ensure charset conversion if necessary.
+ */
+$config['db']['charset']			= 'UTF8';
+
+/**
  * Administration credentials
  *
  * For administration tasks (used by doctrine cli and the setup script)
