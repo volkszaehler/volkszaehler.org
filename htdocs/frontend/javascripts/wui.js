@@ -678,6 +678,7 @@ vz.wui.drawPlot = function () {
 		if (entity.active && entity.definition && entity.definition.model == 'Volkszaehler\\Model\\Channel' &&
 		    entity.data && entity.data.tuples && entity.data.tuples.length > 0) {
 			var tuples = entity.data.tuples;
+
 			// mangle data for "steps" curves by shifting one ts left ("step-before")
 			if (tuples && tuples.length > 0 && entity.style == "steps") {
 				tuples.unshift([entity.data.from, 1, 1]); // add new first ts
@@ -685,6 +686,14 @@ vz.wui.drawPlot = function () {
 					tuples[i][1] = tuples[i+1][1];
 				}
 			}
+
+			// remove number of datapoints from each tuple to avoid flot fill error
+			if (tuples && tuples.length > 0 && entity.fillstyle) {
+				for (var i=0; i<tuples.length; i++) {
+					delete tuples[i][2];
+				}
+			}
+
 			var serie = {
 				data: tuples,
 				color: entity.color,
