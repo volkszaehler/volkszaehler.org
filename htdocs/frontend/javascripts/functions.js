@@ -261,3 +261,22 @@ jQuery.cachedScript = function(url, options) {
 	// Return the jqXHR object so we can chain callbacks
 	return jQuery.ajax( options );
 };
+
+/**
+ * Serialize form including unchecked checkboxes
+ * http://stackoverflow.com/questions/3029870/jquery-serialize-does-not-register-checkboxes
+ *
+ * @todo make off value and default selection configurable
+ */
+(function($) {
+	$.fn.serializeArrayWithCheckBoxes = function() {
+		// serialize form the non-checkbox fields
+		return $(this).serializeArray()
+		// add values for unchecked checkbox fields
+		.concat(
+			$(this).find("input[type=checkbox]:not(:checked)").map(function() {
+				return { "name": this.name, "value": "0" }
+			}).get()
+		);
+	}
+})(jQuery);
