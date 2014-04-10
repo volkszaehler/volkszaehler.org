@@ -118,7 +118,7 @@ vz.wui.dialogs.addProperties = function(container, proplist, className, entity) 
 						break;
 
 					case 'boolean':
-						cntrl = $('<input>').attr("type", "checkbox");
+						cntrl = $('<input>').attr("type", "checkbox").val("1"); // boolean value
 						break;
 
 					case 'multiple':
@@ -341,6 +341,7 @@ vz.wui.dialogs.init = function() {
 		var def = $('select[name=type] option:selected', this).data('definition');
 		var properties = {};
 
+		// serializeArray instead of serializeArrayWithCheckBoxes is sufficient as non-active checkboxes don't need to create properties
 		$(this).serializeArray().each(function(index, value) {
 			if (value.value != '') {
 				properties[value.name] = value.value;

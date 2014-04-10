@@ -103,7 +103,12 @@ class Property {
 	 * @PreFlush
 	 */
 	public function uncast() {
-		settype($this->value, 'string');
+		if ($this->value === false) { // force boolean false to 0 instead of ''
+			$this->value = '0';
+		}
+		else {
+			settype($this->value, 'string');
+		}
 	}
 
 	/**
