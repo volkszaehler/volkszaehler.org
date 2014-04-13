@@ -64,6 +64,13 @@ $config['db']['password']			= 'demo';
 $config['db']['dbname']				= 'volkszaehler';
 
 /**
+ * @var database connection encoding - should not be changed
+ *
+ * See http://stackoverflow.com/questions/13399912/symfony2-charset-for-queries-parameters
+ */
+$config['db']['charset']			= 'UTF8';
+
+/**
  * Administration credentials
  *
  * For administration tasks (used by doctrine cli and the setup script)
