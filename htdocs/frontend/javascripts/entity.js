@@ -3,6 +3,7 @@
  *
  * @author Justin Otherguy <justin@justinotherguy.org>
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @author Andreas Götz <cpuidle@gmx.de>
  * @copyright Copyright (c) 2011, The volkszaehler.org project
  * @package default
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
@@ -111,6 +112,22 @@ Entity.prototype.loadDetails = function() {
 };
 
 /**
+ * Update entity data from middleware result and set axes accordingly
+ */
+Entity.prototype.updateData = function(data) {
+	this.data = data;
+
+	if (this.data.tuples && this.data.tuples.length > 0) {
+		// allow negative values, e.g. for temperature sensors
+		if (this.data.min && this.data.min[1] < vz.options.plot.yaxes[this.yaxis-1].min) {
+			vz.options.plot.yaxes[this.yaxis-1].min = null;
+		}
+	}
+
+	this.updateDOMRow();
+}
+
+/**
  * Load data for current view from middleware
  * @return jQuery dereferred object
  */
@@ -123,19 +140,11 @@ Entity.prototype.loadData = function() {
 		data: {
 			from: Math.floor(vz.options.plot.xaxis.min),
 			to: Math.ceil(vz.options.plot.xaxis.max),
-			tuples: vz.options.tuples
+			tuples: vz.options.tuples,
+			group: vz.entities.speedupFactor()
 		},
 		success: function(json) {
-			this.data = json.data;
-
-			if (this.data.tuples && this.data.tuples.length > 0) {
-				// allow negative values, e.g. for temperature sensors
-				if (this.data.min && this.data.min[1] < vz.options.plot.yaxes[this.yaxis-1].min) {
-					vz.options.plot.yaxes[this.yaxis-1].min = null;
-				}
-			}
-
-			this.updateDOMRow();
+			this.updateData(json.data);
 		}
 	});
 };

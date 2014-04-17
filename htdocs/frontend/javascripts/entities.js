@@ -1,25 +1,26 @@
 /**
- * 
- * 
+ * Entity collection handling, parsing & validation
+ *
  * @author Florian Ziegler <fz@f10-home.de>
  * @author Justin Otherguy <justin@justinotherguy.org>
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @author Andreas Götz <cpuidle@gmx.de>
  * @copyright Copyright (c) 2011, The volkszaehler.org project
  * @package default
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
 /*
  * This file is part of volkzaehler.org
- * 
+ *
  * volkzaehler.org is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or any later version.
- * 
+ *
  * volkzaehler.org is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -30,13 +31,13 @@
 vz.entities.saveCookie = function() {
 	var expires = new Date(2038, 0, 1); // some days before y2k38 problem
 	var arr = new Array;
-	
+
 	this.each(function(entity) {
 		if (entity.cookie === true) {
 			arr.push(entity.uuid + '@' + entity.middleware);
 		}
 	}, false); // non-recursive, i.e. only save root entities
-	
+
 	$.setCookie('vz_entities', arr.join('|'), {expires: expires});
 };
 
@@ -85,19 +86,22 @@ vz.entities.loadData = function() {
 	return $.when.apply($, queue);
 };
 
-vz.entities.loadMultipleData = function(middleware, uuids) {
-	var group;
-	// speedup middleware queries, requires options[aggregate] enabled
-	var delta = (vz.options.plot.xaxis.max - vz.options.plot.xaxis.min) / 3.6e6;
+/**
+ * Speedup middleware queries, requires options[aggregate] enabled
+ * @return {string} group option or undefined
+ */
+vz.entities.speedupFactor = function() {
+	var group, delta = (vz.options.plot.xaxis.max - vz.options.plot.xaxis.min) / 3.6e6;
 	if (delta > 24 * vz.options.tuples/vz.options.speedupFactor) {
 		group = 'day';
-		if (delta > 24 * vz.options.tuples) tuples = vz.options.tuples;
 	}
 	else if (delta > vz.options.tuples/vz.options.speedupFactor) {
 		group = 'hour';
-		if (delta > vz.options.tuples) tuples = vz.options.tuples;
 	}
+	return group;
+};
 
+vz.entities.loadMultipleData = function(middleware, uuids) {
 	return vz.load({
 		controller: 'data',
 		url: middleware,
@@ -107,26 +111,19 @@ vz.entities.loadMultipleData = function(middleware, uuids) {
 			to: Math.ceil(vz.options.plot.xaxis.max),
 			tuples: vz.options.tuples,
 			uuid: uuids,
-			group: group
+			group: this.speedupFactor()
 		},
 		success: function(json) {
-			var data = json.data;
-			for (var i=0; i<data.length; i++) {
-				if (!(data[i].tuples && data[i].tuples.length)) continue;
-
-				this.each(function(entity) {
-					// @todo assuming unique UUIDs across middlewares
-					if (entity.uuid !== data[i].uuid) return;
-
-					entity.data = data[i];
-					// allow negative values, e.g. for temperature sensors
-					if (data[i].min && data[i].min[1] < vz.options.plot.yaxes[entity.yaxis-1].min) {
-						vz.options.plot.yaxes[entity.yaxis-1].min = null;
+			// match entities against data array
+			// @todo assuming unique UUIDs across middlewares
+			this.each(function(entity) {
+				json.data.some(function(data) {
+					if (data.uuid == entity.uuid) { // entity matched
+						entity.updateData(data);
+						return true;
 					}
-
-					entity.updateDOMRow();
-				}, true);
-			}
+				});
+			}, true);
 		}
 	});
 }
@@ -137,7 +134,7 @@ vz.entities.loadMultipleData = function(middleware, uuids) {
 vz.entities.each = function(cb, recursive) {
 	for (var i = 0; i < this.length; i++) {
 		cb(this[i]);
-		
+
 		if (recursive && this[i] !== undefined) {
 			this[i].each(cb, true);
 		}
@@ -153,7 +150,7 @@ vz.entities.showTable = function() {
 	$('#entity-list tbody').empty();
 	vz.entities.sort(Entity.compare);
 
-	// add entities to table (recurse into aggregators) 
+	// add entities to table (recurse into aggregators)
 	vz.entities.each(function(entity, parent) {
 		if (entity.definition) // skip bad entities, e.g. without data
 			$('#entity-list tbody').append(entity.getDOMRow(parent));
@@ -161,7 +158,7 @@ vz.entities.showTable = function() {
 
 	/*
 	 * Initialize treeTable
-	 * 
+	 *
 	 * http://ludo.cubicphuse.nl/jquery-plugins/treeTable/doc/index.html
 	 * https://github.com/ludo/jquery-plugins/tree/master/treeTable
 	 */
@@ -191,7 +188,7 @@ vz.entities.showTable = function() {
 					return; // drop into same group -> do nothing
 				if (to && to.definition.model == 'Volkszaehler\\Model\\Aggregator' && $.inArray(child, to.children) >= 0)
 					return;
-				
+
 				$('#entity-move').dialog({ // confirm prompt
 					resizable: false,
 					modal: true,
@@ -209,7 +206,7 @@ vz.entities.showTable = function() {
 									child.cookie = true;
 									vz.entities.saveCookie();
 								}
-					
+
 								if (from) { // remove from an aggregator
 									queue.push(from.removeChild(child));
 								} else { // remove from root
@@ -260,7 +257,7 @@ vz.entities.showTable = function() {
 	$('#entity-list table tbody tr span').mousedown(function() {
 		$($(this).parents('tr')[0]).trigger('mousedown');
 	});
-	
+
 	$('#entity-list table').treeTable({
 		treeColumn: 2,
 		clickableNodeNames: true,
