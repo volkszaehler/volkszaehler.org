@@ -1,5 +1,5 @@
 /**
- * Definition of entities 
+ * Definition of entities
  *
  * Format is specified in EntityDefinition model
  *
@@ -24,7 +24,7 @@
  * You should have received a copy of the GNU General Public License
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
  /**
   * By default the follwing properties are required/optional for all Entities!
   * (Take a look at EntityDefinition.php)
@@ -32,7 +32,7 @@
   * $defaultRequired = array('title');
   * $defaultOptional = array('description', 'public', 'color', 'active', 'style', 'details:', 'owner:', 'address:', 'link');
   */
-  
+
 [
 	{
 		"name"			: "group",
@@ -149,10 +149,10 @@
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
-			"de" : "El. Energie (Zaehlerstaende)",
+			"de" : "El. Energie (Zählerstände)",
 			"en" : "El. Energy (absolute meter readings)"
 		}
-	},		
+	},
 	{
 		"name"			: "gas",
 		"required"		: ["resolution"],
@@ -178,7 +178,7 @@
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
-			"de" : "Gas (Zaehlerstaende)",
+			"de" : "Gas (Zählerstände)",
 			"en" : "Gas (meter readings)"
 		}
 	},
