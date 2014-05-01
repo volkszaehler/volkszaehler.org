@@ -1,6 +1,6 @@
 /**
  * Frontend configuration
- * 
+ *
  * @author Florian Ziegler <fz@f10-home.de>
  * @author Justin Otherguy <justin@justinotherguy.org>
  * @author Steffen Vogel <info@steffenvogel.de>
@@ -10,16 +10,16 @@
  */
 /*
  * This file is part of volkzaehler.org
- * 
+ *
  * volkzaehler.org is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or any later version.
- * 
+ *
  * volkzaehler.org is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -38,7 +38,7 @@ vz.options = {
 		url: 'http://demo.volkszaehler.org/middleware.php'
 	}],
 	monthNames: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
-	dayNames: ['Son', 'Mon', 'Di', 'Mi', 'Do', 'Fr', 'Sam'],
+	dayNames: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
 	y2axis: ['temperature', 'flow', 'gas', 'gas meter', 'valve'],
 	lineWidthDefault: 2,
 	lineWidthSelected: 4,
@@ -54,12 +54,13 @@ vz.options.plot = {
 		}
 	},
  	legend: {
-		show: false, // will be enabled by the code
-		backgroundOpacity: 0.30,
+		show: true,
+		position: 'nw',
+		backgroundOpacity: 0.80,
 	},
 	xaxis: {
 		mode: 'time',
-		useLocalTime: true,
+		timezone: 'browser'
 	},
 	yaxes: [
 		{

@@ -57,13 +57,41 @@ vz.wui.init = function() {
 				window.location = vz.getPermalink();
 				break;
 			case 'png':
+				$.when(
+					$.cachedScript('javascripts/flot/canvas2image.js'),
+					$.cachedScript('javascripts/flot/base64.js'))
+				.done(function() {
+					// will prompt the user to save the image as PNG
+					$('#chart-export .export')
+						.html('')
+						.css({
+							"width": $('#flot').width() * 0.8,
+							"height": $('#flot').height() * 0.8})
+						.append(
+							$(Canvas2Image.saveAsPNG(vz.plot.getCanvas(), true))
+							.css({
+								"max-width":"100%",
+								"max-height":"100%"}));
+					$('#chart-export').dialog({
+						title: unescape('Export Snapshot'),
+						width: 'auto',
+						height: 'auto',
+						resizable: false,
+						buttons: {
+							Ok: function() {
+								$(this).dialog('close');
+							}
+						}
+					});
+				});
+				break;
 			case 'csv':
 			case 'xml':
 				window.location = vz.getLink($(this).val());
 				break;
-
 		}
-		$('#export option[value=default]').attr('selected', true);
+
+		$(this).val('default');
 	});
 
 	// bind plot actions
@@ -159,7 +187,7 @@ vz.wui.dialogs.addProperties = function(container, proplist, className, entity) 
 							value: (entity) ? entity[def] : 0,
 							min: propdef.min,
 							max: propdef.max,
-							step: (propdef.max - propdef.min) / 5,
+							step: (propdef.max - propdef.min) / 20,
 							slide: function(event, ui) {
 								$('.simpleColorChooser').hide();
 								$('#slider input').val(ui.value);
@@ -452,9 +480,9 @@ vz.wui.updateLegend = function() {
 
 	var pos = vz.wui.latestPosition;
 
-        var axes = vz.plot.getAxes();
-        if (pos.x < axes.xaxis.min || pos.x > axes.xaxis.max ||
-	    pos.y < axes.yaxis.min || pos.y > axes.yaxis.max)
+	var axes = vz.plot.getAxes();
+	if (pos.x < axes.xaxis.min || pos.x > axes.xaxis.max ||
+		pos.y < axes.yaxis.min || pos.y > axes.yaxis.max)
 		return;
 
 	var i, j, dataset = vz.plot.getData();
@@ -656,15 +684,15 @@ vz.wui.formatConsumptionUnit = function(unit) {
 
 vz.wui.updateHeadline = function() {
 	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
-	var format = '%B %d. %b %y';
+	var format = '%a %e. %b %Y';
 
-	if (delta < 3*24*3600*1000) format += ' %h:%M'; // under 3 days
+	if (delta < 3*24*3600*1000) format += ' %H:%M'; // under 3 days
 	if (delta < 5*60*1000) format += ':%S'; // under 5 minutes
 
 	var from = $.plot.formatDate(new Date(vz.options.plot.xaxis.min), format, vz.options.monthNames, vz.options.dayNames, true);
 	var to = $.plot.formatDate(new Date(vz.options.plot.xaxis.max), format, vz.options.monthNames, vz.options.dayNames, true);
 	$('#title').html(from + ' - ' + to);
-};
+}
 
 /**
  * Draws plot to container
@@ -731,30 +759,8 @@ vz.wui.drawPlot = function () {
 	var flot = $('#flot');
 	vz.plot = $.plot(flot, series, vz.options.plot);
 
-	if (!vz.options.plot.legend.show) {
-		// redraw grid with legend enabled (workaround for b0rken default layout)
-		var pos = 'position:absolute; left:40px; top:5px;';
-		var legend = $('<div id="legend" style="'+pos+'width:'+flot.width()+'"> </div>');
-		flot.append(legend);
-
-		vz.plot.getOptions().legend.show = true;
-		vz.plot.getOptions().legend.container = legend; // $('#legend');
-		vz.plot.setupGrid();
-
-		// opaque background - breaks layout, so it's disabled for now
-		/*
-		var div = legend.children();
-		div.css('position', 'absolute'); div.css('left', '40px'); div.css('top', '5px');
-		var bg = $('<div id="legendBg" style="'+pos+' width:' + div.width() + 'px; height:' + div.height() + 'px;"> </div>');
-		bg.css('opacity', vz.options.plot.legend.backgroundOpacity);
-		bg.css('background-color', 'white');
-		bg.prependTo(legend);
-		*/
-
-		vz.wui.legend = $('#legend .legendLabel');
-	} else {
-		vz.wui.legend = $('.legend .legendLabel')
-	}
+	// remember legend container for updating
+	vz.wui.legend = $('.legend .legendLabel');
 
 	// disable automatic refresh if we are in past
 	if (vz.options.refresh) {
