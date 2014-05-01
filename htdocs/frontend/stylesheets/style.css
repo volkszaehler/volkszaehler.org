@@ -22,11 +22,7 @@ tr.optional {
   color: grey;
 }
 
-tr.property td {
-	border-top: 1px solid #A7A7A7;
-}
-
-tr.entity td {
+tr.property td, tr.entity td {
 	border-top: 1px solid #A7A7A7;
 }
 
@@ -43,6 +39,10 @@ tr.entity td {
 #plot {
 	position: relative;
 	background-color: white;
+}
+
+.legend table {
+	width: auto;
 }
 
 #flot {
@@ -78,6 +78,7 @@ tr.entity td {
 
 #controls {
 	background-color: grey;
+	margin-right: 0px; /* override jquery ui */
 }
 
 #content div {
