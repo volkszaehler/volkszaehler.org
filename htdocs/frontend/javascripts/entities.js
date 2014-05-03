@@ -4,7 +4,7 @@
  * @author Florian Ziegler <fz@f10-home.de>
  * @author Justin Otherguy <justin@justinotherguy.org>
  * @author Steffen Vogel <info@steffenvogel.de>
- * @author Andreas Götz <cpuidle@gmx.de>
+ * @author Andreas GÃ¶tz <cpuidle@gmx.de>
  * @copyright Copyright (c) 2011, The volkszaehler.org project
  * @package default
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
@@ -66,22 +66,20 @@ vz.entities.loadData = function() {
 	$('#overlay').html('<img src="images/loading.gif" alt="loading..." /><p>loading...</p>');
 
 	// put each middleware into its own request
-	var hosts = {};
+	var middlewares = {};
 	this.each(function(entity) {
 		if (entity.active && entity.definition && entity.definition.model == 'Volkszaehler\\Model\\Channel') {
-			if (!hosts.hasOwnProperty(entity.middleware)) {
-				hosts[entity.middleware] = new Array();
+			if (middlewares[entity.middleware] == undefined) {
+				middlewares[entity.middleware] = new Array();
 			}
-			hosts[entity.middleware].push(entity.uuid);
+			middlewares[entity.middleware].push(entity.uuid);
 		}
 	}, true); // recursive!
 
 	var queue = new Array;
-	for (var host in hosts) {
-		if (hosts.hasOwnProperty(host)) {
-			queue.push(this.loadMultipleData(host, hosts[host]));
-		}
-	}
+	$.each(middlewares, function(middleware, uuids) {
+		queue.push(vz.entities.loadMultipleData(middleware, uuids));
+	});
 
 	return $.when.apply($, queue);
 };
