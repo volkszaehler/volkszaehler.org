@@ -4,6 +4,7 @@
  * @author Florian Ziegler <fz@f10-home.de>
  * @author Justin Otherguy <justin@justinotherguy.org>
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @author Andreas Götz <cpuidle@gmx.de>
  * @copyright Copyright (c) 2011, The volkszaehler.org project
  * @package default
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
@@ -306,7 +307,7 @@ vz.wui.dialogs.init = function() {
 			});
 
 			if (middleware = $('#entity-subscribe-middleware').val()) {
-				entity.middleware = middleware;
+				entity.setMiddleware(middleware);
 			}
 
 			entity.loadDetails().done(function() {
@@ -329,7 +330,7 @@ vz.wui.dialogs.init = function() {
 
 		try {
 			entity.cookie = Boolean($('#entity-public-cookie').prop('checked'));
-			entity.middleware = $('#entity-public-middleware option:selected').val();
+			entity.setMiddleware($('#entity-public-middleware option:selected').val());
 
 			vz.entities.push(entity);
 			vz.entities.saveCookie();
@@ -386,7 +387,7 @@ vz.wui.dialogs.init = function() {
 
 				try {
 					entity.cookie = Boolean($('#entity-create-cookie').prop('checked'));
-					entity.middleware = $('#entity-create-middleware').val();
+					entity.setMiddleware($('#entity-create-middleware').val());
 
 					vz.entities.push(entity);
 					vz.entities.saveCookie();

@@ -87,11 +87,9 @@ Entity.prototype.parseJSON = function(json) {
  */
 Entity.prototype.setMiddleware = function(middleware) {
 	this.middleware = middleware;
-	if (this.children) {
-		for (var i = 0; i < this.children.length; i++) {
-			this.children[i].middleware = this.middleware;
-		}
-	}
+	this.each(function(child, parent) {
+		child.middleware = middleware;
+	}, true); // recursive!
 }
 
 /**
