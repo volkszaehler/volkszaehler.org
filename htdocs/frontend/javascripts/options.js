@@ -43,6 +43,7 @@ vz.options = {
 	lineWidthDefault: 2,
 	lineWidthSelected: 4,
 	speedupFactor: 2,   // higher values give higher speedup but can produce chunky display
+	hiddenProperties: ['link', 'tolerance', 'local'] // hide less commonly used properties
 };
 
 vz.options.plot = {
