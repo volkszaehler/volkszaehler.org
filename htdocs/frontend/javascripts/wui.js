@@ -126,6 +126,13 @@ vz.wui.init = function() {
 // show available properties for selected type
 vz.wui.dialogs.addProperties = function(container, proplist, className, entity) {
 	proplist.each(function(index, def) {
+
+		// hide properties from blacklist
+		var val = (entity && typeof entity[def] !== undefined) ? entity[def] : null;
+		if (val == null && vz.options.hiddenProperties.indexOf(def) >= 0) {
+			return; // hide less commonly used properties
+		}
+
 		vz.capabilities.definitions.properties.each(function(propindex, propdef) {
 			if (def == propdef.name) {
 				var cntrl = null;
@@ -161,9 +168,8 @@ vz.wui.dialogs.addProperties = function(container, proplist, className, entity) 
 				}
 
 				// editing?
-				if (entity && cntrl != null) {
+				if (entity && cntrl !== null) {
 					// set current value
-					var val = (entity && typeof entity[def] != 'undefined') ? entity[def] : null;
 					switch (propdef.type) {
 						case 'float':
 						case 'integer':
@@ -222,6 +228,8 @@ vz.wui.dialogs.addProperties = function(container, proplist, className, entity) 
 					row.append($('<td>').append(cntrl));
 					container.append(row);
 				}
+
+				return false;
 			}
 		});
 	});
@@ -734,7 +742,7 @@ vz.wui.drawPlot = function () {
 					show: (entity.style == 'lines' || entity.style == 'steps'),
 					steps: (entity.style == 'steps'),
 					lineWidth: (index == vz.wui.selectedChannel ? vz.options.lineWidthSelected : vz.options.lineWidthDefault),
-					fill: (typeof entity.fillstyle != 'undefined') ? entity.fillstyle : false
+					fill: (typeof entity.fillstyle !== undefined) ? entity.fillstyle : false
 				},
 				points: {
 					show: (entity.style == 'points')
