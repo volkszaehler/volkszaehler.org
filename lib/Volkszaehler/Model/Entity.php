@@ -144,7 +144,7 @@ abstract class Entity {
 				return $property;
 			}
 		}
-		
+
 		return FALSE; // not found
 	}
 
@@ -191,14 +191,25 @@ abstract class Entity {
 		if (!$property) {
 			throw new \Exception('Entity has no property: \'' . $key . '\'');
 		}
-		
+
 		$this->properties->removeElement($property);
+	}
+
+
+	/**
+	 * HACK - Cast properties to internal state
+	 * see https://github.com/doctrine/doctrine2/pull/382
+	 */
+	public function castProperties() {
+		foreach ($this->properties as $property) {
+			$property->cast();
+		}
 	}
 
 	/*
 	 * Setter & getter
 	 */
-	 
+
 	public function getId() { return $this->id; }		// read only
 	public function getUuid() { return $this->uuid; }	// read only
 	public function getType() { return $this->type; }	// read only

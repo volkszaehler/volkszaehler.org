@@ -71,7 +71,7 @@ class EntityController extends Controller {
 	 */
 	public function delete($identifier) {
 		$entity = $this->get($identifier);
-		
+
 		if ($entity instanceof Model\Channel) {
 			$entity->clearData($this->em);
 		}
@@ -89,9 +89,12 @@ class EntityController extends Controller {
 			$this->view->request->getParameters('post'),
 			$this->view->request->getParameters('get')
 		);
-		
+
 		$this->setProperties($entity, $parameters);
 		$this->em->flush();
+
+		// HACK - see https://github.com/doctrine/doctrine2/pull/382
+		$entity->castProperties();
 
 		return $entity;
 	}
@@ -103,7 +106,7 @@ class EntityController extends Controller {
 		foreach ($parameters as $key => $value) {
 			if (in_array($key, array('operation', 'type', 'debug'))) {
 				continue; // skip generic parameters
-			}		
+			}
 			else if (!Definition\PropertyDefinition::exists($key)) {
 				throw new \Exception('Unknown property: \'' . $key . '\'');
 			}
@@ -115,7 +118,7 @@ class EntityController extends Controller {
 				$entity->setProperty($key, $value);
 			}
 		}
-		
+
 		$entity->checkProperties();
 	}
 
@@ -160,6 +163,6 @@ class EntityController extends Controller {
 		$q = $this->em->createQuery($dql);
 		return $q->execute($sqlParams);
 	}
-}	
+}
 
 ?>
