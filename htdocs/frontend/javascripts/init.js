@@ -32,8 +32,8 @@
  * we dont want to pollute the global namespace
  */
 var vz = {
-	entities: new Array,	// entity properties + data
-	middleware: new Array,	// array of all known middlewares
+	entities: [],	// entity properties + data
+	middleware: [],	// array of all known middlewares
 	wui: {			// web user interface
 		dialogs: { },
 		timeout: null
@@ -63,11 +63,11 @@ $(document).ready(function() {
 				vz.plot.draw();
 		}
 	});
-	
+
 	window.onerror = function(errorMsg, url, lineNumber) {
 		vz.wui.dialogs.error('Javascript Runtime Error', errorMsg);
 	};
-	
+
 	// initialize variables
 	vz.middleware.push({ // default middleware
 		url: vz.options.localMiddleware,
@@ -85,17 +85,17 @@ $(document).ready(function() {
 			/* capabilities: { } */
 		});
 	});
-	
+
 	// TODO make language/translation dependent (vz.options.language)
 	vz.options.plot.xaxis.monthNames = vz.options.monthNames;
 	vz.options.plot.xaxis.dayNames = vz.options.dayNames;
-	
+
 	// start loading cookies/url params
 	vz.entities.loadCookie(); // load uuids from cookie
 	vz.options.loadCookies(); // load options from cookie
-	
+
 	// set x axis limits _after_ loading options cookie
-	vz.options.plot.xaxis.max = new Date().getTime(); 
+	vz.options.plot.xaxis.max = new Date().getTime();
 	vz.options.plot.xaxis.min = vz.options.plot.xaxis.max - vz.options.interval;
 
 	// parse additional url params (new uuid etc e.g. for permalink) after loading defaults
@@ -104,31 +104,31 @@ $(document).ready(function() {
 	// initialize user interface
 	vz.wui.init();
 	vz.wui.initEvents();
-	
+
 	// chaining ajax request with jquery deferred object
 	vz.capabilities.load().done(function() {
 		if (vz.capabilities.formats.contains('png')) {
 			$('#export option[value=png]').removeAttr('disabled');
 		}
-		
-		var queue = new Array;
+
+		var queue = [];
 		vz.entities.each(function(entity) {
 			var p = $.when(entity.loadDetails()).then(
 				function(x) { return {result:x, resolved:true}; },
-				function(x) { return (new $.Deferred).resolve({result:x, resolved:false}); }
+				function(x) { return (new $.Deferred()).resolve({result:x, resolved:false}); }
 			);
 			queue.push(p);
 		}, true);
-		
+
 		var cb = function(x) {
-			if (vz.entities.length == 0) {
+			if (vz.entities.length === 0) {
 				vz.wui.dialogs.init();
 			}
-		
+
 			vz.entities.showTable();
 			vz.entities.loadData().done(vz.wui.drawPlot);
 		};
 		$.when.apply($, queue).done(cb);
 	});
-});	
+});
 

@@ -30,7 +30,7 @@
  */
 vz.entities.saveCookie = function() {
 	var expires = new Date(2038, 0, 1); // some days before y2k38 problem
-	var arr = new Array;
+	var arr = [];
 
 	this.each(function(entity) {
 		if (entity.cookie === true) {
@@ -69,14 +69,14 @@ vz.entities.loadData = function() {
 	var middlewares = {};
 	this.each(function(entity) {
 		if (entity.active && entity.definition && entity.definition.model == 'Volkszaehler\\Model\\Channel') {
-			if (middlewares[entity.middleware] == undefined) {
-				middlewares[entity.middleware] = new Array();
+			if (middlewares[entity.middleware] === undefined) {
+				middlewares[entity.middleware] = [];
 			}
 			middlewares[entity.middleware].push(entity.uuid);
 		}
 	}, true); // recursive!
 
-	var queue = new Array;
+	var queue = [];
 	$.each(middlewares, function(middleware, uuids) {
 		queue.push(vz.entities.loadMultipleData(middleware, uuids));
 	});
@@ -124,7 +124,7 @@ vz.entities.loadMultipleData = function(middleware, uuids) {
 			}, true);
 		}
 	});
-}
+};
 
 /**
  * Overwritten each iterator to iterate recursively throug all entities
@@ -137,7 +137,7 @@ vz.entities.each = function(cb, recursive) {
 			this[i].each(cb, true);
 		}
 	}
-}
+};
 
 /**
  * Create nested entity list
@@ -194,8 +194,8 @@ vz.entities.showTable = function() {
 					width: 400,
 					buttons: {
 						'Verschieben': function() {
+							var queue = [];
 							try {
-								var queue = new Array;
 								if (to) {
 									queue.push(to.addChild(child)); // add to new aggregator
 								} else { // add to root
@@ -218,7 +218,7 @@ vz.entities.showTable = function() {
 								vz.wui.dialogs.exception(e);
 							} finally {
 								$.when.apply($, queue).done(function() { // wait for middleware
-									var q = new Array;
+									var q = [];
 									if (from)
 										q.push(from.loadDetails());
 									if (to)
