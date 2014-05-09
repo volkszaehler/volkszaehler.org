@@ -512,10 +512,18 @@ Entity.prototype.updateDOMRow = function() {
 
 		if (this.cost) {
 			$('.cost', row)
+				.data('cost', this.cost * this.data.consumption)
 				.text(vz.wui.formatNumber(this.cost * this.data.consumption) + ' €')
 				.attr('title', vz.wui.formatNumber(this.cost * this.data.consumption * (year/delta)) + ' €/Jahr');
 		}
 	}
+
+	// hide costs if empty for all rows
+	$('.cost').css({
+		display: ($('tbody .cost').filter(function() {
+								return +$(this).data('cost') === 0;
+						 }).get().length === 0) ? 'none' : null
+	});
 };
 
 /**
