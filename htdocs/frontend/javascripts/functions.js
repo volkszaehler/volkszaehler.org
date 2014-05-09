@@ -38,11 +38,11 @@ var Exception = function(type, message, code) {
  * @return string url
  */
 vz.getLink = function(format) {
-	var entities = new Array;
+	var entities = [];
 	var middleware = '';
 	vz.entities.each(function(entity, parent) {
 		if (entity.active) {
-			if (entities.length == 0) {
+			if (entities.length === 0) {
 				middleware = entity.middleware;
 			}
 			if (entity.middleware == middleware) {
@@ -69,7 +69,7 @@ vz.getLink = function(format) {
  * @return string url
  */
 vz.getPermalink = function() {
-	var uuids = new Array;
+	var uuids = [];
 	vz.entities.each(function(entity, parent) {
 		if (entity.active) {
 			if (entity.middleware != vz.options.localMiddleware) {
@@ -102,20 +102,21 @@ vz.load = function(args) {
  		},
 		error: function(xhr) {
 			try {
+				var msg;
 				if (xhr.getResponseHeader('Content-type') == 'application/json') {
 					var json = $.parseJSON(xhr.responseText);
 
 					if (json.exception) {
-						var msg = xhr.requestUrl + ':<br/><br/>' + json.exception.message;
+						msg = xhr.requestUrl + ':<br/><br/>' + json.exception.message;
 						throw new Exception(json.exception.type, msg, (json.exception.code) ? json.exception.code : xhr.status);
 					}
 				}
 				else {
-					var msg = xhr.requestUrl + ':<br/><br/>Unknown middleware response';
+					msg = xhr.requestUrl + ':<br/><br/>Unknown middleware response';
 					if (xhr.responseText) {
 						msg += '<br/><br/>' + $(xhr.responseText).text().substring(0,300);
 					}
-					throw new Exception(xhr.statusText, msg, xhr.status)
+					throw new Exception(xhr.statusText, msg, xhr.status);
 				}
 			}
 			catch (e) {
@@ -170,7 +171,7 @@ vz.load = function(args) {
  */
 vz.parseUrlParams = function() {
 	var vars = $.getUrlParams();
-	var entities = new Array;
+	var entities = [];
 	var save = false;
 
 	for (var key in vars) {
@@ -196,7 +197,7 @@ vz.parseUrlParams = function() {
 	}
 
 	entities.each(function(index, identifier) {
-		var identifier = identifier.split('@');
+		identifier = identifier.split('@');
 		var uuid = identifier[0];
 		var middleware = (identifier.length > 1) ? identifier[1] : vz.options.localMiddleware;
 
@@ -248,35 +249,40 @@ vz.capabilities.definitions.get = function(section, name) {
 };
 
 /**
- * Deferred script loading
- */
-jQuery.cachedScript = function(url, options) {
-	// Allow user to set any option except for dataType, cache, and url
-	options = $.extend(options || {}, {
-		dataType: "script",
-		cache: true,
-		url: url
-	});
-	// Use $.ajax() since it is more flexible than $.getScript
-	// Return the jqXHR object so we can chain callbacks
-	return jQuery.ajax( options );
-};
-
-/**
- * Serialize form including unchecked checkboxes
- * http://stackoverflow.com/questions/3029870/jquery-serialize-does-not-register-checkboxes
- *
- * @todo make off value and default selection configurable
+ * jQuery extensions
  */
 (function($) {
+
+	/**
+	 * Deferred script loading
+	 */
+	$.cachedScript = function(url, options) {
+		// Allow user to set any option except for dataType, cache, and url
+		options = $.extend(options || {}, {
+			dataType: "script",
+			cache: true,
+			url: url
+		});
+		// Use $.ajax() since it is more flexible than $.getScript
+		// Return the jqXHR object so we can chain callbacks
+		return $.ajax(options);
+	};
+
+	/**
+	 * Serialize form including unchecked checkboxes
+	 * http://stackoverflow.com/questions/3029870/jquery-serialize-does-not-register-checkboxes
+	 *
+	 * @todo make off value and default selection configurable
+	 */
 	$.fn.serializeArrayWithCheckBoxes = function() {
 		// serialize form the non-checkbox fields
 		return $(this).serializeArray()
 		// add values for unchecked checkbox fields
 		.concat(
 			$(this).find("input[type=checkbox]:not(:checked)").map(function() {
-				return { "name": this.name, "value": "0" }
+				return { "name": this.name, "value": "0" };
 			}).get()
 		);
-	}
+	};
+
 })(jQuery);

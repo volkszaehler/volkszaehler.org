@@ -90,7 +90,7 @@ Entity.prototype.setMiddleware = function(middleware) {
 	this.each(function(child, parent) {
 		child.middleware = middleware;
 	}, true); // recursive!
-}
+};
 
 /**
  * Query middleware for details
@@ -123,7 +123,7 @@ Entity.prototype.updateData = function(data) {
 	}
 
 	this.updateDOMRow();
-}
+};
 
 /**
  * Load data for current view from middleware
@@ -217,7 +217,7 @@ Entity.prototype.showDetails = function() {
 							var properties = {};
 
 							$(this).find('form').serializeArrayWithCheckBoxes().each(function(index, value) {
-								if (value.value != '' || entity[value.name]) {
+								if (value.value !== '' || entity[value.name]) {
 									properties[value.name] = value.value;
 								}
 							});
@@ -277,39 +277,39 @@ Entity.prototype.getDOMDetails = function(edit) {
 
 		switch (property) {
 			case 'type':
-				var title = 'Typ';
+				title = 'Typ';
 				var icon = this.definition.icon ? $('<img>').
 						attr('src', 'images/types/' + this.definition.icon)
 						.css('margin-right', 4)
 					: null;
-				var value = $('<span>')
+				value = $('<span>')
 					.text(this.definition.translation[vz.options.language])
 					.prepend(icon ? icon : null);
 				break;
 
 			case 'middleware':
-				var title = 'Middleware';
-				var value = '<a href="' + this.middleware + '/capabilities.json">' + this.middleware + '</a>';
+				title = 'Middleware';
+				value = '<a href="' + this.middleware + '/capabilities.json">' + this.middleware + '</a>';
 				break;
 
 			case 'uuid':
-				var title = 'UUID';
-				var value = '<a href="' + this.middleware + '/entity/' + this.uuid + '.json">' + this.uuid + '</a>';
+				title = 'UUID';
+				value = '<a href="' + this.middleware + '/entity/' + this.uuid + '.json">' + this.uuid + '</a>';
 				break;
 
 			case 'cookie':
-				var title = 'Cookie';
+				title = 'Cookie';
 				value = '<img src="images/' + ((this.cookie) ? 'tick' : 'cross') + '.png" alt="' + ((value) ? 'ja' : 'nein') + '" />';
 				break;
 
 			case 'active':
-				var value = '<img src="images/' + ((this.active) ? 'tick' : 'cross') + '.png" alt="' + ((this.active) ? 'ja' : 'nein') + '" />';
+				value = '<img src="images/' + ((this.active) ? 'tick' : 'cross') + '.png" alt="' + ((this.active) ? 'ja' : 'nein') + '" />';
 				break;
 			case 'style':
 				switch (this.style) {
-					case 'lines': var value = 'Linien'; break;
-					case 'steps': var value = 'Stufen'; break;
-					case 'points': var value = 'Punkte'; break;
+					case 'lines': value = 'Linien'; break;
+					case 'steps': value = 'Stufen'; break;
+					case 'points': value = 'Punkte'; break;
 				}
 				break;
 		}
@@ -350,7 +350,7 @@ Entity.prototype.getDOMDetails = function(edit) {
 						break;
 
 					case 'color':
-						var value = $('<span>')
+						value = $('<span>')
 							.text(this.color)
 							.css('background-color', this.color)
 							.css('padding-left', 5)
@@ -359,9 +359,9 @@ Entity.prototype.getDOMDetails = function(edit) {
 
 					case 'style':
 						switch (this.style) {
-							case 'lines': var value = 'Linien'; break;
-							case 'steps': var value = 'Stufen'; break;
-							case 'points': var value = 'Punkte'; break;
+							case 'lines': value = 'Linien'; break;
+							case 'steps': value = 'Stufen'; break;
+							case 'points': value = 'Punkte'; break;
 						}
 						break;
 				}
@@ -452,7 +452,7 @@ Entity.prototype.getDOMRow = function(parent) {
 
 Entity.prototype.activate = function(state, parent, recursive) {
 	this.active = state;
-	var queue = new Array;
+	var queue = [];
 
 	$('#entity-' + this.uuid + ((parent) ? '.child-of-entity-' + parent.uuid : '') + ' input[type=checkbox]').prop('checked', state);
 
@@ -471,7 +471,7 @@ Entity.prototype.activate = function(state, parent, recursive) {
 	}
 
 	return $.when.apply($, queue);
-}
+};
 
 Entity.prototype.updateDOMRow = function() {
 	var row = $('#entity-' + this.uuid);
@@ -529,7 +529,7 @@ Entity.prototype.delete = function() {
 		url: this.middleware,
 		type: 'DELETE'
 	});
-}
+};
 
 /**
  * Add entity as child
@@ -548,7 +548,7 @@ Entity.prototype.addChild = function(child) {
 			uuid: child.uuid
 		}
 	});
-}
+};
 
 /**
  * Remove entity from children

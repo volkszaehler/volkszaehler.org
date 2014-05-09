@@ -129,7 +129,7 @@ vz.wui.dialogs.addProperties = function(container, proplist, className, entity) 
 
 		// hide properties from blacklist
 		var val = (entity && typeof entity[def] !== undefined) ? entity[def] : null;
-		if (val == null && vz.options.hiddenProperties.indexOf(def) >= 0) {
+		if (val === null && vz.options.hiddenProperties.indexOf(def) >= 0) {
 			return; // hide less commonly used properties
 		}
 
@@ -222,7 +222,7 @@ vz.wui.dialogs.addProperties = function(container, proplist, className, entity) 
 						break;
 				}
 
-				if (cntrl != null) {
+				if (cntrl !== null) {
 					row.addClass(className);
 					cntrl.attr("name", propdef.name);
 					row.append($('<td>').append(cntrl));
@@ -233,7 +233,7 @@ vz.wui.dialogs.addProperties = function(container, proplist, className, entity) 
 			}
 		});
 	});
-}
+};
 
 /**
  * Initialize dialogs
@@ -254,7 +254,7 @@ vz.wui.dialogs.init = function() {
 						controller: 'entity',
 						url: middleware.url,
 						success: function(json) {
-							var public = new Array;
+							var public = [];
 							json.entities.each(function(index, json) {
 								var entity = new Entity(json);
 								entity.setMiddleware(middleware.url);
@@ -264,7 +264,7 @@ vz.wui.dialogs.init = function() {
 							public.sort(Entity.compare);
 							vz.middleware[idx].public = public;
 
-							if (idx == 0) {
+							if (idx === 0) {
 								populateEntities(vz.middleware[idx]);
 							}
 						}
@@ -314,7 +314,7 @@ vz.wui.dialogs.init = function() {
 				cookie: Boolean($('#entity-subscribe-cookie').prop('checked'))
 			});
 
-			if (middleware = $('#entity-subscribe-middleware').val()) {
+			if (middleware == $('#entity-subscribe-middleware').val()) {
 				entity.setMiddleware(middleware);
 			}
 
@@ -380,7 +380,7 @@ vz.wui.dialogs.init = function() {
 
 		// serializeArray instead of serializeArrayWithCheckBoxes is sufficient as non-active checkboxes don't need to create properties
 		$(this).serializeArray().each(function(index, value) {
-			if (value.value != '') {
+			if (value.value !== '') {
 				properties[value.name] = value.value;
 			}
 		});
@@ -481,7 +481,7 @@ vz.wui.initEvents = function() {
 			vz.wui.latestPosition = pos;
 			if (!vz.wui.updateLegendTimeout)
 				vz.wui.updateLegendTimeout = setTimeout(vz.wui.updateLegend, 50);
-		})
+		});
 };
 
 vz.wui.updateLegend = function() {
@@ -522,15 +522,11 @@ vz.wui.updateLegend = function() {
 		if (y == null) {
 			vz.wui.legend.eq(i).text(series.title);
 		} else {
-			function fmt(x) {
-				return (x > 9 ? x : '0'+x);
-			}
 			var d = new Date(pos.x);
-			var timestr = fmt(d.getHours()) + ':' + fmt(d.getMinutes()) + ':' + fmt(d.getSeconds());
-			vz.wui.legend.eq(i).text(series.title + ": " + timestr + " - " + y.toFixed(1) + " " + series.unit);
+			vz.wui.legend.eq(i).text(series.title + ": " + $.plot.formatDate(d, '%H:%M:%S') + " - " + y.toFixed(1) + " " + series.unit);
 		}
 	}
-}
+};
 
 /**
  * Move & zoom in the plotting area
@@ -624,7 +620,7 @@ vz.wui.refresh = function() {
  */
 vz.wui.setTimeout = function() {
 	// clear an already set timeout
-	if (vz.wui.timeout != null) {
+	if (vz.wui.timeout !== null) {
 		window.clearTimeout(vz.wui.timeout);
 		vz.wui.timeout = null;
 	}
@@ -689,7 +685,7 @@ vz.wui.formatConsumptionUnit = function(unit) {
 		unit += 'h';
 	}
 	return unit;
-}
+};
 
 vz.wui.updateHeadline = function() {
 	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
@@ -701,7 +697,7 @@ vz.wui.updateHeadline = function() {
 	var from = $.plot.formatDate(new Date(vz.options.plot.xaxis.min), format, vz.options.monthNames, vz.options.dayNames, true);
 	var to = $.plot.formatDate(new Date(vz.options.plot.xaxis.max), format, vz.options.monthNames, vz.options.dayNames, true);
 	$('#title').html(from + ' - ' + to);
-}
+};
 
 /**
  * Draws plot to container
@@ -710,24 +706,24 @@ vz.wui.drawPlot = function () {
 	vz.options.interval = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
 	vz.wui.updateHeadline();
 
-	var series = new Array;
+	var series = [];
 	var index = 0;
 	vz.entities.each(function(entity) {
 		if (entity.active && entity.definition && entity.definition.model == 'Volkszaehler\\Model\\Channel' &&
 		    entity.data && entity.data.tuples && entity.data.tuples.length > 0) {
-			var tuples = entity.data.tuples;
+			var i, tuples = entity.data.tuples;
 
 			// mangle data for "steps" curves by shifting one ts left ("step-before")
 			if (tuples && tuples.length > 0 && entity.style == "steps") {
 				tuples.unshift([entity.data.from, 1, 1]); // add new first ts
-				for (var i=0; i<tuples.length-1; i++) {
+				for (i=0; i<tuples.length-1; i++) {
 					tuples[i][1] = tuples[i+1][1];
 				}
 			}
 
 			// remove number of datapoints from each tuple to avoid flot fill error
 			if (tuples && tuples.length > 0 && entity.fillstyle) {
-				for (var i=0; i<tuples.length; i++) {
+				for (i=0; i<tuples.length; i++) {
 					delete tuples[i][2];
 				}
 			}
@@ -757,7 +753,7 @@ vz.wui.drawPlot = function () {
 		}
 	}, true);
 
-	if (series.length == 0) {
+	if (series.length === 0) {
 		$('#overlay').html('<img src="images/empty.png" alt="no data..." /><p>nothing to plot...</p>');
 		series.push({}); // add empty dataset to show axes
 	}
