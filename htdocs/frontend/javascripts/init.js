@@ -53,7 +53,6 @@ $(document).ready(function() {
 	// late binding
 	$(window).resize(function() {
 		vz.options.tuples = Math.round($('#flot').width() / 3);
-		$('#tuples').val(vz.options.tuples);
 		if (vz && vz.plot) {
 			if (vz.plot.resize)
 				vz.plot.resize();
