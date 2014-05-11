@@ -45,6 +45,9 @@ Entity.colors = 0;
 Entity.prototype.parseJSON = function(json) {
 	$.extend(true, this, json);
 
+	// force axis assignment before plotting
+	vz.options.plot.axesAssigned = false;
+
 	// parse children
 	if (this.children) {
 		for (var i = 0; i < this.children.length; i++) {
@@ -60,7 +63,6 @@ Entity.prototype.parseJSON = function(json) {
 	// setting defaults
 	if (this.type !== undefined) {
 		this.definition = vz.capabilities.definitions.get('entities', this.type);
-		this.yaxis = ($.inArray(this.type, vz.options.y2axis) !== -1) ? 2 : 1;
 
 		if (this.style === undefined) {
 			if (this.definition.style) {
@@ -93,6 +95,76 @@ Entity.prototype.setMiddleware = function(middleware) {
 };
 
 /**
+ * Assign entity an axis with matching unit
+ */
+Entity.prototype.assignMatchingAxis = function() {
+	if (this.definition) {
+		// find axis with matching unit
+		if (vz.options.plot.yaxes.some(function(yaxis, idx) {
+			if (yaxis.axisLabel == undefined || (this.definition.unit == yaxis.axisLabel)) { // unoccupied or matching unit
+				this.assignedYaxis = idx + 1;
+				return true;
+			}
+		}, this) === false) { // no more axes available
+			this.assignedYaxis = vz.options.plot.yaxes.push({ position: 'right' });
+		}
+
+		vz.options.plot.yaxes[this.assignedYaxis-1].axisLabel = this.definition.unit;
+	}
+};
+
+/**
+ * Allocate y-axis for entity
+ */
+Entity.prototype.assignAxis = function() {
+	// assign y-axis
+	if (this.yaxis == undefined || this.yaxis == 'auto') { // auto axis assignment
+		this.assignMatchingAxis();
+	}
+	else { // forced axis assignment
+		this.assignedYaxis = parseInt(this.yaxis); // string to int for multi-property
+
+		while (vz.options.plot.yaxes.length < this.assignedYaxis) { // no more axes available
+			vz.options.plot.yaxes.push({ position: 'right' });
+		}
+
+		// check if axis already has auto-allocated entities
+		var yaxis = vz.options.plot.yaxes[this.assignedYaxis-1];
+		if (yaxis.forcedGroup == undefined) { // axis auto-assigned
+			if (yaxis.axisLabel !== undefined && this.definition.unit !== yaxis.axisLabel) { // unit mismatch
+				// move previously auto-assigned entities to different axis
+				yaxis.axisLabel = '*'; // force unit mismatch
+				vz.entities.each((function(entity) {
+					if (entity.assignedYaxis == this.yaxis && (entity.yaxis == undefined || entity.yaxis == 'auto')) {
+						entity.assignMatchingAxis();
+					}
+				}).bind(this), true); // bind to have callback->this = this
+			}
+		}
+
+		yaxis.axisLabel = this.definition.unit;
+		yaxis.forcedGroup = this.yaxis;
+	}
+
+	this.updateAxisScale();
+};
+
+/**
+ * Set axis minimum depending on data
+ */
+Entity.prototype.updateAxisScale = function() {
+	if (this.assignedYaxis !== undefined && vz.options.plot.yaxes.length >= this.assignedYaxis) {
+		vz.options.plot.yaxes[this.assignedYaxis-1].min = 0;
+		if (this.data && this.data.tuples && this.data.tuples.length > 0) {
+			// allow negative values, e.g. for temperature sensors
+			if (this.data.min && this.data.min[1] < 0) {
+				vz.options.plot.yaxes[this.assignedYaxis-1].min = null;
+			}
+		}
+	}
+};
+
+/**
  * Query middleware for details
  * @return jQuery dereferred object
  */
@@ -115,13 +187,7 @@ Entity.prototype.loadDetails = function() {
 Entity.prototype.updateData = function(data) {
 	this.data = data;
 
-	if (this.data.tuples && this.data.tuples.length > 0) {
-		// allow negative values, e.g. for temperature sensors
-		if (this.data.min && this.data.min[1] < vz.options.plot.yaxes[this.yaxis-1].min) {
-			vz.options.plot.yaxes[this.yaxis-1].min = null;
-		}
-	}
-
+	this.updateAxisScale();
 	this.updateDOMRow();
 };
 
@@ -230,7 +296,6 @@ Entity.prototype.showDetails = function() {
 								type: 'PULL', // edit
 								success: function(json) {
 									entity.parseJSON(json.entity); // update entity
-
 									try {
 										vz.entities.showTable();
 										vz.entities.loadData().done(vz.wui.drawPlot);
@@ -618,4 +683,3 @@ Entity.compare = function(a, b) {
 	else
 		return ((a.title < b.title) ? -1 : ((a.title > b.title) ? 1 : 0));
 };
-

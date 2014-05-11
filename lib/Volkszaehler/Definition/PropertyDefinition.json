@@ -129,7 +129,7 @@
 	{
 		"name"			: "address:state",
 		"type"			: "multiple",
-		"options" : [
+		"options"		: [
 			"Albania",
 			"Algeria",
 			"Andorra",
@@ -371,7 +371,7 @@
 	{
 		"name"			: "style",
 		"type"			: "multiple",
-		"options" : [
+		"options"		: [
 			"lines",
 			"steps",
 			"points"
@@ -389,6 +389,21 @@
 		"translation"		: {
 			"de" : "Füllgrad",
 			"en" : "Opacity"
+		}
+	},
+	{
+		"name"			: "yaxis",
+		"type"			: "multiple",
+		"options"		: [
+			"auto",
+			"1",
+			"2",
+			"3",
+			"4"
+		],
+		"translation"		: {
+			"de" : "Achse",
+			"en" : "Axis"
 		}
 	},
 	{

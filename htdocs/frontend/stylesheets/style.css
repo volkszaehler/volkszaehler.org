@@ -45,6 +45,11 @@ tr.property td, tr.entity td {
 	width: auto;
 }
 
+.axisLabels { /* if axislabels plugin is used */
+	font-size: smaller;
+	color: #545454;
+}
+
 #flot {
 	height: 500px;
 	z-index: 1;

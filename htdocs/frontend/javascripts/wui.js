@@ -423,7 +423,6 @@ vz.wui.dialogs.init = function() {
 };
 
 vz.wui.zoom = function(from, to) {
-
 	// we cannot zoom/pan into the future
 	var now = new Date().getTime();
 	if (to > now) {
@@ -661,7 +660,7 @@ vz.wui.formatNumber = function(number, prefix) {
 		siIndex++;
 	}
 
-    // avoid infinities/NaN
+	// avoid infinities/NaN
 	if (number > 0) {
 		var precision = Math.max(0, vz.options.precision - Math.floor(Math.log(number)/Math.LN10));
 		number = Math.round(number * Math.pow(10, precision)) / Math.pow(10, precision); // rounding
@@ -707,15 +706,23 @@ vz.wui.drawPlot = function () {
 	vz.options.interval = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
 	vz.wui.updateHeadline();
 
-	var series = [];
-	var index = 0;
+	// assign entities to axes
+	if (vz.options.plot.axesAssigned == false) {
+		vz.entities.each(function(entity) {
+			entity.assignAxis();
+		}, true);
+
+		vz.options.plot.axesAssigned = true;
+	}
+
+	var series = [], index = 0;
 	vz.entities.each(function(entity) {
 		if (entity.active && entity.definition && entity.definition.model == 'Volkszaehler\\Model\\Channel' &&
-		    entity.data && entity.data.tuples && entity.data.tuples.length > 0) {
+				entity.data && entity.data.tuples && entity.data.tuples.length > 0) {
 			var i, tuples = entity.data.tuples;
 
 			// mangle data for "steps" curves by shifting one ts left ("step-before")
-			if (tuples && tuples.length > 0 && entity.style == "steps") {
+			if (entity.style == "steps") {
 				tuples.unshift([entity.data.from, 1, 1]); // add new first ts
 				for (i=0; i<tuples.length-1; i++) {
 					tuples[i][1] = tuples[i+1][1];
@@ -723,7 +730,7 @@ vz.wui.drawPlot = function () {
 			}
 
 			// remove number of datapoints from each tuple to avoid flot fill error
-			if (tuples && tuples.length > 0 && entity.fillstyle) {
+			if (entity.fillstyle) {
 				for (i=0; i<tuples.length; i++) {
 					delete tuples[i][2];
 				}
@@ -739,12 +746,12 @@ vz.wui.drawPlot = function () {
 					show: (entity.style == 'lines' || entity.style == 'steps'),
 					steps: (entity.style == 'steps'),
 					lineWidth: (index == vz.wui.selectedChannel ? vz.options.lineWidthSelected : vz.options.lineWidthDefault),
-					fill: (typeof entity.fillstyle !== undefined) ? entity.fillstyle : false
+					fill: (entity.fillstyle !== undefined) ? entity.fillstyle : false
 				},
 				points: {
 					show: (entity.style == 'points')
 				},
-				yaxis: entity.yaxis
+				yaxis: entity.assignedYaxis
 			};
 
 			entity.index = index;

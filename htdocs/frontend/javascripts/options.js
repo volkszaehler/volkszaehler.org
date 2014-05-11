@@ -24,14 +24,13 @@
  * volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
-// default time interval to show
 vz.options = {
 	language: 'de',
 	precision: 2,		// TODO update from middleware capabilities?
 	tuples: null,		// automatically determined by plot size
 	refresh: false,
 	minTimeout: 2000,	// minimum refresh time in ms
-	interval: 24*60*60*1000, // 1 day
+	interval: 24*60*60*1000, // 1 day default time interval to show
 	localMiddleware: '../middleware.php',
 	remoteMiddleware: [{
 		title: 'Volkszaehler Demo',
@@ -39,7 +38,6 @@ vz.options = {
 	}],
 	monthNames: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
 	dayNames: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
-	y2axis: ['temperature', 'flow', 'gas', 'gas meter', 'valve'],
 	lineWidthDefault: 2,
 	lineWidthSelected: 4,
 	speedupFactor: 2,   // higher values give higher speedup but can produce chunky display
@@ -63,15 +61,15 @@ vz.options.plot = {
 		mode: 'time',
 		timezone: 'browser'
 	},
+	axisLabels: {
+		show: false // set to true to show labels
+	},
 	yaxes: [
 		{
-			min: 0,
-			max: null
+			axisLabel: 'W' // assign el. energy to first axis- remove if not used
 		},
 		{
-			min: 0,
-			max: null,
-			//alignTicksWithAxis: 1,
+			// alignTicksWithAxis: 1,
 			position: 'right'
 		}
 	],
