@@ -315,9 +315,7 @@ vz.wui.dialogs.init = function() {
 				cookie: Boolean($('#entity-subscribe-cookie').prop('checked'))
 			});
 
-			if (middleware == $('#entity-subscribe-middleware').val()) {
-				entity.setMiddleware(middleware);
-			}
+			entity.setMiddleware($('#entity-subscribe-middleware').val());
 
 			entity.loadDetails().done(function() {
 				vz.entities.push(entity);
