@@ -87,6 +87,7 @@ vz.wui.init = function() {
 				});
 				break;
 			case 'csv':
+			case 'json':
 			case 'xml':
 				window.location = vz.getLink($(this).val());
 				break;
