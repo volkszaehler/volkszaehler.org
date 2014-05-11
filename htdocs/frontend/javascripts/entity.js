@@ -516,13 +516,16 @@ Entity.prototype.updateDOMRow = function() {
 				.text(vz.wui.formatNumber(this.cost * this.data.consumption) + ' €')
 				.attr('title', vz.wui.formatNumber(this.cost * this.data.consumption * (year/delta)) + ' €/Jahr');
 		}
+		else {
+			$('.cost', row).data('cost', 0); // define value if cost property is being removed
+		}
 	}
 
 	// hide costs if empty for all rows
 	$('.cost').css({
 		display: ($('tbody .cost').filter(function() {
-								return +$(this).data('cost') === 0;
-						 }).get().length === 0) ? 'none' : null
+								return (+$(this).data('cost') || 0) > 0;
+						 }).get().length === 0) ? 'none' : ''
 	});
 };
 
