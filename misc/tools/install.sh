@@ -206,7 +206,8 @@ if [ "$REPLY" == "y" ]; then
 	mysql -h$db_host -u$db_admin_user -p$db_admin_pass <<-EOF
 		CREATE USER '$db_user'@'$db_host' IDENTIFIED BY '$db_pass';
 		GRANT USAGE ON *.* TO '$db_user'@'$db_host';
-		GRANT SELECT, UPDATE, INSERT, DELETE ON $db_name.* TO '$db_user'@'$db_host';
+		GRANT SELECT, UPDATE, INSERT ON $db_name.* TO '$db_user'@'$db_host';
+		GRANT DELETE ON $db_name.entities_in_aggregator TO '$db_user'@'$db_host';
 	EOF
 fi
 
