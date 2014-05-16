@@ -524,6 +524,9 @@ vz.wui.updateLegend = function() {
 			vz.wui.legend.eq(i).text(series.title + ": " + $.plot.formatDate(d, '%H:%M:%S') + " - " + y.toFixed(1) + " " + series.unit);
 		}
 	}
+
+	// update opaque background sizing
+	$('.legend > div').css({ width: $('.legend table').css('width') });
 };
 
 /**
