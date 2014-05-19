@@ -36,6 +36,19 @@ tr.property td, tr.entity td {
 	border-radius: 10px;
 }
 
+#content div {
+	padding: 2px;
+}
+
+#content h3 {
+	background-color: grey;
+	padding: 4px;
+	margin: 2px 0;
+	color: white;
+	cursor: pointer;
+	font-size: 0.9em;
+}
+
 #plot {
 	position: relative;
 	background-color: white;
@@ -72,33 +85,19 @@ tr.property td, tr.entity td {
 	margin: 10px;
 }
 
-#content h3 {
-	background-color: grey;
-	padding: 4px;
-	margin: 2px 0;
-	color: white;
-	cursor: pointer;
-	font-size: 0.9em;
-}
-
 #controls {
 	background-color: grey;
 	margin-right: 0px; /* override jquery ui */
 }
 
-#content div {
-	padding: 2px;
-}
-
 #controls button {
-	width: 10.04%;
+	width: 10.0%;
 	height: 30px;
 }
 
 button {
 	background-color: silver;
 	border: 1px solid darkgrey;
-	font-size: 1.1em;
 	-moz-border-radius: 3px;
 	-webkit-border-radius: 3px;
 	border-radius: 3px;
@@ -120,10 +119,15 @@ select.icons option {
 }
 
 /* treeTable for entities */
+#entity-list tbody img {
+	margin: 0.2em 0.4em 0 0; /* sprite image margin */
+	vertical-align: top;
+}
+
 #entity-list tbody span {
 	background-position: left center;
 	background-repeat: no-repeat;
-	padding: 0.2em 0 0.2em 1.7em;
+	padding: 0 0 0.2em 0; /* 0.2em 0 0.2em 1.7em if not using sprite images */
 	margin: 0;
 }
 
@@ -136,11 +140,6 @@ select.icons option {
 	-moz-opacity: 0.3;
 	-khtml-opacity: 0.3;
 	opacity: 0.3;
-}
-
-.dialog {
-	display: none;
-	padding: 10px;
 }
 
 .ops, .min, .max, .average, .last, .consumption, .cost {
@@ -157,7 +156,11 @@ select.icons option {
 
 /* dialogs */
 
+.dialog {
+	display: none;
+	padding: 10px;
+}
+
 .dialog select {
 	width: 100%;
 }
-

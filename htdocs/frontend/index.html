@@ -18,6 +18,7 @@
 	<link rel="stylesheet" type="text/css" href="stylesheets/jquery-treeTable.css" />
 	<link rel="stylesheet" type="text/css" href="stylesheets/jquery-ui-custom.css" />
 	<link rel="stylesheet" type="text/css" href="stylesheets/style.css" />
+	<link rel="stylesheet" type="text/css" href="stylesheets/sprites.css" />
 
 	<!-- jQuery -->
 	<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
@@ -35,11 +36,12 @@
 
 	<script type="text/javascript" src="javascripts/helper.js"></script>
 	<script type="text/javascript" src="javascripts/init.js"></script>
-	<script type="text/javascript" src="javascripts/options.js"></script>
 	<script type="text/javascript" src="javascripts/functions.js"></script>
 	<script type="text/javascript" src="javascripts/entities.js"></script>
 	<script type="text/javascript" src="javascripts/wui.js"></script>
 	<script type="text/javascript" src="javascripts/entity.js"></script>
+	<script type="text/javascript" src="javascripts/options.js"></script>
+
 	<script type="text/javascript">
 		if(navigator.userAgent.match(/(iPhone|iPod|iPad)/i)) {
 			document.title = "Volkszaehler";
@@ -53,14 +55,14 @@
 		<h2 id="title"></h2>
 
 		<div id="export">
-			<img alt="export" src="images/export.png" />
+			<img alt="export" src="images/blank.png" class="icon-export" />
 			<select class="icons">
-				<option value="default" style="background-image: url(images/export.png)" selected="selected">Export...</option>
-				<option value="permalink" style="background-image: url(images/link.png)">Permalink</option>
-				<option value="png" style="background-image: url(images/image.png)" disabled="disabled">Snapshot</option>
-				<option value="csv" style="background-image: url(images/table.png)">CSV</option>
-				<option value="xml" style="background-image: url(images/xml.png)">XML</option>
-				<option value="json" style="background-image: url(images/json.png)">JSON</option>
+				<option value="default" selected="selected" class="icon-export">Export...</option>
+				<option value="permalink" class="icon-link">Permalink</option>
+				<option value="png" class="icon-image" disabled="disabled">Snapshot</option>
+				<option value="csv" class="icon-table">CSV</option>
+				<option value="xml" class="icon-xml">XML</option>
+				<option value="json" class="icon-json">JSON</option>
 			</select>
 		</div>
 		<br style="clear: both" />
@@ -72,11 +74,11 @@
 
 <div id="accordion">
 	<div id="controls">
-		<button value="move-back" title="scroll backward"><img src="images/control_rewind_blue.png" alt="" /></button>
-		<button value="move-forward" title="scroll forward"><img src="images/control_fastforward_blue.png" alt="" /></button>
-		<button value="move-last" title="scroll to presence">Jetzt&nbsp;<img src="images/control_end_blue.png" alt="" /></button>
-		<button value="zoom-in" title="zoom in"><img src="images/zoom_in.png" alt="" /></button>
-		<button value="zoom-out" title="zoom out"><img src="images/zoom_out.png" alt="" /></button>
+		<button value="move-back" title="scroll backward"><img src="images/blank.png" class="icon-control_rewind_blue" alt="" /></button>
+		<button value="move-forward" title="scroll forward"><img src="images/blank.png" class="icon-control_fastforward_blue" alt="" /></button>
+		<button value="move-last" title="scroll to presence">Jetzt&nbsp;<img src="images/blank.png" class="icon-control_end_blue" alt="" /></button>
+		<button value="zoom-in" title="zoom in"><img src="images/blank.png" class="icon-zoom_in" alt="" /></button>
+		<button value="zoom-out" title="zoom out"><img src="images/blank.png" class="icon-zoom_out" alt="" /></button>
 		<button value="zoom-hour">Stunde</button>
 		<button value="zoom-day">Tag</button>
 		<button value="zoom-week">Woche</button>
@@ -84,12 +86,12 @@
 		<button value="zoom-year">Jahr</button>
 	</div>
 
-	<h3><img src="images/table.png" alt="" /> Kanäle</h3>
+	<h3><img src="images/blank.png" class="icon-table" alt="" /> Kanäle</h3>
 	<div id="entity-list">
 		<table>
 			<thead>
 				<tr>
-					<th><img src="images/eye.png" alt="Anzeige" id="entity-toggle" title="Toggle entitites" /></th>
+					<th><img src="images/blank.png" class="icon-eye" alt="Anzeige" id="entity-toggle" title="Toggle entitites" /></th>
 					<th></th>
 					<th>Titel</th>
 					<th>Typ</th>
@@ -104,9 +106,9 @@
 			</thead>
 			<tbody></tbody>
 		</table>
-		<div><button name="entity-add"><img src="images/add.png" alt="add" /> Kanal hinzuf&uuml;gen</button></div>
+		<div><button name="entity-add"><img src="images/blank.png" class="icon-add" alt="add" /> Kanal hinzuf&uuml;gen</button></div>
 		</div>
-		<h3><img src="images/wrench.png" alt="" /> Optionen</h3>
+		<h3><img src="images/blank.png" class="icon-wrench" alt="" /> Optionen</h3>
 		<div id="options">
 			<table>
 				<thead>
@@ -117,12 +119,12 @@
 				</thead>
 				<tbody>
 					<tr>
-						<td><label for="refresh"><img src="images/arrow_refresh.png" alt="" /> Automatisch aktualisieren</label></td>
+						<td><label for="refresh"><img src="images/blank.png" class="icon-arrow_refresh" alt="" /> Automatisch aktualisieren</label></td>
 						<td><input type="checkbox" id="refresh" /> <span id="refresh-time"></span></td>
 					</tr>
 				</tbody>
 			</table>
-			<div><button name="options-save"><img src="images/save.png" alt="save" /> Einstellungen speichern</button></div>
+			<div><button name="options-save"><img src="images/blank.png" class="icon-save" alt="save" /> Einstellungen speichern</button></div>
 		</div>
 	</div>
 </div>

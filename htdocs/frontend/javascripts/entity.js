@@ -343,8 +343,10 @@ Entity.prototype.getDOMDetails = function(edit) {
 		switch (property) {
 			case 'type':
 				title = 'Typ';
-				var icon = this.definition.icon ? $('<img>').
-						attr('src', 'images/types/' + this.definition.icon)
+				var icon = this.definition.icon ? $('<img>')
+						// attr('src', 'images/types/' + this.definition.icon)
+						.attr('src', 'images/blank.png')
+						.addClass('icon-' + this.definition.icon.replace('.png', ''))
 						.css('margin-right', 4)
 					: null;
 				value = $('<span>')
@@ -364,11 +366,13 @@ Entity.prototype.getDOMDetails = function(edit) {
 
 			case 'cookie':
 				title = 'Cookie';
-				value = '<img src="images/' + ((this.cookie) ? 'tick' : 'cross') + '.png" alt="' + ((value) ? 'ja' : 'nein') + '" />';
+				// value = '<img src="images/' + ((this.cookie) ? 'tick' : 'cross') + '.png" alt="' + ((value) ? 'ja' : 'nein') + '" />';
+				value = '<img src="images/blank.png" class="icon-' + ((this.cookie) ? 'tick' : 'cross') + '" alt="' + ((value) ? 'ja' : 'nein') + '" />';
 				break;
 
 			case 'active':
-				value = '<img src="images/' + ((this.active) ? 'tick' : 'cross') + '.png" alt="' + ((this.active) ? 'ja' : 'nein') + '" />';
+				// value = '<img src="images/' + ((this.active) ? 'tick' : 'cross') + '.png" alt="' + ((this.active) ? 'ja' : 'nein') + '" />';
+				value = '<img src="images/blank.png" class="icon-' + ((this.active) ? 'tick' : 'cross') + '" alt="' + ((this.active) ? 'ja' : 'nein') + '" />';
 				break;
 			case 'style':
 				switch (this.style) {
@@ -401,7 +405,8 @@ Entity.prototype.getDOMDetails = function(edit) {
 				var value = this[property];
 
 				if (definition.type == 'boolean') {
-					value = '<img src="images/' + ((value) ? 'tick' : 'cross') + '.png" alt="' + ((value) ? 'ja' : 'nein') + '" />';
+					// value = '<img src="images/' + ((value) ? 'tick' : 'cross') + '.png" alt="' + ((value) ? 'ja' : 'nein') + '" />';
+					value = '<img src="images/blank.png" class="icon-' + ((this.active) ? 'tick' : 'cross') + '" alt="' + ((value) ? 'ja' : 'nein') + '" />';
 				}
 
 				switch (property) {
@@ -473,9 +478,16 @@ Entity.prototype.getDOMRow = function(parent) {
 		.append($('<td>').addClass('expander'))
 		.append($('<td>')
 			.append($('<span>')
-				.text(this.title)
 				.addClass('indicator')
-				.css('background-image', this.definition.icon ? 'url(images/types/' + this.definition.icon + ')' : null)
+				.append($('<img>')
+					.attr('src', 'images/blank.png')
+					.addClass('icon-' + this.definition.icon.replace('.png', ''))
+				)
+				.append($('<span>')
+					.text(this.title)
+					// .addClass('indicator')
+					// .css('background-image', this.definition.icon ? 'url(images/types/' + this.definition.icon + ')' : null)
+				)
 			)
 		)
 		.append($('<td>').text(this.definition.translation[vz.options.language])) // channel type
@@ -489,7 +501,8 @@ Entity.prototype.getDOMRow = function(parent) {
 			.addClass('ops')
 			.append($('<input>')
 				.attr('type', 'image')
-				.attr('src', 'images/information.png')
+				.attr('src', 'images/blank.png')
+				.addClass('icon-information')
 				.attr('alt', 'details')
 				.bind('click', this, function(event) {
 					event.data.showDetails();
@@ -501,7 +514,8 @@ Entity.prototype.getDOMRow = function(parent) {
 	if (this.cookie) {
 		$('td.ops', row).prepend($('<input>')
 			.attr('type', 'image')
-			.attr('src', 'images/delete.png')
+			.attr('src', 'images/blank.png')
+			.addClass('icon-delete')
 			.attr('alt', 'delete')
 			.bind('click', this, function(event) {
 				vz.entities.remove(event.data);

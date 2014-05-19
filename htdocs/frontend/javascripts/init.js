@@ -110,24 +110,20 @@ $(document).ready(function() {
 			$('#export option[value=png]').removeAttr('disabled');
 		}
 
-		var queue = [];
-		vz.entities.each(function(entity) {
-			var p = $.when(entity.loadDetails()).then(
-				function(x) { return {result:x, resolved:true}; },
-				function(x) { return (new $.Deferred()).resolve({result:x, resolved:false}); }
-			);
-			queue.push(p);
-		}, true);
-
-		var cb = function(x) {
+		vz.entities.loadDetails().done(function() {
 			if (vz.entities.length === 0) {
 				vz.wui.dialogs.init();
 			}
-
 			vz.entities.showTable();
 			vz.entities.loadData().done(vz.wui.drawPlot);
-		};
-		$.when.apply($, queue).done(cb);
+/*
+			// alternative approach to parallelize js and json loading
+			$.when.apply($, [
+				$.cachedScript('jquery.flot.min.js'),
+				vz.entities.loadData()
+			]).done(vz.wui.drawPlot);
+*/
+		});
 	});
 });
 

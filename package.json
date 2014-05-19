@@ -1,0 +1,25 @@
+{
+  "name": "volkszaehler.org",
+  "version": "0.0.1",
+  "description": "volkszaehler.org frontend build scripts",
+  "license": "GPL",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/volkszaehler/volkszaehler.org.git"
+  },
+  "bugs": {
+    "url": "https://github.com/volkszaehler/volkszaehler.org/issues"
+  },
+  "author": "Andreas Goetz <cpuidle@gmx.de>",
+  "devDependencies": {
+    "gulp": "~3.6.2",
+    "gulp-debug": "~0.3.0",
+    "gulp-watch": "~0.6.4",
+    "gulp-if": "~1.2.0",
+    "gulp-replace": "~0.3.0",
+    "gulp-jshint": "~1.5.5",
+    "gulp-uglify": "~0.2.1",
+    "gulp-rename": "~1.2.0",
+    "gulp-spritesmith": "0.0.2"
+  }
+}
