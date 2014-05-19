@@ -293,6 +293,7 @@
 	{
 		"name"			: "valve",
 		"optional"		: ["tolerance", "local"],
+		"icon"			: "pipe.png",
 		"unit"			: "%",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
