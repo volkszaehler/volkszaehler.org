@@ -270,4 +270,20 @@ vz.entities.showTable = function() {
 		clickableNodeNames: true,
 		initialState: 'expanded'
 	});
+
+	vz.entities.updateTable();
+};
+
+/**
+ * Post-update entity list after adding/ removing/ updating entities
+ *
+ * @todo move to Entity class
+ */
+vz.entities.updateTable = function() {
+	// hide costs if empty for all rows
+	$('.cost').css({
+		display: ($('tbody .cost').filter(function() {
+								return (+$(this).data('cost') || 0) > 0;
+						 }).get().length === 0) ? 'none' : ''
+	});
 };

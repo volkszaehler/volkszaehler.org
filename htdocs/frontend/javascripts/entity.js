@@ -586,12 +586,7 @@ Entity.prototype.updateDOMRow = function() {
 		}
 	}
 
-	// hide costs if empty for all rows
-	$('.cost').css({
-		display: ($('tbody .cost').filter(function() {
-								return (+$(this).data('cost') || 0) > 0;
-						 }).get().length === 0) ? 'none' : ''
-	});
+	vz.entities.updateTable();
 };
 
 /**
