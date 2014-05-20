@@ -247,8 +247,17 @@ vz.entities.showTable = function() {
 
 	// make visible that a row is clicked
 	$('#entity-list table tbody tr').mousedown(function() {
+		var entity = $(this).data('entity');
+		var selected = $('tr.selected').data('entity');
+
 		$('tr.selected').removeClass('selected'); // deselect currently selected rows
-		$(this).addClass('selected');
+		vz.wui.selectedChannel = null;
+
+		if (entity !== selected) {
+			$(this).addClass('selected');
+			vz.wui.selectedChannel = entity.index;
+		}
+		vz.wui.drawPlot();
 	});
 
 	// make sure row is selected when span is clicked

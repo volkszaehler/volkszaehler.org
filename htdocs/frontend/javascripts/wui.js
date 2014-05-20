@@ -755,8 +755,8 @@ vz.wui.drawPlot = function () {
 				yaxis: entity.assignedYaxis
 			};
 
-			entity.index = index;
-			++index;
+			// use this index for setting vz.wui.selectedChannel
+			entity.index = index++;
 
 			series.push(serie);
 		}
