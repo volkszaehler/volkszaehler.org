@@ -154,7 +154,10 @@ Entity.prototype.assignAxis = function() {
  */
 Entity.prototype.updateAxisScale = function() {
 	if (this.assignedYaxis !== undefined && vz.options.plot.yaxes.length >= this.assignedYaxis) {
-		vz.options.plot.yaxes[this.assignedYaxis-1].min = 0;
+		if (vz.options.plot.yaxes[this.assignedYaxis-1].min === null) {
+			// avoid overriding user-defined options
+			vz.options.plot.yaxes[this.assignedYaxis-1].min = 0;
+		}
 		if (this.data && this.data.tuples && this.data.tuples.length > 0) {
 			// allow negative values, e.g. for temperature sensors
 			if (this.data.min && this.data.min[1] < 0) {
