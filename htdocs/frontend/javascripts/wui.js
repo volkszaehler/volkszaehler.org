@@ -720,7 +720,7 @@ vz.wui.drawPlot = function () {
 	vz.entities.each(function(entity) {
 		if (entity.active && entity.definition && entity.definition.model == 'Volkszaehler\\Model\\Channel' &&
 				entity.data && entity.data.tuples && entity.data.tuples.length > 0) {
-			var i, tuples = entity.data.tuples;
+			var i, tuples = entity.data.tuples, maxTuples = 0;
 
 			// mangle data for "steps" curves by shifting one ts left ("step-before")
 			if (entity.style == "steps") {
@@ -731,8 +731,9 @@ vz.wui.drawPlot = function () {
 			}
 
 			// remove number of datapoints from each tuple to avoid flot fill error
-			if (entity.fillstyle) {
+			if (entity.fillstyle || entity.gap) {
 				for (i=0; i<tuples.length; i++) {
+					maxTuples = Math.max(maxTuples, tuples[i][2]);
 					delete tuples[i][2];
 				}
 			}
@@ -754,6 +755,13 @@ vz.wui.drawPlot = function () {
 				},
 				yaxis: entity.assignedYaxis
 			};
+
+			// disable interpolation when data has gaps
+			if (entity.gap) {
+				var minGapWidth = (entity.data.to - entity.data.from) / tuples.length;
+				serie.xGapThresh = Math.max(entity.gap * 1000 * maxTuples, minGapWidth);
+				vz.options.plot.xaxis.insertGaps = true;
+			}
 
 			// use this index for setting vz.wui.selectedChannel
 			entity.index = index++;
