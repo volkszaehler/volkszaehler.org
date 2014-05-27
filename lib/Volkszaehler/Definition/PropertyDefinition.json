@@ -414,5 +414,14 @@
 			"de" : "Lokale Adresse",
 			"en" : "Local Address"
 		}
+	},
+	{
+		"name"			: "gap",
+		"type"			: "integer",
+		"min"			: 0,
+		"translation"		: {
+			"de" : "Lücke",
+			"en" : "Gap"
+		}
 	}
 ]
