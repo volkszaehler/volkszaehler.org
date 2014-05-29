@@ -60,28 +60,49 @@ vz.entities.loadCookie = function() {
 };
 
 /**
- * Load JSON data from the middleware
+ * Load JSON entity details from the middleware
  */
-vz.entities.loadData = function() {
-	$('#overlay').html('<img src="images/loading.gif" alt="loading..." /><p>loading...</p>');
-
-	// put each middleware into its own request
-	var middlewares = {};
-	this.each(function(entity) {
-		if (entity.active && entity.definition && entity.definition.model == 'Volkszaehler\\Model\\Channel') {
-			if (middlewares[entity.middleware] === undefined) {
-				middlewares[entity.middleware] = [];
-			}
-			middlewares[entity.middleware].push(entity.uuid);
-		}
-	}, true); // recursive!
-
+vz.entities.loadDetails = function() {
 	var queue = [];
-	$.each(middlewares, function(middleware, uuids) {
-		queue.push(vz.entities.loadMultipleData(middleware, uuids));
+
+	vz.middleware.each(function(idx, middleware) {
+		var entities = [];
+		vz.entities.each(function(entity) {
+			if (entity.middleware == middleware.url) {
+				entities.push(entity);
+			}
+		}, true); // recursive
+
+		if (entities.length > 0) {
+			queue.push(vz.entities.loadMultipleDetails(entities));
+		}
 	});
 
 	return $.when.apply($, queue);
+};
+
+vz.entities.loadMultipleDetails = function(entities) {
+	return vz.load({
+		controller: 'entity',
+		url: entities[0].middleware,
+		context: this,
+		data: {
+			uuid: entities.map(function(entity) {
+				return entity.uuid;
+			})
+		},
+		success: function(json) {
+			// @todo assuming unique UUIDs across middlewares
+			this.each(function(entity) {
+				json.entities.some(function(jsonEntity) {
+					if (jsonEntity.uuid == entity.uuid) { // entity matched
+						entity.parseJSON(jsonEntity);
+						return true;
+					}
+				});
+			}, true);
+		}
+	});
 };
 
 /**
@@ -99,20 +120,46 @@ vz.entities.speedupFactor = function() {
 	return group;
 };
 
-vz.entities.loadMultipleData = function(middleware, uuids) {
+/**
+ * Load JSON data from the middleware
+ */
+vz.entities.loadData = function() {
+	$('#overlay').html('<img src="images/loading.gif" alt="loading..." /><p>loading...</p>');
+
+	var queue = [];
+
+	vz.middleware.each(function(idx, middleware) {
+		var entities = [];
+		vz.entities.each(function(entity) {
+			if (entity.middleware == middleware.url &&
+					entity.active && entity.definition && entity.definition.model == 'Volkszaehler\\Model\\Channel') {
+				entities.push(entity);
+			}
+		}, true); // recursive
+
+		if (entities.length > 0) {
+			queue.push(vz.entities.loadMultipleData(entities));
+		}
+	});
+
+	return $.when.apply($, queue);
+};
+
+vz.entities.loadMultipleData = function(entities) {
 	return vz.load({
 		controller: 'data',
-		url: middleware,
+		url: entities[0].middleware,
 		context: this,
 		data: {
 			from: Math.floor(vz.options.plot.xaxis.min),
 			to: Math.ceil(vz.options.plot.xaxis.max),
 			tuples: vz.options.tuples,
-			uuid: uuids,
+			uuid: entities.map(function(entity) {
+				return entity.uuid;
+			}),
 			group: this.speedupFactor()
 		},
 		success: function(json) {
-			// match entities against data array
 			// @todo assuming unique UUIDs across middlewares
 			this.each(function(entity) {
 				json.data.some(function(data) {
@@ -150,8 +197,9 @@ vz.entities.showTable = function() {
 
 	// add entities to table (recurse into aggregators)
 	vz.entities.each(function(entity, parent) {
-		if (entity.definition) // skip bad entities, e.g. without data
+		if (entity.definition) { // skip bad entities, e.g. without data
 			$('#entity-list tbody').append(entity.getDOMRow(parent));
+		}
 	}, true);
 
 	/*

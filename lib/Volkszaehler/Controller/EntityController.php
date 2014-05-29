@@ -43,29 +43,39 @@ class EntityController extends Controller {
 	 */
 	public function get($uuid = NULL) {
 		if (isset($uuid)) { // single entity
-			if (!Util\UUID::validate($uuid)) {
-				throw new \Exception('Invalid UUID: \'' . $uuid . '\'');
+			return $this->getSingleEntity($uuid);
+		}
+		elseif (is_array($uuids = $this->view->request->getParameter('uuid'))) { // multiple entities
+			$entities = array();
+			foreach ($uuids as $uuid) {
+				$entities[] = $this->getSingleEntity($uuid);
 			}
-
-			$dql = 'SELECT a, p
-				FROM Volkszaehler\Model\Entity a
-				LEFT JOIN a.properties p
-				WHERE a.uuid = :uuid';
-
-			$q = $this->em->createQuery($dql);
-			$q->setParameter('uuid', $uuid);
-
-			try {
-				return $q->getSingleResult();
-			} catch (\Doctrine\ORM\NoResultException $e) {
-				throw new \Exception('No entity found with UUID: \'' . $uuid . '\'', 404);
-			}
+			return array('entities' => $entities);
 		}
 		else { // public entities
 			return array('entities' => $this->filter(array('public' => TRUE)));
 		}
 	}
 
+	public function getSingleEntity($uuid) {
+		if (!Util\UUID::validate($uuid)) {
+			throw new \Exception('Invalid UUID: \'' . $uuid . '\'');
+		}
+
+		$dql = 'SELECT a, p
+			FROM Volkszaehler\Model\Entity a
+			LEFT JOIN a.properties p
+			WHERE a.uuid = :uuid';
+
+		$q = $this->em->createQuery($dql);
+		$q->setParameter('uuid', $uuid);
+
+		try {
+			return $q->getSingleResult();
+		} catch (\Doctrine\ORM\NoResultException $e) {
+			throw new \Exception('No entity found with UUID: \'' . $uuid . '\'', 404);
+		}
+	}
 	/**
 	 * Delete entity by uuid
 	 */

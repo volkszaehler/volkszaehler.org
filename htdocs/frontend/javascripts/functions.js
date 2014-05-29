@@ -229,12 +229,30 @@ vz.parseUrlParams = function() {
  * Load capabilities from middleware
  */
 vz.capabilities.load = function() {
-	return vz.load({
+	// execute query asynchronously to refresh from middleware
+	var deferred = vz.load({
 		controller: 'capabilities',
 		success: function(json) {
 			$.extend(true, vz.capabilities, json.capabilities);
+			try {
+				localStorage.setItem('vz.capabilities', JSON.stringify(json)); // cache it
+			}
+			catch (e) { }
 		}
 	});
+
+	// get cached value to avoid blocking frontend startup
+	try {
+		var json = localStorage.getItem('vz.capabilities');
+		if (json !== false) {
+			// use cached value and return immediately
+			$.extend(true, vz.capabilities, JSON.parse(json).capabilities);
+			return $.Deferred().resolve();
+		}
+	}
+	catch (e) {	}
+
+	return deferred;
 };
 
 /**
