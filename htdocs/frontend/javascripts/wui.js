@@ -720,7 +720,12 @@ vz.wui.drawPlot = function () {
 	vz.entities.each(function(entity) {
 		if (entity.active && entity.definition && entity.definition.model == 'Volkszaehler\\Model\\Channel' &&
 				entity.data && entity.data.tuples && entity.data.tuples.length > 0) {
-			var i, tuples = entity.data.tuples, maxTuples = 0;
+			var i, maxTuples = 0;
+
+			// work on copy here to be able to redraw
+			var tuples = entity.data.tuples.map(function(t) {
+				return t.slice(0);
+			});
 
 			// mangle data for "steps" curves by shifting one ts left ("step-before")
 			if (entity.style == "steps") {
