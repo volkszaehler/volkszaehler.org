@@ -106,7 +106,20 @@
 		"translation"		: {
 			"de" : "Spannungssensor",
 			"en" : "Voltage Meter",
-			"fr" : "voltmètre"
+			"fr" : "Voltmètre"
+		}
+	},
+	{
+		"name"			: "current",
+		"optional"		: ["tolerance", "local", "gap"],
+		"icon"			: "bolt.png",
+		"unit"			: "A",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"		: {
+			"de" : "Stromsensor",
+			"en" : "Current Meter",
+			"fr" : "Courantmètre"
 		}
 	},
 	{
