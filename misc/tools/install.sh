@@ -34,6 +34,9 @@ shopt -s nocasematch
 ###############################
 # some configuration
 
+# minimum php version required
+php_ver_min=5.3
+
 # please update after releases
 vz_tar=https://github.com/volkszaehler/volkszaehler.org/tarball/master
 #vz_tar=http://wiki.volkszaehler.org/_media/software/releases/volkszaehler.org-0.2.tar.gz
@@ -97,17 +100,15 @@ for binary in "${deps[@]}"; do
 done
 echo
 
-php_version=$(php --version | grep "^PHP" | awk ' { print $2 } ')
-php_major=$(echo "$php_version" | cut -d. -f1)
-php_minor=$(echo "$php_version" | cut -d. -f2)
 
-echo "php version: $php_major.$php_minor ($php_major.$php_minor)"
-
-if [ "$php_major" -lt 5 -o \( "$php_major" -eq 5 -a "$php_minor" -lt 3 \) ]; then
-	echo "you need PHP version 5.3+ to run volkszaehler"
+php_version=$(php -r 'echo PHP_VERSION;')
+echo -n "checking php version: $php_version "
+# due to php magic, this also works with stuff like "5.3.3-7+squeeze19"
+if php -r "exit(PHP_VERSION >= $php_ver_min ? 0 : 1);"; then
+	echo ">= $php_ver_min, ok"
+else 	
+	echo "is too old, $php_ver_min or higher required"
 	cleanup && exit 1
-else
-	echo "php version ok"
 fi
 
 ###############################
