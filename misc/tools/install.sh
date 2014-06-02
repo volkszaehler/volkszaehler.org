@@ -199,7 +199,7 @@ if [ "$REPLY" == "y" ]; then
 	get_admin
 
 	echo "creating database $db_name..."
-	mysql -h"$db_host" -u"$db_admin_user" -p"$db_admin_pass" -e 'CREATE DATABASE `'"$db_name'`'
+	mysql -h"$db_host" -u"$db_admin_user" -p"$db_admin_pass" -e 'CREATE DATABASE `'"$db_name"'`'
 	pushd "$vz_dir"
 	php misc/tools/doctrine orm:schema-tool:create
 	popd
