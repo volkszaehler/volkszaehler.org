@@ -137,7 +137,7 @@ echo
 echo "checking composer..."
 
 for f in composer composer.phar; do
-	COMPOSER=$(which $f) 2>/dev/null
+	COMPOSER=$(which $f 2>/dev/null || true)
 	test -n "$COMPOSER"  && break
 done
 if [ -n "$COMPOSER" ]; then
