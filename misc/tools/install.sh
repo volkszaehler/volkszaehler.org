@@ -44,7 +44,6 @@ vz_tar=https://github.com/volkszaehler/volkszaehler.org/tarball/master
 # cannot handle other hosts right now
 db_host=localhost
 
-tmp_dir=$(mktemp -d)
 
 ###############################
 # functions
@@ -87,7 +86,6 @@ echo
 echo -n "checking prerequisites:"
 
 deps=( php mysql awk sed grep wget mktemp mkdir tar )
-
 for binary in "${deps[@]}"; do
 	binpath="$(which $binary)"
 	if [ -n "$binpath" ] ; then
@@ -100,7 +98,10 @@ for binary in "${deps[@]}"; do
 done
 echo
 
+# get a temp dir
+tmp_dir=$(mktemp -d)
 
+# check php version
 php_version=$(php -r 'echo PHP_VERSION;')
 echo -n "checking php version: $php_version "
 # due to php magic, this also works with stuff like "5.3.3-7+squeeze19"
