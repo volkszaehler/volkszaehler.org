@@ -196,7 +196,9 @@ abstract class Interpreter {
 	 * @param string $expression sql parameter
 	 * @return string grouped sql expression
 	 */
-	abstract public static function groupExprSQL($expression);
+	public static function groupExprSQL($expression) {
+		throw new Exception('Derived classes must implement static function groupExprSQL.');
+	}
 
 	/**
 	 * Builds sql query part for grouping data by date functions
