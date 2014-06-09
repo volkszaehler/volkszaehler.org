@@ -221,8 +221,8 @@ class DataSensorTest extends DataContext
 		$average = $this->getAverage($this->ts1, $this->ts3, $consumption);
 
 		echo("\nExpected <consumption/average> error fixed\n");
-		$consumption = 4500;
-		$average = 1500;
+		$consumption = 9000;
+		$average = 3000;
 
 		// 3 vs 1 result rows depends on if Interpreter->runSQL or DataIterator->next does iteration
 		$this->assertHeader($consumption, $average/*, 3*/);
