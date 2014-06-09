@@ -99,6 +99,22 @@ class MeterInterpreter extends Interpreter {
 
 		return $tuples;
 	}
+
+	/**
+	 * Return sql grouping expression
+	 *
+	 * Override Interpreter->groupExpr
+	 *
+	 * For precision when bundling tuples into packages
+	 * CounterInterpreter needs MAX instead of SUM.
+	 *
+	 * @author Andreas Götz <cpuidle@gmx.de>
+	 * @param string $expression sql parameter
+	 * @return string grouped sql expression
+	 */
+	public static function groupExprSQL($expression) {
+		return 'SUM(' . $expression . ')';
+	}
 }
 
 ?>

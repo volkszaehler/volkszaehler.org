@@ -123,7 +123,7 @@ class SQLOptimizer {
 
 	/**
 	 * DB-specific data grouping by date functions.
-	 * Static call is degelated to implementing classes.
+	 * Static call is delegated to implementing classes.
 	 * Called by Interpreter->buildGroupBySQL
 	 *
 	 * @param string $groupBy
