@@ -68,7 +68,7 @@ class SensorInterpreter extends Interpreter {
 			$delta = $row[0] - $ts_last;
 			$tuple = $callback(array(
 				(float) ($ts_last = $row[0]), // timestamp of interval end
-				(float) $row[1] / $row[2],
+				(float) $row[1],
 				(int) $row[2]
 			));
 
@@ -86,6 +86,19 @@ class SensorInterpreter extends Interpreter {
 		}
 
 		return $tuples;
+	}
+
+	/**
+	 * Return sql grouping expression
+	 *
+	 * Override Interpreter->groupExpr
+	 *
+	 * @author Andreas Götz <cpuidle@gmx.de>
+	 * @param string $expression sql parameter
+	 * @return string grouped sql expression
+	 */
+	public static function groupExprSQL($expression) {
+		return 'AVG(' . $expression . ')';
 	}
 }
 

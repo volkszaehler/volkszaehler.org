@@ -190,13 +190,13 @@ abstract class Interpreter {
 	/**
 	 * Return sql grouping expression
 	 *
+	 * Child classes must implement this method
+	 *
 	 * @author Andreas Götz <cpuidle@gmx.de>
 	 * @param string $expression sql parameter
 	 * @return string grouped sql expression
 	 */
-	public static function groupExprSQL($expression) {
-		return 'SUM(' . $expression . ')';
-	}
+	abstract public static function groupExprSQL($expression);
 
 	/**
 	 * Builds sql query part for grouping data by date functions
