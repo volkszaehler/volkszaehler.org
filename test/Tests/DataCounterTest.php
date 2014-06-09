@@ -91,6 +91,7 @@ class DataCounterTest extends DataContext
 
 		$this->assertTuple(0, $this->makeTuple($this->ts1, $this->ts2, $this->value1, $this->value2));
 	}
+
 	/**
 	 * test if from=0 gets all tuples
 	 *
