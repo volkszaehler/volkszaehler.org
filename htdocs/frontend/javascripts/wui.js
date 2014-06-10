@@ -662,8 +662,8 @@ vz.wui.formatNumber = function(number, prefix) {
 	}
 
 	// avoid infinities/NaN
-	if (number > 0) {
-		var precision = Math.max(0, vz.options.precision - Math.floor(Math.log(number)/Math.LN10));
+	if (number < 0 || number > 0) {
+		var precision = Math.max(0, vz.options.precision - Math.floor(Math.log(Math.abs(number))/Math.LN10));
 		number = Math.round(number * Math.pow(10, precision)) / Math.pow(10, precision); // rounding
 	}
 
