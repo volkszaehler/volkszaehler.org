@@ -77,7 +77,18 @@ class MySQLOptimizer extends SQLOptimizer {
 		}
 	}
 
+	/**
+	 * SQL statement optimization for perfromance
+	 *
+	 * @param  string $sql           SQL statement to modify
+	 * @param  array  $sqlParameters Parameters list
+	 * @return boolean               Success
+	 */
 	public function optimizeDataSQL(&$sql, &$sqlParameters) {
+		// special treatment
+		if (get_class($this->interpreter) == 'Volkszaehler\\Interpreter\\SensorInterpreter')
+			return $this->optimizeDataSQLforSensorInterpreter($sql, $sqlParameters);
+
 		if ($this->groupBy)
 			return false;
 
@@ -91,18 +102,100 @@ class MySQLOptimizer extends SQLOptimizer {
 				$sqlTimeFilter = $this->interpreter->buildDateTimeFilterSQL($this->from, $this->to, $foo);
 
 				$this->rowCount = floor($this->rowCount / $packageSize);
+
 				// setting @row to packageSize-2 will make the first package contain 1 tuple only
 				// this pushes as much 'real' data as possible into the first used package and ensures
 				// we get 2 rows even if tuples=1 requested (first row is discarded by DataIterator)
 				$sql = 'SELECT MAX(agg.timestamp) AS timestamp, ' .
-						$this->interpreter->groupExprSQL('agg.value') . ' AS value, ' .
-					   'COUNT(agg.value) AS count ' .
-					   'FROM (SELECT @row:=' . ($packageSize-2) . ') AS init, (' .
+							   $this->interpreter->groupExprSQL('agg.value') . ' AS value, ' .
+							  'COUNT(agg.value) AS count ' .
+					   'FROM (' .
 							 'SELECT timestamp, value, @row:=@row+1 AS row ' .
-							 'FROM data WHERE channel_id=?' . $sqlTimeFilter . ' ' .
+							 'FROM data ' .
+							 'CROSS JOIN (SELECT @row := ' . ($packageSize-2) . ') AS vars ' . // initialize rowcount variable
+							 'WHERE channel_id=?' . $sqlTimeFilter . ' ' .
 					   		 'ORDER BY timestamp' .
 					   ') AS agg ' .
 					   'GROUP BY row DIV ' . $packageSize . ' ' .
+					   'ORDER BY timestamp ASC';
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Special case handling: SensorInterpreter needs weighed average if correctness is required
+	 *
+	 * @param  string $sql           SQL statement to modify
+	 * @param  array  $sqlParameters Parameters list
+	 * @return boolean               Success
+	 */
+	public function optimizeDataSQLforSensorInterpreter(&$sql, &$sqlParameters) {
+		$foo = array();
+		$sqlTimeFilter = $this->interpreter->buildDateTimeFilterSQL($this->from, $this->to, $foo);
+
+		if ($this->groupBy) {
+			$sql = 'SELECT MAX(agg.timestamp) AS timestamp, ' .
+						  'COALESCE( ' .
+							  'SUM(agg.val_by_time) / (MAX(agg.timestamp) - MIN(agg.prev_timestamp)), ' .
+							  $this->interpreter->groupExprSQL('agg.value') .
+						  ') AS value, ' .
+						  'COUNT(agg.value) AS count ' .
+				   'FROM ( ' .
+					   'SELECT collect.timestamp, collect.value, ' .
+							  'prev.timestamp AS prev_timestamp, collect.value * (collect.timestamp - prev.timestamp) AS val_by_time ' .
+					   'FROM data AS collect ' .
+					   'LEFT JOIN data AS prev ON ' .	// subquery for previous row's timestamp
+						   'prev.channel_id = collect.channel_id AND ' .
+						   'prev.timestamp = ( ' .
+							   'SELECT MAX(timestamp) ' .
+							   'FROM data ' .
+							   'WHERE data.channel_id = collect.channel_id AND ' .
+									 'data.timestamp < collect.timestamp ' .
+						   ') ' .
+					   'WHERE collect.channel_id=?' . str_replace('timestamp', 'collect.timestamp', $sqlTimeFilter) . ' ' .
+					   'ORDER BY collect.timestamp ' .
+				   ') AS agg ' .
+				   'GROUP BY ' . $this->interpreter->buildGroupBySQL($this->groupBy) . ' ' .
+				   'ORDER BY timestamp ASC';
+
+			return true;
+		}
+
+		// potential to reduce result set - can't do this for already grouped SQL
+		if ($this->tupleCount && ($this->rowCount > $this->tupleCount)) {
+			$packageSize = floor($this->rowCount / $this->tupleCount);
+
+			if ($packageSize > 1) { // worth doing -> go
+				// optimize package statement general case: tuple packaging
+				$this->rowCount = floor($this->rowCount / $packageSize);
+
+				$sql = 'SELECT MAX(agg.timestamp) AS timestamp, ' .
+							  'COALESCE( ' .
+								  'SUM(agg.val_by_time) / (MAX(agg.timestamp) - MIN(agg.prev_timestamp)), ' .
+								  $this->interpreter->groupExprSQL('agg.value') .
+							  ') AS value, ' .
+							  'COUNT(agg.value) AS count ' .
+					   'FROM ( ' .
+						   'SELECT collect.timestamp, collect.value, @row:=@row+1 AS row, ' .
+								  'prev.timestamp AS prev_timestamp, collect.value * (collect.timestamp - prev.timestamp) AS val_by_time ' .
+						   'FROM data AS collect ' .
+						   'CROSS JOIN (SELECT @row := ' . ($packageSize-2) . ') AS vars ' . // initialize rowcount variable
+						   'LEFT JOIN data AS prev ON ' .	// subquery for previous row's timestamp
+							   'prev.channel_id = collect.channel_id AND ' .
+							   'prev.timestamp = ( ' .
+								   'SELECT MAX(timestamp) ' .
+								   'FROM data ' .
+								   'WHERE data.channel_id = collect.channel_id AND ' .
+										 'data.timestamp < collect.timestamp ' .
+							   ') ' .
+						   'WHERE collect.channel_id=?' . str_replace('timestamp', 'collect.timestamp', $sqlTimeFilter) . ' ' .
+						   'ORDER BY collect.timestamp ' .
+					   ') AS agg ' .
+					   'GROUP BY row div ' . $packageSize . ' ' .
 					   'ORDER BY timestamp ASC';
 
 				return true;

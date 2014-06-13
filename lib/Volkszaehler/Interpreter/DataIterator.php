@@ -40,6 +40,7 @@ class DataIterator implements \Iterator, \Countable {
 	protected $rowCount;	// num of readings in PDOStatement
 	protected $tupleCount;	// num of requested tuples
 	protected $packageSize; // num of rows we aggregate in each tuple
+	protected $lastTimestamp; 	// timestamp of the previous tuple (used for weighed avg calculation)
 
 	protected $from;		// exact timestamps based on on query results
 	protected $to;			// from/to of Interpreter are based on the request parameters!
@@ -84,20 +85,27 @@ class DataIterator implements \Iterator, \Countable {
 	 * @return next aggregated tuple
 	 */
 	public function next() {
-		$package = array(0, 0, 0, 0);
+		$package = array(0, 0, 0, 0, 0);
+		$firstTimestamp = $this->lastTimestamp; // SensorInterpreter
 		for ($i = 0; $i < $this->packageSize && $tuple = $this->stmt->fetch(); $i++) {
 			$package[0] = $tuple[0]; // last timestamp of package will be used
 			$package[1] += $tuple[1];
 			$package[2] += $tuple[2];
-			$package[3] = max($package[3], $tuple[1]); // courtesy for CounterInterpreter
+
+			// special cases - auxilary information for specific interpreters
+			$package[3] = max($package[3], $tuple[1]);						// CounterInterpreter
+			$package[4] += $tuple[1] * ($tuple[0] - $this->lastTimestamp);	// SensorInterpreter
+			$this->lastTimestamp = $tuple[0];
 
 			$this->rowKey++;
 		}
 
 		$this->key++;
 
-		if ($package[2])
+		if ($package[2]) {
 			$this->to = $package[0];
+			$package[4] /= $this->lastTimestamp - $firstTimestamp; // weighed average for SensorInterpreter
+		}
 
 		return $this->current = $package;
 	}
@@ -114,6 +122,7 @@ class DataIterator implements \Iterator, \Countable {
 	 */
 	public function rewind() {
 		$this->key = $this->rowKey = 0;
+		$this->last_ts = $this->from;
 		return $this->next(); // fetch first tuple
 	}
 
