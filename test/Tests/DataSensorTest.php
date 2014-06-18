@@ -240,8 +240,6 @@ class DataSensorTest extends DataContext
 
 	/**
 	 * @depends testMultipleGroupByHour
-	 *
-	 * TODO check how this test behaves for non-equal timestamps with SensorInterpreter on non-mysql
 	 */
 	function testMultipleGroupByHour2() {
 		$this->addTuple($this->ts4, $this->value4);
