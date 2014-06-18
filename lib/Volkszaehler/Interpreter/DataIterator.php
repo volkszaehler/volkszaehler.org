@@ -98,9 +98,6 @@ class DataIterator implements \Iterator, \Countable {
 			$package[4] += $tuple[1] * ($tuple[0] - $this->lastTimestamp);	// SensorInterpreter
 			$this->lastTimestamp = $tuple[0];
 
-// if ($debug = \Volkszaehler\Util\Debug::getInstance()) {
-// 	$debug->log("package: " . print_r($package,1));
-// }
 			$this->rowKey++;
 		}
 
@@ -109,9 +106,6 @@ class DataIterator implements \Iterator, \Countable {
 		if ($package[2]) {
 			$this->to = $package[0];
 			$package[4] /= $this->lastTimestamp - $firstTimestamp; // weighed average for SensorInterpreter
-// if ($debug = \Volkszaehler\Util\Debug::getInstance()) {
-// 	$debug->log("> final: " . print_r($package,1));
-// }
 		}
 
 		return $this->current = $package;

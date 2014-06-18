@@ -244,12 +244,6 @@ class DataSensorTest extends DataContext
 	 * TODO check how this test behaves for non-equal timestamps with SensorInterpreter on non-mysql
 	 */
 	function testMultipleGroupByHour2() {
-		// skip test for non-mysql to avoid erroring out
-		if ($db = \Volkszaehler\Util\Configuration::read('db.driver') !== 'pdo_mysql') {
-			$this->markTestSkipped('not implemented for ' . $db);
-			return;
-		}
-
 		$this->addTuple($this->ts4, $this->value4);
 		$this->addTuple($this->ts5, $this->value5);
 
