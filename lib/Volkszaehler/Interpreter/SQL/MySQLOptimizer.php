@@ -107,7 +107,7 @@ class MySQLOptimizer extends SQLOptimizer {
 				// this pushes as much 'real' data as possible into the first used package and ensures
 				// we get 2 rows even if tuples=1 requested (first row is discarded by DataIterator)
 				$sql = 'SELECT MAX(agg.timestamp) AS timestamp, ' .
-							   $this->interpreter::groupExprSQL('agg.value') . ' AS value, ' .
+							   $this->interpreter->groupExprSQL('agg.value') . ' AS value, ' .
 							  'COUNT(agg.value) AS count ' .
 					   'FROM (' .
 							 'SELECT timestamp, value, @row:=@row+1 AS row ' .
@@ -141,7 +141,7 @@ class MySQLOptimizer extends SQLOptimizer {
 			$sql = 'SELECT MAX(agg.timestamp) AS timestamp, ' .
 						  'COALESCE( ' .
 							  'SUM(agg.val_by_time) / (MAX(agg.timestamp) - MIN(agg.prev_timestamp)), ' .
-							  $this->interpreter::groupExprSQL('agg.value') .
+							  $this->interpreter->groupExprSQL('agg.value') .
 						  ') AS value, ' .
 						  'COUNT(agg.value) AS count ' .
 				   'FROM ( ' .
@@ -176,7 +176,7 @@ class MySQLOptimizer extends SQLOptimizer {
 				$sql = 'SELECT MAX(agg.timestamp) AS timestamp, ' .
 							  'COALESCE( ' .
 								  'SUM(agg.val_by_time) / (MAX(agg.timestamp) - MIN(agg.prev_timestamp)), ' .
-								  $this->interpreter::groupExprSQL('agg.value') .
+								  $this->interpreter->groupExprSQL('agg.value') .
 							  ') AS value, ' .
 							  'COUNT(agg.value) AS count ' .
 					   'FROM ( ' .
