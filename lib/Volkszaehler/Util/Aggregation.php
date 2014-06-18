@@ -92,7 +92,7 @@ class Aggregation {
 	 */
 	public static function getAggregationLevelTypeValue($level) {
 		if (($type = array_search($level, self::getAggregationLevels(), true)) === false) {
-			throw new \Exception('Invalid aggretation level \'' . $level . '\'');
+			throw new \Exception('Invalid aggregation level \'' . $level . '\'');
 		};
 		return($type);
 	}
