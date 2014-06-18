@@ -66,14 +66,14 @@ abstract class DataContext extends Middleware
 		return $this->json;
 	}
 
-	protected function getTuples($from = null, $to = null, $group = null, $tuples = null) {
+	protected function getTuples($from = null, $to = null, $group = null, $tuples = null, $extra = null) {
 		$url = self::$context . '/' . static::$uuid . '.json?';
-		return $this->getTuplesByUrl($url, $from, $to, $group, $tuples);
+		return $this->getTuplesByUrl($url, $from, $to, $group, $tuples, $extra);
 	}
 
-	protected function getTuplesRaw($from = null, $to = null, $group = null, $tuples = null) {
+	protected function getTuplesRaw($from = null, $to = null, $group = null, $tuples = null, $extra = null) {
 		$url = self::$context . '/' . static::$uuid . '.json?options=exact&';
-		return $this->getTuplesByUrl($url, $from, $to, $group, $tuples);
+		return $this->getTuplesByUrl($url, $from, $to, $group, $tuples, $extra);
 	}
 
 	protected function debug() {
