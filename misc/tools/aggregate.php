@@ -4,7 +4,7 @@
  * Frontend controller for Util\Aggregation
  *
  * To setup aggregation job run crontab -e
- * 0 0 * * * /usr/bin/php aggregate.php -m delta -l hour -l day
+ * 0 0 * * * /usr/bin/php aggregate.php run -m delta -l hour -l day
  *
  * @author Andreas Goetz <cpuidle@gmx.de>
  * @copyright Copyright (c) 2013, The volkszaehler.org project
@@ -30,11 +30,24 @@
 
 use Volkszaehler\Util;
 
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputDefinition;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Application;
+
 define('VZ_DIR', realpath(__DIR__ . '/../..'));
 
 require_once VZ_DIR . '/lib/bootstrap.php';
 
-class AggregationController {
+
+/**
+ * BasicCommand
+ */
+abstract class BasicCommand extends Command {
+
 	/**
 	 * @var \Doctrine\ORM\EntityManager Doctrine EntityManager
 	 */
@@ -43,14 +56,24 @@ class AggregationController {
 	protected $aggregator;
 
 	public function __construct() {
+		parent::__construct();
+
 		$this->em = Volkszaehler\Router::createEntityManager(true); // get admin credentials
 		$this->aggregator = new Util\Aggregation($this->em->getConnection());
 	}
+}
 
-	/**
-	 * (Re)create aggregation table
-	 */
-	public function cmdCreate() {
+/**
+ * (Re)create aggregation table
+ */
+class CreateCommand extends BasicCommand {
+
+	protected function configure() {
+		$this->setName('create')
+			->setDescription('Create aggregation table (DESTRUCTIVE)');
+	}
+
+	protected function execute(InputInterface $input, OutputInterface $output) {
 		$conn = $this->em->getConnection();
 
 		echo("Recreating aggregation table.\n");
@@ -67,11 +90,19 @@ class AggregationController {
 			'  UNIQUE KEY `ts_uniq` (`channel_id`,`type`,`timestamp`)' .
 			')');
 	}
+}
 
-	/**
-	 * Optimize data and aggregate tables
-	 */
-	public function cmdOptimize() {
+/**
+ * Optimize data and aggregate tables
+ */
+class OptimizeCommand extends BasicCommand {
+
+	protected function configure() {
+		$this->setName('optimize')
+			->setDescription('Opimize data and aggregate tables');
+	}
+
+	protected function execute(InputInterface $input, OutputInterface $output) {
 		$conn = $this->em->getConnection();
 
 		echo("Optimizing aggregate table.\n");
@@ -79,13 +110,22 @@ class AggregationController {
 		echo("Optimizing data table (slow).\n");
 		$conn->executeQuery('OPTIMIZE TABLE data');
 	}
+}
 
-	/**
-	 * Clear aggregate table for channel
-	 * @todo add levels support
-	 */
-	public function cmdClear($uuids) {
-		foreach ($uuids as $uuid) {
+/**
+ * Clear aggregate table for channel
+ * @todo add levels support
+ */
+class ClearCommand extends BasicCommand {
+
+	protected function configure() {
+		$this->setName('clear')
+			->setDescription('Clear aggregation table')
+ 		->addArgument('uuid', InputArgument::OPTIONAL | InputArgument::IS_ARRAY, 'UUID(s)', array(null));
+	}
+
+	protected function execute(InputInterface $input, OutputInterface $output) {
+		foreach ($input->getArgument('uuid') as $uuid) {
 			$msg = "Clearing aggregation table";
 			if ($uuid) $msg .= " for UUID " . $uuid;
 			echo($msg . ".\n");
@@ -94,19 +134,32 @@ class AggregationController {
 			echo("Done clearing aggregation table.\n");
 		}
 	}
+}
 
-	/**
-	 * Aggregate selected channels and levels
-	 */
-	public function cmdAggregate($uuids, $levels, $mode, $period = null) {
-		if (!in_array($mode, array('full', 'delta'))) {
+
+/**
+ * Aggregate selected channels and levels
+ */
+class RunCommand extends BasicCommand {
+
+	protected function configure() {
+		$this->setName('run')
+			->setDescription('Run aggregation')
+ 		->addArgument('uuid', InputArgument::OPTIONAL | InputArgument::IS_ARRAY, 'UUID(s)', array(null))
+			->addOption('level', 'l', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Level (hour|day|month|year)', array('day'))
+			->addOption('mode', 'm', InputOption::VALUE_REQUIRED, 'Mode (full|delta)', 'delta')
+			->addOption('period', 'p', InputOption::VALUE_REQUIRED, 'Previous time periods (full|delta)');
+	}
+
+	protected function execute(InputInterface $input, OutputInterface $output) {
+		if (!in_array($mode = $input->getOption('mode'), array('full', 'delta'))) {
 			throw new \Exception('Unsupported aggregation mode ' . $mode);
 		}
 
 		// loop through all uuids
-		foreach ($uuids as $uuid) {
+		foreach ($input->getArgument('uuid') as $uuid) {
 			// loop through all aggregation levels
-			foreach ($levels as $level) {
+			foreach ($input->getOption('level') as $level) {
 				if (!Util\Aggregation::isValidAggregationLevel($level))
 					throw new \Exception('Unsupported aggregation level ' . $level);
 
@@ -114,7 +167,7 @@ class AggregationController {
 				if ($uuid) $msg .= " for UUID " . $uuid;
 				echo($msg . " on '" . $level . "' level.\n");
 
-				$rows = $this->aggregator->aggregate($uuid, $level, $mode, $period);
+				$rows = $this->aggregator->aggregate($uuid, $level, $mode, $input->getOption('period'));
 				echo("Updated $rows rows.\n");
 			}
 		}
@@ -122,60 +175,17 @@ class AggregationController {
 }
 
 
-if (Util\Console::isConsole()) {
-	$console = new Util\Console(array(
-		'u:'=>'uuid:',
-		'm:'=>'mode:',
-		'l:'=>'level',
-		'p:'=>'period',
-		'h'=>'help'));
-
-	// make sure uuid array is populated
-	$uuid    = $console->getMultiOption('u', array(null));
-	$level   = $console->getMultiOption('l', array('day'));
-	$mode    = $console->getSimpleOption('m', 'delta');
-	$period  = $console->getSimpleOption('p');
-	$help    = $console->getSimpleOption('h');
-
-	$commands = $console->getCommand();
-
-	if ($help || count($commands) == 0) {
-		echo("Usage: aggregate.php [options] command[s]\n");
-		echo("Commands:\n");
-		echo("       aggregate|run Run aggregation\n");
-		echo("              create Create aggregation table (DESTRUCTIVE)\n");
-		echo("               clear Clear aggregation table\n");
-		echo("            optimize Opimize data and aggregate tables\n");
-		echo("Options:\n");
-		echo("             -u[uid] uuid\n");
-		echo("            -l[evel] hour|day|month|year\n");
-		echo("             -m[ode] full|delta\n");
-		echo("           -p[eriod] number of previous time periods\n");
-		echo("Example:\n");
-		echo("         aggregate.php --uuid ABCD-0123 --mode delta -l month\n");
-		echo("Create monthly and daily aggregation data since last run for specified UUID\n");
-	}
-
-	$job = new AggregationController();
-
-	foreach ($commands as $command) {
-		switch ($command) {
-			case 'create':
-				$job->cmdCreate();
-				break;
-			case 'clear':
-				$job->cmdClear($uuid);
-				break;
-			case 'aggregate':
-			case 'run';
-				$job->cmdAggregate($uuid, $level, $mode, $period);
-				break;
-			default:
-				throw new \Exception('Invalid command \'' . $command . '\'.');
-		}
-	}
-}
-else
+$app = new Util\ConsoleApplication('Data aggregation tool');
+if (!$app::isConsole())
 	throw new \Exception('This tool can only be run locally.');
+
+$app->addCommands(array(
+	new CreateCommand,
+	new OptimizeCommand,
+	new ClearCommand,
+	new RunCommand
+));
+
+$app->run();
 
 ?>
