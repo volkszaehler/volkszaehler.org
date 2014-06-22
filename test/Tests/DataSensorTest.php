@@ -10,6 +10,9 @@ namespace Tests;
 
 class DataSensorTest extends DataContext
 {
+	// channel properties
+	static $resolution = 1000;
+
 	// data properties
 	protected $ts1 =  3600000;
 	protected $ts2 = 10800000; // +2hr
@@ -28,7 +31,7 @@ class DataSensorTest extends DataContext
 	 */
 	static function setupBeforeClass() {
 		parent::setupBeforeClass();
-		self::$uuid = self::createChannel('Sensor', 'powersensor'/*, self::$resolution*/);
+		self::$uuid = self::createChannel('Sensor', 'powersensor', self::$resolution);
 	}
 
 	// static function tearDownAfterClass() {
@@ -36,7 +39,7 @@ class DataSensorTest extends DataContext
 	// }
 
 	function getConsumption($from, $to, $periodValue) {
-		return($periodValue * ($to - $from) / 3600000);
+		return($periodValue * ($to - $from) / 3600000 / self::$resolution);
 	}
 
 	function getAverage($from, $to, $periodValue) {
@@ -228,14 +231,15 @@ class DataSensorTest extends DataContext
 		// 3 vs 1 result rows depends on if Interpreter->runSQL or DataIterator->next does iteration
 		$this->assertHeader($consumption, $average); // ,3
 
-		// min/max are identical with the one tuple
+		// min/max are identical with the one tuple; correct average to raw value
 		$this->assertMinMax(
-			$this->makeTuple($this->ts1, $this->ts3, $average));
+			$this->makeTuple($this->ts1, $this->ts3, $average * self::$resolution));
 
 		// out of the 3 tuples, 1 has been used as starting point, the 2 remaining ones are packaged
 		$this->assertCount(1, $this->json->data->tuples);
 
-		$this->assertTuple(0, $this->makeTuple($this->ts1, $this->ts3, $average, 2));
+		// correct average to raw value
+		$this->assertTuple(0, $this->makeTuple($this->ts1, $this->ts3, $average * self::$resolution, 2));
 	}
 
 	/**
@@ -267,8 +271,9 @@ class DataSensorTest extends DataContext
 			$this->getConsumption($this->ts3, $this->ts4, $this->value4) +
 			$this->getConsumption($this->ts4, $this->ts5, $this->value5));
 
+		// correct periodValue to raw value
 		$this->assertTuple(0, $this->makeTuple($this->ts1, $this->ts2, $this->value2));	// hour 2
-		$this->assertTuple(1, $this->makeTuple($this->ts2, $this->ts5, $periodValue));	// hour 3
+		$this->assertTuple(1, $this->makeTuple($this->ts2, $this->ts5, $periodValue * self::$resolution));	// hour 3
 	}
 }
 

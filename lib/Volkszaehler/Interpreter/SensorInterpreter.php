@@ -34,6 +34,7 @@ use Volkszaehler\Util;
 class SensorInterpreter extends Interpreter {
 
 	protected $consumption; // in Wms (Watt milliseconds)
+	protected $resolution;
 
 	/**
 	 * Create the SQL statements for flat and grouped data retrieval and counting rows
@@ -114,6 +115,10 @@ class SensorInterpreter extends Interpreter {
 		$tuples = array();
 		$this->rows = $this->getData();
 
+		// in case of SensorIntepreter resolution is optional
+		$this->resolution = ($this->channel->hasProperty('resolution')) ?
+			$this->channel->getProperty('resolution') : 1;
+
 		$ts_last = $this->getFrom();
 		foreach ($this->rows as $row) {
 			$delta_ts = $row[0] - $ts_last;
@@ -124,7 +129,7 @@ class SensorInterpreter extends Interpreter {
 			// due to non-equidistant timestamps
 			$tuple = $callback(array(
 				(float) ($ts_last = $row[0]),	// timestamp of interval end
-				(float) $row[4],
+				(float) $row[4] / $this->resolution,
 				(int) $row[2]
 			));
 
