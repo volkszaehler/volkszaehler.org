@@ -192,6 +192,40 @@ Entity.prototype.updateData = function(data) {
 
 	this.updateAxisScale();
 	this.updateDOMRow();
+
+	// load totals whenever data changes - this happens async to updateDOMRow()
+	if (this.initialconsumption !== undefined) {
+		this.loadTotalConsumption();
+	}
+};
+
+/**
+ * Load data for current view from middleware
+ * @return jQuery dereferred object
+ */
+Entity.prototype.loadTotalConsumption = function() {
+	return vz.load({
+		controller: 'data',
+		url: this.middleware,
+		identifier: this.uuid,
+		context: this,
+		data: {
+			from: 0,
+			tuples: 1,
+			group: 'month' // maximum sensible grouping level
+		},
+		success: function(json) {
+			var consumption = 1000 * this.initialconsumption + json.data.consumption;
+
+			var row = $('#entity-' + this.uuid);
+			$('.total', row)
+				.data('total', consumption)
+				.text(vz.wui.formatNumber(consumption, 'k') + vz.wui.formatConsumptionUnit(this.definition.unit));
+
+			// unhide total column
+			vz.entities.updateTable();
+		}
+	});
 };
 
 /**
@@ -499,6 +533,7 @@ Entity.prototype.getDOMRow = function(parent) {
 		.append($('<td>').addClass('average'))		// avg
 		.append($('<td>').addClass('last'))		// last value
 		.append($('<td>').addClass('consumption'))	// consumption
+		.append($('<td>').addClass('total'))	// total consumption
 		.append($('<td>').addClass('cost'))		// costs
 		.append($('<td>')				// operations
 			.addClass('ops')
@@ -565,6 +600,7 @@ Entity.prototype.updateDOMRow = function() {
 	$('.last', row).text('');
 	$('.consumption', row).text('');
 	$('.cost', row).text('');
+	$('.total', row).text('').data('total', null);
 
 	if (this.data && this.data.rows > 0) { // update statistics if data available
 		var delta = this.data.to - this.data.from;
