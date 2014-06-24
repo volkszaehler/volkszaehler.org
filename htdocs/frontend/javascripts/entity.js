@@ -101,7 +101,7 @@ Entity.prototype.assignMatchingAxis = function() {
 	if (this.definition) {
 		// find axis with matching unit
 		if (vz.options.plot.yaxes.some(function(yaxis, idx) {
-			if (yaxis.axisLabel == undefined || (this.definition.unit == yaxis.axisLabel)) { // unoccupied or matching unit
+			if (yaxis.axisLabel === undefined || (this.definition.unit == yaxis.axisLabel)) { // unoccupied or matching unit
 				this.assignedYaxis = idx + 1;
 				return true;
 			}
@@ -118,7 +118,7 @@ Entity.prototype.assignMatchingAxis = function() {
  */
 Entity.prototype.assignAxis = function() {
 	// assign y-axis
-	if (this.yaxis == undefined || this.yaxis == 'auto') { // auto axis assignment
+	if (this.yaxis === undefined || this.yaxis == 'auto') { // auto axis assignment
 		this.assignMatchingAxis();
 	}
 	else { // forced axis assignment
@@ -130,12 +130,12 @@ Entity.prototype.assignAxis = function() {
 
 		// check if axis already has auto-allocated entities
 		var yaxis = vz.options.plot.yaxes[this.assignedYaxis-1];
-		if (yaxis.forcedGroup == undefined) { // axis auto-assigned
+		if (yaxis.forcedGroup === undefined) { // axis auto-assigned
 			if (yaxis.axisLabel !== undefined && this.definition.unit !== yaxis.axisLabel) { // unit mismatch
 				// move previously auto-assigned entities to different axis
 				yaxis.axisLabel = '*'; // force unit mismatch
 				vz.entities.each((function(entity) {
-					if (entity.assignedYaxis == this.yaxis && (entity.yaxis == undefined || entity.yaxis == 'auto')) {
+					if (entity.assignedYaxis == this.yaxis && (entity.yaxis === undefined || entity.yaxis == 'auto')) {
 						entity.assignMatchingAxis();
 					}
 				}).bind(this), true); // bind to have callback->this = this
