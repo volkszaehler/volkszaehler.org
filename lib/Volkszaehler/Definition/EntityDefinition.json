@@ -69,7 +69,7 @@
 	},
 	{
 		"name"			: "flow",
-		"optional"		: ["tolerance", "local"],
+		"optional"		: ["resolution", "tolerance", "local"],
 		"icon"			: "waterdrop.png",
 		"unit"			: "m^3/h",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
@@ -98,7 +98,7 @@
 	},
 	{
 		"name"			: "voltage",
-		"optional"		: ["tolerance", "local", "gap"],
+		"optional"		: ["resolution", "tolerance", "local", "gap"],
 		"icon"			: "bolt.png",
 		"unit"			: "V",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
@@ -111,7 +111,7 @@
 	},
 	{
 		"name"			: "current",
-		"optional"		: ["tolerance", "local", "gap"],
+		"optional"		: ["resolution", "tolerance", "local", "gap"],
 		"icon"			: "bolt.png",
 		"unit"			: "A",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
@@ -211,7 +211,7 @@
 	},
 	{
 		"name"			: "temperature",
-		"optional"		: ["tolerance", "local", "gap"],
+		"optional"		: ["resolution", "tolerance", "local", "gap"],
 		"icon"			: "thermometer.png",
 		"unit"			: "°C",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
@@ -224,7 +224,7 @@
 	},
 	{
 		"name"			: "pressure",
-		"optional"		: ["tolerance", "local", "gap"],
+		"optional"		: ["resolution", "tolerance", "local", "gap"],
 		"icon"			: "cloud.png",
 		"unit"			: "hPa",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
@@ -237,7 +237,7 @@
 	},
 	{
 		"name"			: "humidity",
-		"optional"		: ["tolerance", "local", "gap"],
+		"optional"		: ["resolution", "tolerance", "local", "gap"],
 		"icon"			: "rain.png",
 		"unit"			: "%",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
@@ -250,7 +250,7 @@
 	},
 	{
 		"name"			: "windspeed",
-		"optional"		: ["tolerance", "local", "gap"],
+		"optional"		: ["resolution", "tolerance", "local", "gap"],
 		"icon"			: "propeller.png",
 		"unit"			: "km/h",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
@@ -263,7 +263,7 @@
 	},
 	{
 		"name"			: "radiation",
-		"optional"		: ["tolerance", "local", "gap", "resolution"],
+		"optional"		: ["resolution", "tolerance", "local", "gap"],
 		"icon"			: "radioactivity.png",
 		"unit"			: "μSv",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
@@ -276,7 +276,7 @@
 	},
 	{
 		"name"			: "luminosity",
-		"optional"		: ["tolerance", "local", "gap"],
+		"optional"		: ["resolution", "tolerance", "local", "gap"],
 		"icon"			: "sun.png",
 		"unit"			: "cd",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
@@ -304,7 +304,7 @@
 	},
 	{
 		"name"			: "valve",
-		"optional"		: ["tolerance", "local", "gap"],
+		"optional"		: ["resolution", "tolerance", "local", "gap"],
 		"icon"			: "pipe.png",
 		"unit"			: "%",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
