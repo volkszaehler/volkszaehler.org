@@ -200,7 +200,7 @@ Entity.prototype.updateData = function(data) {
 };
 
 /**
- * Load data for current view from middleware
+ * Load total consumption from middleware
  * @return jQuery dereferred object
  */
 Entity.prototype.loadTotalConsumption = function() {
