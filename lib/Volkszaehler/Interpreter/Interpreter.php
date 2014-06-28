@@ -197,7 +197,7 @@ abstract class Interpreter {
 	 * @return string grouped sql expression
 	 */
 	public static function groupExprSQL($expression) {
-		throw new Exception('Derived classes must implement static function groupExprSQL.');
+		throw new \Exception('Derived classes must implement static function groupExprSQL.');
 	}
 
 	/**
