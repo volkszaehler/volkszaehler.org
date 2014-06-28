@@ -45,6 +45,12 @@ class SensorInterpreter extends Interpreter {
 	 * @param  string $sql           data retrieval SQL
 	 * @param  string $sqlRowCount   row count SQL
 	 */
+/*
+	NOTE:
+		currently not implemented as SQL execution too costly
+		see http://stackoverflow.com/questions/24457442/how-to-find-previous-record-n-per-group-maxtimestamp-timestamp
+ */
+/*
 	protected function buildSQLStatements(&$sqlParameters, &$sql, &$sqlRowCount) {
 		if ($this->groupBy) {
 			// common conditions for following SQL queries
@@ -86,6 +92,7 @@ class SensorInterpreter extends Interpreter {
 			parent::buildSQLStatements($sqlParameters, $sql, $sqlRowCount);
 		}
 	}
+*/
 
 	/**
 	 * Calculates the consumption
