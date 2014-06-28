@@ -429,7 +429,7 @@
 		"type"			: "float",
 		"min"			: 0,
 		"translation"		: {
-			"de" : "Startverbrauch",
+			"de" : "Initialverbrauch",
 			"en" : "Initial consumption"
 		}
 	}
