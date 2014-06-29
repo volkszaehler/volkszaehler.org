@@ -141,9 +141,41 @@ abstract class Interpreter {
 			}
 		}
 
-		// set parameters; repeat if modified after setting
+		// build the SQL statements
+		$this->buildSQLStatements($sqlParameters, $sql, $sqlRowCount);
+
+		// optimize sql (first set parameters; repeat if modified after setting)
 		$this->optimizer->setParameters($this->from, $this->to, $this->tupleCount, $this->groupBy);
 
+		$sqlParametersRowCount = $sqlParameters;
+		if (!$this->hasOption('slow')) {
+			$this->optimizer->optimizeRowCountSQL($sqlRowCount, $sqlParametersRowCount);
+		}
+
+		$this->rowCount = (int) $this->conn->fetchColumn($sqlRowCount, $sqlParametersRowCount, 0);
+
+		if ($this->rowCount <= 0)
+			return new \EmptyIterator();
+
+		// optimize sql
+		if (!$this->hasOption('slow')) {
+			$this->optimizer->optimizeDataSQL($sql, $sqlParameters);
+		}
+
+		// run query
+		$stmt = $this->conn->executeQuery($sql, $sqlParameters);
+
+		return new DataIterator($stmt, $this->rowCount, $this->tupleCount);
+	}
+
+	/**
+	 * Create the SQL statements for flat and grouped data retrieval and counting rows
+	 *
+	 * @param  array  $sqlParameters array of parameters
+	 * @param  string $sql           data retrieval SQL
+	 * @param  string $sqlRowCount   row count SQL
+	 */
+	protected function buildSQLStatements(&$sqlParameters, &$sql, &$sqlRowCount) {
 		// common conditions for following SQL queries
 		$sqlParameters = array($this->channel->getId());
 		$sqlTimeFilter = self::buildDateTimeFilterSQL($this->from, $this->to, $sqlParameters);
@@ -164,27 +196,6 @@ abstract class Interpreter {
 			$sqlRowCount = 'SELECT COUNT(1) FROM data WHERE channel_id = ?' . $sqlTimeFilter;
 			$sql = 'SELECT timestamp, value, 1 AS count FROM data WHERE channel_id=?' . $sqlTimeFilter . ' ORDER BY timestamp ASC';
 		}
-
-		// optimize sql
-		$sqlParametersRowCount = $sqlParameters;
-		if (!$this->hasOption('slow')) {
-			$this->optimizer->optimizeRowCountSQL($sqlRowCount, $sqlParametersRowCount);
-		}
-
-		$this->rowCount = (int) $this->conn->fetchColumn($sqlRowCount, $sqlParametersRowCount, 0);
-
-		if ($this->rowCount <= 0)
-			return new \EmptyIterator();
-
-		// optimize sql
-		if (!$this->hasOption('slow')) {
-			$this->optimizer->optimizeDataSQL($sql, $sqlParameters);
-		}
-
-		// run query
-		$stmt = $this->conn->executeQuery($sql, $sqlParameters);
-
-		return new DataIterator($stmt, $this->rowCount, $this->tupleCount);
 	}
 
 	/**

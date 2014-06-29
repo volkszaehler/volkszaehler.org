@@ -10,23 +10,28 @@ namespace Tests;
 
 class DataSensorTest extends DataContext
 {
+	// channel properties
+	static $resolution = 1000;
+
 	// data properties
 	protected $ts1 =  3600000;
 	protected $ts2 = 10800000; // +2hr
 	protected $ts3 = 14400000; // +3hr
-	protected $ts4 = 16200000; // +3.5
+	protected $ts4 = 16200000; // +3:30
+	protected $ts5 = 17100000; // +3:45
 
 	protected $value1 = 1000;
 	protected $value2 = 1000;  // 1kW
 	protected $value3 = 2000;  // 2kW
 	protected $value4 = 2000;  // 2kW
+	protected $value5 = 3000;  // 3kW
 
 	/**
 	 * Create channel
 	 */
 	static function setupBeforeClass() {
 		parent::setupBeforeClass();
-		self::$uuid = self::createChannel('Sensor', 'powersensor'/*, self::$resolution*/);
+		self::$uuid = self::createChannel('Sensor', 'powersensor', self::$resolution);
 	}
 
 	// static function tearDownAfterClass() {
@@ -34,7 +39,7 @@ class DataSensorTest extends DataContext
 	// }
 
 	function getConsumption($from, $to, $periodValue) {
-		return($periodValue * ($to - $from) / 3600000);
+		return($periodValue * ($to - $from) / 3600000 / self::$resolution);
 	}
 
 	function getAverage($from, $to, $periodValue) {
@@ -209,8 +214,6 @@ class DataSensorTest extends DataContext
 	 * @depends testMultipleAverageAndConsumption
 	 */
 	function testMultiplePackaging() {
-		echo("not implemented");
-/*
 		// get data - 1 tuple
 		$this->getTuples($this->ts1, $this->ts3, "", 1);
 
@@ -222,48 +225,59 @@ class DataSensorTest extends DataContext
 			$this->getConsumption($this->ts2, $this->ts3, $this->value3);
 		$average = $this->getAverage($this->ts1, $this->ts3, $consumption);
 
-		echo("\nExpected <consumption/average> error fixed\n");
-		$consumption = 9000;
-		$average = 3000;
+		// relaxed precision for SensorInterpreter weighed average calculation
+		static::$precision = '0.01';
 
 		// 3 vs 1 result rows depends on if Interpreter->runSQL or DataIterator->next does iteration
 		$this->assertHeader($consumption, $average); // ,3
 
-
-		// min/max are identical with the one tuple
+		// min/max are identical with the one tuple; correct average to raw value
 		$this->assertMinMax(
-			$this->makeTuple($this->ts1, $this->ts3, $average));
+			$this->makeTuple($this->ts1, $this->ts3, $average * self::$resolution));
 
 		// out of the 3 tuples, 1 has been used as starting point, the 2 remaining ones are packaged
 		$this->assertCount(1, $this->json->data->tuples);
 
-		$this->assertTuple(0, $this->makeTuple($this->ts1, $this->ts3, $average, 2));
-*/
+		// correct average to raw value
+		$this->assertTuple(0, $this->makeTuple($this->ts1, $this->ts3, $average * self::$resolution, 2));
 	}
 
 	/**
 	 * @depends testMultipleGroupByHour
 	 */
 	function testMultipleGroupByHour2() {
+		// requires weighed average calculation - currently not portable across DBMSes
+		if (\Volkszaehler\Util\Configuration::read('db.driver') !== 'pdo_mysql')
+			$this->markTestSkipped('not implemented');
+
 		$this->addTuple($this->ts4, $this->value4);
+		$this->addTuple($this->ts5, $this->value5);
 
 		// get data
-		$this->getTuples($this->ts1, $this->ts4, "hour");
-		$this->assertFromTo($this->ts1, $this->ts4);
+		$this->getTuples($this->ts1, $this->ts5, "hour");
+		$this->assertFromTo($this->ts1, $this->ts5);
 
 		$consumption =
 			$this->getConsumption($this->ts1, $this->ts2, $this->value2) +
 			$this->getConsumption($this->ts2, $this->ts3, $this->value3) +
-			$this->getConsumption($this->ts3, $this->ts4, $this->value4);
+			$this->getConsumption($this->ts3, $this->ts4, $this->value4) +
+			$this->getConsumption($this->ts4, $this->ts5, $this->value5);
 
-		$average = $this->getAverage($this->ts1, $this->ts4, $consumption);
+		$average = $this->getAverage($this->ts1, $this->ts5, $consumption);
 		$this->assertHeader($consumption, $average, 3);
 
 		// tuples
 		$this->assertCount(2, $this->json->data->tuples);
 
-		$this->assertTuple(0, $this->makeTuple($this->ts1, $this->ts2, $this->value2));
-		$this->assertTuple(1, $this->makeTuple($this->ts2, $this->ts4, $this->value4));
+		// avg power of last 2 tuples
+		$periodValue = $this->getAverage($this->ts2, $this->ts5,			// hour 3 avg. power
+			$this->getConsumption($this->ts2, $this->ts3, $this->value3) +
+			$this->getConsumption($this->ts3, $this->ts4, $this->value4) +
+			$this->getConsumption($this->ts4, $this->ts5, $this->value5));
+
+		// correct periodValue to raw value
+		$this->assertTuple(0, $this->makeTuple($this->ts1, $this->ts2, $this->value2));	// hour 2
+		$this->assertTuple(1, $this->makeTuple($this->ts2, $this->ts5, $periodValue * self::$resolution));	// hour 3
 	}
 }
 
