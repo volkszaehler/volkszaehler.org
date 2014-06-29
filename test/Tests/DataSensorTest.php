@@ -246,8 +246,9 @@ class DataSensorTest extends DataContext
 	 * @depends testMultipleGroupByHour
 	 */
 	function testMultipleGroupByHour2() {
-		// requires weighed average calculation - currently not implemented
-		$this->markTestSkipped('not implemented');
+		// requires weighed average calculation - currently not portable across DBMSes
+		if (\Volkszaehler\Util\Configuration::read('db.driver') !== 'pdo_mysql')
+			$this->markTestSkipped('not implemented');
 
 		$this->addTuple($this->ts4, $this->value4);
 		$this->addTuple($this->ts5, $this->value5);

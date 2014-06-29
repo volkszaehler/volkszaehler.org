@@ -37,64 +37,6 @@ class SensorInterpreter extends Interpreter {
 	protected $resolution;
 
 	/**
-	 * Create the SQL statements for flat and grouped data retrieval and counting rows
-	 *
-	 * SensorInterpreter requires special treatment to calculate weighed average
-	 *
-	 * @param  array  $sqlParameters array of parameters
-	 * @param  string $sql           data retrieval SQL
-	 * @param  string $sqlRowCount   row count SQL
-	 */
-/*
-	NOTE:
-		currently not implemented as SQL execution too costly
-		see http://stackoverflow.com/questions/24457442/how-to-find-previous-record-n-per-group-maxtimestamp-timestamp
- */
-/*
-	protected function buildSQLStatements(&$sqlParameters, &$sql, &$sqlRowCount) {
-		if ($this->groupBy) {
-			// common conditions for following SQL queries
-			$sqlParameters = array($this->channel->getId());
-			$sqlTimeFilter = self::buildDateTimeFilterSQL($this->from, $this->to, $sqlParameters);
-
-			$sqlGroupFields = self::buildGroupBySQL($this->groupBy);
-			if (!$sqlGroupFields)
-				throw new \Exception('Unknown group');
-
-			$sqlRowCount = 'SELECT COUNT(DISTINCT ' . $sqlGroupFields . ') FROM data WHERE channel_id = ?' . $sqlTimeFilter;
-
-			// special query for SensorInterpreter
-			$sql = 'SELECT MAX(agg.timestamp) AS timestamp, ' .
-						  'COALESCE( ' .
-							  'SUM(agg.val_by_time) / (MAX(agg.timestamp) - MIN(agg.prev_timestamp)), ' .
-							  self::groupExprSQL('agg.value') .
-						  ') AS value, ' .
-						  'COUNT(agg.value) AS count ' .
-				   'FROM ( ' .
-					   'SELECT collect.timestamp, collect.value, ' .
-							  'prev.timestamp AS prev_timestamp, collect.value * (collect.timestamp - prev.timestamp) AS val_by_time ' .
-					   'FROM data AS collect ' .
-					   'LEFT JOIN data AS prev ON ' .	// subquery for previous row's timestamp
-						   'prev.channel_id = collect.channel_id AND ' .
-						   'prev.timestamp = ( ' .
-							   'SELECT MAX(timestamp) ' .
-							   'FROM data ' .
-							   'WHERE data.channel_id = collect.channel_id AND ' .
-									 'data.timestamp < collect.timestamp ' .
-						   ') ' .
-					   'WHERE collect.channel_id=? ' . str_replace('timestamp', 'collect.timestamp', $sqlTimeFilter) . ' ' .
-					   'ORDER BY collect.timestamp' .
-				   ') AS agg ' .
-				   'GROUP BY ' . self::buildGroupBySQL($this->groupBy) . ' ' .
-				   'ORDER BY timestamp ASC';
-		}
-		else {
-			parent::buildSQLStatements($sqlParameters, $sql, $sqlRowCount);
-		}
-	}
-*/
-
-	/**
 	 * Calculates the consumption
 	 *
 	 * @return float total consumption in Wh

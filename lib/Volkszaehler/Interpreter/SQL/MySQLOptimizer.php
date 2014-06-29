@@ -85,16 +85,44 @@ class MySQLOptimizer extends SQLOptimizer {
 	 * @return boolean               Success
 	 */
 	public function optimizeDataSQL(&$sql, &$sqlParameters) {
-		if ($this->groupBy)
-			return false;
+		if ($this->groupBy) {
+			// SensorInterpreter needs weighed average calculation which is currently not portable between DBMSes
+			if (get_class($this->interpreter) !== 'Volkszaehler\\Interpreter\\SensorInterpreter')
+				return false;
+
+			$foo = array();
+			$sqlTimeFilter = $this->interpreter->buildDateTimeFilterSQL($this->from, $this->to, $foo);
+			$sqlGroupFields = $this->interpreter->buildGroupBySQL($this->groupBy);
+
+			// special query for SensorInterpreter
+			// note:	GREATEST() is required to force MySQL to evaluate the variables in the needed order (hacky)
+			// see:		https://bugs.php.net/bug.php?id=67537
+			// 			http://stackoverflow.com/questions/24457442/how-to-find-previous-record-n-per-group-maxtimestamp-timestamp
+			// 			http://www.xaprb.com/blog/2006/12/15/advanced-mysql-user-variable-techniques/
+			$sql = 'SELECT MAX(agg.timestamp) AS timestamp, ' .
+						  'COALESCE( ' .
+							  'SUM(agg.val_by_time) / (MAX(agg.timestamp) - MIN(agg.prev_timestamp)), ' .
+							  $this->interpreter->groupExprSQL('agg.value') .
+						  ') AS value, ' .
+						  'COUNT(agg.value) AS count ' .
+				   'FROM ( ' .
+						'SELECT timestamp, value, ' .
+							'value * (timestamp - @prev_timestamp) AS val_by_time, ' .
+							'GREATEST(0, IF(@prev_timestamp = NULL, NULL, @prev_timestamp)) AS prev_timestamp, ' .
+							'@prev_timestamp := timestamp ' .
+						'FROM data ' .
+						'CROSS JOIN (SELECT @prev_timestamp := NULL) AS vars ' .
+						'WHERE channel_id=? ' . $sqlTimeFilter . ' ' .
+						'ORDER BY timestamp ' .
+				   ') AS agg ' .
+				   'GROUP BY ' . $sqlGroupFields . ' ' .
+				   'ORDER BY timestamp ASC';
+			return true;
+		}
 
 		// potential to reduce result set - can't do this for already grouped SQL
 		if ($this->tupleCount && ($this->rowCount > $this->tupleCount)) {
 			$packageSize = floor($this->rowCount / $this->tupleCount);
-
-			// SensorInterpreter weighed average calculated by DataIterator instead of SQL
-			if (get_class($this->interpreter) == 'Volkszaehler\\Interpreter\\SensorInterpreter')
-				return false;
 
 			if ($packageSize > 1) { // worth doing -> go
 				// optimize package statement general case: tuple packaging
@@ -103,29 +131,27 @@ class MySQLOptimizer extends SQLOptimizer {
 
 				$this->rowCount = floor($this->rowCount / $packageSize);
 
-				// setting @row to packageSize-2 will make the first package contain 1 tuple only
-				// this pushes as much 'real' data as possible into the first used package and ensures
-				// we get 2 rows even if tuples=1 requested (first row is discarded by DataIterator)
-				$sql = 'SELECT MAX(agg.timestamp) AS timestamp, ' .
-							   $this->interpreter->groupExprSQL('agg.value') . ' AS value, ' .
-							  'COUNT(agg.value) AS count ' .
-					   'FROM (' .
-							 'SELECT timestamp, value, @row:=@row+1 AS row ' .
-							 'FROM data ' .
-							 'CROSS JOIN (SELECT @row := ' . ($packageSize-2) . ') AS vars ' . // initialize rowcount variable
-							 'WHERE channel_id=?' . $sqlTimeFilter . ' ' .
-					   		 'ORDER BY timestamp' .
-					   ') AS agg ' .
-					   'GROUP BY row DIV ' . $packageSize . ' ' .
-					   'ORDER BY timestamp ASC';
-/*
-				NOTE:
-					currently not implemented as SQL execution too costly
-					see http://stackoverflow.com/questions/24457442/how-to-find-previous-record-n-per-group-maxtimestamp-timestamp
- */
-/*
+				// SensorInterpreter needs weighed average calculation
+				if (get_class($this->interpreter) !== 'Volkszaehler\\Interpreter\\SensorInterpreter') {
+					// setting @row to packageSize-2 will make the first package contain 1 tuple only
+					// this pushes as much 'real' data as possible into the first used package and ensures
+					// we get 2 rows even if tuples=1 requested (first row is discarded by DataIterator)
+					$sql = 'SELECT MAX(agg.timestamp) AS timestamp, ' .
+								   $this->interpreter->groupExprSQL('agg.value') . ' AS value, ' .
+								  'COUNT(agg.value) AS count ' .
+						   'FROM (' .
+								 'SELECT timestamp, value, @row:=@row+1 AS row ' .
+								 'FROM data ' .
+								 'CROSS JOIN (SELECT @row := ' . ($packageSize-2) . ') AS vars ' . // initialize variables
+								 'WHERE channel_id=?' . $sqlTimeFilter . ' ' .
+						   		 'ORDER BY timestamp ASC' .
+						   ') AS agg ' .
+						   'GROUP BY row DIV ' . $packageSize . ' ' .
+						   'ORDER BY timestamp ASC';
+				}
 				else {
-					// weighed average for SensorInterpreter
+					// SensorInterpreter requires special treatment to calculate weighed average
+					// For a performance discussion see http://stackoverflow.com/questions/24457442/how-to-find-previous-record-n-per-group-maxtimestamp-timestamp
 					$sql = 'SELECT MAX(agg.timestamp) AS timestamp, ' .
 								  'COALESCE( ' .
 									  'SUM(agg.val_by_time) / (MAX(agg.timestamp) - MIN(agg.prev_timestamp)), ' .
@@ -133,25 +159,19 @@ class MySQLOptimizer extends SQLOptimizer {
 								  ') AS value, ' .
 								  'COUNT(agg.value) AS count ' .
 						   'FROM ( ' .
-							   'SELECT collect.timestamp, collect.value, @row:=@row+1 AS row, ' .
-									  'prev.timestamp AS prev_timestamp, collect.value * (collect.timestamp - prev.timestamp) AS val_by_time ' .
-							   'FROM data AS collect ' .
-							   'CROSS JOIN (SELECT @row := ' . ($packageSize-2) . ') AS vars ' . // initialize rowcount variable
-							   'LEFT JOIN data AS prev ON ' .	// subquery for previous row's timestamp
-								   'prev.channel_id = collect.channel_id AND ' .
-								   'prev.timestamp = ( ' .
-									   'SELECT MAX(timestamp) ' .
-									   'FROM data ' .
-									   'WHERE data.channel_id = collect.channel_id AND ' .
-											 'data.timestamp < collect.timestamp ' .
-								   ') ' .
-							   'WHERE collect.channel_id=?' . str_replace('timestamp', 'collect.timestamp', $sqlTimeFilter) . ' ' .
-							   'ORDER BY collect.timestamp ' .
+								'SELECT timestamp, value, @row:=@row+1 AS row, ' .
+									'value * (timestamp - @prev_timestamp) AS val_by_time, ' .
+									'GREATEST(0, IF(@prev_timestamp = NULL, NULL, @prev_timestamp)) AS prev_timestamp, ' .
+									'@prev_timestamp := timestamp ' .
+								'FROM data ' .
+								'CROSS JOIN (SELECT @prev_timestamp := NULL, @row := ' . ($packageSize-2) . ') AS vars ' .
+								'WHERE channel_id=? ' . $sqlTimeFilter . ' ' .
+								'ORDER BY timestamp ASC' .
 						   ') AS agg ' .
 						   'GROUP BY row div ' . $packageSize . ' ' .
 						   'ORDER BY timestamp ASC';
 				}
-*/
+
 				return true;
 			}
 		}
