@@ -512,7 +512,7 @@ vz.wui.updateLegend = function() {
 				y = null;
 		} else { // no steps -> interpolate
 			var p1 = series.data[j - 1], p2 = series.data[j];
-			if (p1 === null || p2 === null)
+			if (p1 == null || p2 == null)
 				y = null;
 			else
 				y = p1[1] + (p2[1] - p1[1]) * (pos.x - p1[0]) / (p2[0] - p1[0]);
