@@ -125,7 +125,7 @@
 	{
 		"name"			: "power",
 		"required"		: ["resolution"],
-		"optional"		: ["tolerance", "cost", "local"],
+		"optional"		: ["tolerance", "cost", "local", "initialconsumption"],
 		"icon"			: "bolt.png",
 		"unit"			: "W",
 		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
@@ -138,7 +138,7 @@
 	},
 	{
 		"name"			: "powersensor",
-		"optional"		: ["tolerance", "cost", "local"],
+		"optional"		: ["tolerance", "cost", "local", "initialconsumption"],
 		"icon"			: "bolt.png",
 		"unit"			: "W",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
@@ -153,7 +153,7 @@
 	{
 		"name" : "electric meter",
 		"required"		: ["resolution"],
-		"optional" : ["tolerance", "cost", "local"],
+		"optional" : ["tolerance", "cost", "local", "initialconsumption"],
 		"icon"			: "bolt.png",
 		"unit"			: "W",
 		"interpreter"		: "Volkszaehler\\Interpreter\\CounterInterpreter",

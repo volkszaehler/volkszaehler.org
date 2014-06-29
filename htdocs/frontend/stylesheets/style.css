@@ -142,7 +142,7 @@ select.icons option {
 	opacity: 0.3;
 }
 
-.ops, .min, .max, .average, .last, .consumption, .cost {
+.ops, .min, .max, .average, .last, .consumption, .total, .cost {
 	text-align: right;
 }
 

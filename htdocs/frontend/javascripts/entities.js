@@ -334,4 +334,10 @@ vz.entities.updateTable = function() {
 								return (+$(this).data('cost') || 0) > 0;
 						 }).get().length === 0) ? 'none' : ''
 	});
+	// hide total consumption if empty for all rows
+	$('.total').css({
+		display: ($('tbody .total').filter(function() {
+								return (+$(this).data('total') || 0) > 0;
+						 }).get().length === 0) ? 'none' : ''
+	});
 };

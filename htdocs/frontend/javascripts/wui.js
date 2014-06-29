@@ -654,9 +654,10 @@ vz.wui.clearTimeout = function(text) {
  */
 vz.wui.formatNumber = function(number, prefix) {
 	var siPrefixes = ['k', 'M', 'G', 'T'];
-	var siIndex = 0;
+	var siIndex = 0,
+			maxIndex = (typeof prefix == 'string') ? siPrefixes.indexOf(prefix)+1 : siPrefixes.length;
 
-	while (prefix && Math.abs(number) > 1000 && siIndex < siPrefixes.length-1) {
+	while (prefix && Math.abs(number) > 1000 && siIndex < maxIndex) {
 		number /= 1000;
 		siIndex++;
 	}
