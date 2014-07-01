@@ -34,6 +34,7 @@ use Volkszaehler\Util;
 class SensorInterpreter extends Interpreter {
 
 	protected $consumption; // in Wms (Watt milliseconds)
+	protected $resolution;
 
 	/**
 	 * Calculates the consumption
@@ -63,12 +64,21 @@ class SensorInterpreter extends Interpreter {
 		$tuples = array();
 		$this->rows = $this->getData();
 
+		// in case of SensorIntepreter resolution is optional
+		$this->resolution = ($this->channel->hasProperty('resolution')) ?
+			$this->channel->getProperty('resolution') : 1;
+
 		$ts_last = $this->getFrom();
 		foreach ($this->rows as $row) {
-			$delta = $row[0] - $ts_last;
+			$delta_ts = $row[0] - $ts_last;
+
+			// instead of using $row[1], which is value, get weighed average value from $row[4] which
+			// DataIterator->next provides as courtesy
+			// otherwise the default, non-optimized tuple packaging SQL statement will yield incorrect results
+			// due to non-equidistant timestamps
 			$tuple = $callback(array(
-				(float) ($ts_last = $row[0]), // timestamp of interval end
-				(float) $row[1],
+				(float) ($ts_last = $row[0]),	// timestamp of interval end
+				(float) $row[4] / $this->resolution,
 				(int) $row[2]
 			));
 
@@ -80,7 +90,7 @@ class SensorInterpreter extends Interpreter {
 				$this->min = $tuple;
 			}
 
-			$this->consumption += $tuple[1] * $delta;
+			$this->consumption += $tuple[1] * $delta_ts;
 
 			$tuples[] = $tuple;
 		}
