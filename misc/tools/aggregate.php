@@ -176,8 +176,6 @@ class RunCommand extends BasicCommand {
 
 
 $app = new Util\ConsoleApplication('Data aggregation tool');
-if (!$app::isConsole())
-	throw new \Exception('This tool can only be run locally.');
 
 $app->addCommands(array(
 	new CreateCommand,
