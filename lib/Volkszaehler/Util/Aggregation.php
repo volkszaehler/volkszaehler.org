@@ -92,7 +92,7 @@ class Aggregation {
 	 */
 	public static function getAggregationLevelTypeValue($level) {
 		if (($type = array_search($level, self::getAggregationLevels(), true)) === false) {
-			throw new \Exception('Invalid aggretation level \'' . $level . '\'');
+			throw new \Exception('Invalid aggregation level \'' . $level . '\'');
 		};
 		return($type);
 	}
@@ -189,14 +189,42 @@ class Aggregation {
 		$format = self::getAggregationDateFormat($level);
 		$type = self::getAggregationLevelTypeValue($level);
 
-		// get interpreter's aggregation function
-		$aggregationFunction = $interpreter::groupExprSQL('value');
+		$weighed_avg = ($interpreter == 'Volkszaehler\\Interpreter\\SensorInterpreter');
 
 		$sqlParameters = array($type);
-		$sql = 'REPLACE INTO aggregate (channel_id, type, timestamp, value, count) ' .
+		$sql = 'REPLACE INTO aggregate (channel_id, type, timestamp, value, count) ';
+
+		if ($weighed_avg) {
+			// get interpreter's aggregation function
+			$aggregationFunction = $interpreter::groupExprSQL('agg.value');
+
+			// SQL query similar to MySQLOptimizer group mode
+			$sql .=
+				'SELECT channel_id, ? AS type, ' .
+					'MAX(agg.timestamp) AS timestamp, ' .
+					'COALESCE( ' .
+						'SUM(agg.val_by_time) / (MAX(agg.timestamp) - MIN(agg.prev_timestamp)), ' .
+						$aggregationFunction .
+					') AS value, ' .
+					'COUNT(agg.value) AS count ' .
+				'FROM ( ' .
+					'SELECT channel_id, timestamp, value, ' .
+						'value * (timestamp - @prev_timestamp) AS val_by_time, ' .
+						'GREATEST(0, IF(@prev_timestamp = NULL, NULL, @prev_timestamp)) AS prev_timestamp, ' .
+						'@prev_timestamp := timestamp ' .
+					'FROM data ' .
+					'CROSS JOIN (SELECT @prev_timestamp := NULL) AS vars ' .
+					'WHERE ';
+		}
+		else {
+			// get interpreter's aggregation function
+			$aggregationFunction = $interpreter::groupExprSQL('value');
+
+			$sql .=
 			   'SELECT channel_id, ? AS type, MAX(timestamp) AS timestamp, ' .
 			   $aggregationFunction . ' AS value, COUNT(timestamp) AS count ' .
 			   'FROM data WHERE ';
+		}
 
 		// selected channel only
 		if ($channel_id) {
@@ -240,8 +268,16 @@ class Aggregation {
 		}
 
 		// up to before current period
-		$sql.= 'AND timestamp < UNIX_TIMESTAMP(DATE_FORMAT(NOW(), ' . $format . ')) * 1000 ' .
-			   'GROUP BY channel_id, ' . Interpreter\Interpreter::buildGroupBySQL($level);
+		$sql .= 'AND timestamp < UNIX_TIMESTAMP(DATE_FORMAT(NOW(), ' . $format . ')) * 1000 ';
+
+		if ($weighed_avg) {
+			// close inner table
+			$sql .=
+				'ORDER BY timestamp ' .
+			') AS agg ';
+		}
+
+		$sql .= 'GROUP BY channel_id, ' . Interpreter\Interpreter::buildGroupBySQL($level);
 
 		if (Util\Debug::isActivated())
 			echo(Util\Debug::getParametrizedQuery($sql, $sqlParameters)."\n");
