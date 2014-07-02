@@ -67,4 +67,4 @@ script:
     - sh -c "if [ '$DB' = 'mysql' ]; then phpunit --exclude-group slow --coverage-text; fi;"
     # run aggregation tool
     - cd ..
-    - sh -c "if [ '$DB' = 'mysql' ]; then php misc/tools/aggregate.php -m delta -l hour run; fi;"
+    - sh -c "if [ '$DB' = 'mysql' ]; then php misc/tools/aggregate.php run -m delta -l hour; fi;"
