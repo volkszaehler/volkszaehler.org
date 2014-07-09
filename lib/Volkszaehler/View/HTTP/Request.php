@@ -42,6 +42,8 @@ class Request {
 	 */
 	protected $method;
 
+	const ARRAY_SEPARATOR = ',';
+
 	/**
 	 * constructor
 	 */
@@ -77,10 +79,10 @@ class Request {
 	/**
 	 * Setter & getter
 	 */
-	 
+
 	public function getHeader($header) { return $this->headers[$header]; }
 	public function getMethod() { return $this->method; }
-	
+
 	public function getParameter($name, $method = NULL) {
 		if (isset($method) && isset($this->parameters[$method][$name])) {
 			return $this->parameters[$method][$name];
@@ -94,7 +96,7 @@ class Request {
 		}
 		return NULL;
 	}
-	
+
 	public function getParameters($method = NULL) {
 		if (isset($method)) {
 			return $this->parameters[$method];
@@ -110,6 +112,16 @@ class Request {
 		return NULL;
 	}
 
+	public function getArrayParameter($name) {
+		if (($para = $this->getParameter($name)) !== null) {
+			if (is_array($para))
+				return $para;
+			else {
+				return explode(self::ARRAY_SEPARATOR, $para);
+			}
+		}
+		return array();
+	}
 }
 
 ?>
