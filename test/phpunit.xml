@@ -7,16 +7,12 @@
     </testsuite>
   </testsuites>
 
-  <!-- exclude performance tests by default 
-
-  default excludes currently don't work due to a phpunit bug 
-
+  <!-- exclude performance tests by default -->
   <groups>
     <exclude>
       <group>slow</group>
     </exclude>
   </groups>
-  -->
 
   <!-- configure code coverage -->
   <filter>
