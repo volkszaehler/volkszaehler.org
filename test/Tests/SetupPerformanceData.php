@@ -48,9 +48,6 @@ class SetupPerformanceData extends DataContextPerformance
 		echo($val . " ");
 	}
 
-	/**
-	 * @group slow
-	 */
 	function testPrepareData() {
 		$this->msg('TestSize', self::$testSize);
 		$channel_id = self::getChannelByUUID(self::$uuid)->getId();
@@ -58,7 +55,7 @@ class SetupPerformanceData extends DataContextPerformance
 		$this->msg('Channel Id', $channel_id);
 		$base = strtotime(self::TEST_START) * 1000;
 
-		$stmt = self::$conn->prepare('INSERT DELAYED INTO data (channel_id, timestamp, value) VALUES (?, ?, ?)');
+		$stmt = self::$conn->prepare('INSERT INTO data (channel_id, timestamp, value) VALUES (?, ?, ?)');
 
 		self::$em->getConnection()->beginTransaction();
 		for ($i=0; $i<self::$testSize; $i++) {
