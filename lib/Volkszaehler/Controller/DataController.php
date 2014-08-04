@@ -34,6 +34,8 @@ use Volkszaehler\Util;
  */
 class DataController extends Controller {
 
+	const OPT_SKIP_DUPLICATES = 'skipduplicates';
+
 	/**
 	 * Query for data by given channel or group or multiple channels
 	 *
@@ -45,7 +47,7 @@ class DataController extends Controller {
 		$tuples = $this->view->request->getParameter('tuples');
 		$groupBy = $this->view->request->getParameter('group');
 		$tsFmt = $this->view->request->getParameter('tsfmt');
-		$options = $this->view->request->getParameter('options');
+		$options = $this->view->request->getArrayParameter('options');
 
 		// single entity
 		if ($entity) {
@@ -68,46 +70,36 @@ class DataController extends Controller {
 	}
 
 	/**
-	 * Sporadic test/demo implemenation
+	 * Add single or multiple tuples
 	 *
 	 * @todo replace by pluggable api parser
-	 * @param Model\Channel $channel - can be null
+	 * @param Model\Channel $channel
 	 */
 	public function add($channel) {
 		try { /* to parse new submission protocol */
 			$rawPost = file_get_contents('php://input');
 			$json = Util\JSON::decode($rawPost);
 
-			// multiple tuples - bundle in transaction
-			$this->em->getConnection()->beginTransaction(); // suspend auto-commit
-			try {
-				if (isset($json['data'])) {
-					// multiple channels
-					$ec = new EntityController($this->view, $this->em);
+			// multiple tuples - bundle in single query
+			if (isset($json['data']))
+				throw new \Exception('Can only add data for a single channel at a time'); /* backed out b111cfa2 */
 
-					foreach ($json['data'] as $data) {
-						$uuid = $data->uuid;
-						$channel = $ec->get($uuid);
+			// convert ArrayObject to native Array
+			$json = $json->getArrayCopy();
+			$options = $this->view->request->getArrayParameter('options');
 
-						foreach ($data->tuples as $tuple) {
-							$channel->addData(new Model\Data($channel, (double) round($tuple[0]), $tuple[1]));
-						}
-					}
-				}
-				else {
-					// single channel
-					foreach ($json as $tuple) {
-						$channel->addData(new Model\Data($channel, (double) round($tuple[0]), $tuple[1]));
-					}
-				}
-				$this->em->flush();
-				$this->em->getConnection()->commit();
-			}
-			catch (Exception $e) {
-				$this->em->getConnection()->rollback();
-				throw($e);
-			}
-		} catch (Util\JSONException $e) { /* fallback to old method */
+			$sql =
+				'INSERT ' . ((in_array(self::OPT_SKIP_DUPLICATES, $options)) ? 'IGNORE' : '') . ' INTO data (channel_id, timestamp, value) ' .
+				'VALUES ' . implode(', ', array_fill(0, count($json), '(' . $channel->getId() . ',?,?)'));
+
+			$params = array_reduce($json, function($carry, $tuple) {
+				return array_merge($carry, $tuple);
+			}, array());
+
+			$rows = $this->em->getConnection()->executeUpdate($sql, $params);
+			return(array('rows' => $rows));
+		}
+		catch (Util\JSONException $e) { /* fallback to old method */
 			$timestamp = $this->view->request->getParameter('ts');
 			$value = $this->view->request->getParameter('value');
 

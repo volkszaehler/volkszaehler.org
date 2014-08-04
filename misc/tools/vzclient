@@ -7,7 +7,7 @@
 
 #
 #  This file is part of volkzaehler.org
-# 
+#
 #  volkzaehler.org is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -17,7 +17,7 @@
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-# 
+#
 #  You should have received a copy of the GNU General Public License
 #  along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
 #
@@ -45,10 +45,11 @@ parser.add_argument('--url',action='store',help="url to the volkszaehler.org mid
 parser.add_argument('-u', '--uuid',action='append',help="the uuid to edit, get or delete");
 parser.add_argument('-f', '--format',choices=["json","xml","csv","png","gif","jpg"],action='store',help="the format");
 parser.add_argument('-e', '--eval',action='store',help="get attribute from json sperated by comma (Example: entity,uuid will extract the uuid from a json string: {\"entity\":{\"uuid\":\"4...\"}})");
+parser.add_argument('-j', '--json',action='store',help="send json request");
 parser.add_argument('param',nargs='*',help="Paramter always in syntax key=value");
-args = parser.parse_args();  
+args = parser.parse_args();
 
-Config.read(["/etc/vzclient.conf",os.path.expanduser('~/.vzclient.conf')]);
+Config.read(["/etc/vzclient.conf",os.path.expanduser('~/.vzclient.conf'),".vzclient.conf"]);
 url=args.url;
 if (url is None):
   try:
@@ -62,7 +63,7 @@ if (format is None):
     format=Config.get("default","format");
   except:
     format="json";
-context=args.context;  
+context=args.context;
 url=url+"/"+context;
 uuid=args.uuid;
 if (uuid is not None) and len(uuid) == 1:
@@ -77,7 +78,11 @@ for p in args.param:
 req = urllib2.Request(url)
 req.add_header('User-agent', 'vzclient/$version')
 try:
-  f= urllib2.urlopen(url);
+  if (args.json):
+    req.add_header('Content-Type', 'application/json');
+    f=urllib2.urlopen(url, args.json);
+  else:
+    f=urllib2.urlopen(url);
   jsonstr=f.read();
   if (args.eval is None):
     print jsonstr;
