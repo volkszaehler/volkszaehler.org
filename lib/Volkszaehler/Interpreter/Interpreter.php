@@ -130,13 +130,13 @@ abstract class Interpreter {
 				$sql = 'SELECT MIN(timestamp) FROM (SELECT timestamp FROM data WHERE channel_id=? AND timestamp<? ORDER BY timestamp DESC LIMIT 2) t';
 				$from = $this->conn->fetchColumn($sql, array($this->channel->getId(), $this->from), 0);
 				if ($from)
-					$this->from = $from;
+					$this->from = (double)$from; // bigint conversion
 			}
 			if (isset($this->to)) {
 				$sql = 'SELECT MAX(timestamp) FROM (SELECT timestamp FROM data WHERE channel_id=? AND timestamp>? ORDER BY timestamp ASC LIMIT 2) t';
 				$to = $this->conn->fetchColumn($sql, array($this->channel->getId(), $this->to), 0);
 				if ($to)
-					$this->to = $to;
+					$this->to = (double)$to; // bigint conversion
 			}
 		}
 
