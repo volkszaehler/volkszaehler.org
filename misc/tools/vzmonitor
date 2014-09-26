@@ -90,7 +90,7 @@ import json
 json_decoded = json.loads(result)
 number_of_values = json_decoded['data']['rows']
 if debug: print number_of_values
-average = json_decoded['data']['average']
+average = round(json_decoded['data']['average'])
 if debug: print average
 
 if number_of_values == 0:
