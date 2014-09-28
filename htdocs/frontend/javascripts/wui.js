@@ -130,7 +130,7 @@ vz.wui.dialogs.addProperties = function(container, proplist, className, entity) 
 
 		// hide properties from blacklist
 		var val = (entity && typeof entity[def] !== undefined) ? entity[def] : null;
-		if (val === null && vz.options.hiddenProperties.indexOf(def) >= 0) {
+		if ((typeof val === 'undefined' || val === null) && vz.options.hiddenProperties.indexOf(def) >= 0) {
 			return; // hide less commonly used properties
 		}
 
