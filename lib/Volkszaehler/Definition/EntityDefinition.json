@@ -168,7 +168,7 @@
 	{
 		"name"			: "gas",
 		"required"		: ["resolution"],
-		"optional"		: ["tolerance", "cost", "local"],
+		"optional"		: ["tolerance", "cost", "local", "initialconsumption"],
 		"icon"			: "flame.png",
 		"unit"			: "m³/h",
 		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
@@ -183,7 +183,7 @@
 	{
 		"name"			: "gas meter",
 		"required"		: ["resolution"],
-		"optional"		: ["tolerance", "cost", "local"],
+		"optional"		: ["tolerance", "cost", "local", "initialconsumption"],
 		"icon"			: "flame.png",
 		"unit"			: "m³/h",
 		"interpreter"		: "Volkszaehler\\Interpreter\\CounterInterpreter",
@@ -197,7 +197,7 @@
 	{
 		"name"			: "water",
 		"required"		: ["resolution"],
-		"optional"		: ["tolerance", "cost", "local"],
+		"optional"		: ["tolerance", "cost", "local", "initialconsumption"],
 		"icon"			: "waterdrop.png",
 		"unit"			: "l/h",
 		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
