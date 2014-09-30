@@ -1,6 +1,7 @@
 language: php
 
 php:
+    - "5.6"
     - "5.5"
     - "5.4"
     - "5.3"
@@ -23,6 +24,7 @@ before_install:
 
 install:
     - composer install
+    - npm install
 
 before_script:
     - cp etc/volkszaehler.conf.template.php etc/volkszaehler.conf.php
@@ -65,6 +67,10 @@ script:
     # re-run with aggregation enabled
     - sed -i "s/\?>/\$config['aggregation']\ =\ true;\n?>/" ../etc/volkszaehler.conf.php
     - sh -c "if [ '$DB' = 'mysql' ]; then phpunit --coverage-text; fi;"
-    # run aggregation tool
+
+    # test running aggregation tool
     - cd ..
     - sh -c "if [ '$DB' = 'mysql' ]; then php misc/tools/aggregate.php run -m delta -l hour; fi;"
+
+    # jslint javascript sources
+    - gulp jshint
