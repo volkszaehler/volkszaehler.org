@@ -218,9 +218,11 @@ Entity.prototype.loadTotalConsumption = function() {
 			var consumption = 1000 * this.initialconsumption + json.data.consumption;
 
 			var row = $('#entity-' + this.uuid);
+			var unit = vz.wui.formatConsumptionUnit(this.definition.unit);
+
 			$('.total', row)
 				.data('total', consumption)
-				.text(vz.wui.formatNumber(consumption, 'k') + vz.wui.formatConsumptionUnit(this.definition.unit));
+				.text(vz.wui.formatNumber(consumption, vz.wui.unitPrefixingAllowed(unit, 'k')) + unit);
 
 			// unhide total column
 			vz.entities.updateTable();
@@ -624,8 +626,8 @@ Entity.prototype.updateDOMRow = function() {
 		if (this.data.consumption) {
 			var unit = vz.wui.formatConsumptionUnit(this.definition.unit);
 			$('.consumption', row)
-				.text(vz.wui.formatNumber(this.data.consumption, true) + unit)
-				.attr('title', vz.wui.formatNumber(this.data.consumption * (year/delta), true) + unit + '/Jahr');
+				.text(vz.wui.formatNumber(this.data.consumption, vz.wui.unitPrefixingAllowed(unit)) + unit)
+				.attr('title', vz.wui.formatNumber(this.data.consumption * (year/delta), vz.wui.unitPrefixingAllowed(unit)) + unit + '/Jahr');
 		}
 
 		if (this.cost) {

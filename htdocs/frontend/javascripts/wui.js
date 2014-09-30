@@ -668,11 +668,20 @@ vz.wui.formatNumber = function(number, prefix) {
 		number = Math.round(number * Math.pow(10, precision)) / Math.pow(10, precision); // rounding
 	}
 
-	if (prefix) {
+	if (prefix)
 		number += (siIndex > 0) ? ' ' + siPrefixes[siIndex-1] : ' ';
-	}
+	else
+		number += ' ';
 
 	return number;
+};
+
+/**
+ * Prevent prefixing of special units during number formatting
+ */
+vz.wui.unitPrefixingAllowed = function(unit, maxPrefix) {
+	var staticUnit = ['l', 'm3', 'm^3', 'm³'].indexOf(unit) >= 0;
+	return (staticUnit) ? false : maxPrefix || true;
 };
 
 /**
