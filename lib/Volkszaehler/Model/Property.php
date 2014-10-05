@@ -37,7 +37,7 @@ use Volkszaehler\Model;
  * @Table(
  * 		name="properties",
  * 		uniqueConstraints={
- * 			@UniqueConstraint(name="unique_keys", columns={"entity_id", "pkey"})
+ * 			@UniqueConstraint(name="property_unique", columns={"entity_id", "pkey"})
  * 		}
  * )
  * @HasLifecycleCallbacks
