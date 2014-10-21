@@ -1,0 +1,46 @@
+{
+	"source": {
+		"driver": "pdo_mysql",
+		"host": "localhost",
+		"user": "travis",
+		"password": "",
+		"dbname": "volkszaehler"
+	},
+	"target": {
+		"driver": "pdo_mysql",
+		"host": "localhost",
+		"user": "travis",
+		"password": "",
+		"dbname": "volkszaehler_backup",
+		"path": "sqlite.db3"		// path is only used if driver = pdo_sqlite
+	},
+	"tables": [
+		// TABLE DEFINITION
+		// ----------------
+		// table name
+		// 		tables will be processed in the order they are mentioned:
+		//		- foreign keys on target will be dropped
+		//		- if a table is not listed here, it will not be touched
+		// transfer mode
+		//		skip:		table will not be copied
+		//		copy:		entire table will be truncated on target and copied from source
+		//		pk:			selective copy by primary key. only data not present on target
+		// 						will be copied from source.
+		{
+			"name": "entities",
+			"mode": "copy"
+		}, {
+			"name": "properties",
+			"mode": "copy"
+		}, {
+			"name": "entities_in_aggregator",
+			"mode": "copy"
+		}, {
+			"name": "data",
+			"mode": "pk"
+		}, {
+			"name": "aggregate",
+			"mode": "skip"
+		}
+	]
+}

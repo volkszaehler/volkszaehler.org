@@ -4,8 +4,42 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "5728f56f6aa2760b9745700c75aef134",
+    "hash": "246cc97686cce935d4b6e6f0f0ddc0b1",
     "packages": [
+        {
+            "name": "andig/dbcopy",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/andig/dbcopy.git",
+                "reference": "a34751f34d0f27112cc45a951e3d63391c44ec6c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/andig/dbcopy/zipball/a34751f34d0f27112cc45a951e3d63391c44ec6c",
+                "reference": "a34751f34d0f27112cc45a951e3d63391c44ec6c",
+                "shasum": ""
+            },
+            "require": {
+                "doctrine/dbal": "2.4.*",
+                "symfony/console": "2.6.*@dev"
+            },
+            "bin": [
+                "dbcopy.php"
+            ],
+            "type": "project",
+            "autoload": {
+                "psr-0": {
+                    "DatabaseCopy\\": "./"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "homepage": "http://github.com/andig/dbcopy/",
+            "time": "2014-10-05 11:52:16"
+        },
         {
             "name": "doctrine/annotations",
             "version": "v1.1.2",
@@ -44,7 +78,7 @@
             ],
             "authors": [
                 {
-                    "name": "Jonathan H. Wage",
+                    "name": "Jonathan Wage",
                     "email": "jonwage@gmail.com",
                     "homepage": "http://www.jwage.com/",
                     "role": "Creator"
@@ -65,7 +99,7 @@
                 {
                     "name": "Johannes Schmitt",
                     "email": "schmittjoh@gmail.com",
-                    "homepage": "http://jmsyst.com",
+                    "homepage": "https://github.com/schmittjoh",
                     "role": "Developer of wrapped JMSSerializerBundle"
                 }
             ],
@@ -140,7 +174,7 @@
                 {
                     "name": "Johannes Schmitt",
                     "email": "schmittjoh@gmail.com",
-                    "homepage": "http://jmsyst.com",
+                    "homepage": "https://github.com/schmittjoh",
                     "role": "Developer of wrapped JMSSerializerBundle"
                 }
             ],
@@ -598,17 +632,17 @@
         },
         {
             "name": "symfony/console",
-            "version": "v2.5.0",
+            "version": "dev-master",
             "target-dir": "Symfony/Component/Console",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Console.git",
-                "reference": "ef4ca73b0b3a10cbac653d3ca482d0cdd4502b2c"
+                "reference": "7049924cf0b7f350e5a099ea988e713ebf7590fe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Console/zipball/ef4ca73b0b3a10cbac653d3ca482d0cdd4502b2c",
-                "reference": "ef4ca73b0b3a10cbac653d3ca482d0cdd4502b2c",
+                "url": "https://api.github.com/repos/symfony/Console/zipball/7049924cf0b7f350e5a099ea988e713ebf7590fe",
+                "reference": "7049924cf0b7f350e5a099ea988e713ebf7590fe",
                 "shasum": ""
             },
             "require": {
@@ -616,16 +650,18 @@
             },
             "require-dev": {
                 "psr/log": "~1.0",
-                "symfony/event-dispatcher": "~2.1"
+                "symfony/event-dispatcher": "~2.1",
+                "symfony/process": "~2.1"
             },
             "suggest": {
                 "psr/log": "For using the console logger",
-                "symfony/event-dispatcher": ""
+                "symfony/event-dispatcher": "",
+                "symfony/process": ""
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "2.5-dev"
+                    "dev-master": "2.6-dev"
                 }
             },
             "autoload": {
@@ -639,19 +675,17 @@
             ],
             "authors": [
                 {
-                    "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com",
-                    "homepage": "http://fabien.potencier.org",
-                    "role": "Lead Developer"
-                },
-                {
                     "name": "Symfony Community",
                     "homepage": "http://symfony.com/contributors"
+                },
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
                 }
             ],
             "description": "Symfony Console Component",
             "homepage": "http://symfony.com",
-            "time": "2014-05-22 08:54:24"
+            "time": "2014-10-01 05:53:11"
         }
     ],
     "packages-dev": [
@@ -1352,17 +1386,14 @@
             "time": "2014-05-16 14:25:18"
         }
     ],
-    "aliases": [
-
-    ],
+    "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "jpgraph/jpgraph": 20
+        "jpgraph/jpgraph": 20,
+        "andig/dbcopy": 20,
+        "symfony/console": 20
     },
-    "platform": [
-
-    ],
-    "platform-dev": [
-
-    ]
+    "prefer-stable": false,
+    "platform": [],
+    "platform-dev": []
 }
