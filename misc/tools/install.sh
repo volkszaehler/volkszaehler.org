@@ -37,9 +37,8 @@ shopt -s nocasematch
 # minimum php version required
 php_ver_min=5.3
 
-# please update after releases
-vz_tar=https://github.com/volkszaehler/volkszaehler.org/tarball/master
-#vz_tar=http://wiki.volkszaehler.org/_media/software/releases/volkszaehler.org-0.2.tar.gz
+# git url
+vz_git=https://github.com/volkszaehler/volkszaehler.org
 
 # cannot handle other hosts right now
 db_host=localhost
@@ -85,14 +84,14 @@ echo "volkszaehler.org installation script"
 echo
 echo -n "checking prerequisites:"
 
-deps=( php mysql awk sed grep wget mktemp mkdir tar )
+deps=( php mysql awk sed grep wget mktemp mkdir git )
 for binary in "${deps[@]}"; do
 	binpath="$(which $binary)"
 	if [ -n "$binpath" ] ; then
 		echo " $binary: $binpath"
 	else
 		echo
-		echo " $binary: not found. Please install to use this script."
+		echo " $binary: not found. Please install to use this script (e.g. sudo apt-get install $binary)."
 		cleanup && exit 1
 	fi
 done
@@ -128,7 +127,7 @@ fi
 
 if [ "$REPLY" == 'y' ]; then
 	echo "installing volkszaehler.org into $vz_dir"
-	wget -O - "$vz_tar" | tar xz -C "$tmp_dir"
+	git clone "$vz_git" "$tmp_dir"
 	cp -r "$tmp_dir"/volkszaehler*/* "$vz_dir/"
 fi
 
