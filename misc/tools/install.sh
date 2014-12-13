@@ -128,7 +128,7 @@ fi
 if [ "$REPLY" == 'y' ]; then
 	echo "installing volkszaehler.org into $vz_dir"
 	git clone "$vz_git" "$tmp_dir"
-	cp -r "$tmp_dir"/volkszaehler*/* "$vz_dir/"
+	cp -r "$tmp_dir"*/* "$vz_dir/"
 fi
 
 ###############################
