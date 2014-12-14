@@ -151,7 +151,7 @@ fi
 
 ###############################
 echo
-echo "install dependencies..."
+echo "installing dependencies..."
 
 pushd "$vz_dir"
 "$COMPOSER" install --no-dev
@@ -210,6 +210,18 @@ if [ "$REPLY" == "y" ]; then
 		GRANT SELECT, UPDATE, INSERT ON $db_name.* TO '$db_user'@'$db_host';
 		GRANT DELETE ON $db_name.entities_in_aggregator TO '$db_user'@'$db_host';
 		GRANT DELETE ON $db_name.properties TO '$db_user'@'$db_host';
+	EOF
+fi
+
+echo
+ask "allow channel deletion?" n
+if [ "$REPLY" == "y" ]; then
+	get_admin
+	get_db_name
+
+	echo "adding db user $db_user delete rights..."
+	mysql -h"$db_host" -u"$db_admin_user" -p"$db_admin_pass" <<-EOF
+		GRANT DELETE ON $db_name.* TO '$db_user'@'$db_host';
 	EOF
 fi
 
