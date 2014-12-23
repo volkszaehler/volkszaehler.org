@@ -25,6 +25,7 @@ namespace Volkszaehler\Controller;
 
 use Volkszaehler\Model;
 use Volkszaehler\Util;
+use Volkszaehler\Interpreter\Interpreter;
 
 /**
  * Data controller
@@ -105,6 +106,9 @@ class DataController extends Controller {
 
 			if (is_null($timestamp)) {
 				$timestamp = (double) round(microtime(TRUE) * 1000);
+			}
+			else {
+				$timestamp = Interpreter::parseDateTimeString($timestamp);
 			}
 
 			if (is_null($value)) {
