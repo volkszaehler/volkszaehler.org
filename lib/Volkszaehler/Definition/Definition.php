@@ -98,7 +98,7 @@ abstract class Definition {
 	 */
 	protected static function load() {
 		static::$definitions = array();
-		
+
 		$json = Util\JSON::decode(file_get_contents(__DIR__ . '/' . static::FILE));
 
 		foreach ($json as $property) {

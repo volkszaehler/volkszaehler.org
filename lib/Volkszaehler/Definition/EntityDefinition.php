@@ -86,10 +86,17 @@ class EntityDefinition extends Definition {
 	public $icon;
 
 	/**
-	 * a consumption value can be calculated
+	 * Indicates if a consumption value can be calculated
  	 * @var boolean
 	 */
 	public $hasConsumption = FALSE;
+
+	/**
+	 * Scaler for unit values
+	 * E.g. $scale = 1000 means entity definition is in impulses per 1000 units (same for initialconsumption and cost)
+ 	 * @var boolean
+	 */
+	public $scale = 1;
 
 	/**
 	 * @var array holds definitions

@@ -212,17 +212,16 @@ Entity.prototype.loadTotalConsumption = function() {
 		data: {
 			from: 0,
 			tuples: 1,
-			group: 'month' // maximum sensible grouping level
+			group: 'day' // maximum sensible grouping level, first tuple dropped!
 		},
 		success: function(json) {
-			var consumption = 1000 * this.initialconsumption + json.data.consumption;
-
 			var row = $('#entity-' + this.uuid);
 			var unit = vz.wui.formatConsumptionUnit(this.definition.unit);
+			var consumption = (this.definition.scale || 1) * this.initialconsumption + json.data.consumption;
 
 			$('.total', row)
 				.data('total', consumption)
-				.text(vz.wui.formatNumber(consumption, vz.wui.unitPrefixingAllowed(unit, 'k')) + unit);
+				.text(vz.wui.formatNumber(consumption, unit, 'k'));
 
 			// unhide total column
 			vz.entities.updateTable();
@@ -363,8 +362,7 @@ Entity.prototype.showDetails = function() {
 };
 
 /**
- * Show from for new Channel
- * used to create info dialog
+ * Show channel details for info dialog
  */
 Entity.prototype.getDOMDetails = function(edit) {
 	var table = $('<table><thead><tr><th>Eigenschaft</th><th>Wert</th></tr></thead></table>');
@@ -413,6 +411,7 @@ Entity.prototype.getDOMDetails = function(edit) {
 				// value = '<img src="images/' + ((this.active) ? 'tick' : 'cross') + '.png" alt="' + ((this.active) ? 'ja' : 'nein') + '" />';
 				value = '<img src="images/blank.png" class="icon-' + ((this.active) ? 'tick' : 'cross') + '" alt="' + ((this.active) ? 'ja' : 'nein') + '" />';
 				break;
+
 			case 'style':
 				switch (this.style) {
 					case 'lines': value = 'Linien'; break;
@@ -450,12 +449,13 @@ Entity.prototype.getDOMDetails = function(edit) {
 
 				switch (property) {
 					case 'cost':
-						if (this.definition.unit == 'W') {
-							value = Number(value * 1000 * 100).toFixed(2) + ' ct/k' + vz.wui.formatConsumptionUnit(this.definition.unit); // ct per kWh
-						}
-						else {
-							value = Number(value * 100).toFixed(2) + ' ct/' + vz.wui.formatConsumptionUnit(this.definition.unit); // ct per m3 etc
-						}
+						var prefix = (this.definition.scale == 1000) ? ' ct/k' : ' ct/'; // ct per Wh or kWh
+						value = Number(value * 100).toFixed(2) + prefix + vz.wui.formatConsumptionUnit(this.definition.unit);
+						break;
+
+					case 'resolution':
+						var prefix = (this.definition.scale == 1000) ? 'k' : ''; // per Wh or kWh
+						value += '/' + prefix + vz.wui.formatConsumptionUnit(this.definition.unit);
 						break;
 
 					case 'color':
@@ -535,8 +535,8 @@ Entity.prototype.getDOMRow = function(parent) {
 		.append($('<td>').addClass('average'))		// avg
 		.append($('<td>').addClass('last'))		// last value
 		.append($('<td>').addClass('consumption'))	// consumption
-		.append($('<td>').addClass('total'))	// total consumption
 		.append($('<td>').addClass('cost'))		// costs
+		.append($('<td>').addClass('total'))	// total consumption
 		.append($('<td>')				// operations
 			.addClass('ops')
 			.append($('<input>')
@@ -605,36 +605,36 @@ Entity.prototype.updateDOMRow = function() {
 	$('.total', row).text('').data('total', null);
 
 	if (this.data && this.data.rows > 0) { // update statistics if data available
-		var delta = this.data.to - this.data.from;
-		var year = 365*24*60*60*1000;
+		var yearMultiplier = 365*24*60*60*1000 / (this.data.to - this.data.from); // ms
 
 		if (this.data.min)
 			$('.min', row)
-			.text(vz.wui.formatNumber(this.data.min[1], true) + this.definition.unit)
+			.text(vz.wui.formatNumber(this.data.min[1], this.definition.unit))
 			.attr('title', $.plot.formatDate(new Date(this.data.min[0]), '%d. %b %y %H:%M:%S', vz.options.monthNames, vz.options.dayNames, true));
 		if (this.data.max)
 			$('.max', row)
-			.text(vz.wui.formatNumber(this.data.max[1], true) + this.definition.unit)
+			.text(vz.wui.formatNumber(this.data.max[1], this.definition.unit))
 			.attr('title', $.plot.formatDate(new Date(this.data.max[0]), '%d. %b %y %H:%M:%S', vz.options.monthNames, vz.options.dayNames, true));
 		if (this.data.average)
 			$('.average', row)
-			.text(vz.wui.formatNumber(this.data.average, true) + this.definition.unit);
+			.text(vz.wui.formatNumber(this.data.average, this.definition.unit));
 		if (this.data.tuples && this.data.tuples.last)
 			$('.last', row)
-			.text(vz.wui.formatNumber(this.data.tuples.last()[1], true) + this.definition.unit);
+			.text(vz.wui.formatNumber(this.data.tuples.last()[1], this.definition.unit));
 
 		if (this.data.consumption) {
 			var unit = vz.wui.formatConsumptionUnit(this.definition.unit);
 			$('.consumption', row)
-				.text(vz.wui.formatNumber(this.data.consumption, vz.wui.unitPrefixingAllowed(unit)) + unit)
-				.attr('title', vz.wui.formatNumber(this.data.consumption * (year/delta), vz.wui.unitPrefixingAllowed(unit)) + unit + '/Jahr');
+				.text(vz.wui.formatNumber(this.data.consumption, unit))
+				.attr('title', vz.wui.formatNumber(this.data.consumption * yearMultiplier, unit) + '/Jahr');
 		}
 
 		if (this.cost) {
+			var cost = this.cost * this.data.consumption / (this.definition.scale || 1);
 			$('.cost', row)
-				.data('cost', this.cost * this.data.consumption)
-				.text(vz.wui.formatNumber(this.cost * this.data.consumption) + ' €')
-				.attr('title', vz.wui.formatNumber(this.cost * this.data.consumption * (year/delta)) + ' €/Jahr');
+				.data('cost', cost)
+				.text(cost.toFixed(2) + ' €')
+				.attr('title', (cost * yearMultiplier).toFixed(2) + ' €/Jahr');
 		}
 		else {
 			$('.cost', row).data('cost', 0); // define value if cost property is being removed

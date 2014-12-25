@@ -56,6 +56,8 @@ abstract class Interpreter {
 	protected $min = NULL;
 	protected $max = NULL;
 
+	protected $scale;		// unit scale from entity definition
+
 	/**
 	 * Constructor
 	 *
@@ -70,6 +72,9 @@ abstract class Interpreter {
 		$this->tupleCount = $tupleCount;
 		$this->options = $options;
 		$this->conn = $em->getConnection(); // get dbal connection from EntityManager
+
+		// store locally for performance
+		$this->scale = $this->channel->getDefinition()->scale;
 
 		// parse interval
 		if (isset($to))
@@ -243,7 +248,7 @@ abstract class Interpreter {
 	 * @param float $now in ms since 1970
 	 * @return float
 	 */
-	protected static function parseDateTimeString($string) {
+	public static function parseDateTimeString($string) {
 		if (ctype_digit((string)$string)) { // handling as ms timestamp
 			return (float) $string;
 		}

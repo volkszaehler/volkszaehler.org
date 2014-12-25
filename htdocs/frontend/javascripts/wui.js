@@ -652,10 +652,23 @@ vz.wui.clearTimeout = function(text) {
  * therefore "vz.options.precision" needs
  * to be set to 1 (for 1 decimal) in that case
  */
-vz.wui.formatNumber = function(number, prefix) {
+vz.wui.formatNumber = function(number, unit, prefix) {
+	prefix = prefix || true; // default on
 	var siPrefixes = ['k', 'M', 'G', 'T'];
 	var siIndex = 0,
 			maxIndex = (typeof prefix == 'string') ? siPrefixes.indexOf(prefix)+1 : siPrefixes.length;
+
+	// flow unit?
+	if (['l', 'm3', 'm^3', 'm³', 'l/h', 'm3/h', 'm/h^3', 'm³/h'].indexOf(unit) >= 0) {
+		// don't scale...
+		maxIndex = -1;
+
+		// ...unless for l->m3 conversion
+		if (Math.abs(number) > 1000 && (unit == 'l' || unit == 'l/h')) {
+			unit = 'm³' + unit.substring(1);
+			number /= 1000;
+		}
+	}
 
 	while (prefix && Math.abs(number) > 1000 && siIndex < maxIndex) {
 		number /= 1000;
@@ -673,15 +686,9 @@ vz.wui.formatNumber = function(number, prefix) {
 	else
 		number += ' ';
 
-	return number;
-};
+	if (unit) number += unit;
 
-/**
- * Prevent prefixing of special units during number formatting
- */
-vz.wui.unitPrefixingAllowed = function(unit, maxPrefix) {
-	var staticUnit = ['l', 'm3', 'm^3', 'm³'].indexOf(unit) >= 0;
-	return (staticUnit) ? false : maxPrefix || true;
+	return number;
 };
 
 /**
@@ -695,6 +702,7 @@ vz.wui.formatConsumptionUnit = function(unit) {
 	else {
 		unit += 'h';
 	}
+
 	return unit;
 };
 
