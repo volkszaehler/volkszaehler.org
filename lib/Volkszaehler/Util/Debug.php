@@ -189,12 +189,14 @@ class Debug {
 			$load = array_slice(explode(' ', $load), 0, 3);
 		}
 		elseif (function_exists('shell_exec')) {
-			$load = explode(', ', substr(shell_exec('uptime'), -16));
+			// fail-safe shell exec
+			$null = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? 'nul' : '/dev/null';
+			$load = explode(', ', substr(shell_exec('uptime 2>' . $null), -16));
 		}
-		
+
 		return (isset($load)) ? array_map('floatval', $load) : FALSE;
 	}
-	
+
 	/**
 	 * Get server uptime
 	 *
@@ -207,7 +209,9 @@ class Debug {
 		}
 		elseif (function_exists("shell_exec")) {
 			$matches = array();
-			if (preg_match("/up (?:(?P<days>\d+) days?,? )?(?P<hours>\d+):(?P<minutes>\d{2})/", shell_exec('uptime'), $matches)) {
+			// fail-safe shell exec
+			$null = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? 'nul' : '/dev/null';
+			if (preg_match("/up (?:(?P<days>\d+) days?,? )?(?P<hours>\d+):(?P<minutes>\d{2})/", shell_exec('uptime 2>' . $null), $matches)) {
 				$uptime = 60*$matches['hours'] + $matches['minutes'];
 
 				if (isset($matches['days'])) {
