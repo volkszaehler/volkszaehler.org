@@ -243,7 +243,7 @@ abstract class Interpreter {
 	 * @param float $now in ms since 1970
 	 * @return float
 	 */
-	protected static function parseDateTimeString($string) {
+	public static function parseDateTimeString($string) {
 		if (ctype_digit((string)$string)) { // handling as ms timestamp
 			return (float) $string;
 		}
