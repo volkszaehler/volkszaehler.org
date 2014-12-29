@@ -192,6 +192,10 @@ vz.parseUrlParams = function() {
 				case 'to':
 					vz.options.plot.xaxis.max = parseInt(vars[key]);
 					break;
+
+                                case 'options':
+                                        vz.options.options = vars[key];
+                                        break;
 			}
 		}
 	}
