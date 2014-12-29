@@ -154,6 +154,7 @@ vz.entities.loadMultipleData = function(entities) {
 			from: Math.floor(vz.options.plot.xaxis.min),
 			to: Math.ceil(vz.options.plot.xaxis.max),
 			tuples: vz.options.tuples,
+			options: vz.options.options,
 			uuid: entities.map(function(entity) {
 				return entity.uuid;
 			}),
