@@ -520,7 +520,8 @@ vz.wui.updateLegend = function() {
 		if (y === null) {
 			vz.wui.legend.eq(i).text(series.title);
 		} else {
-			var d = new Date(pos.x);
+			// use plot wrapper instead of `new Date()` for timezone support
+			var d = $.plot.dateGenerator(pos.x, vz.options.plot.xaxis);
 			vz.wui.legend.eq(i).text(series.title + ": " + $.plot.formatDate(d, '%H:%M:%S') + " - " + y.toFixed(1) + " " + series.unit);
 		}
 	}
@@ -705,8 +706,12 @@ vz.wui.updateHeadline = function() {
 	if (delta < 3*24*3600*1000) format += ' %H:%M'; // under 3 days
 	if (delta < 5*60*1000) format += ':%S'; // under 5 minutes
 
-	var from = $.plot.formatDate(new Date(vz.options.plot.xaxis.min), format, vz.options.monthNames, vz.options.dayNames, true);
-	var to = $.plot.formatDate(new Date(vz.options.plot.xaxis.max), format, vz.options.monthNames, vz.options.dayNames, true);
+	// timezone-aware dates if timezon-js is inlcuded
+	var from = $.plot.dateGenerator(vz.options.plot.xaxis.min, vz.options.plot.xaxis);
+	var to = $.plot.dateGenerator(vz.options.plot.xaxis.max, vz.options.plot.xaxis);
+
+	from = $.plot.formatDate(from, format, vz.options.monthNames, vz.options.dayNames, true);
+	to = $.plot.formatDate(to, format, vz.options.monthNames, vz.options.dayNames, true);
 	$('#title').html(from + ' - ' + to);
 };
 
