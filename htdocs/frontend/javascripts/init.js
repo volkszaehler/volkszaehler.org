@@ -67,6 +67,13 @@ $(document).ready(function() {
 		vz.wui.dialogs.error('Javascript Runtime Error', errorMsg);
 	};
 
+	// add timezone-js support
+	if (typeof timezoneJS != "undefined" && typeof timezoneJS.Date != "undefined") {
+		timezoneJS.timezone.zoneFileBasePath = "tz";
+		timezoneJS.timezone.defaultZoneFile = [];
+		timezoneJS.timezone.init({ async: false });
+	}
+
 	// initialize variables
 	vz.middleware.push({ // default middleware
 		url: vz.options.localMiddleware,
@@ -88,6 +95,16 @@ $(document).ready(function() {
 	// TODO make language/translation dependent (vz.options.language)
 	vz.options.plot.xaxis.monthNames = vz.options.monthNames;
 	vz.options.plot.xaxis.dayNames = vz.options.dayNames;
+
+	// clear cookies and localStorage cache
+	var params = $.getUrlParams();
+	if (params.hasOwnProperty('reset') && params['reset']) {
+		$.setCookie('vz_entities', null);
+		try {
+			localStorage.removeItem('vz.capabilities');
+		}
+		catch (e) { }
+	}
 
 	// start loading cookies/url params
 	vz.entities.loadCookie(); // load uuids from cookie
