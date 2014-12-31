@@ -56,6 +56,8 @@ abstract class Interpreter {
 	protected $min = NULL;
 	protected $max = NULL;
 
+	protected $scale;		// unit scale from entity definition
+
 	/**
 	 * Constructor
 	 *
@@ -70,6 +72,9 @@ abstract class Interpreter {
 		$this->tupleCount = $tupleCount;
 		$this->options = $options;
 		$this->conn = $em->getConnection(); // get dbal connection from EntityManager
+
+		// store locally for performance
+		$this->scale = $this->channel->getDefinition()->scale;
 
 		// parse interval
 		if (isset($to))

@@ -44,7 +44,7 @@ class CounterInterpreter extends Interpreter {
 	 * @return float total consumption in Wh
 	 */
 	public function getConsumption() {
-		return $this->channel->getDefinition()->hasConsumption ? $this->valsum * 1000 / $this->resolution : NULL;
+		return $this->channel->getDefinition()->hasConsumption ? $this->valsum * $this->scale / $this->resolution : NULL;
 	}
 
 	/**
@@ -55,7 +55,8 @@ class CounterInterpreter extends Interpreter {
 	public function getAverage() {
 		if ($this->valsum) {
 			$delta = $this->getTo() - $this->getFrom();
-			return (3.6e9 * $this->valsum) / ($this->resolution * $delta); // 60 s/min * 60 min/h * 1.000ms/s * 1.000W/KW = 3.6e9 (Units: s/h*ms/s*W/KW = s/3.600s*.001s/s*W/1.000W = 1)
+			// 60 s/min * 60 min/h * 1.000 ms/s * 1.000 W/kW = 3.6e9 (Units: s/h*ms/s*W/kW = s/3.600s*.001s/s*W/1.000W = 1)
+			return (3.6e6 * $this->scale * $this->valsum) / ($this->resolution * $delta);
 		}
 		else { // prevents division by zero
 			return 0;
@@ -82,14 +83,16 @@ class CounterInterpreter extends Interpreter {
 		}
 
 		foreach ($this->rows as $row) {
-			$delta_ts = $row[0] - $last_ts; # time between now and row before
+			$delta_ts = $row[0] - $last_ts; // time between now and row before
 
 			// instead of reverting what DataIterator->next did by $val = $row[1] / $row[2]
 			// get max value which DataIterator->next provides as courtesy
 			$delta_val = $row[3] - $last_val;
+
+			// (1 imp / 1 imp/kWh) * (60 min/h * 60 s/min * 1000 ms/s * scale) / 1 ms
 			$tuple = $callback(array(
 				(float) ($last_ts = $row[0]), // timestamp of interval end
-				(float) ($delta_val / $this->resolution) * 3.6e9 / $delta_ts, // doing df/dt
+				(float) ($delta_val * 3.6e6 * $this->scale) / ($delta_ts * $this->resolution), // doing df/dt
 				(int) $row[2] // num of rows
 			));
 			$last_val = $row[3];
