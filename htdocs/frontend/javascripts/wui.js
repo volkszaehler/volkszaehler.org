@@ -58,32 +58,27 @@ vz.wui.init = function() {
 				window.location = vz.getPermalink();
 				break;
 			case 'png':
-				$.when(
-					$.cachedScript('javascripts/flot/canvas2image.js'),
-					$.cachedScript('javascripts/flot/base64.js'))
-				.done(function() {
-					// will prompt the user to save the image as PNG
-					$('#chart-export .export')
-						.html('')
+				// will prompt the user to save the image as PNG
+				$('#chart-export .export')
+					.html('')
+					.css({
+						"width": $('#flot').width() * 0.8,
+						"height": $('#flot').height() * 0.8})
+					.append(
+						$(Canvas2Image.saveAsPNG(vz.plot.getCanvas(), true))
 						.css({
-							"width": $('#flot').width() * 0.8,
-							"height": $('#flot').height() * 0.8})
-						.append(
-							$(Canvas2Image.saveAsPNG(vz.plot.getCanvas(), true))
-							.css({
-								"max-width":"100%",
-								"max-height":"100%"}));
-					$('#chart-export').dialog({
-						title: unescape('Export Snapshot'),
-						width: 'auto',
-						height: 'auto',
-						resizable: false,
-						buttons: {
-							Ok: function() {
-								$(this).dialog('close');
-							}
+							"max-width":"100%",
+							"max-height":"100%"}));
+				$('#chart-export').dialog({
+					title: unescape('Export Snapshot'),
+					width: 'auto',
+					height: 'auto',
+					resizable: false,
+					buttons: {
+						Ok: function() {
+							$(this).dialog('close');
 						}
-					});
+					}
 				});
 				break;
 			case 'csv':
