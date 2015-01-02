@@ -700,7 +700,7 @@ vz.wui.formatConsumptionUnit = function(unit) {
 	if (unit.indexOf(suffix, unit.length - suffix.length) !== -1) {
 		unit = unit.substring(0, unit.length - suffix.length);
 	}
-	else {
+	else if (unit !== 'h') {
 		unit += 'h';
 	}
 
