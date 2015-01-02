@@ -527,7 +527,7 @@ vz.wui.updateLegend = function() {
 				vz.wui.legend.eq(i).text(series.title + ": " + $.plot.formatDate(d, '%d.%m.%y - %H:%M') + " - " + y.toFixed(1) + $
 			} else {
 				vz.wui.legend.eq(i).text(series.title + ": " + $.plot.formatDate(d, '%H:%M:%S') + " - " + y.toFixed(1) + " " + $
-                        }
+			}
 		}
 	}
 
