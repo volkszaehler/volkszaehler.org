@@ -524,9 +524,9 @@ vz.wui.updateLegend = function() {
 			var d = $.plot.dateGenerator(pos.x, vz.options.plot.xaxis);
 			var jetzt = $.plot.dateGenerator((new Date()), vz.options.plot.xaxis);
 			if ((jetzt - d) > (1000 * 60 * 60 * 24)) {
-                                vz.wui.legend.eq(i).text(series.title + ": " + $.plot.formatDate(d, '%d.%m.%y - %H:%M') + " - " + y.toFixed(1) + $
-                        } else {
-                                vz.wui.legend.eq(i).text(series.title + ": " + $.plot.formatDate(d, '%H:%M:%S') + " - " + y.toFixed(1) + " " + $
+				vz.wui.legend.eq(i).text(series.title + ": " + $.plot.formatDate(d, '%d.%m.%y - %H:%M') + " - " + y.toFixed(1) + $
+			} else {
+                        	vz.wui.legend.eq(i).text(series.title + ": " + $.plot.formatDate(d, '%H:%M:%S') + " - " + y.toFixed(1) + " " + $
                         }
 		}
 	}
