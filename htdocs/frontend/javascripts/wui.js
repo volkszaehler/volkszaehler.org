@@ -522,12 +522,15 @@ vz.wui.updateLegend = function() {
 		} else {
 			// use plot wrapper instead of `new Date()` for timezone support
 			var d = $.plot.dateGenerator(pos.x, vz.options.plot.xaxis);
-			var jetzt = $.plot.dateGenerator((new Date()), vz.options.plot.xaxis);
-			if ((jetzt - d) > (1000 * 60 * 60 * 24)) {
-				vz.wui.legend.eq(i).text(series.title + ": " + $.plot.formatDate(d, '%d.%m.%y - %H:%M') + " - " + y.toFixed(1) + $
+			var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
+			var format;
+			// Interval more than 1 day ?
+			if(delta > 1*24*3600*1000) { 
+				format = '%d.%m.%y - %H:%M';
 			} else {
-				vz.wui.legend.eq(i).text(series.title + ": " + $.plot.formatDate(d, '%H:%M:%S') + " - " + y.toFixed(1) + " " + $
+				format = '%H:%M:%S';
 			}
+			vz.wui.legend.eq(i).text(series.title + ": " + $.plot.formatDate(d,format) + " - " + y.toFixed(0) + " " + series.unit);
 		}
 	}
 
