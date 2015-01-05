@@ -522,7 +522,9 @@ vz.wui.updateLegend = function() {
 		} else {
 			// use plot wrapper instead of `new Date()` for timezone support
 			var d = $.plot.dateGenerator(pos.x, vz.options.plot.xaxis);
-			vz.wui.legend.eq(i).text(series.title + ": " + $.plot.formatDate(d, '%H:%M:%S') + " - " + y.toFixed(1) + " " + series.unit);
+			var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
+			var format = (delta > 1*24*3600*1000) ? '%d.%m.%y - %H:%M' : '%H:%M:%S';
+			vz.wui.legend.eq(i).text(series.title + ": " + $.plot.formatDate(d,format) + " - " + y.toFixed(0) + " " + series.unit);
 		}
 	}
 
