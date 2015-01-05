@@ -497,6 +497,10 @@ Entity.prototype.getDOMDetails = function(edit) {
  * Get DOM for list of entities
  */
 Entity.prototype.getDOMRow = function(parent) {
+	// full or shortened type name
+	var type = this.definition.translation[vz.options.language];
+	if (vz.options.shortenLongTypes) type = type.replace(/\s*\(.+?\)/, '');
+
 	var row =  $('<tr>')
 		.addClass((parent) ? 'child-of-entity-' + parent.uuid : '')
 		.addClass((this.definition.model == 'Volkszaehler\\Model\\Aggregator') ? 'aggregator' : 'channel')
@@ -529,7 +533,7 @@ Entity.prototype.getDOMRow = function(parent) {
 				)
 			)
 		)
-		.append($('<td>').text(this.definition.translation[vz.options.language])) // channel type
+		.append($('<td>').text(type)) // channel type
 		.append($('<td>').addClass('min'))		// min
 		.append($('<td>').addClass('max'))		// max
 		.append($('<td>').addClass('average'))		// avg
