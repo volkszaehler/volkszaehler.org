@@ -525,11 +525,7 @@ vz.wui.updateLegend = function() {
 			var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
 			var format;
 			// Interval more than 1 day ?
-			if(delta > 1*24*3600*1000) { 
-				format = '%d.%m.%y - %H:%M';
-			} else {
-				format = '%H:%M:%S';
-			}
+			var format = (delta > 1*24*3600*1000) ? '%d.%m.%y - %H:%M' : '%H:%M:%S';
 			vz.wui.legend.eq(i).text(series.title + ": " + $.plot.formatDate(d,format) + " - " + y.toFixed(0) + " " + series.unit);
 		}
 	}
