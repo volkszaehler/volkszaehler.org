@@ -135,13 +135,6 @@ select.icons option {
 	height: 12px;
 }
 
-.inactive {
-	filter: alpha(opacity=30);
-	-moz-opacity: 0.3;
-	-khtml-opacity: 0.3;
-	opacity: 0.3;
-}
-
 .ops, .min, .max, .average, .last, .consumption, .total, .cost {
 	text-align: right;
 }
