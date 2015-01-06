@@ -98,7 +98,7 @@ $(document).ready(function() {
 
 	// clear cookies and localStorage cache
 	var params = $.getUrlParams();
-	if (params.hasOwnProperty('reset') && params.reset) {
+	if (params.hasOwnProperty('reset') && params['reset']) {
 		$.setCookie('vz_entities', null);
 		try {
 			localStorage.removeItem('vz.capabilities');
@@ -113,6 +113,16 @@ $(document).ready(function() {
 	// set x axis limits _after_ loading options cookie
 	vz.options.plot.xaxis.max = new Date().getTime();
 	vz.options.plot.xaxis.min = vz.options.plot.xaxis.max - vz.options.interval;
+
+	// clear cookies and localStorage cache
+	var params = $.getUrlParams();
+	if (params.hasOwnProperty('reset') && params['reset']) {
+		$.setCookie('vz_entities', null);
+		try {
+			localStorage.removeItem('vz.capabilities');
+		}
+		catch (e) { }
+	}
 
 	// parse additional url params (new uuid etc e.g. for permalink) after loading defaults
 	vz.parseUrlParams();

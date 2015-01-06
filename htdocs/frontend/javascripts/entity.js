@@ -441,7 +441,6 @@ Entity.prototype.getDOMDetails = function(edit) {
 				var definition = vz.capabilities.definitions.get('properties', property);
 				var title = definition.translation[vz.options.language];
 				var value = this[property];
-				var prefix; // unit prefix
 
 				if (definition.type == 'boolean') {
 					// value = '<img src="images/' + ((value) ? 'tick' : 'cross') + '.png" alt="' + ((value) ? 'ja' : 'nein') + '" />';
@@ -450,12 +449,12 @@ Entity.prototype.getDOMDetails = function(edit) {
 
 				switch (property) {
 					case 'cost':
-						prefix = (this.definition.scale == 1000) ? ' ct/k' : ' ct/'; // ct per Wh or kWh
+						var prefix = (this.definition.scale == 1000) ? ' ct/k' : ' ct/'; // ct per Wh or kWh
 						value = Number(value * 100).toFixed(2) + prefix + vz.wui.formatConsumptionUnit(this.definition.unit);
 						break;
 
 					case 'resolution':
-						prefix = (this.definition.scale == 1000) ? 'k' : ''; // per Wh or kWh
+						var prefix = (this.definition.scale == 1000) ? 'k' : ''; // per Wh or kWh
 						value += '/' + prefix + vz.wui.formatConsumptionUnit(this.definition.unit);
 						break;
 
