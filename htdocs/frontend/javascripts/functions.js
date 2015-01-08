@@ -186,11 +186,17 @@ vz.parseUrlParams = function() {
 					break;
 
 				case 'from':
-					vz.options.plot.xaxis.min = parseInt(vars[key]);
+				case 'to':
+					// ms or speaking timestamp
+					var ts = (/^-?[0-9]+$/.test(vars[key])) ? parseInt(vars[key]) : new Date(vars[key]).getTime();
+					if (key == 'from')
+						vz.options.plot.xaxis.min = ts;
+					else
+						vz.options.plot.xaxis.max = ts;
 					break;
 
-				case 'to':
-					vz.options.plot.xaxis.max = parseInt(vars[key]);
+				case 'options':
+					vz.options.options = vars[key];
 					break;
 			}
 		}
