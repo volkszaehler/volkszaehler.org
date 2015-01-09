@@ -571,22 +571,31 @@ vz.wui.handleControls = function () {
 			);
 			break;
 		case 'zoom-hour':
-			vz.wui.zoom(
-				new Date(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours()).getTime(),
-				new Date(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours()+1).getTime()
-			);
+			if (vz.wui.tmaxnow)
+				vz.wui.zoom(now - 3600*1000, now);
+			else
+				vz.wui.zoom(
+					new Date(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours()).getTime(),
+					new Date(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours()+1).getTime()
+				);
 			break;
 		case 'zoom-day':
-			vz.wui.zoom(
-				new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(),
-				new Date(d.getFullYear(), d.getMonth(), d.getDate()+1).getTime()
-			);
+			if (vz.wui.tmaxnow)
+				vz.wui.zoom(now - 24*3600*1000, now);
+			else
+				vz.wui.zoom(
+					new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(),
+					new Date(d.getFullYear(), d.getMonth(), d.getDate()+1).getTime()
+				);
 			break;
 		case 'zoom-week':
-			vz.wui.zoom(
-				new Date(d.getFullYear(), d.getMonth(), d.getDate()-d.getDay()+1).getTime(), // start from monday
-				new Date(d.getFullYear(), d.getMonth(), d.getDate()-d.getDay()+8).getTime()
-			);
+			if (vz.wui.tmaxnow)
+				vz.wui.zoom(now - 7*24*3600*1000, now);
+			else
+				vz.wui.zoom(
+					new Date(d.getFullYear(), d.getMonth(), d.getDate()-d.getDay()+1).getTime(), // start from monday
+					new Date(d.getFullYear(), d.getMonth(), d.getDate()-d.getDay()+8).getTime()
+				);
 			break;
 		case 'zoom-month':
 			vz.wui.zoom(
