@@ -1,8 +1,5 @@
 etc/volkszaehler.conf.php
-misc/sql/demo/pulses.dummy.copy
-.project
-.buildpath
-.settings/
+htdocs/frontend/tz
+node_modules/
 vendor/
-.idea
 composer.lock
