@@ -29,7 +29,7 @@ var images = base + 'images/';
 // js
 var vendor = base + 'vendor/';
 var javascripts = base + 'javascripts/';
-var flot = base + 'javascripts/flot/';
+var flot = base + 'vendor/flot/';
 var extensions = base + 'javascripts/jquery/';
 
 /**
