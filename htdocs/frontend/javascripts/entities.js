@@ -63,20 +63,22 @@ vz.entities.loadCookie = function() {
  * Load JSON entity details from the middleware
  */
 vz.entities.loadDetails = function() {
-	var queue = [];
+	var queue = [];			// middleware calls
+	var middlewares = {};	// entities per call
 
-	vz.middleware.each(function(idx, middleware) {
-		var entities = [];
-		vz.entities.each(function(entity) {
-			if (entity.middleware == middleware.url) {
-				entities.push(entity);
-			}
-		}, true); // recursive
-
-		if (entities.length > 0) {
-			queue.push(vz.entities.loadMultipleDetails(entities));
+	vz.entities.each(function(entity) {
+		if (middlewares[entity.middleware] == null) {
+			middlewares[entity.middleware] = []; // new queue
 		}
-	});
+
+		middlewares[entity.middleware].push(entity);
+	}, true); // recursive
+
+ 	for (var middleware in middlewares) {
+		if (middlewares.hasOwnProperty(middleware)) {
+			queue.push(vz.entities.loadMultipleDetails(middlewares[middleware]));
+		}
+	}
 
 	return $.when.apply($, queue);
 };
