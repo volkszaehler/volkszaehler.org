@@ -133,13 +133,6 @@ $(document).ready(function() {
 			}
 			vz.entities.showTable();
 			vz.entities.loadData().done(vz.wui.drawPlot);
-/*
-			// alternative approach to parallelize js and json loading
-			$.when.apply($, [
-				$.cachedScript('jquery.flot.min.js'),
-				vz.entities.loadData()
-			]).done(vz.wui.drawPlot);
-*/
 		});
 	});
 });
