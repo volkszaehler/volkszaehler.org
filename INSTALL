@@ -3,6 +3,31 @@ There is an small script named install.sh which should do the installation for y
 For more info refer to the wiki: http://wiki.volkszaehler.org/howto/getstarted
 
 == Dependencies ==
-1. Get composer (http://getcomposer.org/)
-2. Run "composer install"
-2a. If you are a developer run "composer --dev update"
+
+You need composer (http://getcomposer.org/).
+
+You can either install it privately to your VZ installation (1) or system wide (2)
+
+(1) VZ private
+
+Suitable if you need composer only for VZ.
+
+1. Download and execute composer installer
+  curl -sS https://getcomposer.org/installer | php
+2. Run composer to install VZ dependencies:
+  ./composer.phar install"
+
+(2) System installation
+
+1. Download latest composer snapshot
+  wget -O /usr/local/bin/composer https://getcomposer.org/composer.phar
+  chmod a+x /usr/local/bin/composer
+2. Run composer to install VZ dependencies:
+  composer install
+
+
+Optional step:
+
+If you are a developer, run
+  composer --dev update
+
