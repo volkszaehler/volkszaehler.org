@@ -192,11 +192,6 @@ Entity.prototype.updateData = function(data) {
 
 	this.updateAxisScale();
 	this.updateDOMRow();
-
-	// load totals whenever data changes - this happens async to updateDOMRow()
-	if (this.initialconsumption !== undefined) {
-		this.loadTotalConsumption();
-	}
 };
 
 /**
@@ -217,14 +212,11 @@ Entity.prototype.loadTotalConsumption = function() {
 		success: function(json) {
 			var row = $('#entity-' + this.uuid);
 			var unit = vz.wui.formatConsumptionUnit(this.definition.unit);
-			var consumption = (this.definition.scale || 1) * this.initialconsumption + json.data.consumption;
+			this.totalconsumption = (this.definition.scale || 1) * this.initialconsumption + json.data.consumption;
 
 			$('.total', row)
-				.data('total', consumption)
-				.text(vz.wui.formatNumber(consumption, unit, 'k'));
-
-			// unhide total column
-			vz.entities.updateTable();
+				.data('total', this.totalconsumption)
+				.text(vz.wui.formatNumber(this.totalconsumption, unit, 'k'));
 		}
 	});
 };
@@ -607,7 +599,7 @@ Entity.prototype.updateDOMRow = function() {
 	$('.last', row).text('');
 	$('.consumption', row).text('');
 	$('.cost', row).text('');
-	$('.total', row).text('').data('total', null);
+	// $('.total', row).text('').data('total', null);
 
 	if (this.data && this.data.rows > 0) { // update statistics if data available
 		var yearMultiplier = 365*24*60*60*1000 / (this.data.to - this.data.from); // ms

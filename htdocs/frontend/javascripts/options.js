@@ -29,6 +29,7 @@ vz.options = {
 	precision: 2,		// TODO update from middleware capabilities?
 	tuples: null,		// automatically determined by plot size
 	refresh: false,
+	totalsInterval: 300,	// update interval for consumption is retrieved for each channel where initialconsumption > 0
 	shortenLongTypes: false, // show shorter type names in table
 	minTimeout: 2000,	// minimum refresh time in ms
 	interval: 24*60*60*1000, // 1 day default time interval to show
