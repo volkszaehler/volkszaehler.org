@@ -108,6 +108,26 @@ vz.entities.loadMultipleDetails = function(entities) {
 };
 
 /**
+ * Load total consumption for all entities that have the initialconsumption property defined
+ */
+vz.entities.loadTotals = function() {
+	if (vz.options.totals) {
+		var queue = [];
+		vz.entities.each(function(entity) {
+			if (entity.initialconsumption !== undefined) {
+				queue.push(entity.loadTotalConsumption());
+			}
+		}, true); // recursive
+
+		// set timeout for next load once completed
+		$.when.apply($, queue).done(function() {
+			vz.entities.updateTable();	// unhide total column
+			window.setTimeout(vz.entities.loadTotals, vz.options.totalsInterval * 1000);
+		});
+	}
+};
+
+/**
  * Speedup middleware queries, requires options[aggregate] enabled
  * @return {string} group option or undefined
  */

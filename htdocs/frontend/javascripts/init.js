@@ -132,7 +132,10 @@ $(document).ready(function() {
 				vz.wui.dialogs.init();
 			}
 			vz.entities.showTable();
-			vz.entities.loadData().done(vz.wui.drawPlot);
+			vz.entities.loadData().done(function() {
+				vz.wui.drawPlot();
+				vz.entities.loadTotals();
+			});
 		});
 	});
 });
