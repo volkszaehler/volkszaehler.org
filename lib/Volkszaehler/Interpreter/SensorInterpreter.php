@@ -42,7 +42,9 @@ class SensorInterpreter extends Interpreter {
 	 * @return float total consumption in Wh
 	 */
 	public function getConsumption() {
-		return $this->channel->getDefinition()->hasConsumption ? $this->consumption / 3.6e6 : NULL; // convert to Wh
+		// convert to Wh
+		// @TODO check if resolution is needed here
+		return $this->channel->getDefinition()->hasConsumption ? $this->consumption / (3.6e3 * $this->scale) : NULL;
 	}
 
 	/**
@@ -76,6 +78,8 @@ class SensorInterpreter extends Interpreter {
 			// DataIterator->next provides as courtesy
 			// otherwise the default, non-optimized tuple packaging SQL statement will yield incorrect results
 			// due to non-equidistant timestamps
+
+			// @TODO check if scale is needed here
 			$tuple = $callback(array(
 				(float) ($ts_last = $row[0]),	// timestamp of interval end
 				(float) $row[4] / $this->resolution,

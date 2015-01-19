@@ -135,13 +135,6 @@ select.icons option {
 	height: 12px;
 }
 
-.inactive {
-	filter: alpha(opacity=30);
-	-moz-opacity: 0.3;
-	-khtml-opacity: 0.3;
-	opacity: 0.3;
-}
-
 .ops, .min, .max, .average, .last, .consumption, .total, .cost {
 	text-align: right;
 }
@@ -163,4 +156,71 @@ select.icons option {
 
 .dialog select {
 	width: 100%;
+}
+
+
+/* jQuery UI customizations */
+input.ui-button {
+	padding: 0.1em 0.5em;
+}
+
+.ui-button-text-only .ui-button-text {
+	padding: 0.1em 0.5em;
+}
+
+#entity-add.ui-dialog-content {
+	padding: 0.3em 0 0;
+}
+
+.ui-tabs .ui-tabs-nav li a {
+  padding: 0.1em 0.5em !important;
+}
+
+.ui-error .ui-widget-header { /* red header */
+	background-image: url("../images/ui-bg_gloss-wave_35_red_500x100.png");
+}
+
+
+/* jQuery TreeTable Core 2.0 stylesheet
+ *
+ * This file contains styles that are used to display the tree table. Each tree
+ * table is assigned the +treeTable+ class.
+ * ========================================================================= */
+
+/* jquery.treeTable.collapsible
+ * ------------------------------------------------------------------------- */
+.treeTable tr td .expander {
+  background-position: left center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  padding: 0;
+  zoom: 1; /* IE7 Hack */
+}
+
+.treeTable tr.collapsed td .expander {
+  background-image: url(../images/toggle-expand-dark.png);
+}
+
+.treeTable tr.expanded td .expander {
+  background-image: url(../images/toggle-collapse-dark.png);
+}
+
+/* jquery.treeTable.sortable
+ * ------------------------------------------------------------------------- */
+.treeTable tr.selected, .treeTable tr.accept {
+  background-color: #3875d7;
+  color: #fff;
+}
+
+.treeTable tr.collapsed.selected td .expander, .treeTable tr.collapsed.accept td .expander {
+  background-image: url(../images/toggle-expand-light.png);
+}
+
+.treeTable tr.expanded.selected td .expander, .treeTable tr.expanded.accept td .expander {
+  background-image: url(../images/toggle-collapse-light.png);
+}
+
+.treeTable .ui-draggable-dragging {
+  color: #000;
+  z-index: 1;
 }

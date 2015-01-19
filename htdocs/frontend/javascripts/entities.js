@@ -63,20 +63,22 @@ vz.entities.loadCookie = function() {
  * Load JSON entity details from the middleware
  */
 vz.entities.loadDetails = function() {
-	var queue = [];
+	var queue = [];			// middleware calls
+	var middlewares = {};	// entities per call
 
-	vz.middleware.each(function(idx, middleware) {
-		var entities = [];
-		vz.entities.each(function(entity) {
-			if (entity.middleware == middleware.url) {
-				entities.push(entity);
-			}
-		}, true); // recursive
-
-		if (entities.length > 0) {
-			queue.push(vz.entities.loadMultipleDetails(entities));
+	vz.entities.each(function(entity) {
+		if (middlewares[entity.middleware] == null) {
+			middlewares[entity.middleware] = []; // new queue
 		}
-	});
+
+		middlewares[entity.middleware].push(entity);
+	}, true); // recursive
+
+ 	for (var middleware in middlewares) {
+		if (middlewares.hasOwnProperty(middleware)) {
+			queue.push(vz.entities.loadMultipleDetails(middlewares[middleware]));
+		}
+	}
 
 	return $.when.apply($, queue);
 };
@@ -103,6 +105,26 @@ vz.entities.loadMultipleDetails = function(entities) {
 			}, true);
 		}
 	});
+};
+
+/**
+ * Load total consumption for all entities that have the initialconsumption property defined
+ */
+vz.entities.loadTotals = function() {
+	if (vz.options.totals) {
+		var queue = [];
+		vz.entities.each(function(entity) {
+			if (entity.initialconsumption !== undefined) {
+				queue.push(entity.loadTotalConsumption());
+			}
+		}, true); // recursive
+
+		// set timeout for next load once completed
+		$.when.apply($, queue).done(function() {
+			vz.entities.updateTable();	// unhide total column
+			window.setTimeout(vz.entities.loadTotals, vz.options.totalsInterval * 1000);
+		});
+	}
 };
 
 /**
@@ -154,6 +176,7 @@ vz.entities.loadMultipleData = function(entities) {
 			from: Math.floor(vz.options.plot.xaxis.min),
 			to: Math.ceil(vz.options.plot.xaxis.max),
 			tuples: vz.options.tuples,
+			options: vz.options.options,
 			uuid: entities.map(function(entity) {
 				return entity.uuid;
 			}),

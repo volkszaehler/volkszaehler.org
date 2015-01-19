@@ -46,4 +46,7 @@ date_default_timezone_set($tz);
 // set locale
 setlocale(LC_ALL, Util\Configuration::read('locale'));
 
+// force numeric output to C convention (issue #121)
+setlocale(LC_NUMERIC, 'C');
+
 ?>

@@ -58,32 +58,27 @@ vz.wui.init = function() {
 				window.location = vz.getPermalink();
 				break;
 			case 'png':
-				$.when(
-					$.cachedScript('javascripts/flot/canvas2image.js'),
-					$.cachedScript('javascripts/flot/base64.js'))
-				.done(function() {
-					// will prompt the user to save the image as PNG
-					$('#chart-export .export')
-						.html('')
+				// will prompt the user to save the image as PNG
+				$('#chart-export .export')
+					.html('')
+					.css({
+						"width": $('#flot').width() * 0.8,
+						"height": $('#flot').height() * 0.8})
+					.append(
+						$(Canvas2Image.saveAsPNG(vz.plot.getCanvas(), true))
 						.css({
-							"width": $('#flot').width() * 0.8,
-							"height": $('#flot').height() * 0.8})
-						.append(
-							$(Canvas2Image.saveAsPNG(vz.plot.getCanvas(), true))
-							.css({
-								"max-width":"100%",
-								"max-height":"100%"}));
-					$('#chart-export').dialog({
-						title: unescape('Export Snapshot'),
-						width: 'auto',
-						height: 'auto',
-						resizable: false,
-						buttons: {
-							Ok: function() {
-								$(this).dialog('close');
-							}
+							"max-width":"100%",
+							"max-height":"100%"}));
+				$('#chart-export').dialog({
+					title: unescape('Export Snapshot'),
+					width: 'auto',
+					height: 'auto',
+					resizable: false,
+					buttons: {
+						Ok: function() {
+							$(this).dialog('close');
 						}
-					});
+					}
 				});
 				break;
 			case 'csv':
@@ -520,8 +515,11 @@ vz.wui.updateLegend = function() {
 		if (y === null) {
 			vz.wui.legend.eq(i).text(series.title);
 		} else {
-			var d = new Date(pos.x);
-			vz.wui.legend.eq(i).text(series.title + ": " + $.plot.formatDate(d, '%H:%M:%S') + " - " + y.toFixed(1) + " " + series.unit);
+			// use plot wrapper instead of `new Date()` for timezone support
+			var d = $.plot.dateGenerator(pos.x, vz.options.plot.xaxis);
+			var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
+			var format = (delta > 1*24*3600*1000) ? '%d.%m.%y - %H:%M' : '%H:%M:%S';
+			vz.wui.legend.eq(i).text(series.title + ": " + $.plot.formatDate(d,format) + " - " + y.toFixed(0) + " " + series.unit);
 		}
 	}
 
@@ -573,22 +571,31 @@ vz.wui.handleControls = function () {
 			);
 			break;
 		case 'zoom-hour':
-			vz.wui.zoom(
-				new Date(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours()).getTime(),
-				new Date(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours()+1).getTime()
-			);
+			if (vz.wui.tmaxnow)
+				vz.wui.zoom(now - 3600*1000, now);
+			else
+				vz.wui.zoom(
+					new Date(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours()).getTime(),
+					new Date(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours()+1).getTime()
+				);
 			break;
 		case 'zoom-day':
-			vz.wui.zoom(
-				new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(),
-				new Date(d.getFullYear(), d.getMonth(), d.getDate()+1).getTime()
-			);
+			if (vz.wui.tmaxnow)
+				vz.wui.zoom(now - 24*3600*1000, now);
+			else
+				vz.wui.zoom(
+					new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(),
+					new Date(d.getFullYear(), d.getMonth(), d.getDate()+1).getTime()
+				);
 			break;
 		case 'zoom-week':
-			vz.wui.zoom(
-				new Date(d.getFullYear(), d.getMonth(), d.getDate()-d.getDay()+1).getTime(), // start from monday
-				new Date(d.getFullYear(), d.getMonth(), d.getDate()-d.getDay()+8).getTime()
-			);
+			if (vz.wui.tmaxnow)
+				vz.wui.zoom(now - 7*24*3600*1000, now);
+			else
+				vz.wui.zoom(
+					new Date(d.getFullYear(), d.getMonth(), d.getDate()-d.getDay()+1).getTime(), // start from monday
+					new Date(d.getFullYear(), d.getMonth(), d.getDate()-d.getDay()+8).getTime()
+				);
 			break;
 		case 'zoom-month':
 			vz.wui.zoom(
@@ -652,10 +659,23 @@ vz.wui.clearTimeout = function(text) {
  * therefore "vz.options.precision" needs
  * to be set to 1 (for 1 decimal) in that case
  */
-vz.wui.formatNumber = function(number, prefix) {
+vz.wui.formatNumber = function(number, unit, prefix) {
+	prefix = prefix || true; // default on
 	var siPrefixes = ['k', 'M', 'G', 'T'];
 	var siIndex = 0,
 			maxIndex = (typeof prefix == 'string') ? siPrefixes.indexOf(prefix)+1 : siPrefixes.length;
+
+	// flow unit?
+	if (['l', 'm3', 'm^3', 'm³', 'l/h', 'm3/h', 'm/h^3', 'm³/h'].indexOf(unit) >= 0) {
+		// don't scale...
+		maxIndex = -1;
+
+		// ...unless for l->m3 conversion
+		if (Math.abs(number) > 1000 && (unit == 'l' || unit == 'l/h')) {
+			unit = 'm³' + unit.substring(1);
+			number /= 1000;
+		}
+	}
 
 	while (prefix && Math.abs(number) > 1000 && siIndex < maxIndex) {
 		number /= 1000;
@@ -673,15 +693,9 @@ vz.wui.formatNumber = function(number, prefix) {
 	else
 		number += ' ';
 
-	return number;
-};
+	if (unit) number += unit;
 
-/**
- * Prevent prefixing of special units during number formatting
- */
-vz.wui.unitPrefixingAllowed = function(unit, maxPrefix) {
-	var staticUnit = ['l', 'm3', 'm^3', 'm³'].indexOf(unit) >= 0;
-	return (staticUnit) ? false : maxPrefix || true;
+	return number;
 };
 
 /**
@@ -692,9 +706,10 @@ vz.wui.formatConsumptionUnit = function(unit) {
 	if (unit.indexOf(suffix, unit.length - suffix.length) !== -1) {
 		unit = unit.substring(0, unit.length - suffix.length);
 	}
-	else {
+	else if (unit !== 'h') {
 		unit += 'h';
 	}
+
 	return unit;
 };
 
@@ -705,8 +720,12 @@ vz.wui.updateHeadline = function() {
 	if (delta < 3*24*3600*1000) format += ' %H:%M'; // under 3 days
 	if (delta < 5*60*1000) format += ':%S'; // under 5 minutes
 
-	var from = $.plot.formatDate(new Date(vz.options.plot.xaxis.min), format, vz.options.monthNames, vz.options.dayNames, true);
-	var to = $.plot.formatDate(new Date(vz.options.plot.xaxis.max), format, vz.options.monthNames, vz.options.dayNames, true);
+	// timezone-aware dates if timezon-js is inlcuded
+	var from = $.plot.dateGenerator(vz.options.plot.xaxis.min, vz.options.plot.xaxis);
+	var to = $.plot.dateGenerator(vz.options.plot.xaxis.max, vz.options.plot.xaxis);
+
+	from = $.plot.formatDate(from, format, vz.options.monthNames, vz.options.dayNames, true);
+	to = $.plot.formatDate(to, format, vz.options.monthNames, vz.options.dayNames, true);
 	$('#title').html(from + ' - ' + to);
 };
 

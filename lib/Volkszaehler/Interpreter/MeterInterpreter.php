@@ -44,7 +44,7 @@ class MeterInterpreter extends Interpreter {
 	 * @return float total consumption in Wh
 	 */
 	public function getConsumption() {
-		return $this->channel->getDefinition()->hasConsumption ? 1000 * $this->pulseCount / $this->resolution : NULL;
+		return $this->channel->getDefinition()->hasConsumption ? $this->scale * $this->pulseCount / $this->resolution : NULL;
 	}
 
 	/**
@@ -55,7 +55,8 @@ class MeterInterpreter extends Interpreter {
 	public function getAverage() {
 		if ($this->pulseCount) {
 			$delta = $this->getTo() - $this->getFrom();
-			return (3.6e9 * $this->pulseCount) / ($this->resolution * $delta); // 60 s/min * 60 min/h * 1.000ms/s * 1.000W/KW = 3.6e9 (Units: s/h*ms/s*W/KW = s/3.600s*.001s/s*W/1.000W = 1)
+			// 60 s/min * 60 min/h * 1.000 ms/s * 1.000 W/kW = 3.6e9 (Units: s/h*ms/s*W/KW = s/3.600s*.001s/s*W/1.000W = 1)
+			return (3.6e6 * $this->scale * $this->pulseCount) / ($this->resolution * $delta);
 		}
 		else { // prevents division by zero
 			return 0;
@@ -78,9 +79,10 @@ class MeterInterpreter extends Interpreter {
 		$ts_last = $this->getFrom();
 		foreach ($this->rows as $row) {
 			$delta = $row[0] - $ts_last;
+			// (1 imp * 60 min/h * 60 s/min * 1000 ms/s * scale) / (1 imp/kWh * 1ms) = 3.6e6 kW
 			$tuple = $callback(array(
 				(float) ($ts_last = $row[0]), // timestamp of interval end
-				(float) ($row[1] * 3.6e9) / ($this->resolution * $delta), // doing df/dt
+				(float) ($row[1] * 3.6e6 * $this->scale) / ($this->resolution * $delta), // doing df/dt
 				(int) $row[2] // num of rows
 			));
 
