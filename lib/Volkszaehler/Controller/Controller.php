@@ -41,7 +41,7 @@ abstract class Controller {
 	 * @param View $view
 	 * @param EntityManager $em
 	 */
-	public function __construct(/*View\View*/ $view, \Doctrine\ORM\EntityManager $em) {
+	public function __construct(View\View $view = null, \Doctrine\ORM\EntityManager $em) {
 		$this->view = $view;
 		$this->em = $em;
 	}

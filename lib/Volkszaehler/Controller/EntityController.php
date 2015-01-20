@@ -26,7 +26,7 @@ namespace Volkszaehler\Controller;
 use Volkszaehler\Definition;
 use Volkszaehler\Util;
 use Volkszaehler\Model;
-use Doctrine\ORM;
+use Volkszaehler\View;
 
 /**
  * Entity controller
@@ -35,6 +35,11 @@ use Doctrine\ORM;
  * @package default
  */
 class EntityController extends Controller {
+
+	public function __construct(View\View $view = null, \Doctrine\ORM\EntityManager $em) {
+		parent::__construct($view, $em);
+		$this->cache = $this->em->getConfiguration()->getQueryCacheImpl();
+	}
 
 	/**
 	 * Get entity
@@ -57,9 +62,14 @@ class EntityController extends Controller {
 		}
 	}
 
-	public function getSingleEntity($uuid) {
+	public function getSingleEntity($uuid, $allowCache = false) {
 		if (!Util\UUID::validate($uuid)) {
 			throw new \Exception('Invalid UUID: \'' . $uuid . '\'');
+		}
+
+		if ($allowCache && $this->cache && $this->cache->contains($uuid)) {
+			// used hydrated cache result
+			return $this->cache->fetch($uuid);
 		}
 
 		$dql = 'SELECT a, p
@@ -67,15 +77,22 @@ class EntityController extends Controller {
 			LEFT JOIN a.properties p
 			WHERE a.uuid = :uuid';
 
-		$q = $this->em->createQuery($dql);
-		$q->setParameter('uuid', $uuid);
+		$q = $this->em->createQuery($dql)
+			->setParameter('uuid', $uuid);
 
 		try {
-			return $q->getSingleResult();
+			$entity = $q->getSingleResult();
+
+			if ($allowCache && $this->cache) {
+				$this->cache->save($uuid, $entity, Util\Configuration::read('cache.ttl'));
+			}
+
+			return $entity;
 		} catch (\Doctrine\ORM\NoResultException $e) {
 			throw new \Exception('No entity found with UUID: \'' . $uuid . '\'', 404);
 		}
 	}
+
 	/**
 	 * Delete entity by uuid
 	 */
@@ -88,6 +105,10 @@ class EntityController extends Controller {
 
 		$this->em->remove($entity);
 		$this->em->flush();
+
+		if ($this->cache) {
+			$this->cache->delete($identifier);
+		}
 	}
 
 	/**
@@ -102,6 +123,10 @@ class EntityController extends Controller {
 
 		$this->setProperties($entity, $parameters);
 		$this->em->flush();
+
+		if ($this->cache) {
+			$this->cache->delete($identifier);
+		}
 
 		// HACK - see https://github.com/doctrine/doctrine2/pull/382
 		$entity->castProperties();

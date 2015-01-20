@@ -150,10 +150,12 @@ class JpGraph extends View {
 			$interpreter->setTupleCount($this->width);
 		}
 
-		$data = $interpreter->processData(function($tuple) {
+		$data = array();
+		// iterate through PDO resultset
+		foreach ($interpreter as $tuple) {
 			$tuple[0] /= 1000;
-			return $tuple;
-		});
+			$data[] = $tuple;
+		}
 
 		if (count($data) > 0) {
 			$xData = $yData = array();

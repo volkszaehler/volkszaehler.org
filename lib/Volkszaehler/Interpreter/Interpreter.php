@@ -31,11 +31,11 @@ use Doctrine\ORM;
 /**
  * Interpreter superclass for all interpreters
  *
- * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
+ * @author Steffen Vogel <info@steffenvogel.de>
+ * @author Andreas Götz <cpuidle@gmx.de>
  */
-abstract class Interpreter {
-	protected $channel;
+abstract class Interpreter implements \Iterator {
 
 	/**
 	 * @var Database connection
@@ -49,14 +49,19 @@ abstract class Interpreter {
 	protected $groupBy;		// user from/to from DataIterator for exact calculations!
 	protected $options;  	// additional non-standard options
 
+	protected $channel;		// Channel entity
+
 	protected $rowCount;	// number of rows in the database
 	protected $tupleCount;	// number of requested tuples
 	protected $rows;		// DataIterator instance for aggregating rows
+
+	protected $key; 		// result interator index
 
 	protected $min = NULL;
 	protected $max = NULL;
 
 	protected $scale;		// unit scale from entity definition
+	protected $resolution;	// interpreter resolution from entity definition
 
 	/**
 	 * Constructor
@@ -75,6 +80,8 @@ abstract class Interpreter {
 
 		// store locally for performance
 		$this->scale = $this->channel->getDefinition()->scale;
+		// in case of SensorInterpreter resolution is optional
+		$this->resolution = ($this->channel->hasProperty('resolution')) ? $this->channel->getProperty('resolution') : 1;
 
 		// parse interval
 		if (isset($to))
@@ -92,6 +99,27 @@ abstract class Interpreter {
 		// add db-specific SQL optimizations
 		$class = SQL\SQLOptimizer::factory();
 		$this->optimizer = new $class($this, $this->conn);
+	}
+
+	/**
+	 * Iterator functions
+	 */
+
+	abstract public function rewind();
+
+	abstract public function current();
+
+	public function next() {
+		$this->key++;
+		$this->rows->next();
+	}
+
+	public function valid() {
+		return $this->rows->valid();
+	}
+
+	public function key() {
+		return $this->key;
 	}
 
 	/**

@@ -31,6 +31,11 @@ use Volkszaehler\Util;
  */
 abstract class Definition {
 	/**
+	 * Cache key
+	 */
+	const CACHE_KEY = 'VZ_';
+
+	/**
 	 * @var string discriminator for database column
 	 */
 	public $name;
@@ -55,7 +60,6 @@ abstract class Definition {
 			}
 		}
 	}
-
 
 	/**
 	 * Factory method for creating new instances
@@ -99,10 +103,24 @@ abstract class Definition {
 	protected static function load() {
 		static::$definitions = array();
 
-		$json = Util\JSON::decode(file_get_contents(__DIR__ . '/' . static::FILE));
+		$cache_id = static::CACHE_KEY . static::FILE;
 
-		foreach ($json as $property) {
-			static::$definitions[$property->name] = new static($property);
+		if (Util\Configuration::read('devmode') == FALSE && extension_loaded('apc') && apc_exists($cache_id) &&
+			(time() - filemtime(__DIR__ . '/' . static::FILE) > Util\Configuration::read('cache.ttl')))
+		{
+			static::$definitions = apc_fetch($cache_id);
+		}
+		else {
+			// expensive - cache results
+			$json = Util\JSON::decode(file_get_contents(__DIR__ . '/' . static::FILE));
+
+			foreach ($json as $property) {
+				static::$definitions[$property->name] = new static($property);
+			}
+
+			if (extension_loaded('apc')) {
+				apc_store($cache_id, static::$definitions, Util\Configuration::read('cache.ttl'));
+			}
 		}
 	}
 
