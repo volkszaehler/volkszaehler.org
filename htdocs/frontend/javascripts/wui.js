@@ -232,6 +232,18 @@ vz.wui.dialogs.addProperties = function(container, proplist, className, entity) 
 };
 
 /**
+ * Add entity after UI has already been initialized
+ * Tiggers refresh of entity data, plot and axes
+ */
+vz.wui.addEntity = function(entity) {
+	vz.entities.push(entity);
+	vz.entities.saveCookie();
+	vz.entities.showTable();
+	vz.entities.loadData().done(vz.wui.drawPlot);
+	vz.options.plot.axesAssigned = false; // force axis assignment
+};
+
+/**
  * Initialize dialogs
  */
 vz.wui.dialogs.init = function() {
@@ -313,10 +325,7 @@ vz.wui.dialogs.init = function() {
 			entity.setMiddleware($('#entity-subscribe-middleware').val());
 
 			entity.loadDetails().done(function() {
-				vz.entities.push(entity);
-				vz.entities.saveCookie();
-				vz.entities.showTable();
-				vz.entities.loadData().done(vz.wui.drawPlot);
+				vz.wui.addEntity(entity);
 			}); // reload entity details and load data
 		}
 		catch (e) {
@@ -333,11 +342,7 @@ vz.wui.dialogs.init = function() {
 		try {
 			entity.cookie = Boolean($('#entity-public-cookie').prop('checked'));
 			entity.setMiddleware($('#entity-public-middleware option:selected').val());
-
-			vz.entities.push(entity);
-			vz.entities.saveCookie();
-			vz.entities.showTable();
-			vz.entities.loadData().done(vz.wui.drawPlot);
+			vz.wui.addEntity(entity);
 		}
 		catch (e) {
 			vz.wui.dialogs.exception(e);
@@ -390,11 +395,7 @@ vz.wui.dialogs.init = function() {
 				try {
 					entity.cookie = Boolean($('#entity-create-cookie').prop('checked'));
 					entity.setMiddleware($('#entity-create-middleware').val());
-
-					vz.entities.push(entity);
-					vz.entities.saveCookie();
-					vz.entities.showTable();
-					vz.entities.loadData().done(vz.wui.drawPlot);
+					vz.wui.addEntity(entity);
 				}
 				catch (e) {
 					vz.wui.dialogs.exception(e);
