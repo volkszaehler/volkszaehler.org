@@ -62,7 +62,7 @@ class DataController extends Controller {
 
 			$interpreters = array();
 			foreach ($uuids as $uuid) {
-				$entity = $ec->get($uuid);
+				$entity = $ec->getSingleEntity($uuid, true); // from cache
 				$interpreters[] = $this->get($entity);
 			}
 
@@ -126,7 +126,7 @@ class DataController extends Controller {
 	public function run($operation, array $identifiers = array()) {
 		$ec = new EntityController($this->view, $this->em);
 
-		$entity = isset($identifiers[0]) ? $ec->get($identifiers[0]) : null;
+		$entity = isset($identifiers[0]) ? $ec->getSingleEntity($identifiers[0], true) : null; // from cache
 		return $this->{$operation}($entity);
 	}
 }

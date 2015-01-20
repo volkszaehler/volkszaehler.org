@@ -121,6 +121,7 @@ $config['colors'] = array('#83CAFF', '#7E0021', '#579D1C', '#FFD320', '#FF420E',
  * This disables all caching mechanisms and enabled debugging by default
  */
 $config['devmode']				= FALSE;
+$config['cache']['ttl']			= 3600;	// only used if devmode == FALSE
 
 /**
  * Debugging level

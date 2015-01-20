@@ -27,16 +27,53 @@ namespace Volkszaehler\Interpreter;
  * Meter interpreter
  *
  * @package default
- * @author Steffen Vogel (info@steffenvogel.de)
- *
+ * @author Steffen Vogel <info@steffenvogel.de>
+ * @author Andreas Götz <cpuidle@gmx.de>
  */
-use Volkszaehler;
-use Volkszaehler\Util;
 
 class MeterInterpreter extends Interpreter {
 
 	protected $pulseCount;
-	protected $resolution;
+	protected $ts_last; // previous tuple timestamp
+
+	/**
+	 * Initialize data iterator
+	 */
+	public function rewind() {
+		$this->key = 0;
+		$this->rows = $this->getData();
+		$this->rows->rewind();
+
+		$this->pulseCount = 0;
+		$this->ts_last = $this->getFrom();
+	}
+
+	/**
+	 * Iterate over result set
+	 */
+	public function current() {
+		$row = $this->rows->current();
+
+		$delta = $row[0] - $this->ts_last;
+		// (1 imp * 60 min/h * 60 s/min * 1000 ms/s * scale) / (1 imp/kWh * 1ms) = 3.6e6 kW
+		$tuple = array(
+			(float) ($this->ts_last = $row[0]), // timestamp of interval end
+			(float) ($row[1] * 3.6e6 * $this->scale) / ($this->resolution * $delta), // doing df/dt
+			(int) $row[2] // num of rows
+		);
+
+		if (is_null($this->max) || $tuple[1] > $this->max[1]) {
+			$this->max = $tuple;
+		}
+
+		if (is_null($this->min) || $tuple[1] < $this->min[1]) {
+			$this->min = $tuple;
+		}
+
+		$this->pulseCount += $row[1];
+
+		return $tuple;
+	}
 
 	/**
 	 * Calculates the consumption
@@ -61,45 +98,6 @@ class MeterInterpreter extends Interpreter {
 		else { // prevents division by zero
 			return 0;
 		}
-	}
-
-	/**
-	 * Raw pulse to power conversion
-	 *
-	 * @param $callback a callback called each iteration for output
-	 * @return array with timestamp, values, and pulse count
-	 */
-	public function processData($callback) {
-		$tuples = array();
-		$this->rows = $this->getData();
-
-		$this->resolution = $this->channel->getProperty('resolution');
-		$this->pulseCount = 0;
-
-		$ts_last = $this->getFrom();
-		foreach ($this->rows as $row) {
-			$delta = $row[0] - $ts_last;
-			// (1 imp * 60 min/h * 60 s/min * 1000 ms/s * scale) / (1 imp/kWh * 1ms) = 3.6e6 kW
-			$tuple = $callback(array(
-				(float) ($ts_last = $row[0]), // timestamp of interval end
-				(float) ($row[1] * 3.6e6 * $this->scale) / ($this->resolution * $delta), // doing df/dt
-				(int) $row[2] // num of rows
-			));
-
-			if (is_null($this->max) || $tuple[1] > $this->max[1]) {
-				$this->max = $tuple;
-			}
-
-			if (is_null($this->min) || $tuple[1] < $this->min[1]) {
-				$this->min = $tuple;
-			}
-
-			$this->pulseCount += $row[1];
-
-			$tuples[] = $tuple;
-		}
-
-		return $tuples;
 	}
 
 	/**

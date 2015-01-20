@@ -282,17 +282,14 @@ class XML extends View {
 							   : $this->obtainElementById('data');
 		$xmlTuples = $this->xmlDoc->createElement('tuples');
 
-		$data = $interpreter->processData(
-			function($tuple) use ($xmlDoc, $xmlTuples) {
-				$xmlTuple = $xmlDoc->createElement('tuple');
-				$xmlTuple->setAttribute('timestamp', $tuple[0]);
-				$xmlTuple->setAttribute('value', View::formatNumber($tuple[1]));
-				$xmlTuple->setAttribute('count', $tuple[2]);
-				$xmlTuples->appendChild($xmlTuple);
-
-				return $tuple;
-			}
-		);
+		// iterate through PDO resultset
+		foreach ($interpreter as $tuple) {
+			$xmlTuple = $xmlDoc->createElement('tuple');
+			$xmlTuple->setAttribute('timestamp', $tuple[0]);
+			$xmlTuple->setAttribute('value', View::formatNumber($tuple[1]));
+			$xmlTuple->setAttribute('count', $tuple[2]);
+			$xmlTuples->appendChild($xmlTuple);
+		}
 
 		$from = $interpreter->getFrom();
 		$to = $interpreter->getTo();
@@ -330,8 +327,9 @@ class XML extends View {
 
 		$xmlData->appendChild($this->xmlDoc->createElement('rows', $interpreter->getRowCount()));
 
-		if (($interpreter->getTupleCount() > 0 || is_null($interpreter->getTupleCount())) && count($data) > 0)
+		if (($interpreter->getTupleCount() > 0 || is_null($interpreter->getTupleCount())) && count($xmlTuples) > 0) {
 			$xmlData->appendChild($xmlTuples);
+		}
 
 		if ($children) {
 			$xmlChildren = $this->obtainElementById('children');

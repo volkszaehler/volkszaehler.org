@@ -27,16 +27,65 @@ namespace Volkszaehler\Interpreter;
  * Counter interpreter
  *
  * @package default
- * @author Jakob Hirsch (jh.vz@plonk.de)
- *
+ * @author Jakob Hirsch <jh.vz@plonk.de>
+ * @author Andreas Götz <cpuidle@gmx.de>
  */
-use Volkszaehler;
-use Volkszaehler\Util;
 
 class CounterInterpreter extends Interpreter {
 
 	protected $valsum;
-	protected $resolution;
+	protected $ts_last; // previous tuple timestamp
+	protected $last_val; // previous tuple value
+
+	/**
+	 * Initialize data iterator
+	 */
+	public function rewind() {
+		$this->key = 0;
+		$this->rows = $this->getData();
+		$this->rows->rewind();
+
+		$this->valsum = 0;
+
+		// get starting value from skipped first row
+		if ($this->rowCount > 0) {
+			$this->last_ts = $this->getFrom();
+			$this->last_val = $this->rows->firstValue();
+		}
+	}
+
+	/**
+	 * Iterate over result set
+	 */
+	public function current() {
+		$row = $this->rows->current();
+
+		$delta_ts = $row[0] - $this->last_ts; // time between now and row before
+
+		// instead of reverting what DataIterator->next did by $val = $row[1] / $row[2]
+		// get max value which DataIterator->next provides as courtesy
+		$delta_val = $row[3] - $this->last_val;
+
+		// (1 imp / 1 imp/kWh) * (60 min/h * 60 s/min * 1000 ms/s * scale) / 1 ms
+		$tuple = array(
+			(float) ($this->last_ts = $row[0]), // timestamp of interval end
+			(float) ($delta_val * 3.6e6 * $this->scale) / ($delta_ts * $this->resolution), // doing df/dt
+			(int) $row[2] // num of rows
+		);
+		$this->last_val = $row[3];
+
+		if (is_null($this->max) || $tuple[1] > $this->max[1]) {
+			$this->max = $tuple;
+		}
+
+		if (is_null($this->min) || $tuple[1] < $this->min[1]) {
+			$this->min = $tuple;
+		}
+
+		$this->valsum += $delta_val;
+
+		return $tuple;
+	}
 
 	/**
 	 * Calculates the consumption
@@ -61,56 +110,6 @@ class CounterInterpreter extends Interpreter {
 		else { // prevents division by zero
 			return 0;
 		}
-	}
-
-	/**
-	 * Raw counter value to power conversion
-	 *
-	 * @param $callback a callback called each iteration for output
-	 * @return array with arrays of timestamp, energy and value count
-	 */
-	public function processData($callback) {
-		$tuples = array();
-		$this->rows = $this->getData();
-
-		$this->resolution = $this->channel->getProperty('resolution');
-		$this->valsum = 0;
-
-		// get starting value from skipped first row
-		if ($this->rowCount > 0) {
-			$last_ts = $this->getFrom();
-			$last_val = $this->rows->firstValue();
-		}
-
-		foreach ($this->rows as $row) {
-			$delta_ts = $row[0] - $last_ts; // time between now and row before
-
-			// instead of reverting what DataIterator->next did by $val = $row[1] / $row[2]
-			// get max value which DataIterator->next provides as courtesy
-			$delta_val = $row[3] - $last_val;
-
-			// (1 imp / 1 imp/kWh) * (60 min/h * 60 s/min * 1000 ms/s * scale) / 1 ms
-			$tuple = $callback(array(
-				(float) ($last_ts = $row[0]), // timestamp of interval end
-				(float) ($delta_val * 3.6e6 * $this->scale) / ($delta_ts * $this->resolution), // doing df/dt
-				(int) $row[2] // num of rows
-			));
-			$last_val = $row[3];
-
-			if (is_null($this->max) || $tuple[1] > $this->max[1]) {
-				$this->max = $tuple;
-			}
-
-			if (is_null($this->min) || $tuple[1] < $this->min[1]) {
-				$this->min = $tuple;
-			}
-
-			$this->valsum += $delta_val;
-
-			$tuples[] = $tuple;
-		}
-
-		return $tuples;
 	}
 
 	/**

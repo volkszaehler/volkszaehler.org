@@ -49,8 +49,8 @@ class CSV extends View {
 		$this->response->setHeader('Content-type', 'text/csv');
 		$this->headerSent = false;
 
-		echo '# source: volkszaehler.org' . PHP_EOL;
-		echo '# version: ' . VZ_VERSION . PHP_EOL;
+		echo '# source:' . CSV::DELIMITER . 'volkszaehler.org' . PHP_EOL;
+		echo '# version:' . CSV::DELIMITER . VZ_VERSION . PHP_EOL;
 	}
 
 	/**
@@ -84,23 +84,23 @@ class CSV extends View {
 	 * @param Util\Debug $debug
 	 */
 	protected function addDebug(Util\Debug $debug) {
-		echo '# level: ' . $debug->getLevel() . PHP_EOL;
-		echo '# database: ' . Util\Configuration::read('db.driver') . PHP_EOL;
-		echo '# time: ' . $debug->getExecutionTime() . PHP_EOL;
+		echo '# level:' . CSV::DELIMITER . $debug->getLevel() . PHP_EOL;
+		echo '# database:' . CSV::DELIMITER . Util\Configuration::read('db.driver') . PHP_EOL;
+		echo '# time:' . CSV::DELIMITER . $debug->getExecutionTime() . PHP_EOL;
 
-		if ($uptime = Util\Debug::getUptime()) echo '# uptime: ' . $uptime*1000;
-		if ($load = Util\Debug::getLoadAvg()) echo '# load: ' . implode(', ', $load) . PHP_EOL;
-		if ($commit = Util\Debug::getCurrentCommit()) echo '# commit-hash: ' . $commit;
-		if ($version = Util\Debug::getPhpVersion()) echo '# php-version: ' . $version;
+		if ($uptime = Util\Debug::getUptime()) echo '# uptime:' . CSV::DELIMITER . $uptime*1000;
+		if ($load = Util\Debug::getLoadAvg()) echo '# load:' . CSV::DELIMITER . implode(', ', $load) . PHP_EOL;
+		if ($commit = Util\Debug::getCurrentCommit()) echo '# commit-hash:' . CSV::DELIMITER . $commit;
+		if ($version = Util\Debug::getPhpVersion()) echo '# php-version:' . CSV::DELIMITER . $version;
 
 		foreach ($debug->getMessages() as $message) {
-			echo '# message: ' . $message['message'] . PHP_EOL;	// TODO add more information
+			echo '# message:' . CSV::DELIMITER . $message['message'] . PHP_EOL;	// TODO add more information
 		}
 
 		foreach ($debug->getQueries() as $query) {
-			echo '# query: ' . $query['sql'] . PHP_EOL;
+			echo '# query:' . CSV::DELIMITER . $query['sql'] . PHP_EOL;
 			if (isset($query['parameters'])) {
-				echo "# \tparameters: " . implode(', ', $query['parameters']) . PHP_EOL;
+				echo "# \tparameters:" . CSV::DELIMITER . implode(', ', $query['parameters']) . PHP_EOL;
 			}
 		}
 	}
@@ -115,8 +115,8 @@ class CSV extends View {
 		echo get_class($exception) . '# [' . $exception->getCode() . ']' . ':' . $exception->getMessage() . PHP_EOL;
 
 		if (Util\Debug::isActivated()) {
-			echo "#\tfile: " . $exception->getFile() . PHP_EOL;
-			echo "#\tline: " . $exception->getLine() . PHP_EOL;
+			echo "#\tfile:" . CSV::DELIMITER . $exception->getFile() . PHP_EOL;
+			echo "#\tline:" . CSV::DELIMITER . $exception->getLine() . PHP_EOL;
 		}
 	}
 
@@ -134,28 +134,24 @@ class CSV extends View {
 				'Content-Disposition',
 				'attachment; ' .
 				'filename="' . strtolower($interpreter->getEntity()->getProperty('title')) . '.csv" ' .
-				'creation-date="' .  date(DATE_RFC2822, $interpreter->getTo()/1000). '"'
+				'creation-date="' . date(DATE_RFC2822, $interpreter->getTo() / 1000). '"'
 			);
 		}
 
 		echo PHP_EOL; // UUID delimiter
-		echo '# uuid: ' . $interpreter->getEntity()->getUuid() . PHP_EOL;
-		echo '# title: ' . $interpreter->getEntity()->getProperty('title') . PHP_EOL;
+		echo '# uuid:' . CSV::DELIMITER . $interpreter->getEntity()->getUuid() . PHP_EOL;
+		echo '# title:' . CSV::DELIMITER . $interpreter->getEntity()->getProperty('title') . PHP_EOL;
 
 		if ($interpreter instanceof Interpreter\AggregatorInterpreter) {
 			// min/ max etc are not populated if $children->processData hasn't been called
 			return;
 		}
 
-		$tuples = $interpreter->processData(
-			function($tuple) {
-				return array(
-					$tuple[0],
-					View::formatNumber($tuple[1]),
-					$tuple[2]
-				);
-			}
-		);
+		$data = array();
+		// iterate through PDO resultset
+		foreach ($interpreter as $tuple) {
+			$data[] = $tuple;
+		}
 
 		$min = $interpreter->getMin();
 		$max = $interpreter->getMax();
@@ -165,19 +161,19 @@ class CSV extends View {
 		$from = $this->formatTimestamp($interpreter->getFrom());
 		$to = $this->formatTimestamp($interpreter->getTo());
 
-		if (isset($from)) echo '# from: ' . $from . PHP_EOL;
-		if (isset($to)) echo '# to: ' . $to . PHP_EOL;
-		if (isset($min)) echo '# min: ' . $this->formatTimestamp($min[0]) . ' => ' . View::formatNumber($min[1]) . PHP_EOL;
-		if (isset($max)) echo '# max: ' . $this->formatTimestamp($max[0]) . ' => ' . View::formatNumber($max[1]) . PHP_EOL;
-		if (isset($average))  echo '# average: ' . View::formatNumber($average) . PHP_EOL;
-		if (isset($consumption)) echo '# consumption: ' . View::formatNumber($consumption) . PHP_EOL;
+		if (isset($from)) echo '# from:' . CSV::DELIMITER . $from . PHP_EOL;
+		if (isset($to)) echo '# to:' . CSV::DELIMITER . $to . PHP_EOL;
+		if (isset($min)) echo '# min:' . CSV::DELIMITER . $this->formatTimestamp($min[0]) . CSV::DELIMITER . ' => ' . CSV::DELIMITER . View::formatNumber($min[1]) . PHP_EOL;
+		if (isset($max)) echo '# max:' . CSV::DELIMITER . $this->formatTimestamp($max[0]) . CSV::DELIMITER . ' => ' . CSV::DELIMITER . View::formatNumber($max[1]) . PHP_EOL;
+		if (isset($average))  echo '# average:' . CSV::DELIMITER . View::formatNumber($average) . PHP_EOL;
+		if (isset($consumption)) echo '# consumption:' . CSV::DELIMITER . View::formatNumber($consumption) . PHP_EOL;
 
-		echo '# rows: ' . $interpreter->getRowCount() . PHP_EOL;
+		echo '# rows:' . CSV::DELIMITER . $interpreter->getRowCount() . PHP_EOL;
 
-		if (isset($tuples)) {
-			// Aggregators don't return tuples
-			foreach ($tuples as $tuple) {
-				echo $this->formatTimestamp($tuple[0]) . CSV::DELIMITER . $tuple[1] . CSV::DELIMITER . $tuple[2] . PHP_EOL;
+		if (isset($data)) {
+			// Aggregators don't return data
+			foreach ($data as $tuple) {
+				echo $this->formatTimestamp($tuple[0]) . CSV::DELIMITER . View::formatNumber($tuple[1]) . CSV::DELIMITER . $tuple[2] . PHP_EOL;
 			}
 		}
 	}
