@@ -125,6 +125,8 @@ Entity.prototype.assignAxis = function() {
 		this.assignedYaxis = parseInt(this.yaxis); // string to int for multi-property
 
 		while (vz.options.plot.yaxes.length < this.assignedYaxis) { // no more axes available
+			// create new right-hand axis
+			// TODO clone existing axis including its styling
 			vz.options.plot.yaxes.push({ position: 'right' });
 		}
 
@@ -151,16 +153,21 @@ Entity.prototype.assignAxis = function() {
 
 /**
  * Set axis minimum depending on data
+ *
+ * Note: axis.min can have the following values:
+ *         - undefined: not initialized yet, will only happen during assignment of first entity to axis
+ *         - null:      min value intentionally set to 'auto' to allow negative values
+ *         - 0:         min value assumed to be '0' as long as no entity with negative values is encountered
  */
 Entity.prototype.updateAxisScale = function() {
 	if (this.assignedYaxis !== undefined && vz.options.plot.yaxes.length >= this.assignedYaxis) {
-		if (vz.options.plot.yaxes[this.assignedYaxis-1].min === null) {
+		if (vz.options.plot.yaxes[this.assignedYaxis-1].min === undefined) { // axis min still not set
 			// avoid overriding user-defined options
 			vz.options.plot.yaxes[this.assignedYaxis-1].min = 0;
 		}
 		if (this.data && this.data.tuples && this.data.tuples.length > 0) {
 			// allow negative values, e.g. for temperature sensors
-			if (this.data.min && this.data.min[1] < 0) {
+			if (this.data.min && this.data.min[1] < 0) { // set axis min to 'auto'
 				vz.options.plot.yaxes[this.assignedYaxis-1].min = null;
 			}
 		}
