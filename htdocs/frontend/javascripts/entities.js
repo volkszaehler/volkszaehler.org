@@ -111,7 +111,7 @@ vz.entities.loadMultipleDetails = function(entities) {
  * Load total consumption for all entities that have the initialconsumption property defined
  */
 vz.entities.loadTotals = function() {
-	if (vz.options.totals) {
+	if (vz.options.totalsInterval) {
 		var queue = [];
 		vz.entities.each(function(entity) {
 			if (entity.initialconsumption !== undefined) {
