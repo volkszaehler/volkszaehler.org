@@ -32,7 +32,10 @@ before_script:
     - DATABASE=travis
     - USER=travis
     - PASSWORD=
-    - echo $USER
+
+    # add apc cache
+    - chmod +x ./test/bin/install-apcu.sh && ./test/bin/install-apcu.sh
+    - phpenv config-add ./test/bin/apc.ini
 
     # fix username before default rules apply
     - sh -c "if [ '$DB' = 'pgsql' ]; then sed -i 's/'\''vz'\''/'\''postgres'\''/' etc/volkszaehler.conf.php; fi;"
