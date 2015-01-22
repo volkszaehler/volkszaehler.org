@@ -81,24 +81,14 @@ class DataController extends Controller {
 			$rawPost = file_get_contents('php://input');
 			$json = Util\JSON::decode($rawPost);
 
-			// multiple tuples - bundle in single query
-			if (isset($json['data']))
+			if (isset($json['data'])) {
 				throw new \Exception('Can only add data for a single channel at a time'); /* backed out b111cfa2 */
+			}
 
-			// convert ArrayObject to native Array
-			$json = $json->getArrayCopy();
-			$options = $this->view->request->getArrayParameter('options');
-
-			$sql =
-				'INSERT ' . ((in_array(self::OPT_SKIP_DUPLICATES, $options)) ? 'IGNORE' : '') . ' INTO data (channel_id, timestamp, value) ' .
-				'VALUES ' . implode(', ', array_fill(0, count($json), '(' . $channel->getId() . ',?,?)'));
-
-			$params = array_reduce($json, function($carry, $tuple) {
+			// convert nested ArrayObject to plain array with flattened tuples
+			$data = array_reduce($json->getArrayCopy(), function($carry, $tuple) {
 				return array_merge($carry, $tuple);
 			}, array());
-
-			$rows = $this->em->getConnection()->executeUpdate($sql, $params);
-			return(array('rows' => $rows));
 		}
 		catch (Util\JSONException $e) { /* fallback to old method */
 			$timestamp = $this->view->request->getParameter('ts');
@@ -115,9 +105,18 @@ class DataController extends Controller {
 				$value = 1;
 			}
 
-			$channel->addData(new Model\Data($channel, $timestamp, $value));
-			$this->em->flush();
+			// same structure as JSON request result
+			$data = array($timestamp, $value);
 		}
+
+		$options = $this->view->request->getArrayParameter('options');
+
+		$sql = 'INSERT ' . ((in_array(self::OPT_SKIP_DUPLICATES, $options)) ? 'IGNORE ' : '') .
+			   'INTO data (channel_id, timestamp, value) ' .
+			   'VALUES ' . implode(', ', array_fill(0, count($data)>>1, '(' . $channel->getId() . ',?,?)'));
+
+		$rows = $this->em->getConnection()->executeUpdate($sql, $data);
+		return array('rows' => $rows);
 	}
 
 	/**
@@ -126,7 +125,7 @@ class DataController extends Controller {
 	public function run($operation, array $identifiers = array()) {
 		$ec = new EntityController($this->view, $this->em);
 
-		$entity = isset($identifiers[0]) ? $ec->getSingleEntity($identifiers[0], ($operation == 'get')) : null; // from cache if GET
+		$entity = isset($identifiers[0]) ? $ec->getSingleEntity($identifiers[0], true) : null; // from cache if GET
 		return $this->{$operation}($entity);
 	}
 }
