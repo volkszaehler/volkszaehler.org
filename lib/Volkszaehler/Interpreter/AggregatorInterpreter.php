@@ -67,17 +67,6 @@ class AggregatorInterpreter extends Interpreter {
 	}
 
 	/**
-	 * Just a passthrough to the channel interpreters
-	 *
-	 * @param string|integer $groupBy
-	 * @todo to be implemented
-	 * @return array of values
-	 */
-	public function processData($callback) {
-
-	}
-
-	/**
 	 * Get total consumption of all channels
 	 *
 	 * @todo to be implemented

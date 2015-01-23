@@ -202,6 +202,10 @@ class Router {
 				$config->setQueryCacheImpl($cache);
 			}
 		}
+		else if (extension_loaded('apc')) {
+			// clear cache
+			apc_clear_cache('user');
+		}
 
 		$driverImpl = $config->newDefaultAnnotationDriver(VZ_DIR . '/lib/Volkszaehler/Model');
 		$config->setMetadataDriverImpl($driverImpl);

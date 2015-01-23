@@ -224,15 +224,15 @@ class JSON extends View {
 	 * @param boolean $children
 	 */
 	protected function addData($interpreter, $children = false) {
-		$data = $interpreter->processData( // iterate through PDO resultset
-			function($tuple) {
-				return array(
-					$tuple[0],
-					View::formatNumber($tuple[1]),
-					$tuple[2]
-				);
-			}
-		);
+		$data = array();
+		// iterate through PDO resultset
+		foreach ($interpreter as $tuple) {
+			$data[] = array(
+				$tuple[0],
+				View::formatNumber($tuple[1]),
+				$tuple[2]
+			);
+		}
 
 		$from = 0 + $interpreter->getFrom();
 		$to = 0 + $interpreter->getTo();
@@ -252,8 +252,9 @@ class JSON extends View {
 
 		$wrapper['rows'] = $interpreter->getRowCount();
 
-		if (($interpreter->getTupleCount() > 0 || is_null($interpreter->getTupleCount())) && count($data) > 0)
+		if (($interpreter->getTupleCount() > 0 || is_null($interpreter->getTupleCount())) && count($data) > 0) {
 			$wrapper['tuples'] = $data;
+		}
 
 		if (!isset($this->json['data'])) {
 			// make sure json['data'] is initialized when child data is added
