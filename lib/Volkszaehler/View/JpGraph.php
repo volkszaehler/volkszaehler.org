@@ -83,7 +83,7 @@ class JpGraph extends View {
  		\JpGraph\JpGraph::module('date');
  		\JpGraph\JpGraph::module('line');
 
-		// to enabled jpgraphs graphical exception handler
+		// to enable jpgraphs graphical exception handler
 		restore_exception_handler();
 
 		if ($this->request->getParameter('width')) {
