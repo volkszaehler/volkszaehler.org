@@ -44,7 +44,7 @@ class Data {
 	/**
 	 * @Id
 	 * @Column(type="integer", nullable=false)
-	 * @GeneratedValue(strategy="AUTO")
+	 * @GeneratedValue(strategy="IDENTITY")
 	 *
 	 * @todo wait until DDC-117 is fixed (PKs on FKs)
 	 */
