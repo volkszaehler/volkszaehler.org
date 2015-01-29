@@ -3,7 +3,6 @@
  * @copyright Copyright (c) 2011, The volkszaehler.org project
  * @package default
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
- * @todo finish
  */
 /*
  * This file is part of volkzaehler.org
@@ -29,12 +28,13 @@ use Volkszaehler\Model;
 use Volkszaehler\Util;
 
 /**
- * Interpreter too aggregate several other Channels or Aggregators
+ * Interpreter to aggregate child Channels or Aggregators
  *
  * The AggregatorInterpreter is used to aggregate multiple channels with the same
  * indicator
  *
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @author Andreas Goetz <cpuidle@gmx.de>
  * @package default
  */
 class AggregatorInterpreter extends Interpreter {
@@ -66,13 +66,23 @@ class AggregatorInterpreter extends Interpreter {
 		}
 	}
 
+	/*
+	 * Iterator methods - not implemented
+	 */
+	public function rewind() {
+	}
+
+	public function current() {
+	}
+
+	public function valid() {
+		return false;
+	}
+
 	/**
-	 * Get total consumption of all channels
-	 *
-	 * @todo to be implemented
+	 * Get total consumption of all channels - not implemented
 	 */
 	public function getConsumption() {
-
 	}
 
 	/**
