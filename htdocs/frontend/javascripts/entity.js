@@ -192,6 +192,13 @@ Entity.prototype.loadDetails = function() {
 };
 
 /**
+ * Check if data can be loaded from entity
+ */
+Entity.prototype.hasData = function() {
+	return this.active && this.definition && this.definition.model == 'Volkszaehler\\Model\\Channel';
+};
+
+/**
  * Update entity data from middleware result and set axes accordingly
  */
 Entity.prototype.updateData = function(data) {
@@ -580,7 +587,9 @@ Entity.prototype.activate = function(state, parent, recursive) {
 	$('#entity-' + this.uuid + ((parent) ? '.child-of-entity-' + parent.uuid : '') + ' input[type=checkbox]').prop('checked', state);
 
 	if (this.active) {
-		queue.push(this.loadData()); // reload data
+		if (this.hasData()) {
+			queue.push(this.loadData()); // reload data
+		}
 	}
 	else {
 		this.data = undefined; // clear data

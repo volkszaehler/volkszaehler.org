@@ -153,8 +153,7 @@ vz.entities.loadData = function() {
 	vz.middleware.each(function(idx, middleware) {
 		var entities = [];
 		vz.entities.each(function(entity) {
-			if (entity.middleware == middleware.url &&
-					entity.active && entity.definition && entity.definition.model == 'Volkszaehler\\Model\\Channel') {
+			if (entity.middleware == middleware.url && entity.hasData()) {
 				entities.push(entity);
 			}
 		}, true); // recursive
