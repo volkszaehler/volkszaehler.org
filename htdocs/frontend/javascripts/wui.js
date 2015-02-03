@@ -520,7 +520,7 @@ vz.wui.updateLegend = function() {
 			var d = $.plot.dateGenerator(pos.x, vz.options.plot.xaxis);
 			var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
 			var format = (delta > 1*24*3600*1000) ? '%d.%m.%y - %H:%M' : '%H:%M:%S';
-			vz.wui.legend.eq(i).text(series.title + ": " + $.plot.formatDate(d,format) + " - " + y.toFixed(0) + " " + series.unit);
+			vz.wui.legend.eq(i).text(series.title + ": " + $.plot.formatDate(d,format) + " - " + vz.wui.formatNumber(y, series.unit));
 		}
 	}
 
