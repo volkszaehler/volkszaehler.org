@@ -91,14 +91,21 @@ vz.entities.loadMultipleDetails = function(entities) {
 		data: {
 			uuid: entities.map(function(entity) {
 				return entity.uuid;
-			})
+			}),
+			nostrict: 1, // don't fail if entity was removed
 		},
 		success: function(json) {
 			// @todo assuming unique UUIDs across middlewares
 			this.each(function(entity) {
 				json.entities.some(function(jsonEntity) {
 					if (jsonEntity.uuid == entity.uuid) { // entity matched
-						entity.parseJSON(jsonEntity);
+						if (jsonEntity.type == undefined) {
+							// entity does not exist at server- remove from list of entities
+							vz.entities.remove(entity)
+						}
+						else {
+							entity.parseJSON(jsonEntity);
+						}
 						return true;
 					}
 				});
