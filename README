@@ -1,29 +1,26 @@
-This are the scripts running on volkszaehler.org
+These are the scripts running on volkszaehler.org
 Feel free to setup your own installation and protect your privacy!
 
 volkszaehler.org/
- |_ etc/			configuration files
- |_ debian			metadata for debian packaging
- |_ htdocs/			static files accessible through the web
- |   |_ middleware.php		middleware bootstrapping
- |   \_ frontend		web frontend
+ |_ etc/                    configuration files
+ |_ htdocs/                 public web files
+ |   |_ middleware.php      middleware
+ |   \_ frontend            web ui
  |
- |_ lib/			middleware libraries
- |_ misc/
- |   |_ controller/
- |   |   |_ vzlogger/		command line tool to log meters/sensors
- |   |   |_ mbus/               a controler for mbus/messbus
- |   |   \_ batch/		batch scripts for logging (prototypes)
- |   |
- |   |_ docs/			documentation
- |   |_ frontend/		
- |   |_ graphics/		several graphics for docs, etc..
- |   |_ sql/			database schema dumps
- |   |   \_ demo/		demo data
- |   |
- |   |_ tools/			scripts for imports, installation etc.
- |   \_ tests/			simple tests for middleware classes
- \_ var/			SQLite database (optional)
+ |_ lib/                    middleware libraries
+ \_ misc/
+     |_ controller/
+     |   |_ vzlogger/       command line tool to log meters/sensors
+     |   \_ mbus/           a controller for mbus/messbus
+     |
+     |_ docs/               documentation
+     |_ frontend/           alternative frontends
+     |_ graphics/           several graphics for docs, etc.
+     |_ sql/                database schema dumps
+     |   \_ demo/           demo data
+     |
+     |_ tools/              scripts for imports, installation etc.
+     \_ tests/              simple tests for middleware classes
 
 Wiki: http://wiki.volkszaehler.org
 Other: http://volkszaehler.org
