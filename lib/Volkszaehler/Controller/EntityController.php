@@ -52,9 +52,23 @@ class EntityController extends Controller {
 		}
 		elseif (is_array($uuids = $this->view->request->getParameter('uuid'))) { // multiple entities
 			$entities = array();
+			$allowInvalidUuid = $this->view->request->getParameter('nostrict');
+
 			foreach ($uuids as $uuid) {
-				$entities[] = $this->getSingleEntity($uuid);
+				try {
+					$entities[] = $this->getSingleEntity($uuid);
+				}
+				catch (\Exception $e) {
+					if ($allowInvalidUuid) {
+						// return empty entity
+						$entities[] = array('uuid' => $uuid);
+					}
+					else {
+						throw $e;
+					}
+				}
 			}
+
 			return array('entities' => $entities);
 		}
 		else { // public entities
