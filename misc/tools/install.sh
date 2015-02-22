@@ -59,14 +59,23 @@ cleanup() {
 	fi
 }
 
+get_config() {
+	test -n "$config" && return
+	config="$vz_dir/etc/volkszaehler.conf.php"
+	cp "$vz_dir/etc/volkszaehler.conf.template.php" "$config"
+}
+
 get_admin() {
 	test -n "$db_admin_user" && return
 	ask "mysql admin user?" root
 	db_admin_user="$REPLY"
-	sed -i -e "s/^\/*\(\$config\['db'\]\['admin'\]\['user'\]\).*/\1 = '$db_admin_user';/" "$config"
 	ask "mysql admin password?"
 	db_admin_pass="$REPLY"
-	sed -i -e "s/^\/*\(\$config\['db'\]\['admin'\]\['password'\]\).*/\1 = '$db_admin_pass';/" "$config"
+	get_config
+	sed -i \
+		-e "s/^\/*\(\$config\['db'\]\['admin'\]\['password'\]\).*/\1 = '$db_admin_pass';/" \
+		-e "s/^\/*\(\$config\['db'\]\['admin'\]\['user'\]\).*/\1 = '$db_admin_user';/" \
+	"$config"
 }
 
 get_db_name() {
@@ -87,7 +96,7 @@ echo -n "checking prerequisites:"
 deps=( php mysql awk sed grep wget mktemp mkdir git )
 for binary in "${deps[@]}"; do
 	binpath="$(which $binary)"
-	if [ -n "$binpath" ] ; then
+	if [ -n "$binpath" ]; then
 		echo " $binary: $binpath"
 	else
 		echo
@@ -106,7 +115,7 @@ echo -n "checking php version: $php_version "
 # due to php magic, this also works with stuff like "5.3.3-7+squeeze19"
 if php -r "exit(PHP_VERSION >= $php_ver_min ? 0 : 1);"; then
 	echo ">= $php_ver_min, ok"
-else 	
+else
 	echo "is too old, $php_ver_min or higher required"
 	cleanup && exit 1
 fi
@@ -137,7 +146,7 @@ echo "checking composer..."
 
 for f in composer composer.phar; do
 	COMPOSER=$(which $f 2>/dev/null || true)
-	test -n "$COMPOSER"  && break
+	test -n "$COMPOSER" && break
 done
 if [ -n "$COMPOSER" ]; then
 	echo "composer: $COMPOSER"
@@ -159,43 +168,11 @@ popd
 
 ###############################
 echo
-ask "configure volkszaehler.org?" y
-
-config="$vz_dir/etc/volkszaehler.conf.php"
-
-if [ "$REPLY" == "y" ]; then
-	# test for pdo_mysql php module
-	php -m | grep pdo_mysql > /dev/null
-	if [ $? -ne 0 ]; then
-		echo "php module pdo_mysql has not been found"
-		echo "try 'sudo apt-get install php5-mysql' on Debian/Ubuntu based systems"
-		cleanup && exit 1
-	fi
-	
-	ask "mysql user?" vz
-	db_user="$REPLY"
-	ask "mysql password?" demo
-	db_pass="$REPLY"
-	get_db_name
-
-	# we are using "|" as delimiter for sed to avoid escaped sequences in $dt_dir
-	sed	-e "s|^\(\$config\['db'\]\['user'\]\).*|\1 = '$db_user';|" \
-		-e "s|^\/*\(\$config\['db'\]\['password'\]\).*|\1 = '$db_pass';|" \
-		-e "s|^\/*\(\$config\['db'\]\['dbname'\]\).*|\1 = '$db_name';|" \
-		-e "s|^\/*\(\$config\['lib'\]\['doctrine'\]\).*|\1 = '$dt_dir';|" \
-	< "$vz_dir/etc/volkszaehler.conf.template.php" \
-	> "$config"
-	
-	pushd "$vz_dir"
-	php misc/tools/doctrine orm:generate-proxies
-	popd
-fi
-
-###############################
-echo
 ask "create database?" y
+
 if [ "$REPLY" == "y" ]; then
 	get_admin
+	get_db_name
 
 	echo "creating database $db_name..."
 	mysql -h"$db_host" -u"$db_admin_user" -p"$db_admin_pass" -e 'CREATE DATABASE `'"$db_name"'`'
@@ -213,6 +190,40 @@ if [ "$REPLY" == "y" ]; then
 	EOF
 fi
 
+###############################
+echo
+ask "configure volkszaehler.org?" y
+
+if [ "$REPLY" == "y" ]; then
+	# test for pdo_mysql php module
+	php -m | grep pdo_mysql > /dev/null
+	if [ $? -ne 0 ]; then
+		echo "php module pdo_mysql has not been found"
+		echo "try 'sudo apt-get install php5-mysql' on Debian/Ubuntu based systems"
+		cleanup && exit 1
+	fi
+
+	ask "mysql user?" vz
+	db_user="$REPLY"
+	ask "mysql password?" demo
+	db_pass="$REPLY"
+
+	get_db_name
+	get_config
+
+	# we are using "|" as delimiter for sed to avoid escaped sequences in $dt_dir
+	sed	-i \
+		-e "s|^\(\$config\['db'\]\['user'\]\).*|\1 = '$db_user';|" \
+		-e "s|^\/*\(\$config\['db'\]\['password'\]\).*|\1 = '$db_pass';|" \
+		-e "s|^\/*\(\$config\['db'\]\['dbname'\]\).*|\1 = '$db_name';|" \
+	"$config"
+
+	pushd "$vz_dir"
+	php misc/tools/doctrine orm:generate-proxies
+	popd
+fi
+
+###############################
 echo
 ask "allow channel deletion?" n
 if [ "$REPLY" == "y" ]; then
@@ -235,4 +246,3 @@ if [ "$REPLY" == "y" ]; then
 fi
 
 cleanup
-
