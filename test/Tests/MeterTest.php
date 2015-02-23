@@ -8,7 +8,7 @@
 
 namespace Tests;
 
-class DataMeterTest extends DataContext
+class MeterTest extends Data
 {
 	// channel properties
 	static $resolution = 100;

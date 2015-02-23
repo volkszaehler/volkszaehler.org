@@ -1,6 +1,6 @@
 <?php
 /**
- * Entity tests
+ * Data tests
  *
  * @package Test
  * @author Andreas Götz <cpuidle@gmx.de>
@@ -8,7 +8,9 @@
 
 namespace Tests;
 
-abstract class DataContext extends Middleware
+use Symfony\Component\HttpFoundation\Request;
+
+abstract class Data extends Middleware
 {
 	static $uuid;
 	static $precision = 0.001;	// mimic View\PRECISION
@@ -18,8 +20,6 @@ abstract class DataContext extends Middleware
 	 */
 	static function setupBeforeClass() {
 		parent::setupBeforeClass();
-		self::$context = self::$mw . 'data';
-
 		self::$precision = pow(10, -\Volkszaehler\View\View::PRECISION);
 	}
 
@@ -32,48 +32,67 @@ abstract class DataContext extends Middleware
 			static::$uuid = null;
 		}
 		parent::tearDownAfterClass();
- 	}
+	}
 
+	/**
+	 * Create channel
+	 */
 	static function createChannel($title, $type, $resolution = null) {
-		$url = self::$mw . 'channel.json?operation=add&title=' . urlencode($title) . '&type=' . urlencode($type);
+		$url = '/channel.json?operation=add&title=' . urlencode($title) . '&type=' . urlencode($type);
 		if ($resolution) $url .= '&resolution=' . $resolution;
-		$json = self::getJsonRaw($url);
+		$json = self::executeRequest(Request::create($url));
 
 		return ((isset($json->entity->uuid)) ? $json->entity->uuid : null);
 	}
 
+	/**
+	 * Delete channel
+	 */
 	static function deleteChannel($uuid) {
-		$url = self::$mw . 'channel/' . $uuid . '.json?operation=delete';
-		$json = self::getJsonRaw($url);
+		$url = '/channel/' . $uuid . '.json?operation=delete';
+		$json = self::executeRequest(Request::create($url));
 	}
 
+	/*
+	 * Data creation and validation
+	 */
 	protected function addTuple($ts, $value, $uuid = null) {
-		$url = self::$context . '/' . (($uuid) ?: static::$uuid) .
-			   '.json?operation=add&ts=' . $ts . '&value=' . $value;
-		return $this->getJson($url);
+		return $this->getJson('/data/' . (($uuid) ?: static::$uuid) . '.json', array(
+			'operation' => 'add',
+			'ts' => $ts,
+			'value' => $value
+		));
 	}
 
-	protected function getTuplesByUrl($url, $from = null, $to = null, $group = null, $tuples = null, $extra = null) {
-		if ($from)  $url .= 'from=' . $from . '&';
-		if ($to) 	$url .= 'to=' . $to . '&';
-		if ($group) $url .= 'group=' . $group . '&';
-		if ($tuples)$url .= 'tuples=' . $tuples . '&';
-		if ($extra) $url .= $extra . '&';
+	protected function getTuplesByUrl($url, $from = null, $to = null, $group = null, $tuples = null, $options = null) {
+		$params = array();
 
-		$this->getJson($url);
+		if ($from)
+			$params['from'] = $from;
+		if ($to)
+			$params['to'] = $to;
+		if ($group)
+			$params['group'] = $group;
+		if ($tuples)
+			$params['tuples'] = $tuples;
+		if ($options)
+			$params['options'] = $options;
+
+		$this->getJson($url, $params);
 		$this->assertUUID();
 
 		return $this->json;
 	}
 
-	protected function getTuples($from = null, $to = null, $group = null, $tuples = null, $extra = null) {
-		$url = self::$context . '/' . static::$uuid . '.json?';
-		return $this->getTuplesByUrl($url, $from, $to, $group, $tuples, $extra);
+	protected function getTuples($from = null, $to = null, $group = null, $tuples = null, $options = null) {
+		$url = '/data/' . static::$uuid . '.json';
+		return $this->getTuplesByUrl($url, $from, $to, $group, $tuples, $options);
 	}
 
-	protected function getTuplesRaw($from = null, $to = null, $group = null, $tuples = null, $extra = null) {
-		$url = self::$context . '/' . static::$uuid . '.json?options=exact&';
-		return $this->getTuplesByUrl($url, $from, $to, $group, $tuples, $extra);
+	protected function getTuplesRaw($from = null, $to = null, $group = null, $tuples = null, $options = null) {
+		$url = '/data/' . static::$uuid . '.json';
+		$options .= (($options) ? ',' : '') . 'exact';
+		return $this->getTuplesByUrl($url, $from, $to, $group, $tuples, $options);
 	}
 
 	protected function debug() {
@@ -137,7 +156,7 @@ abstract class DataContext extends Middleware
 			$this->assertEquals(
 					$tuple, $realTuple[1],
 					$msg . ". Got value " . $realTuple[1] .
-					        ", expected " . $tuple,
+							", expected " . $tuple,
 					self::$precision);
 		}
 	}

@@ -23,29 +23,35 @@
 
 namespace Volkszaehler;
 
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\ParameterBag;
+
+use Symfony\Component\HttpKernel\HttpKernelInterface;
+
+use Symfony\Component\Debug\ErrorHandler;
+
+use Doctrine\ORM;
+use Doctrine\Common\Cache;
+
 use Volkszaehler\View;
 use Volkszaehler\Util;
-use Volkszaehler\View\HTTP;
-use Doctrine\ORM;
 
 /**
- *  Router
+ * Router
  *
- * This class acts as a frontcontroller to route incomming requests
+ * This class povides routing to incoming requests to controllers
  *
  * @package default
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @author Andreas Götz <cpuidle@gmx.de>
  */
-class Router {
-	/**
-	 * @var \Doctrine\ORM\EntityManager Doctrine EntityManager
-	 */
-	public $em;
+class Router implements HttpKernelInterface {
 
 	/**
-	 * @var View\View
+	 * @var ORM\EntityManager Doctrine EntityManager
 	 */
-	public $view;
+	public $em;
 
 	/**
 	 * @var Util\Debug optional debugging instance
@@ -53,10 +59,9 @@ class Router {
 	public $debug;
 
 	/**
-	 * PATH_INFO envvar
-	 * @var string
+	 * @var View\View output view
 	 */
-	protected $pathInfo;
+	public $view;
 
 	/**
 	 * @var array HTTP-method => operation mapping
@@ -74,10 +79,10 @@ class Router {
 	public static $controllerMapping = array(
 		'channel'		=> 'Volkszaehler\Controller\ChannelController',
 		'group'			=> 'Volkszaehler\Controller\AggregatorController',
-		'aggregator'		=> 'Volkszaehler\Controller\AggregatorController',
+		'aggregator'	=> 'Volkszaehler\Controller\AggregatorController',
 		'entity'		=> 'Volkszaehler\Controller\EntityController',
 		'data'			=> 'Volkszaehler\Controller\DataController',
-		'capabilities'		=> 'Volkszaehler\Controller\CapabilitiesController'
+		'capabilities'	=> 'Volkszaehler\Controller\CapabilitiesController'
 	);
 
 	/**
@@ -93,32 +98,49 @@ class Router {
 	 * Constructor
 	 */
 	public function __construct() {
-		// initialize HTTP request & response (required to initialize view & controllers)
-		$request = new HTTP\Request();
-		$response = new HTTP\Response();
+		// handle errors as exceptions
+		ErrorHandler::register();
 
-		// initialize entity manager
-		$this->em = self::createEntityManager();
-
-		// initialize debugging
-		if (($debugLevel = $request->getParameter('debug')) != NULL || $debugLevel = Util\Configuration::read('debug')) {
-			if ($debugLevel > 0) {
-				$this->debug = new Util\Debug($debugLevel, $this->em);
-			}
-		}
-		
+		// views
 		foreach (array('png', 'jpeg', 'jpg', 'gif') as $format) {
 			self::$viewMapping[$format] = 'Volkszaehler\View\JpGraph';
 		}
+	}
 
-		// initialize view
-		$this->pathInfo = self::getPathInfo();
-		$this->format = pathinfo($this->pathInfo, PATHINFO_EXTENSION);
-		
-		if (!array_key_exists($this->format, self::$viewMapping)) {
-			$this->view = new View\JSON($request, $response); // fallback view
-			
-			if (empty($this->pathInfo)) {
+	/**
+	 * Handle the request
+	 * Source: Symfony\Component\HttpKernel\HttpKernel
+	 */
+	public function handle(Request $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true) {
+		try {
+			// initialize entity manager
+			if (null == $this->em || !$this->em->isOpen()) {
+				$this->em = self::createEntityManager();
+			}
+
+			return $this->handleRaw($request, $type);
+		}
+		catch (\Exception $e) {
+			if (false === $catch) {
+				throw $e;
+			}
+
+			return $this->handleException($e, $request, $type);
+		}
+	}
+
+	/**
+	 * Determine context, format and uuid of the raw request
+	 */
+	public function handleRaw(Request $request, $type = HttpKernelInterface::MASTER_REQUEST) {
+		// merge request parameters before first view is initialized
+		$request->parameters = new ParameterBag(array_merge($request->request->all(), $request->query->all()));
+
+		$pathInfo = $request->getPathInfo();
+		$format = pathinfo($pathInfo, PATHINFO_EXTENSION);
+
+		if (!array_key_exists($format, self::$viewMapping)) {
+			if (empty($pathInfo)) {
 				throw new \Exception('Missing or invalid PATH_INFO');
 			}
 			elseif (empty($this->format)) {
@@ -129,8 +151,18 @@ class Router {
 			}
 		}
 
-		$class = self::$viewMapping[$this->format];
-		$this->view = new $class($request, $response, $this->format);
+		$class = self::$viewMapping[$format];
+		$this->view = new $class($request, $format);
+
+		$path = explode('/', substr($pathInfo, 1, strrpos($pathInfo, '.')-1));
+		list($context, $uuid) = array_merge($path, array(null));
+
+		// verify route
+		if (!array_key_exists($context, self::$controllerMapping)) {
+			throw new \Exception((empty($context)) ? 'Missing context' : 'Unknown context: \'' . $context . '\'');
+		}
+
+		return $this->handler($request, $context, $uuid);
 	}
 
 	/**
@@ -138,65 +170,59 @@ class Router {
 	 *
 	 * Example: http://sub.domain.local/middleware.php/channel/550e8400-e29b-11d4-a716-446655440000/data.json?operation=edit&title=New Title
 	 */
-	public function run() {
-		$operation = self::getOperation($this->view->request);
-		$context = explode('/', substr($this->pathInfo, 1, strrpos($this->pathInfo, '.')-1)); // parse pathinfo
-		
-		if (!array_key_exists($context[0], self::$controllerMapping)) {
-			if (empty($context[0])) {
-				throw new \Exception('Missing context');
-			}
-			else {
-				throw new \Exception('Unknown context: \'' . $context[0] . '\'');
+	function handler(Request $request, $context, $uuid) {
+		// initialize debugging
+		if (($debugLevel = $request->parameters->get('debug')) || $debugLevel = Util\Configuration::read('debug')) {
+			if ($debugLevel > 0) {
+				$this->debug = new Util\Debug($debugLevel, $this->em);
 			}
 		}
-		
-		$class = self::$controllerMapping[$context[0]];
-		$controller = new $class($this->view, $this->em);
-		
-		$result = $controller->run($operation, array_slice($context, 1));
+
+		// get controller operation
+		if (null === ($operation = $request->parameters->get('operation'))) {
+			$operation = self::$operationMapping[strtolower($request->getMethod())];
+		}
+
+		$class = self::$controllerMapping[$context];
+		$controller = new $class($request, $this->em);
+
+		$result = $controller->run($operation, $uuid);
 		$this->view->add($result);
-	}
 
-	protected static function getOperation(HTTP\Request $request) {
-		if ($operation = $request->getParameter('operation')) {
-			return $operation;
-		}
-		else {
-			return self::$operationMapping[strtolower($request->getMethod())];
-		}
+		return $this->view->send();
 	}
 
 	/**
-	 * Get CGI environmental var PATH_INFO from webserver
+	 * Handles an exception by trying to convert it to a Response
+	 * Source: Symfony\Component\HttpKernel\HttpKernel
 	 *
-	 * @return string
+	 * @param \Exception $e       An \Exception instance
+	 * @param Request    $request A Request instance
+	 * @param int        $type    The type of the request
+	 *
+	 * @return Response A Response instance
 	 */
-	protected static function getPathInfo() {
-		if (isset($_SERVER['PATH_INFO'])) {
-			return $_SERVER['PATH_INFO'];
+	private function handleException(\Exception $e, $request, $type) {
+		if (null === $this->view) {
+			$this->view = new View\JSON($request); // fallback view instantiates error handler
 		}
-		elseif (isset($_SERVER['ORIG_PATH_INFO'])) {
-			return $_SERVER['ORIG_PATH_INFO'];
-		}
-		elseif (strlen($_SERVER['PHP_SELF']) > strlen($_SERVER['SCRIPT_NAME'])) {
-			return substr($_SERVER['PHP_SELF'], strlen($_SERVER['SCRIPT_NAME']));
-		}
+
+		return $this->view->getExceptionResponse($e);
 	}
 
 	/**
-	 * Factory for doctrines entitymanager
+	 * Factory method for Doctrine EntityManager
 	 *
 	 * @todo add other caching drivers (memcache, xcache)
 	 * @todo put into static class? singleton? function or state class?
 	 */
 	public static function createEntityManager($admin = FALSE) {
-		$config = new \Doctrine\ORM\Configuration;
+		$config = new ORM\Configuration;
 
 		if (Util\Configuration::read('devmode') == FALSE) {
 			$cache = null;
 			if (extension_loaded('apc'))
-				$cache = new \Doctrine\Common\Cache\ApcCache;
+				$cache = new Cache\ApcCache;
 			if ($cache) {
 				$config->setMetadataCacheImpl($cache);
 				$config->setQueryCacheImpl($cache);
@@ -219,7 +245,7 @@ class Router {
 			$dbConfig = array_merge($dbConfig, $dbConfig['admin']);
 		}
 
-		return \Doctrine\ORM\EntityManager::create($dbConfig, $config);
+		return ORM\EntityManager::create($dbConfig, $config);
 	}
 }
 

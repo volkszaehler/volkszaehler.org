@@ -12,18 +12,17 @@ class ChannelTest extends Middleware
 {
 	protected $uuid;
 
-	/**
-	 * Initialize context
-	 */
-	static function setupBeforeClass() {
-		parent::setupBeforeClass();
-		self::$context = self::$mw . 'channel';
-	}
-
 	function createChannel($title, $type, $resolution) {
-		$url = self::$context . '.json?operation=add&title=' . urlencode($title) . '&type=' . urlencode($type);
-		if ($resolution) $url .= '&resolution=' . $resolution;
-		$this->getJson($url);
+		$url = '/channel.json';
+		$params = array(
+			'operation' => 'add',
+			'title' => $title,
+			'type' => $type
+		);
+		if ($resolution) {
+			$params['resolution'] = $resolution;
+		}
+		$this->getJson($url, $params);
 
 		return($this->uuid = (isset($this->json->entity->uuid)) ? $this->json->entity->uuid : null);
 	}
@@ -37,7 +36,7 @@ class ChannelTest extends Middleware
 	}
 
 	function testListChannels() {
-		$url = self::$context . '.json';
+		$url = '/channel.json';
 		$this->getJson($url);
 	}
 
@@ -56,7 +55,7 @@ class ChannelTest extends Middleware
 		if ($resolution) $this->assertTrue($this->json->entity->resolution == $resolution);
 
 		// search
-		$url = self::$context . '/' . $this->uuid . '.json';
+		$url = '/channel/' . $this->uuid . '.json';
 		$this->getJson($url);
 
 		$this->assertTrue(isset($this->json->entity), "Expected <entity> got none");
@@ -67,7 +66,7 @@ class ChannelTest extends Middleware
 
 		// test updating for first channel type only
 		if ($title == 'Power') {
-			$url = self::$context . '/' . $this->uuid . '.json?operation=edit&title='.$title.'Updated'.'&type='.'Sensor'.'&resolution='.($resolution*10);
+			$url = '/channel/' . $this->uuid . '.json?operation=edit&title='.$title.'Updated'.'&type='.'Sensor'.'&resolution='.($resolution*10);
 			$this->getJson($url);
 
 			$this->assertTrue(isset($this->json->entity), "Expected <entity> got none");
@@ -78,7 +77,7 @@ class ChannelTest extends Middleware
 		}
 
 		// delete
-		$url = self::$context . '/' . $uuid . '.json?operation=delete';
+		$url = '/channel/' . $uuid . '.json?operation=delete';
 		$this->getJson($url);
 	}
 }

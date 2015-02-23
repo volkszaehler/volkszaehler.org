@@ -23,8 +23,9 @@
 
 namespace Volkszaehler\View;
 
+use Symfony\Component\HttpFoundation\Request;
+
 use Volkszaehler\Interpreter;
-use Volkszaehler\View\HTTP;
 use Volkszaehler\Util;
 use Volkszaehler\Model;
 
@@ -47,38 +48,34 @@ class JSON extends View {
 
 	/**
 	 * Constructor
-	 *
-	 * @param HTTP\Request $request
-	 * @param HTTP\Response $response
 	 */
-	public function __construct(HTTP\Request $request, HTTP\Response $response) {
-		parent::__construct($request, $response);
+	public function __construct(Request $request) {
+		parent::__construct($request);
 
 		$this->json = new Util\JSON();
 		$this->json['version'] = VZ_VERSION;
 
-		$this->response->setHeader('Content-type', 'application/json');
-		$this->setPadding($request->getParameter('padding'));
-
-		// enable CORS if not JSONP
-		if (!$this->padding) $this->response->setHeader('Access-Control-Allow-Origin', '*');
+		// JSONP
+		if ($this->padding = $request->parameters->get('padding')) {
+			$this->response->headers->set('Content-Type', 'application/javascript');
+		}
+		else {
+			$this->response->headers->set('Content-Type', 'application/json');
+			// enable CORS if not JSONP
+			$this->response->headers->set('Access-Control-Allow-Origin', '*');
+		}
 	}
 
 	/**
-	 * Handles exceptions and sets HTTP return code in a JSONP-aware way.
-	 * Overrides View->exceptionHandler.
+	 * Creates exception response
 	 *
 	 * @param \Exception $exception
-	 * @author Andreas Götz <cpuidle@gmx.de>
 	 */
-	public function exceptionHandler(\Exception $exception) {
-		$this->add($exception);
+	public function getExceptionResponse(\Exception $exception) {
+		$response = parent::getExceptionResponse($exception);
+		$this->response->setStatusCode(($this->padding) ? 200 : 400);
 
-		$code = ($exception->getCode() == 0 || !HTTP\Response::getCodeDescription($exception->getCode())) ? 400 : $exception->getCode();
-		$this->response->setCode(($this->padding) ? 200 : $code);
-		$this->send();
-
-		die();
+		return $response;
 	}
 
 	/**
@@ -117,9 +114,10 @@ class JSON extends View {
 		$json = $this->json->encode((Util\Debug::isActivated()) ? JSON_PRETTY : 0);
 
 		if ($this->padding) {
-			$json = $this->padding  . '(' . $json . ');';
+			$json = $this->padding . '(' . $json . ');';
 		}
-		echo $json;
+
+		return $json;
 	}
 
 	/**
@@ -289,12 +287,6 @@ class JSON extends View {
 			}
 		}
 	}
-
-	/*
-	 * Setter & getter
-	 */
-
-	public function setPadding($padding) { $this->padding = $padding; }
 }
 
 ?>

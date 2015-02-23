@@ -12,7 +12,7 @@ use Volkszaehler\Util;
 use Volkszaehler\Model;
 use Doctrine\DBAL;
 
-class AggregationPerformanceTest extends DataContextPerformance
+class AggregationPerformanceTest extends DataPerformance
 {
 	static $uuid = '00000000-0000-0000-0000-000000000000';
 	static $to; // = '10.1.2000'; // limit data set for low performance clients

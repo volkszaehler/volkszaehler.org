@@ -23,7 +23,8 @@
 
 namespace Volkszaehler\Controller;
 
-use Volkszaehler\View;
+use Symfony\Component\HttpFoundation\Request;
+use Doctrine\ORM\EntityManager;
 
 /**
  * Controller superclass for all controllers
@@ -32,17 +33,25 @@ use Volkszaehler\View;
  * @package default
  */
 abstract class Controller {
-	protected $view;
+
+	/**
+	 * @var Doctrine\ORM\EntityManager
+	 */
 	protected $em;
+
+	/**
+	 * @var Symfony\Component\HttpFoundation\Request
+	 */
+	protected $request;
 
 	/**
 	 * Constructor
 	 *
-	 * @param View $view
+	 * @param Request $request
 	 * @param EntityManager $em
 	 */
-	public function __construct(View\View $view = null, \Doctrine\ORM\EntityManager $em) {
-		$this->view = $view;
+	public function __construct(Request $request, EntityManager $em) {
+		$this->request = $request;
 		$this->em = $em;
 	}
 
@@ -51,18 +60,18 @@ abstract class Controller {
 	 *
 	 * @param string $operation runs the operation if class method is available
 	 */
-	public function run($op, array $arg = array()) {
+	public function run($op, $uuid = null) {
 		if (!method_exists($this, $op)) {
 			throw new \Exception('Invalid context operation: \'' . $op . '\'');
 		}
 
-		switch(count($arg)) { // improved performence
-			case 0: return $this->{$op}();
-			case 1: return $this->{$op}($arg[0]);
-			case 2: return $this->{$op}($arg[0], $arg[1]);
-			case 3: return $this->{$op}($arg[0], $arg[1], $arg[2]);
-			default: return call_user_func_array(array($this, $op), $arg);
+		// one or more uuid(s) as query parameters?
+		if (null == $uuid) {
+			$uuid = $this->request->query->get('uuid');
 		}
+
+		// call the operation
+		return $this->{$op}($uuid);
 	}
 
 	/**
@@ -70,7 +79,10 @@ abstract class Controller {
 	 */
 	protected static function makeArray($data) {
 		if (!is_array($data)) {
-			if (isset($data)) $data = array($data);
+			if (isset($data))
+				$data = array($data);
+			else
+				$data = array();
 		}
 		return $data;
 	}
