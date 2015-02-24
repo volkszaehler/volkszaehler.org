@@ -99,9 +99,9 @@ vz.entities.loadMultipleDetails = function(entities) {
 			this.each(function(entity) {
 				json.entities.some(function(jsonEntity) {
 					if (jsonEntity.uuid == entity.uuid) { // entity matched
-						if (jsonEntity.type == undefined) {
+						if (jsonEntity.type === undefined) {
 							// entity does not exist at server- remove from list of entities
-							vz.entities.remove(entity)
+							vz.entities.remove(entity);
 						}
 						else {
 							entity.parseJSON(jsonEntity);
