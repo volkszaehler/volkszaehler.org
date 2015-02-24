@@ -37,10 +37,14 @@ var extensions = base + 'javascripts/jquery/';
  */
 gulp.task('default', function() {
 	// watch for JS changes
-	gulp.src(base + 'javascripts/**/*.js', { read: false })
+	gulp.src([
+		base + 'javascripts/**/*.js',
+		'!**/*.min.js',							// omit minified files
+	], { read: false })
 		.pipe(watch())
 		.pipe(jshint())
-		.pipe(jshint.reporter('default'));
+		.pipe(jshint.reporter('default'))
+		.pipe(jshint.reporter('fail'));
 });
 
 
@@ -62,7 +66,8 @@ gulp.task('jshint', function() {
 		'!**/*.min.js',							// omit minified files
 	])
 		.pipe(jshint())
-		.pipe(jshint.reporter('default'));
+		.pipe(jshint.reporter('default'))
+		.pipe(jshint.reporter('fail'));
 });
 
 
