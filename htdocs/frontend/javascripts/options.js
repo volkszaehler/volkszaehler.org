@@ -36,7 +36,7 @@ vz.options = {
 	localMiddleware: '../middleware.php',
 	remoteMiddleware: [{
 		title: 'Volkszaehler Demo',
-		url: 'http://demo.volkszaehler.org/middleware.php'
+		url: '//demo.volkszaehler.org/middleware.php'
 	}],
 	monthNames: ['Jan', 'Feb', unescape('M%E4r'), 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
 	dayNames: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],

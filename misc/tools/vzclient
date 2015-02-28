@@ -44,7 +44,7 @@ parser.add_argument('context',choices=["data","channel","group","capabilities"],
 parser.add_argument('--url',action='store',help="url to the volkszaehler.org middleware.php (tip: put this in config file, see below)");
 parser.add_argument('-u', '--uuid',action='append',help="the uuid to edit, get or delete");
 parser.add_argument('-f', '--format',choices=["json","xml","csv","png","gif","jpg"],action='store',help="the format");
-parser.add_argument('-e', '--eval',action='store',help="get attribute from json sperated by comma (Example: entity,uuid will extract the uuid from a json string: {\"entity\":{\"uuid\":\"4...\"}})");
+parser.add_argument('-e', '--eval',action='store',help="get comma-separated attribute from json response (Example: entity,uuid will extract the uuid from a json string: {\"entity\":{\"uuid\":\"4...\"}})");
 parser.add_argument('-j', '--json',action='store',help="send json request");
 parser.add_argument('param',nargs='*',help="Paramter always in syntax key=value");
 args = parser.parse_args();
@@ -55,7 +55,7 @@ if (url is None):
   try:
     url=Config.get("default", "url");
   except:
-    print "ERROR: Please spezify a url!";
+    print "ERROR: Please specify an url!";
     exit(1);
 format=args.format;
 if (format is None):
