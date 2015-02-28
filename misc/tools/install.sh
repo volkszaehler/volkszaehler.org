@@ -95,8 +95,7 @@ echo -n "checking prerequisites:"
 
 deps=( php mysql awk sed grep wget mktemp mkdir git )
 for binary in "${deps[@]}"; do
-	binpath="$(which $binary)"
-	if [ -n "$binpath" ]; then
+	if binpath="$(which $binary)" ; then
 		echo " $binary: $binpath"
 	else
 		echo
