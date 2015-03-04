@@ -60,7 +60,6 @@ class DataController extends Controller {
 		$to = $this->request->parameters->get('to');
 		$tuples = $this->request->parameters->get('tuples');
 		$groupBy = $this->request->parameters->get('group');
-		$tsFmt = $this->request->parameters->get('tsfmt');
 
 		// single entity interpreter
 		if ($entity) {

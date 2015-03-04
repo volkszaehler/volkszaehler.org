@@ -67,15 +67,15 @@ abstract class Data extends Middleware
 	protected function getTuplesByUrl($url, $from = null, $to = null, $group = null, $tuples = null, $options = null) {
 		$params = array();
 
-		if ($from)
+		if (isset($from))
 			$params['from'] = $from;
-		if ($to)
+		if (isset($to))
 			$params['to'] = $to;
-		if ($group)
+		if (isset($group))
 			$params['group'] = $group;
-		if ($tuples)
+		if (isset($tuples))
 			$params['tuples'] = $tuples;
-		if ($options)
+		if (isset($options))
 			$params['options'] = $options;
 
 		$this->getJson($url, $params);
