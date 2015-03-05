@@ -84,6 +84,14 @@ get_db_name() {
 	db_name="$REPLY"
 }
 
+get_db_user_pass() {
+	test -n "$db_user" && return
+	ask "mysql user?" vz
+	db_user="$REPLY"
+	ask "mysql password?" demo
+	db_pass="$REPLY"
+}
+
 ###############################
 # header
 echo "volkszaehler.org installation script"
@@ -143,10 +151,13 @@ fi
 echo
 echo "checking composer..."
 
-for f in composer composer.phar; do
-	COMPOSER=$(which $f 2>/dev/null || true)
-	test -n "$COMPOSER" && break
-done
+COMPOSER="$vz_dir/composer.phar"
+if [ ! -n "$COMPOSER" ]; then
+	for f in composer composer.phar; do
+		COMPOSER=$(which $f 2>/dev/null || true)
+		test -n "$COMPOSER" && break
+	done
+fi
 if [ -n "$COMPOSER" ]; then
 	echo "composer: $COMPOSER"
 else
@@ -172,6 +183,7 @@ ask "create database?" y
 if [ "$REPLY" == "y" ]; then
 	get_admin
 	get_db_name
+	get_db_user_pass
 
 	echo "creating database $db_name..."
 	mysql -h"$db_host" -u"$db_admin_user" -p"$db_admin_pass" -e 'CREATE DATABASE `'"$db_name"'`'
@@ -202,12 +214,8 @@ if [ "$REPLY" == "y" ]; then
 		cleanup && exit 1
 	fi
 
-	ask "mysql user?" vz
-	db_user="$REPLY"
-	ask "mysql password?" demo
-	db_pass="$REPLY"
-
 	get_db_name
+	get_db_user_pass
 	get_config
 
 	# we are using "|" as delimiter for sed to avoid escaped sequences in $dt_dir
