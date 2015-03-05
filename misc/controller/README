@@ -16,6 +16,13 @@ mbus
   * useful for collecting data off of 1wire devices attached to avr/atmega boards running ethersex via ecmd (remote command execution protocol)
   * writes data to volkszaehler middleware
 
+digitalstrom
+
+  * bash script to demonstrate:
+  	* logging into digitalstrom server (dss)
+  	* query sensor values using jsonclient
+  	* store sensor values in volkszaehler using vzclient
+  	
 misc
 
   * various scripts to capture sensor data to volkszaehler middleware
