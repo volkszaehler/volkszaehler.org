@@ -13,7 +13,7 @@ use Volkszaehler\Controller;
 use Volkszaehler\Model;
 use Doctrine\DBAL;
 
-class DataContextPerformance extends DataContext
+class DataPerformance extends Data
 {
 	protected static $conn;
 	protected static $em;

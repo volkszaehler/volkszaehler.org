@@ -14,7 +14,7 @@ use Volkszaehler\Util;
 use Volkszaehler\Model;
 use Doctrine\DBAL;
 
-class SetupPerformanceData extends DataContextPerformance
+class SetupPerformanceData extends DataPerformance
 {
 	static $testSize;
 

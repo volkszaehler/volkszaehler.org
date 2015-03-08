@@ -11,7 +11,7 @@ namespace Tests;
 use Volkszaehler\Util;
 use Doctrine\DBAL;
 
-class AggregationTest extends DataContextPerformance
+class AggregationTest extends DataPerformance
 {
 	/**
 	 * Create DB connection and setup channel
@@ -19,8 +19,9 @@ class AggregationTest extends DataContextPerformance
 	static function setupBeforeClass() {
 		parent::setupBeforeClass();
 
-		if (!self::$uuid)
+		if (!self::$uuid) {
 			self::$uuid = self::createChannel('Aggregation', 'power', 100);
+		}
 	}
 
 	/**

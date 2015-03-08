@@ -23,9 +23,11 @@
 
 namespace Volkszaehler\View;
 
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+
 use Volkszaehler\Interpreter;
 use Volkszaehler\Model;
-use Volkszaehler\View\HTTP;
 use Volkszaehler\Util;
 
 /**
@@ -45,9 +47,8 @@ abstract class View {
 
 	/**
 	 * @var HTTP\Request
-	 * @todo do we need this? why public? not via getter?
 	 */
-	public $request;
+	protected $request;
 
 	/**
 	 * @var HTTP\Response
@@ -63,44 +64,22 @@ abstract class View {
 
 	/**
 	 * Constructor
-	 *
-	 * @param HTTP\Request $request
-	 * @param HTTP\Response $response
 	 */
-	public function __construct(HTTP\Request $request, HTTP\Response $response) {
+	public function __construct(Request $request) {
 		$this->request = $request;
-		$this->response = $response;
-
-		// error & exception handling by view
-		set_exception_handler(array($this, 'exceptionHandler'));
-		set_error_handler(array($this, 'errorHandler'));
-	}
-
-	public function __desctruct() {
-		restore_exception_handler();
-		restore_error_handler();
+		$this->response = new Response();
 	}
 
 	/**
-	 * error & exception handling
-	 */
-	final public function errorHandler($errno, $errstr, $errfile, $errline) {
-		$this->exceptionHandler(new \ErrorException($errstr, 0, $errno, $errfile, $errline));
-	}
-
-	/**
-	 * Handles exceptions and sets HTTP return code
+	 * Creates exception response
 	 *
 	 * @param \Exception $exception
 	 */
-	public function exceptionHandler(\Exception $exception) {
+	public function getExceptionResponse(\Exception $exception) {
 		$this->add($exception);
+		$this->response->setStatusCode(400);
 
-		$code = ($exception->getCode() == 0 || !HTTP\Response::getCodeDescription($exception->getCode())) ? 400 : $exception->getCode();
-		$this->response->setCode($code);
-		$this->send();
-
-		die();
+		return $this->send();
 	}
 
 	/**
@@ -111,8 +90,8 @@ abstract class View {
 			$this->add(Util\Debug::getInstance());
 		}
 
-		$this->render();
-		$this->response->send();
+		$this->response->setContent($this->render());
+		return $this->response;
 	}
 
 	/**
@@ -152,14 +131,14 @@ abstract class View {
 	 * @return (float|string) the formatted number
 	 */
 	public static function formatNumber($number) {
-		return is_null($number) ? null :  round($number, self::PRECISION);
+		return is_null($number) ? null : round($number, self::PRECISION);
 	}
 
 	/**
-	 * format timestamp according to request
+	 * Format timestamp according to request
 	 */
 	public function formatTimestamp($ts) {
-		switch ($this->request->getParameter('tsfmt')) {
+		switch ($this->request->parameters->get('tsfmt')) {
 			case 'sql':
 				return strftime('%Y-%m-%d %H:%M:%S', intval($ts/1000));
 			case 'unix':
@@ -168,7 +147,7 @@ abstract class View {
 			case NULL:
 				return 0 + $ts;
 			default:
-				throw new \Exception('Unknown timefmt');
+				throw new \Exception('Unknown tsfmt');
 		}
 	}
 

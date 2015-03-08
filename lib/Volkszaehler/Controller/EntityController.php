@@ -23,21 +23,29 @@
 
 namespace Volkszaehler\Controller;
 
-use Volkszaehler\Definition;
-use Volkszaehler\Util;
+use Symfony\Component\HttpFoundation\Request;
+use Doctrine\ORM\EntityManager;
+
 use Volkszaehler\Model;
-use Volkszaehler\View;
+use Volkszaehler\Util;
+use Volkszaehler\Definition;
 
 /**
  * Entity controller
  *
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @author Andreas Götz <cpuidle@gmx.de>
  * @package default
  */
 class EntityController extends Controller {
 
-	public function __construct(View\View $view = null, \Doctrine\ORM\EntityManager $em) {
-		parent::__construct($view, $em);
+	/**
+	 * Memory cache instance, e.g. APC
+	 */
+	protected $cache;
+
+	public function __construct(Request $request, EntityManager $em) {
+		parent::__construct($request, $em);
 		$this->cache = $this->em->getConfiguration()->getQueryCacheImpl();
 	}
 
@@ -46,13 +54,13 @@ class EntityController extends Controller {
 	 *
 	 * @param string $identifier
 	 */
-	public function get($uuid = NULL) {
-		if (isset($uuid)) { // single entity
-			return $this->getSingleEntity($uuid);
+	public function get($uuids) {
+		if (is_string($uuids)) { // single entity
+			return $this->getSingleEntity($uuids);
 		}
-		elseif (is_array($uuids = $this->view->request->getParameter('uuid'))) { // multiple entities
+		elseif (is_array($uuids)) { // multiple entities
 			$entities = array();
-			$allowInvalidUuid = $this->view->request->getParameter('nostrict');
+			$allowInvalidUuid = $this->request->parameters->get('nostrict');
 
 			foreach ($uuids as $uuid) {
 				try {
@@ -130,12 +138,8 @@ class EntityController extends Controller {
 	 */
 	public function edit($identifier) {
 		$entity = $this->get($identifier);
-		$parameters = array_merge(
-			$this->view->request->getParameters('post'),
-			$this->view->request->getParameters('get')
-		);
 
-		$this->setProperties($entity, $parameters);
+		$this->setProperties($entity, $this->request->parameters->all());
 		$this->em->flush();
 
 		if ($this->cache) {

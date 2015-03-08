@@ -26,13 +26,17 @@
 
 namespace Volkszaehler;
 
-use Volkszaehler\Util;
-use Volkszaehler\Controller;
+use Symfony\Component\HttpFoundation\Request;
 
 define('VZ_DIR', realpath(__DIR__ . '/..'));
 
 require VZ_DIR . '/lib/bootstrap.php';
 
-$r = new Router();
-$r->run();
-$r->view->send();
+$router = new Router();
+
+// create Request from PHP global variables
+$request = Request::createFromGlobals();
+
+// handle request
+$response = $router->handle($request);
+$response->send();
