@@ -60,6 +60,11 @@ class CounterInterpreter extends Interpreter {
 	public function current() {
 		$row = $this->rows->current();
 
+		// raw database values
+		if ($this->raw) {
+			return(array_slice($row, 0, 3));
+		}
+
 		$delta_ts = $row[0] - $this->last_ts; // time between now and row before
 
 		// instead of reverting what DataIterator->next did by $val = $row[1] / $row[2]
