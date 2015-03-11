@@ -13,8 +13,8 @@ class RawTest extends Data
     public function channelDataProvider()  {
         return array(
             array('power', round(rand(2, 1000))),
-            // array('electric meter', round(rand(2, 1000))),
-            // array("powersensor", round(rand(2, 1000))),
+            array('electric meter', round(rand(2, 1000))),
+            array("powersensor", round(rand(2, 1000))),
         );
     }
 
@@ -34,7 +34,7 @@ class RawTest extends Data
 			$this->addTuple($tuple['ts'], $tuple['value'], self::$uuid);
 		}
 
-		$url = '/raw/' . self::$uuid . '.json';
+		$url = '/data/' . self::$uuid . '.json?options=raw';
 
 		$this->assertTrue(isset(
 			$this->getTuplesByUrl($url, 0, PHP_INT_MAX)->data)

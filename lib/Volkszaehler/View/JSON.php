@@ -72,10 +72,10 @@ class JSON extends View {
 	 * @param \Exception $exception
 	 */
 	public function getExceptionResponse(\Exception $exception) {
-		$response = parent::getExceptionResponse($exception);
+		$this->add($exception);
 		$this->response->setStatusCode(($this->padding) ? 200 : 400);
 
-		return $response;
+		return $this->send();
 	}
 
 	/**
