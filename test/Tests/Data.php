@@ -42,7 +42,7 @@ abstract class Data extends Middleware
 		if ($resolution) $url .= '&resolution=' . $resolution;
 		$json = self::executeRequest(Request::create($url));
 
-		return ((isset($json->entity->uuid)) ? $json->entity->uuid : null);
+		return (isset($json->entity->uuid)) ? $json->entity->uuid : null;
 	}
 
 	/**
@@ -50,7 +50,7 @@ abstract class Data extends Middleware
 	 */
 	static function deleteChannel($uuid) {
 		$url = '/channel/' . $uuid . '.json?operation=delete';
-		$json = self::executeRequest(Request::create($url));
+		return self::executeRequest(Request::create($url));
 	}
 
 	/*
