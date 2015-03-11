@@ -28,9 +28,12 @@ class ProtocolTest extends Data
 	}
 
 	function testJsonP() {
-		$response = $this->getJson('/data/' . static::$uuid . '.json', array(
+		$request = Request::create('/data/' . static::$uuid . '.json', 'GET', array(
 			'padding' => 'callback'
-		), 'GET');
+		));
+		$request->headers->set('Content-type', 'application/json');
+
+		$response = self::executeRequest($request);
 
 		$this->assertEquals('application/javascript', $response->headers->get('Content-Type'));
 		$this->assertRegExp('/callback\(.*\);/', $response->getContent());
