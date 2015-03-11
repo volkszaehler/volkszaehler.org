@@ -1,0 +1,101 @@
+<?php
+/**
+ * httpd is a high-performance standalone webserver providing
+ * middleware capabilities
+ *
+ * This implementation is still single-threaded and suited for single users.
+ * For better scalability run behind an nginx load balancer or use built-in
+ * load balancer of PHP process manager (https://github.com/marcj/php-pm)
+ *
+ * @package default
+ * @copyright Copyright (c) 2015, The volkszaehler.org project
+ * @license http://www.gnu.org/licenses/gpl.txt GNU Public License
+ * @author Andreas Goetz <cpuidle@gmx.de>
+ */
+/*
+ * This file is part of volkzaehler.org
+ *
+ * volkzaehler.org is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * volkzaehler.org is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+define('VZ_DIR', realpath(__DIR__ . '/..'));
+
+require VZ_DIR . '/lib/bootstrap.php';
+
+$router = new Volkszaehler\Router();
+
+// handler
+$app = function ($request, $response) use ($router) {
+	$requestBody = '';
+	$headers = $request->getHeaders();
+	$contentLength = isset($headers['Content-Length']) ? (int) $headers['Content-Length'] : 0;
+
+	$request->on('data', function($data) use ($request, $response, $router, &$requestBody, $contentLength) {
+		// read data (may be empty for GET request)
+		$requestBody .= $data;
+
+		// handle request after receive
+		if (strlen($requestBody) >= $contentLength) {
+			// convert React\Http\Request to Symfony\Component\HttpFoundation\Request
+			$syRequest = new Symfony\Component\HttpFoundation\Request();
+			$syRequest->setMethod($request->getMethod());
+			$syRequest->server->set('REQUEST_URI', $request->getPath());
+			$syRequest->server->set('SERVER_NAME', explode(':', $request->getHeaders()['Host'])[0]);
+			$syRequest->headers->replace($headers = $request->getHeaders());
+			$syRequest->query->replace($request->getQuery());
+
+			// convert POST body
+			if ($request->getMethod() == 'POST') {
+				$contentType = explode(';', isset($headers['Content-Type']) ? $headers['Content-Type'] : '')[0];
+
+				switch ($contentType) {
+					case 'text/xml':
+					case 'application/xml':
+						$post = ['xmlString' => $requestBody]; // raw xml string
+						break;
+					case 'application/json':
+						$post = json_decode($requestBody, true);
+						break;
+					default:
+						parse_str($requestBody, $post);
+				}
+
+				$syRequest->request->replace($post);
+			}
+
+			// handle request by middleware
+			$syResponse = $router->handle($syRequest);
+
+			// convert React\Http\Response to Symfony\Component\HttpFoundation\Response
+			$headers = array_map('current', $syResponse->headers->all());
+			$response->writeHead($syResponse->getStatusCode(), $headers);
+			$response->end($syResponse->getContent());
+		}
+	});
+};
+
+// get configuration
+$host = Volkszaehler\Util\Configuration::read('httpd.host', '127.0.0.1');
+$port = Volkszaehler\Util\Configuration::read('httpd.port', 8080);
+
+echo "Running httpd at http://$host:$port\n";
+
+$loop = React\EventLoop\Factory::create();
+$socket = new React\Socket\Server($loop);
+$http = new React\Http\Server($socket, $loop);
+
+$http->on('request', $app);
+
+$socket->listen($port);
+$loop->run();

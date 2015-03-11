@@ -12,10 +12,12 @@
         "jpgraph/jpgraph": "dev-master",
         "andig/dbcopy": "dev-master",
         "symfony/console": "2.6.*",
-        "symfony/http-kernel": "2.6.*"
+        "symfony/http-kernel": "2.6.*",
+        "react/react": "0.4.*"
     },
     "require-dev": {
-       "phpunit/phpunit": "4.1.*"
+        "phpunit/phpunit": "4.1.*",
+        "jenssegers/proxy": "~2.2"
     },
     "autoload": {
         "psr-0": {
