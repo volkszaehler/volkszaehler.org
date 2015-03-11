@@ -104,8 +104,10 @@ class AggregationTest extends DataPerformance
 		$rows = $this->countAggregationRows($uuid2);
 		$this->assertEquals(1, $rows, 'repeated delta aggregation failed');
 
-		// cleanup 2nd channel
-		self::deleteChannel($uuid2);
+		// cleanup 2nd channel and test successful deletion
+		$this->assertFalse(isset(
+			self::deleteChannel($uuid2)->exception
+		));
 	}
 
 	/**
