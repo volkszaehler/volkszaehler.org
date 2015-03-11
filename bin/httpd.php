@@ -37,42 +37,26 @@ $router = new Volkszaehler\Router();
 
 // handler
 $app = function ($request, $response) use ($router) {
-	$requestBody = '';
+	$content = '';
 	$headers = $request->getHeaders();
 	$contentLength = isset($headers['Content-Length']) ? (int) $headers['Content-Length'] : 0;
 
-	$request->on('data', function($data) use ($request, $response, $router, &$requestBody, $contentLength) {
+	$request->on('data', function($data) use ($request, $response, $router, &$content, $contentLength) {
 		// read data (may be empty for GET request)
-		$requestBody .= $data;
+		$content .= $data;
 
 		// handle request after receive
-		if (strlen($requestBody) >= $contentLength) {
+		if (strlen($content) >= $contentLength) {
 			// convert React\Http\Request to Symfony\Component\HttpFoundation\Request
-			$syRequest = new Symfony\Component\HttpFoundation\Request();
+			$syRequest = new Symfony\Component\HttpFoundation\Request(
+				// $query, $request, $attributes, $cookies, $files, $server, $content
+				$request->getQuery(), array(), array(), array(), array(), array(), $content
+			);
+
 			$syRequest->setMethod($request->getMethod());
 			$syRequest->server->set('REQUEST_URI', $request->getPath());
 			$syRequest->server->set('SERVER_NAME', explode(':', $request->getHeaders()['Host'])[0]);
 			$syRequest->headers->replace($headers = $request->getHeaders());
-			$syRequest->query->replace($request->getQuery());
-
-			// convert POST body
-			if ($request->getMethod() == 'POST') {
-				$contentType = explode(';', isset($headers['Content-Type']) ? $headers['Content-Type'] : '')[0];
-
-				switch ($contentType) {
-					case 'text/xml':
-					case 'application/xml':
-						$post = ['xmlString' => $requestBody]; // raw xml string
-						break;
-					case 'application/json':
-						$post = json_decode($requestBody, true);
-						break;
-					default:
-						parse_str($requestBody, $post);
-				}
-
-				$syRequest->request->replace($post);
-			}
 
 			// handle request by middleware
 			$syResponse = $router->handle($syRequest);
@@ -80,6 +64,7 @@ $app = function ($request, $response) use ($router) {
 			// convert React\Http\Response to Symfony\Component\HttpFoundation\Response
 			$headers = array_map('current', $syResponse->headers->all());
 			$response->writeHead($syResponse->getStatusCode(), $headers);
+
 			$response->end($syResponse->getContent());
 		}
 	});

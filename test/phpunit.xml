@@ -25,6 +25,6 @@
   <php>
     <!-- use HTTP to access middleware via HTTP -->
     <const name="testAdapter" value="DIRECT" />
-    <!-- <const name="testHttpUri" value="http://127.0.0.1:8080" /> -->
+    <const name="testHttpUri" value="http://127.0.0.1:8080" />
   </php>
 </phpunit>
