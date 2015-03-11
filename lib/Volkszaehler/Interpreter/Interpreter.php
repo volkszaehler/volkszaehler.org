@@ -48,6 +48,7 @@ abstract class Interpreter implements \Iterator {
 	protected $to;			// can be NULL!
 	protected $groupBy;		// user from/to from DataIterator for exact calculations!
 	protected $options;  	// additional non-standard options
+	protected $raw;  		// raw database values requested
 
 	protected $channel;		// Channel entity
 
@@ -76,11 +77,15 @@ abstract class Interpreter implements \Iterator {
 		$this->groupBy = $groupBy;
 		$this->tupleCount = $tupleCount;
 		$this->options = $options;
-		$this->conn = $em->getConnection(); // get dbal connection from EntityManager
 
-		// store locally for performance
+		// client wants raw data?
+		$this->raw = $this->hasOption('raw');
+
+		// get dbal connection from EntityManager
+		$this->conn = $em->getConnection();
+
+		// store channel scale and resolution locally for performance
 		$this->scale = $this->channel->getDefinition()->scale;
-		// in case of SensorInterpreter resolution is optional
 		$this->resolution = ($this->channel->hasProperty('resolution')) ? $this->channel->getProperty('resolution') : 1;
 
 		// parse interval
@@ -127,7 +132,7 @@ abstract class Interpreter implements \Iterator {
 	 *
 	 * @param  string  $str option name
 	 */
-	private function hasOption($str) {
+	protected function hasOption($str) {
 		return in_array($str, $this->options);
 	}
 
