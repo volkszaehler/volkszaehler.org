@@ -53,6 +53,11 @@ class SensorInterpreter extends Interpreter {
 	public function current() {
 		$row = $this->rows->current();
 
+		// raw database values
+		if ($this->raw) {
+			return(array_slice($row, 0, 3));
+		}
+
 		$delta_ts = $row[0] - $this->ts_last;
 
 		// instead of using $row[1], which is value, get weighed average value from $row[4] which
