@@ -59,7 +59,8 @@ class JSON extends \ArrayObject {
 	public function encode($options = 0) {
 		$json = json_encode($this->getArrayCopy(), $options);
 
-		if ($options & JSON_PRETTY) {
+		// manual pretty-printing only before PHP 5.4
+		if (($options & JSON_PRETTY) && version_compare(PHP_VERSION, '5.4.0', '<')) {
 			$json = self::format($json);
 		}
 
