@@ -1,3 +1,4 @@
+#!/usr/bin/php
 <?php
 /**
  * httpd is a high-performance standalone webserver providing
@@ -82,5 +83,5 @@ $http = new React\Http\Server($socket, $loop);
 
 $http->on('request', $app);
 
-$socket->listen($port);
+$socket->listen($port, $host);
 $loop->run();
