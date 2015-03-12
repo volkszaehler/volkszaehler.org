@@ -13,7 +13,8 @@
         "andig/dbcopy": "dev-master",
         "symfony/console": "2.6.*",
         "symfony/http-kernel": "2.6.*",
-        "react/react": "0.4.*"
+        "react/react": "0.4.*",
+        "marcj/php-pm": "dev-dependencies"
     },
     "require-dev": {
         "phpunit/phpunit": "4.1.*",
@@ -26,6 +27,12 @@
             "Wrapper\\": "test/"
         }
     },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/andig/php-pm"
+        }
+    ],
     "scripts": {
         "post-install-cmd": "php -r \"@copy('vendor/andig/dbcopy/dbcopy.php', 'misc/tools/dbcopy.php');\""
     }
