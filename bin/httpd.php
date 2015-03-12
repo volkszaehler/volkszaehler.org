@@ -1,3 +1,4 @@
+#!/usr/bin/php
 <?php
 /**
  * httpd is a high-performance standalone webserver providing
@@ -6,6 +7,13 @@
  * This implementation is still single-threaded and suited for single users.
  * For better scalability run behind an nginx load balancer or use built-in
  * load balancer of PHP process manager (https://github.com/marcj/php-pm)
+ *
+ * To run on startup add this line to /etc/inittab
+ *
+ * 		# VOLKSZAEHLER
+ *   	vzmw:235:respawn:/usr/bin/php /home/pi/volkszaehler.org/bin/httpd.php
+ *
+ *  Use `init q` to activate
  *
  * @package default
  * @copyright Copyright (c) 2015, The volkszaehler.org project
