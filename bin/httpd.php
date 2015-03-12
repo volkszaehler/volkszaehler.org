@@ -48,8 +48,11 @@ $app = function ($request, $response) use ($router) {
 	$content = '';
 	$headers = $request->getHeaders();
 	$contentLength = isset($headers['Content-Length']) ? (int) $headers['Content-Length'] : 0;
+	$acceptEncoding = isset($headers['Accept-Encoding']) ? $headers['Accept-Encoding'] : null;
 
-	$request->on('data', function($data) use ($request, $response, $router, &$content, $contentLength) {
+	$request->on('data', function($data)
+		use ($request, $response, $router, &$content, $contentLength, $acceptEncoding)
+	{
 		// read data (may be empty for GET request)
 		$content .= $data;
 
@@ -70,10 +73,23 @@ $app = function ($request, $response) use ($router) {
 			$syResponse = $router->handle($syRequest);
 
 			// convert React\Http\Response to Symfony\Component\HttpFoundation\Response
+			$content = $syResponse->getContent();
 			$headers = array_map('current', $syResponse->headers->all());
-			$response->writeHead($syResponse->getStatusCode(), $headers);
+			$contentType = isset($headers['content-type']) ? $headers['content-type'] : '';
 
-			$response->end($syResponse->getContent());
+			// compression
+			if (in_array($contentType, array('application/javascript', 'application/json'))) {
+				$encodings = preg_split('/,\s*/', $acceptEncoding);
+
+				if (in_array('gzip', $encodings) /*|| in_array('deflate', $encodings)*/) {
+					$content = gzencode($content);
+					$headers['Content-Encoding'] = 'gzip';
+					$headers['Content-Length'] = strlen($content);
+				}
+			}
+
+			$response->writeHead($syResponse->getStatusCode(), $headers);
+			$response->end($content);
 		}
 	});
 };
