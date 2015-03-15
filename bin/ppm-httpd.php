@@ -13,7 +13,9 @@
  * 		# VOLKSZAEHLER
  *   	vzmw:235:respawn:/usr/bin/php /home/pi/volkszaehler.org/bin/ppm-httpd.php start --bootstrap=Volkszaehler\\Util\\MiddlewareBootstrapInterface --bridge=HttpKernel
  *
- *  Use `init q` to activate
+ * Use `init q` to activate
+ *
+ * The server will listen on port 8080, to change add the --port switch
  *
  * @package default
  * @copyright Copyright (c) 2015, The volkszaehler.org project
