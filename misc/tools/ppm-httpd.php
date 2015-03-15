@@ -10,8 +10,8 @@
  *
  * To run on startup add this line to /etc/inittab
  *
- * 		# VOLKSZAEHLER
- *   	vzmw:235:respawn:/usr/bin/php /home/pi/volkszaehler.org/bin/ppm-httpd.php start --bootstrap=Volkszaehler\\Util\\MiddlewareBootstrapInterface --bridge=HttpKernel
+ *  # VOLKSZAEHLER
+ *  vzmw:235:respawn:/usr/bin/php /home/pi/volkszaehler.org/misc/tools/ppm-httpd.php start --bootstrap=Volkszaehler\\Util\\ReactInterface --bridge=HttpKernel
  *
  * Use `init q` to activate
  *
@@ -39,7 +39,7 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
-define('VZ_DIR', realpath(__DIR__ . '/..'));
+define('VZ_DIR', realpath(__DIR__ . '/../..'));
 
 require_once VZ_DIR . '/lib/bootstrap.php';
 
@@ -49,7 +49,7 @@ use Symfony\Component\Console\Application;
 use PHPPM\Commands\StartCommand;
 use PHPPM\Commands\StatusCommand;
 
-$app = new Application('PHP-ProcessManager');
+$app = new Application('volkszaehler.org middleware');
 $app->add(new StartCommand);
 $app->add(new StatusCommand);
 $app->run();

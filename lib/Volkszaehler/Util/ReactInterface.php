@@ -9,7 +9,7 @@ use Stack\Builder;
 /**
  * Bootstrap bridge for Router
  */
-class MiddlewareBootstrapInterface implements BootstrapInterface
+class ReactInterface implements BootstrapInterface
 {
     /**
      * @var string|null The application environment
