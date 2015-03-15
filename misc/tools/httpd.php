@@ -1,21 +1,21 @@
-#!/usr/bin/php
+#!/usr/bin/env php
 <?php
 /**
- * httpd is a high-performance standalone webserver providing
- * middleware capabilities
+ * ppm-httpd is a high-performance standalone webserver providing
+ * middleware capabilities based on PHP Process Manager (ppm)
  *
- * This implementation is still single-threaded and suited for single users.
- * For better scalability run behind an nginx load balancer or use built-in
- * load balancer of PHP process manager (https://github.com/marcj/php-pm)
+ * This implementation is multi-threaded and can be run stand-alone or
+ * using built-in load balancer or behind an nginx load balancer
+ * See https://github.com/marcj/php-pm for details
  *
  * To run on startup add this line to /etc/inittab
  *
  *  # VOLKSZAEHLER
- *  vzmw:235:respawn:/usr/bin/php /home/pi/volkszaehler.org/misc/tools/httpd.php
+ *  vzmw:235:respawn:/usr/bin/php /home/pi/volkszaehler.org/misc/tools/httpd.php start --bootstrap=Volkszaehler\\Util\\ReactInterface --bridge=HttpKernel
  *
- *  Use `init q` to activate
+ * Use `init q` to activate
  *
- * The server will listen on port 8080, to change use the httpd.port config setting
+ * The server will listen on port 8080, to change add the --port switch
  *
  * @package default
  * @copyright Copyright (c) 2015, The volkszaehler.org project
@@ -41,28 +41,15 @@
 
 define('VZ_DIR', realpath(__DIR__ . '/../..'));
 
-require VZ_DIR . '/lib/bootstrap.php';
+require_once VZ_DIR . '/lib/bootstrap.php';
 
-// http kernel bridge using interface to middleware
-$bridge = new PHPPM\Bridges\HttpKernel();
-$bridge->bootstrap('Volkszaehler\Util\ReactInterface', null);
+set_time_limit(0);
 
-// handler
-$app = function ($request, $response) use ($bridge) {
-	$bridge->onRequest($request, $response);
-};
+use Symfony\Component\Console\Application;
+use PHPPM\Commands\StartCommand;
+use PHPPM\Commands\StatusCommand;
 
-// get configuration
-$host = Volkszaehler\Util\Configuration::read('httpd.host', '127.0.0.1');
-$port = Volkszaehler\Util\Configuration::read('httpd.port', 8080);
-
-echo "Running httpd at http://$host:$port\n";
-
-$loop = React\EventLoop\Factory::create();
-$socket = new React\Socket\Server($loop);
-$http = new React\Http\Server($socket, $loop);
-
-$http->on('request', $app);
-
-$socket->listen($port, $host);
-$loop->run();
+$app = new Application('volkszaehler.org middleware');
+$app->add(new StartCommand);
+$app->add(new StatusCommand);
+$app->run();
