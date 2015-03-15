@@ -11,11 +11,14 @@
  * To run on startup add this line to /etc/inittab
  *
  *  # VOLKSZAEHLER
- *  vzmw:235:respawn:/usr/bin/php /home/pi/volkszaehler.org/misc/tools/httpd.php start --bootstrap=Volkszaehler\\Util\\ReactInterface --bridge=HttpKernel
+ *  vzmw:235:respawn:/usr/bin/php /home/pi/volkszaehler.org/misc/tools/httpd.php start
  *
  * Use `init q` to activate
  *
- * The server will listen on port 8080, to change add the --port switch
+ * The default opions are already set in misc/tools/ppm.json and can be overridden
+ * on the command line:
+ *
+ *  --bootstrap=Volkszaehler\\Util\\ReactInterface --bridge=HttpKernel --port=8080
  *
  * @package default
  * @copyright Copyright (c) 2015, The volkszaehler.org project
