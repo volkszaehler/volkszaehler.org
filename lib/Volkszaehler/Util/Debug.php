@@ -57,8 +57,8 @@ class Debug {
 		$this->level = $level;
 
 		// starting logging of sql queries
-		$this->sqlLogger = new Logging\DebugStack();
-		$em->getConnection()->getConfiguration()->setSQLLogger($this->sqlLogger);
+		$this->em = $em;
+		$this->attachSqlLogger(new Logging\DebugStack());
 
 		if (isset(self::$instance)) {
 			throw new \Exception('Debugging has already been started. Please use the static functions!');
@@ -66,8 +66,8 @@ class Debug {
 		self::$instance = $this;
 	}
 
-	/*
-	 * logs messages to the debug stack including file, lineno, args and a stacktrace
+	/**
+	 * Log messages to the debug stack including file, lineno, args and a stacktrace
 	 *
 	 * @param string $message
 	 * @param more parameters could be passed
@@ -79,20 +79,20 @@ class Debug {
 			$level = self::$instance->level;
 
 			$message = array('message' => $message);
-			
+
 			if ($level > 2) {
 				$message['file'] = $info['file'];
 				$message['line'] = $info['line'];
 			}
-			
+
 			if ($level > 4) {
 				$message['args'] = array_slice($info['args'], 1);
 			}
-			
+
 			if ($level > 5) {
 				$message['trace'] = array_slice($trace, 1);
 			}
-			
+
 			self::$instance->messages[] = $message;
 		}
 	}
@@ -102,6 +102,25 @@ class Debug {
 	 * @return boolean
 	 */
 	public static function isActivated() { return isset(self::$instance); }
+
+	/**
+	 * Deactivate debugging (for http server)
+	 * @return boolean
+	 */
+	public static function deactivate() {
+		if (self::$instance) {
+			self::$instance->attachSqlLogger(null);
+			self::$instance = null;
+		}
+	}
+
+	/**
+	 * Set SQL logger on entity manager
+	 */
+	protected function attachSqlLogger($sqlLogger) {
+		$this->sqlLogger = $sqlLogger;
+		$this->em->getConnection()->getConfiguration()->setSQLLogger($sqlLogger);
+	}
 
 	/**
 	 * @return float execution time
@@ -147,15 +166,15 @@ class Debug {
 	 * @todo encapsulate in state class? or inherit from singleton class?
 	 */
 	public static function getInstance() { return self::$instance; }
-	
+
 	/**
 	 * @return integer current debug level
 	 */
 	 public function getLevel() { return $this->level; }
-	
+
 	/**
 	 * Tries to determine the current SHA1 hash of your git commit
-	 * 
+	 *
 	 * @return string the hash
 	 */
 	public static function getCurrentCommit() {
@@ -170,17 +189,17 @@ class Debug {
 			return FALSE;
 		}
 	}
-	
+
 	public static function getPhpVersion() {
 		return phpversion();
 	}
-	
+
 	/**
 	 * Get average server load
 	 *
 	 * @return array average load (1min, 5min, 15min)
 	 */
-	public static function getLoadAvg() { 
+	public static function getLoadAvg() {
 		if (function_exists('sys_getloadvg')) {
 			$load = sys_getloadvg();
 		}

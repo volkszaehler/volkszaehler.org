@@ -28,9 +28,12 @@ class ProtocolTest extends Data
 	}
 
 	function testJsonP() {
-		$response = $this->getJson('/data/' . static::$uuid . '.json', array(
+		$request = Request::create('/data/' . static::$uuid . '.json', 'GET', array(
 			'padding' => 'callback'
-		), 'GET');
+		));
+		$request->headers->set('Content-type', 'application/json');
+
+		$response = self::executeRequest($request);
 
 		$this->assertEquals('application/javascript', $response->headers->get('Content-Type'));
 		$this->assertRegExp('/callback\(.*\);/', $response->getContent());
@@ -68,6 +71,9 @@ class ProtocolTest extends Data
 		$this->assertEquals(2, $this->getJson($request)->rows);
 	}
 
+	/**
+	 * @depends testAddMultipleTuplesPost
+	 */
 	function testDuplicate() {
 		$url = '/data/' . static::$uuid . '.json';
 
@@ -76,9 +82,9 @@ class ProtocolTest extends Data
 			array(self::$ts, self::$value)
 		);
 
-		// @TODO: support GET as well
-		$request = Request::create($url, 'POST',
-			array('options' => 'skipduplicates'), array(), array(), array(),
+		// @TODO: understand query() parameter when request is POST
+		$request = Request::create($url . '?options=skipduplicates', 'POST',
+			array(), array(), array(), array(),
 			json_encode($data));
 		$request->headers->set('Content-type', 'application/json');
 

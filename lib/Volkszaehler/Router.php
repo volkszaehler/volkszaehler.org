@@ -178,6 +178,10 @@ class Router implements HttpKernelInterface {
 				$this->debug = new Util\Debug($debugLevel, $this->em);
 			}
 		}
+		else {
+			// make sure static debug instance is removed
+			Util\Debug::deactivate();
+		}
 
 		// get controller operation
 		if (null === ($operation = $request->parameters->get('operation'))) {

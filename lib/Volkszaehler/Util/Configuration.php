@@ -38,7 +38,7 @@ class Configuration {
 	 * @param string $var A string delimited by dots
 	 * @return mixed the configuration value
 	 */
-	static public function read($var = NULL) {
+	static public function read($var = NULL, $default = NULL) {
 		$tree = explode('.', $var);
 
 		if (is_null($var)) {
@@ -51,7 +51,7 @@ class Configuration {
 				$values = $values[$part];
 			}
 			else {
-				return NULL;
+				return $default;
 			}
 		}
 

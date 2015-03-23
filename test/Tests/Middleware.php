@@ -10,11 +10,22 @@ namespace Tests;
 
 use Symfony\Component\HttpFoundation\Request;
 
+use GuzzleHttp\Client;
+use Proxy\Adapter\Guzzle\GuzzleAdapter;
+
 use Volkszaehler\Router;
 
 abstract class Middleware extends \PHPUnit_Framework_TestCase
 {
+	/**
+	 * @var Volkszaehler\Router
+	 */
 	static $app;
+
+	/**
+	 * @var Proxy\Adapter\Guzzle\GuzzleAdapter
+	 */
+	static $adapter;
 
 	/**
 	 * Initialize router
@@ -22,8 +33,14 @@ abstract class Middleware extends \PHPUnit_Framework_TestCase
 	static function setupBeforeClass() {
 		parent::setupBeforeClass();
 
+		if (testAdapter == 'HTTP') {
+			// echo("Test using HTTP adapter\n");
+			static::$adapter = new GuzzleAdapter(new Client());
+		}
+
 		// cache entity manager
-		if (null == self::$app) {
+		else if (null == self::$app) {
+			// echo("Test using built-in Router\n");
 			self::$app = new Router();
 		}
 	}
@@ -33,7 +50,14 @@ abstract class Middleware extends \PHPUnit_Framework_TestCase
 	 */
 	protected static function executeRequest(Request $request) {
 		$json = false;
-		$response = self::$app->handle($request);
+
+		if (testAdapter == 'HTTP') {
+			$uri = str_replace('http://localhost', testHttpUri, $request->getUri());
+			$response = static::$adapter->send($request, $uri);
+		}
+		else {
+			$response = self::$app->handle($request);
+		}
 
 		if ($response->headers->get('Content-Type') == 'application/json') {
 			try {
