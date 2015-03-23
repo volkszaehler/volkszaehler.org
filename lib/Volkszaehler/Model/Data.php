@@ -31,12 +31,10 @@ use Volkszaehler\Model;
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
- * @todo rename? Bsp: DataSample, Sample, Reading
  *
  * @Entity
  * @Table(
  * 	name="data",
- *	indexes={@index(name="search_idx", columns={"channel_id", "timestamp"})},
  *	uniqueConstraints={@UniqueConstraint(name="data_unique", columns={"channel_id", "timestamp"})}
  * )
  */
