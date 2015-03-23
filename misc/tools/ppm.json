@@ -1,6 +1,0 @@
-{
-	"port": 8080,
-	"workers": 8,
-	"bridge": "HttpKernel",
-	"bootstrap": "Volkszaehler\\Util\\ReactInterface"
-}
