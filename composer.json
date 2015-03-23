@@ -9,7 +9,6 @@
     },
     "require": {
         "doctrine/orm": "2.4.*",
-        "jpgraph/jpgraph": "dev-master",
         "andig/dbcopy": "dev-master",
         "symfony/console": "2.6.*@dev"
     },
@@ -23,6 +22,9 @@
             "Wrapper\\": "test/"
         }
     },
+    "suggested": [
+        "jpgraph/jpgraph"
+    ],
     "scripts": {
     	"post-install-cmd": "php -r \"@copy('vendor/andig/dbcopy/dbcopy.php', 'misc/tools/dbcopy.php');\""
     }
