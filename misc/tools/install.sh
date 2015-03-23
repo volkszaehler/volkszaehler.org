@@ -174,6 +174,10 @@ echo "installing dependencies..."
 
 pushd "$vz_dir"
 "$COMPOSER" install --no-dev
+ask "install server-side graph generation (jpgraph, not required for frontend)?" n
+if [ "$REPLY" == "y" ]; then
+	"$COMPOSER" require jpgraph/jpgraph:dev-master
+fi
 popd
 
 ###############################
