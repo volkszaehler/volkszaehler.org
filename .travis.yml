@@ -32,11 +32,7 @@ notifications:
     mail: "volkszaehler-dev@lists.volkszaehler.org"
     irc: "chat.freenode.net#volkszaehler.org"
 
-before_install:
-    - if [ "$DEPENDENCIES" = true ]; then composer self-update; fi;
-
 install:
-    - cat composer.json
     - if [ "$DEPENDENCIES" = true ]; then composer install; fi;
     - if [ "$JSLINT" = true ]; then npm install; fi;
 
@@ -46,10 +42,8 @@ before_script:
     - cp etc/volkszaehler.conf.template.php etc/volkszaehler.conf.php
 
     - DATABASE=travis
-    - USER=travis
-    - if [ "$DB" = "pgsql" ]; then USER=postgres; fi;
+    - if [ ! "$DB" = "pgsql" ]; then USER=travis; else USER=postgres; fi;
     - PASSWORD=
-    - echo $USER
 
     # create config file
     - sed -i "s/'pdo_mysql'/'pdo_$DB'/" etc/volkszaehler.conf.php
