@@ -14,17 +14,27 @@
         "symfony/http-kernel": "2.6.*"
     },
     "require-dev": {
-       "phpunit/phpunit": "4.1.*"
+        "phpunit/phpunit": "4.4.*"
     },
     "autoload": {
         "psr-0": {
             "Volkszaehler\\": "lib/",
-            "Tests\\": "test/",
-            "Wrapper\\": "test/"
+            "Tests\\": "test/"
         }
     },
     "suggested": [
-        "jpgraph/jpgraph"
+        "jpgraph/jpgraph",
+        "andig/volkszaehler-httpd"
+    ],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/andig/volkszaehler-httpd"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/andig/php-pm"
+        }
     ],
     "scripts": {
         "post-install-cmd": "php -r \"@copy('vendor/andig/dbcopy/dbcopy.php', 'misc/tools/dbcopy.php');\""
