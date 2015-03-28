@@ -8,7 +8,7 @@
 
 namespace Tests;
 
-class DataCounterTest extends DataContext
+class CounterTest extends Data
 {
 	// channel properties
 	static $resolution = 100;

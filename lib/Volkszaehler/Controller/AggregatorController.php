@@ -23,16 +23,15 @@
 
 namespace Volkszaehler\Controller;
 
+use Volkszaehler\Model;
+use Volkszaehler\Definition;
+
 /**
  * Aggregator controller
  *
  * @author Steffen Vogel (info@steffenvogel.de)
  * @package default
  */
-use Volkszaehler\Definition;
-
-use Volkszaehler\Model;
-
 class AggregatorController extends EntityController {
 	/**
 	 * Get aggregator
@@ -60,8 +59,8 @@ class AggregatorController extends EntityController {
 		if (isset($identifier)) {	// add entity to aggregator
 			$aggregator = $this->get($identifier);
 
-			if ($uuids = self::makeArray($this->view->request->getParameter('uuid'))) {
-				$ec = new EntityController($this->view, $this->em);
+			if ($uuids = self::makeArray($this->request->parameters->get('uuid'))) {
+				$ec = new EntityController($this->request, $this->em);
 
 				foreach ($uuids as $uuid) {
 					$aggregator->addChild($ec->get($uuid));
@@ -72,19 +71,15 @@ class AggregatorController extends EntityController {
 			}
 		}
 		else {	// create new aggregator
-			$type = $this->view->request->getParameter('type');
+			$type = $this->request->parameters->get('type');
 
 			if (!isset($type)) {
 				$type = 'group';
 			}
 
 			$aggregator = new Model\Aggregator($type);
-			$parameters = array_merge(
-				$this->view->request->getParameters('post'),
-				$this->view->request->getParameters('get')
-			);
 
-			$this->setProperties($aggregator, $parameters);
+			$this->setProperties($aggregator, $this->request->parameters->all());
 			$this->em->persist($aggregator);
 		}
 
@@ -101,9 +96,9 @@ class AggregatorController extends EntityController {
 			return;
 
 		$aggregator = NULL;
-		if ($uuids = self::makeArray($this->view->request->getParameter('uuid'))) { // remove entity from aggregator
+		if ($uuids = self::makeArray($this->request->parameters->get('uuid'))) { // remove entity from aggregator
 			$aggregator = $this->get($identifier);
-			$ec = new EntityController($this->view, $this->em);
+			$ec = new EntityController($this->request, $this->em);
 
 			foreach ($uuids as $uuid) {
 				$aggregator->removeChild($ec->get($uuid));

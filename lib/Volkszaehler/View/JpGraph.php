@@ -23,6 +23,8 @@
 
 namespace Volkszaehler\View;
 
+use Symfony\Component\HttpFoundation\Request;
+
 use Volkszaehler\Interpreter;
 use Volkszaehler\Model;
 use Volkszaehler\Util;
@@ -35,8 +37,6 @@ use Volkszaehler\Util;
  * @package default
  * @author Steffen Vogel <info@steffenvogel.de>
  * @link http://jpgraph.net/
- * @todo add caching
- * @todo rework
  */
 class JpGraph extends View {
 	/**
@@ -70,32 +70,32 @@ class JpGraph extends View {
 	/**
 	 * Constructor
 	 *
-	 * @param HTTP\Request $request
-	 * @param HTTP\Response $response
+	 * @param Symfony\Component\HttpFoundation\Request $request
 	 * @param string $format one of png, jpeg, gif
 	 */
-	public function __construct(HTTP\Request $request, HTTP\Response $response, $format = 'png') {
-		parent::__construct($request, $response);
+	public function __construct(Request $request, $format = 'png') {
+		parent::__construct($request);
+		$this->response->headers->set('Content-Type', 'image/' . $format);
 
 		// load JpGraph
-		// @todo check if this code should be static
- 		\JpGraph\JpGraph::load();
- 		\JpGraph\JpGraph::module('date');
- 		\JpGraph\JpGraph::module('line');
+		// NOTE: JpGraph installs its own graphical error handler
+		\JpGraph\JpGraph::load();
+		\JpGraph\JpGraph::module('date');
+		\JpGraph\JpGraph::module('line');
 
-		// to enabled jpgraphs graphical exception handler
-		restore_exception_handler();
-
-		if ($this->request->getParameter('width')) {
-			$this->width = $this->request->getParameter('width');
+		if ($this->request->parameters->has('width')) {
+			$this->width = $this->request->parameters->get('width');
 		}
 
-		if ($this->request->getParameter('height')) {
-			$this->height = $this->request->getParameter('height');
+		if ($this->request->parameters->has('height')) {
+			$this->height = $this->request->parameters->get('height');
 		}
 
 		$this->colors = Util\Configuration::read('colors');
 		$this->graph = new \Graph($this->width, $this->height);
+
+		// disable JpGraph default handler
+		restore_exception_handler();
 
 		$this->graph->img->SetImgFormat($format);
 
@@ -120,6 +120,27 @@ class JpGraph extends View {
 	}
 
 	/**
+	 * Creates exception response
+	 * NOTE: this will not work in CLI due to JpGraph design issues
+	 *
+	 * @param \Exception $exception
+	 */
+	public function getExceptionResponse(\Exception $exception) {
+		if (!($exception instanceof \JpGraphException)) {
+			$exception = new \JpGraphException($exception->getMessage(), $exception->getCode());
+		}
+
+		ob_start();
+		$exception->Stroke();
+		$output = ob_get_contents();
+		ob_end_clean();
+
+		$this->response->setContent($output);
+
+		return $this->response;
+	}
+
+	/**
 	 * Add object to output
 	 *
 	 * @param mixed $data
@@ -140,10 +161,9 @@ class JpGraph extends View {
 	}
 
 	/**
-	 * adds new plot to the graph
+	 * Adds new plot to the graph
 	 *
-	 * @param $obj
-	 * @param $data
+	 * @param $interpreter
 	 */
 	public function addData($interpreter) {
 		if (is_null($interpreter->getTupleCount())) {
@@ -186,11 +206,11 @@ class JpGraph extends View {
 	}
 
 	/**
-	 * check weather a axis for the indicator of $channel exists
+	 * Check weather a axis for the indicator of $channel exists
 	 *
-	 * @param \Volkszaehler\Model\Channel $channel
+	 * @param Model\Channel $channel
 	 */
-	protected function getAxisIndex(\Volkszaehler\Model\Channel $channel) {
+	protected function getAxisIndex(Model\Channel $channel) {
 		$type = $channel->getType();
 
 		if (!array_key_exists($type, $this->axes)) {
@@ -202,7 +222,7 @@ class JpGraph extends View {
 			}
 			else {
 				$this->axes[$type] = $count - 1;
-				$this->graph->SetYScale($this->axes[$type],'lin');
+				$this->graph->SetYScale($this->axes[$type], 'lin');
 
 				$yaxis = $this->graph->ynaxis[$this->axes[$type]];
 			}
@@ -219,15 +239,20 @@ class JpGraph extends View {
 	}
 
 	/**
-	 * render graph and send output directly to browser
+	 * Render graph and return output
 	 *
-	 * headers has been set automatically
+	 * Headers has been set automatically
 	 */
 	protected function render() {
 		$this->graph->SetMargin(75, (count($this->axes) - 1) * 65 + 10, 20, 90);
 
 		// display the graph
+		ob_start();
 		$this->graph->Stroke();
+		$output = ob_get_contents();
+		ob_end_clean();
+
+		return $output;
 	}
 }
 

@@ -23,6 +23,9 @@
 
 namespace Volkszaehler\Controller;
 
+use Symfony\Component\HttpFoundation\Request;
+use Doctrine\ORM\EntityManager;
+
 use Volkszaehler\Model;
 use Volkszaehler\Util;
 use Volkszaehler\Interpreter\Interpreter;
@@ -37,32 +40,40 @@ class DataController extends Controller {
 
 	const OPT_SKIP_DUPLICATES = 'skipduplicates';
 
+	protected $ec;	// EntityController instance
+	protected $options;	// optional request parameters
+
+	public function __construct(Request $request, EntityManager $em) {
+		parent::__construct($request, $em);
+
+		$this->options = self::makeArray($this->request->parameters->get('options'));
+		$this->ec = new EntityController($this->request, $this->em);
+	}
+
 	/**
 	 * Query for data by given channel or group or multiple channels
 	 *
 	 * @param Model\Entity $entity - can be null
 	 */
-	public function get($entity) {
-		$from = $this->view->request->getParameter('from');
-		$to = $this->view->request->getParameter('to');
-		$tuples = $this->view->request->getParameter('tuples');
-		$groupBy = $this->view->request->getParameter('group');
-		$tsFmt = $this->view->request->getParameter('tsfmt');
-		$options = $this->view->request->getArrayParameter('options');
+	public function get(Model\Channel $entity = null) {
+		$from = $this->request->parameters->get('from');
+		$to = $this->request->parameters->get('to');
+		$tuples = $this->request->parameters->get('tuples');
+		$groupBy = $this->request->parameters->get('group');
+		$tsFmt = $this->request->parameters->get('tsfmt');
 
-		// single entity
+		// single entity interpreter
 		if ($entity) {
 			$class = $entity->getDefinition()->getInterpreter();
-			return new $class($entity, $this->em, $from, $to, $tuples, $groupBy, $options);
+			return new $class($entity, $this->em, $from, $to, $tuples, $groupBy, $this->options);
 		}
 
 		// multiple UUIDs
-		if ($uuids = self::makeArray($this->view->request->getParameter('uuid'))) {
-			$ec = new EntityController($this->view, $this->em);
-
+		if ($uuids = self::makeArray($this->request->parameters->get('uuid'))) {
 			$interpreters = array();
+
 			foreach ($uuids as $uuid) {
-				$entity = $ec->getSingleEntity($uuid, true); // from cache
+				$entity = $this->ec->getSingleEntity($uuid, true); // from cache
 				$interpreters[] = $this->get($entity);
 			}
 
@@ -78,7 +89,7 @@ class DataController extends Controller {
 	 */
 	public function add($channel) {
 		try { /* to parse new submission protocol */
-			$rawPost = file_get_contents('php://input');
+			$rawPost = $this->request->getContent(); // file_get_contents('php://input')
 			$json = Util\JSON::decode($rawPost);
 
 			if (isset($json['data'])) {
@@ -91,8 +102,8 @@ class DataController extends Controller {
 			}, array());
 		}
 		catch (Util\JSONException $e) { /* fallback to old method */
-			$timestamp = $this->view->request->getParameter('ts');
-			$value = $this->view->request->getParameter('value');
+			$timestamp = $this->request->parameters->get('ts');
+			$value = $this->request->parameters->get('value');
 
 			if (is_null($timestamp)) {
 				$timestamp = (double) round(microtime(TRUE) * 1000);
@@ -109,9 +120,7 @@ class DataController extends Controller {
 			$data = array($timestamp, $value);
 		}
 
-		$options = $this->view->request->getArrayParameter('options');
-
-		$sql = 'INSERT ' . ((in_array(self::OPT_SKIP_DUPLICATES, $options)) ? 'IGNORE ' : '') .
+		$sql = 'INSERT ' . ((in_array(self::OPT_SKIP_DUPLICATES, $this->options)) ? 'IGNORE ' : '') .
 			   'INTO data (channel_id, timestamp, value) ' .
 			   'VALUES ' . implode(', ', array_fill(0, count($data)>>1, '(' . $channel->getId() . ',?,?)'));
 
@@ -122,10 +131,8 @@ class DataController extends Controller {
 	/**
 	 * Run operation
 	 */
-	public function run($operation, array $identifiers = array()) {
-		$ec = new EntityController($this->view, $this->em);
-
-		$entity = isset($identifiers[0]) ? $ec->getSingleEntity($identifiers[0], true) : null; // from cache if GET
+	public function run($operation, $uuid = null) {
+		$entity = isset($uuid) ? $this->ec->getSingleEntity($uuid, true) : null; // from cache (GET requests only)
 		return $this->{$operation}($entity);
 	}
 }

@@ -8,7 +8,7 @@
 
 namespace Tests;
 
-class DataSensorTest extends DataContext
+class SensorTest extends Data
 {
 	// channel properties
 	static $resolution = 1000;

@@ -23,9 +23,9 @@
 
 namespace Volkszaehler\Controller;
 
-use Volkszaehler\Definition;
 use Volkszaehler\Model;
 use Volkszaehler\Util;
+use Volkszaehler\Definition;
 
 /**
  * Channel controller
@@ -34,12 +34,13 @@ use Volkszaehler\Util;
  * @package default
  */
 class ChannelController extends EntityController {
+
 	/**
 	 * Get channel
 	 */
 	public function get($identifier = NULL) {
 		$channel = parent::get($identifier);
-	
+
 		if (is_array($channel)) { // filter public entities
 			return array('channels' => array_values(array_filter($channel['entities'], function($ch) {
 				return ($ch instanceof Model\Channel);
@@ -57,19 +58,15 @@ class ChannelController extends EntityController {
 	 * Add channel
 	 */
 	public function add() {
-		$type = $this->view->request->getParameter('type');
+		$type = $this->request->parameters->get('type');
 
 		if (!isset($type)) {
 			throw new \Exception('Missing entity type');
 		}
-	
+
 		$channel = new Model\Channel($type);
-		$parameters = array_merge(
-			$this->view->request->getParameters('post'),
-			$this->view->request->getParameters('get')
-		);
-		
-		$this->setProperties($channel, $parameters);
+		$this->setProperties($channel, $this->request->parameters->all());
+
 		$this->em->persist($channel);
 		$this->em->flush();
 

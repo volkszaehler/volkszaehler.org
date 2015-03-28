@@ -23,7 +23,8 @@
 
 namespace Volkszaehler\View;
 
-use Volkszaehler\View\HTTP;
+use Symfony\Component\HttpFoundation\Request;
+
 use Volkszaehler\Util;
 use Volkszaehler\Interpreter;
 
@@ -32,22 +33,19 @@ use Volkszaehler\Interpreter;
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
- * @todo rework
  */
 class CSV extends View {
 	const DELIMITER = ';';
 	const ENCLOSURE = '"';
 
-	protected $headerSent;
-
 	/**
 	 * constructor
 	 */
-	public function __construct(HTTP\Request  $request, HTTP\Response $response) {
-		parent::__construct($request, $response);
+	public function __construct(Request  $request) {
+		parent::__construct($request);
+		$this->response->headers->set('Content-Type', 'text/csv');
 
-		$this->response->setHeader('Content-type', 'text/csv');
-		$this->headerSent = false;
+		ob_start();
 
 		echo '# source:' . CSV::DELIMITER . 'volkszaehler.org' . PHP_EOL;
 		echo '# version:' . CSV::DELIMITER . VZ_VERSION . PHP_EOL;
@@ -128,15 +126,11 @@ class CSV extends View {
 	 * @todo  Aggregate first is assumed- this deviates from json view behaviour
 	 */
 	protected function addData(Interpreter\Interpreter $interpreter) {
-		if ($this->headerSent == false) {
-			$this->headerSent = true;
-			$this->response->setHeader(
-				'Content-Disposition',
-				'attachment; ' .
+		$this->response->headers->set(
+			'Content-Disposition', 'attachment; ' .
 				'filename="' . strtolower($interpreter->getEntity()->getProperty('title')) . '.csv" ' .
 				'creation-date="' . date(DATE_RFC2822, $interpreter->getTo() / 1000). '"'
-			);
-		}
+		);
 
 		echo PHP_EOL; // UUID delimiter
 		echo '# uuid:' . CSV::DELIMITER . $interpreter->getEntity()->getUuid() . PHP_EOL;
@@ -181,7 +175,12 @@ class CSV extends View {
 	/**
 	 * Process, encode and print output to stdout
 	 */
-	protected function render() { }
+	protected function render() {
+		$output = ob_get_contents();
+		ob_end_clean();
+
+		return $output;
+	}
 
 	/**
 	 * Escape data according to CSV format

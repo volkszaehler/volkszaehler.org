@@ -8,42 +8,41 @@
 
 namespace Tests;
 
+use Symfony\Component\HttpFoundation\Request;
+
+use Volkszaehler\Router;
+
 abstract class Middleware extends \PHPUnit_Framework_TestCase
 {
-	// middleware url (basis for parsing)
-	static $mw = 'http://localhost/volkszaehler/middleware/';
-
-	// all basic members static for consistency
-	static $context;			// context base url
-	static $response;			// request response
-	static $url;				// request url
-
-	protected $json;			// decoded json response
+	static $app;
 
 	/**
-	 * Setup evironment for executing 'fake' middleware call
+	 * Initialize router
 	 */
-	static function callMiddleware($url) {
-		self::$url = $url;
+	static function setupBeforeClass() {
+		parent::setupBeforeClass();
 
-		$request = new \Wrapper\View\HTTP\Request($url);
-		$response = new \Wrapper\View\HTTP\Response();
-
-		$r = new \Wrapper\Router($request, $response);
-		$r->run();
-		$r->view->send();
-
-		self::$response = $response->getResponseContents();
-		return self::$response;
+		// cache entity manager
+		if (null == self::$app) {
+			self::$app = new Router();
+		}
 	}
 
 	/**
 	 * Execute barebones JSON middleware request
 	 */
-	static function getJsonRaw($url) {
-		$response = self::callMiddleware($url);
-		$json = json_decode($response);
-		return $json;
+	protected static function executeRequest(Request $request) {
+		$json = false;
+		$response = self::$app->handle($request);
+
+		if ($response->headers->get('Content-Type') == 'application/json') {
+			try {
+				return json_decode($response->getContent());
+			}
+			catch (\Exception $e) {}
+		}
+
+		return $response;
 	}
 
 	/**
@@ -52,25 +51,38 @@ abstract class Middleware extends \PHPUnit_Framework_TestCase
 	 * - has exception ($hasException = true or string)
 	 * - has exception with specific message ($hasException = message string)
 	 */
-	protected function getJson($url, $hasException = false) {
-		$this->json = self::getJsonRaw($url);
-		$this->assertTrue($this->json !== null, "Expected JSON got " . print_r(self::$response,1));
-
-		if (isset($this->json)) {
-			if ($hasException) {
-				if ($this->assertTrue(isset($this->json->exception), 'Expected <exception> got none.')) {
-					if (is_string($hasException)) {
-						$this->assertTrue($this->json->exception->message == $hasException);
-					}
-				}
-			} else {
-				$this->assertFalse(isset($this->json->exception),
-					'Expected no <exception> got ' .
-					(isset($this->json->exception) ? print_r($this->json->exception,1) : '') . '.');
-			}
+	protected function getJson($url, $parameters = array(), $method = 'GET', $hasException = false) {
+		if ($url instanceof Request) {
+			$request = $url;
+		}
+		else {
+			$request = Request::create($url, $method, $parameters);
 		}
 
-		return $this->json;
+		$json = self::executeRequest($request);
+		if (!$json) {
+			$this->fail('Expected JSON got nothing');
+		}
+
+		if ($json instanceof Response) {
+			$this->fail('Expected JSON got ' . print_r($json->getContent(), true));
+		}
+
+		if ($hasException) {
+			if ($this->assertTrue(isset($json->exception), 'Expected <exception> got none.')) {
+				if (is_string($hasException)) {
+					$this->assertTrue($json->exception->message == $hasException);
+				}
+			}
+		}
+		else {
+			$this->assertFalse(isset($json->exception),
+				'Expected no <exception> got ' .
+				(isset($json->exception) ? print_r($json->exception, true) : '') . '.');
+		}
+
+		$this->json = $json;
+		return $json;
 	}
 }
 
