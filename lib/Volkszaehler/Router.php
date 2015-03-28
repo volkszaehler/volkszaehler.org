@@ -136,7 +136,13 @@ class Router implements HttpKernelInterface {
 		// merge request parameters before first view is initialized
 		$request->parameters = new ParameterBag(array_merge($request->request->all(), $request->query->all()));
 
-		$pathInfo = $request->getPathInfo();
+		// workaround for https://github.com/symfony/symfony/issues/13617
+		if ($request->server->has('PATH_INFO')) {
+			$pathInfo = $request->server->get('PATH_INFO');
+		}
+		else {
+			$pathInfo = $request->getPathInfo();
+		}
 		$format = pathinfo($pathInfo, PATHINFO_EXTENSION);
 
 		if (!array_key_exists($format, self::$viewMapping)) {
