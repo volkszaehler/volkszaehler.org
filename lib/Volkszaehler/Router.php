@@ -137,10 +137,8 @@ class Router implements HttpKernelInterface {
 		$request->parameters = new ParameterBag(array_merge($request->request->all(), $request->query->all()));
 
 		// workaround for https://github.com/symfony/symfony/issues/13617
-		if ($request->server->has('PATH_INFO')) {
-			$pathInfo = $request->server->get('PATH_INFO');
-		}
-		else {
+		$pathInfo = ($request->server->has('PATH_INFO')) ? $request->server->get('PATH_INFO') : '';
+		if (0 === strlen($pathInfo)) {
 			$pathInfo = $request->getPathInfo();
 		}
 		$format = pathinfo($pathInfo, PATHINFO_EXTENSION);
