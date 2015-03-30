@@ -35,7 +35,6 @@ use Volkszaehler\Model;
  * @Entity
  * @Table(
  * 	name="aggregate",
- *	indexes={@index(name="search_idx", columns={"channel_id", "type", "timestamp"})},
  *	uniqueConstraints={@UniqueConstraint(name="aggregate_unique", columns={"channel_id", "type", "timestamp"})}
  * )
  */

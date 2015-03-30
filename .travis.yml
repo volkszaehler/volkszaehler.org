@@ -11,69 +11,74 @@ services:
     - postgresql
 
 env:
+  # run composer by default
+  global:
+    - DEPENDENCIES=true
+  matrix:
     - DB=mysql
     - DB=pgsql
     - DB=sqlite
+
+matrix:
+  # add jslint-only job to the build matrix
+  include:
+    - php: 5.6
+      env: DB= DEPENDENCIES= JSLINT=true
+#  include:
+#    - php: 5.6
+#      env: DB=mysql TESTADAPTER=HTTPD
 
 notifications:
     mail: "volkszaehler-dev@lists.volkszaehler.org"
     irc: "chat.freenode.net#volkszaehler.org"
 
-before_install:
-    - composer self-update
-
 install:
-    - composer install
-    - npm install
+    - if [ "$DEPENDENCIES" = true ]; then composer install; fi;
+    - if [ "$JSLINT" = true ]; then npm install; fi;
 
 before_script:
+    # enable shell errors
+    - set -e
     - cp etc/volkszaehler.conf.template.php etc/volkszaehler.conf.php
 
     - DATABASE=travis
-    - USER=travis
+    - if [ ! "$DB" = "pgsql" ]; then USER=travis; else USER=postgres; fi;
     - PASSWORD=
 
-    # add apc cache
-    - chmod +x ./test/bin/install-apcu.sh && ./test/bin/install-apcu.sh
-    - phpenv config-add ./test/bin/apc.ini
-
-    # fix username before default rules apply
-    - sh -c "if [ '$DB' = 'pgsql' ]; then sed -i 's/'\''vz'\''/'\''postgres'\''/' etc/volkszaehler.conf.php; fi;"
-
+    # create config file
     - sed -i "s/'pdo_mysql'/'pdo_$DB'/" etc/volkszaehler.conf.php
     - sed -i "s/'vz'/'$USER'/" etc/volkszaehler.conf.php
     - sed -i "s/'demo'/'$PASSWORD'/" etc/volkszaehler.conf.php
     - sed -i "s/'volkszaehler'/'$DATABASE'/" etc/volkszaehler.conf.php
-
+    - if [ "$DB" = "sqlite" ]; then sed -i "s/\?>/\$config['db']['path']\ =\ VZ_DIR.'\/sqlite.db3'\n?>/" etc/volkszaehler.conf.php; fi;
     - cat etc/volkszaehler.conf.php
 
-    - sh -c "if [ '$DB' = 'mysql' ]; then mysql -e 'create database $DATABASE;' -u $USER; fi;"
-    - sh -c "if [ '$DB' = 'pgsql' ]; then psql -c 'create database $DATABASE;' -U postgres; fi;"
-    - sh -c "if [ '$DB' = 'sqlite' ]; then sed -i 's/\?>/\$config['\''db'\'']['\''path'\'']\ =\ VZ_DIR.'\''\/sqlite.db3'\''\n?>/' etc/volkszaehler.conf.php; fi;"
+    # create database
+    - if [ "$DB" = "mysql" ]; then mysql -e "create database $DATABASE;" -u $USER; fi;
+    - if [ "$DB" = "pgsql" ]; then psql -c "create database $DATABASE;" -U postgres; fi;
 
-    - cat etc/volkszaehler.conf.php
+    # create schema
+    - if [ -n "$DB" ]; then php misc/tools/doctrine orm:schema-tool:create --dump-sql > misc/sql/schema.sql; fi;
+    - if [ -n "$DB" ]; then sed -i 's/ATTENTION/-- /' misc/sql/schema.sql; fi;
+    - if [ -n "$DB" ]; then echo ';' >> misc/sql/schema.sql; fi;
+    - if [ -n "$DB" ]; then cat misc/sql/schema.sql; fi;
 
-    - php misc/tools/doctrine orm:schema-tool:create --dump-sql > misc/sql/schema.sql
-    - sed -i 's/ATTENTION/-- /' misc/sql/schema.sql
-    - echo ';' >> misc/sql/schema.sql
-
-    - cat misc/sql/schema.sql
-
-    - sh -c "if [ '$DB' = 'mysql' ]; then cat misc/sql/schema.sql | mysql -u $USER $DATABASE; fi;"
-    - sh -c "if [ '$DB' = 'pgsql' ]; then cat misc/sql/schema.sql | psql -U postgres $DATABASE; fi;"
-    - sh -c "if [ '$DB' = 'sqlite' ]; then cat misc/sql/schema.sql | sqlite3 sqlite.db3; sqlite3 sqlite.db3 .dump; fi;"
+    - if [ "$DB" = "mysql" ]; then cat misc/sql/schema.sql | mysql -u $USER $DATABASE; fi;
+    - if [ "$DB" = "pgsql" ]; then cat misc/sql/schema.sql | psql -U postgres $DATABASE; fi;
+    - if [ "$DB" = "sqlite" ]; then cat misc/sql/schema.sql | sqlite3 sqlite.db3; sqlite3 sqlite.db3 .dump; fi;
 
 script:
     - cd test
-    - phpunit --exclude-group aggregation --coverage-text
+    # run core tests
+    - if [ -n "$DB" ]; then phpunit --exclude-group aggregation --coverage-text; fi;
 
     # re-run with aggregation enabled
-    - sed -i "s/\?>/\$config['aggregation']\ =\ true;\n?>/" ../etc/volkszaehler.conf.php
-    - sh -c "if [ '$DB' = 'mysql' ]; then phpunit --coverage-text; fi;"
+    - if [ "$DB" = "mysql" ]; then sed -i "s/\?>/\$config['aggregation']\ =\ true;\n?>/" ../etc/volkszaehler.conf.php; fi;
+    - if [ "$DB" = "mysql" ]; then phpunit --coverage-text; fi;
+    - cd ..
 
     # test running aggregation tool
-    - cd ..
-    - sh -c "if [ '$DB' = 'mysql' ]; then php misc/tools/aggregate.php run -m delta -l hour; fi;"
+    - if [ "$DB" = "mysql" ]; then php misc/tools/aggregate.php run -m delta -l hour; fi;
 
     # jslint javascript sources
-    - gulp jshint
+    - if [ "$JSLINT" = true ]; then gulp jshint; fi;
