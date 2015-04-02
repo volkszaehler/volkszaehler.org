@@ -36,8 +36,6 @@ abstract class Middleware extends \PHPUnit_Framework_TestCase
 			// echo("Test using HTTP adapter\n");
 			static::$adapter = new GuzzleAdapter(new Client());
 		}
-	}
-
 		// cache entity manager
 		else if (null == self::$app) {
 			// echo("Test using built-in Router\n");
