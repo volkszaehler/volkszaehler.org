@@ -24,17 +24,15 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
-use Volkszaehler\Util;
-
 define('VZ_DIR', realpath(__DIR__ . '/../..'));
 
 require VZ_DIR . '/lib/bootstrap.php';
 
 $em = Volkszaehler\Router::createEntityManager(TRUE); // get admin credentials
 
-$helperSet = new \Symfony\Component\Console\Helper\HelperSet(array(
-	'db' => new \Doctrine\DBAL\Tools\Console\Helper\ConnectionHelper($em->getConnection()),
-	'em' => new \Doctrine\ORM\Tools\Console\Helper\EntityManagerHelper($em)
+$helperSet = new Symfony\Component\Console\Helper\HelperSet(array(
+	'db' => new Doctrine\DBAL\Tools\Console\Helper\ConnectionHelper($em->getConnection()),
+	'em' => new Doctrine\ORM\Tools\Console\Helper\EntityManagerHelper($em)
 ));
 
-\Doctrine\ORM\Tools\Console\ConsoleRunner::run($helperSet);
+Doctrine\ORM\Tools\Console\ConsoleRunner::run($helperSet);

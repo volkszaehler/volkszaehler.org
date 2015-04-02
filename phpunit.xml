@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<phpunit bootstrap="../lib/bootstrap.php">
+<phpunit bootstrap="./lib/bootstrap.php">
 
   <testsuites>
     <testsuite name="Middleware">
-      <directory suffix="Test.php">Tests</directory>
+      <directory suffix="Test.php">test</directory>
     </testsuite>
   </testsuites>
 
