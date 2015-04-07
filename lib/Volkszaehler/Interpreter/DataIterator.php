@@ -96,8 +96,8 @@ class DataIterator implements \Iterator, \Countable {
 			// special cases - auxilary information for specific interpreters
 			$package[3] = max($package[3], $tuple[1]);						// CounterInterpreter
 			$package[4] += $tuple[1] * ($tuple[0] - $this->lastTimestamp);	// SensorInterpreter
-			$this->lastTimestamp = $tuple[0];
 
+			$this->lastTimestamp = $tuple[0];
 			$this->rowKey++;
 		}
 
@@ -108,7 +108,7 @@ class DataIterator implements \Iterator, \Countable {
 			$package[4] /= $this->lastTimestamp - $firstTimestamp; // weighed average for SensorInterpreter
 		}
 
-		return $this->current = $package;
+		$this->current = $package;
 	}
 
 	/**
@@ -124,7 +124,7 @@ class DataIterator implements \Iterator, \Countable {
 	public function rewind() {
 		$this->key = $this->rowKey = 0;
 		$this->lastTimestamp = $this->from;
-		return $this->next(); // fetch first tuple
+		$this->next(); // fetch first tuple
 	}
 
 	public function valid() {

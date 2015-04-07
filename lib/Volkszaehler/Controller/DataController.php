@@ -46,7 +46,7 @@ class DataController extends Controller {
 	public function __construct(Request $request, EntityManager $em) {
 		parent::__construct($request, $em);
 
-		$this->options = self::makeArray($this->request->parameters->get('options'));
+		$this->options = self::makeArray(strtolower($this->request->parameters->get('options')));
 		$this->ec = new EntityController($this->request, $this->em);
 	}
 
@@ -60,7 +60,6 @@ class DataController extends Controller {
 		$to = $this->request->parameters->get('to');
 		$tuples = $this->request->parameters->get('tuples');
 		$groupBy = $this->request->parameters->get('group');
-		$tsFmt = $this->request->parameters->get('tsfmt');
 
 		// single entity interpreter
 		if ($entity) {

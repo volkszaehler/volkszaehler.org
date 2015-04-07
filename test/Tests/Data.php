@@ -42,7 +42,7 @@ abstract class Data extends Middleware
 		if ($resolution) $url .= '&resolution=' . $resolution;
 		$json = self::executeRequest(Request::create($url));
 
-		return ((isset($json->entity->uuid)) ? $json->entity->uuid : null);
+		return (isset($json->entity->uuid)) ? $json->entity->uuid : null;
 	}
 
 	/**
@@ -50,7 +50,7 @@ abstract class Data extends Middleware
 	 */
 	static function deleteChannel($uuid) {
 		$url = '/channel/' . $uuid . '.json?operation=delete';
-		$json = self::executeRequest(Request::create($url));
+		return self::executeRequest(Request::create($url));
 	}
 
 	/*
@@ -67,15 +67,15 @@ abstract class Data extends Middleware
 	protected function getTuplesByUrl($url, $from = null, $to = null, $group = null, $tuples = null, $options = null) {
 		$params = array();
 
-		if ($from)
+		if (isset($from))
 			$params['from'] = $from;
-		if ($to)
+		if (isset($to))
 			$params['to'] = $to;
-		if ($group)
+		if (isset($group))
 			$params['group'] = $group;
-		if ($tuples)
+		if (isset($tuples))
 			$params['tuples'] = $tuples;
-		if ($options)
+		if (isset($options))
 			$params['options'] = $options;
 
 		$this->getJson($url, $params);

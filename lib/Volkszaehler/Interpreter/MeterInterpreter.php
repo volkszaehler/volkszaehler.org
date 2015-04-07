@@ -54,6 +54,11 @@ class MeterInterpreter extends Interpreter {
 	public function current() {
 		$row = $this->rows->current();
 
+		// raw database values
+		if ($this->raw) {
+			return(array_slice($row, 0, 3));
+		}
+
 		$delta = $row[0] - $this->ts_last;
 		// (1 imp * 60 min/h * 60 s/min * 1000 ms/s * scale) / (1 imp/kWh * 1ms) = 3.6e6 kW
 		$tuple = array(
