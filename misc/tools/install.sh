@@ -152,13 +152,13 @@ echo
 echo "checking composer..."
 
 COMPOSER="$vz_dir/composer.phar"
-if [ ! -n "$COMPOSER" ]; then
+if [ ! -f "$COMPOSER" ]; then
 	for f in composer composer.phar; do
 		COMPOSER=$(which $f 2>/dev/null || true)
-		test -n "$COMPOSER" && break
+		test -f "$COMPOSER" && break
 	done
 fi
-if [ -n "$COMPOSER" ]; then
+if [ -f "$COMPOSER" ]; then
 	echo "composer: $COMPOSER"
 else
 	pushd "$vz_dir"
