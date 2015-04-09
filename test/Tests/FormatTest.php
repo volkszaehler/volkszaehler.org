@@ -32,7 +32,7 @@ class FormatTest extends Data
 	}
 
 	/**
-	 * @group fontsrequired
+	 * @group jpgraph
 	 */
 	function testImage() {
 		$response = $this->executeRequest(Request::create('/data/' . static::$uuid . '.png', 'GET',
@@ -44,7 +44,7 @@ class FormatTest extends Data
 	}
 
 	/**
-	 * @group fontsrequired
+	 * @group jpgraph
 	 *
 	 * NOTE: this cannot be tested due to JpGraph design issues
 	 */

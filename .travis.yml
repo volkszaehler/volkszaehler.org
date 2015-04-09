@@ -14,6 +14,7 @@ env:
   # run composer by default
   global:
     - DEPENDENCIES=true
+    - TRAVIS_TEST_EXCLUDES="--exclude-group slow,jpgraph"
   matrix:
     - DB=mysql
     - DB=pgsql
@@ -70,11 +71,11 @@ before_script:
 script:
     - cd test
     # run core tests
-    - if [ -n "$DB" ]; then phpunit --exclude-group aggregation --coverage-text; fi;
+    - if [ -n "$DB" ]; then phpunit $TRAVIS_TEST_EXCLUDES,aggregation; fi;
 
     # re-run with aggregation enabled
     - if [ "$DB" = "mysql" ]; then sed -i "s/\?>/\$config['aggregation']\ =\ true;\n?>/" ../etc/volkszaehler.conf.php; fi;
-    - if [ "$DB" = "mysql" ]; then phpunit --coverage-text; fi;
+    - if [ "$DB" = "mysql" ]; then phpunit $TRAVIS_TEST_EXCLUDES --coverage-text; fi;
     - cd ..
 
     # test running aggregation tool
