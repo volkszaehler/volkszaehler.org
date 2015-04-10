@@ -23,10 +23,13 @@ env:
     - DB=sqlite
 
 matrix:
-  # add jslint-only job to the build matrix
   include:
+    # add jslint-only build
     - php: 5.6
       env: DB= DEPENDENCIES= JSLINT=true
+    # add httpd-based build
+    - php: 5.6
+      env: DB=mysql TEST_ADAPTER=HTTP
   # remove hhvm/pgsql
   exclude:
     - php: hhvm
@@ -42,6 +45,7 @@ notifications:
 install:
     - if [ "$DEPENDENCIES" = true ]; then composer install; fi;
     - if [ "$JSLINT" = true ]; then npm install; fi;
+    - if [ "$TEST_ADAPTER" = "HTTP" ]; then composer require volkszaehler/httpd:dev-master jenssegers/proxy:~2.2; fi
 
 before_script:
     # enable shell errors
@@ -73,6 +77,10 @@ before_script:
     - if [ "$DB" = "mysql" ]; then cat misc/sql/schema.sql | mysql -u $USER $DATABASE; fi;
     - if [ "$DB" = "pgsql" ]; then cat misc/sql/schema.sql | psql -U postgres $DATABASE; fi;
     - if [ "$DB" = "sqlite" ]; then cat misc/sql/schema.sql | sqlite3 sqlite.db3; sqlite3 sqlite.db3 .dump; fi;
+
+    # setup local middleware
+    - if [ "$TEST_ADAPTER" = "HTTP" ]; then sed -i "s/testAdapter\" value=\".*\"/testAdapter\" value=\"$TEST_ADAPTER\"/" test/phpunit.xml; fi
+    - if [ "$TEST_ADAPTER" = "HTTP" ]; then (vendor/bin/httpd.php start &); fi
 
 script:
     - cd test

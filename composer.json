@@ -1,6 +1,7 @@
 {
     "name": "volkszaehler/volkszaehler",
     "type": "project",
+    "description": "volkszaehler is a free smart meter implementation with focus on data privacy",
     "homepage": "http://www.volkszaehler.org/",
     "license": "GPL-3.0",
     "support": {
@@ -24,10 +25,10 @@
             "Tests\\": "test/"
         }
     },
-    "suggested": [
-        "jpgraph/jpgraph",
-        "volkszaehler/httpd"
-    ],
+    "suggest": {
+        "jpgraph/jpgraph": "Server-side chart generation for volkszaehler",
+        "volkszaehler/httpd": "High-performance persistent middleware for volkszaehler"
+    },
     "repositories": [
         {
             "type": "vcs",
