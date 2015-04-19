@@ -139,7 +139,13 @@ vz.entities.loadTotals = function() {
  * @return {string} group option or undefined
  */
 vz.entities.speedupFactor = function() {
-	var group, delta = (vz.options.plot.xaxis.max - vz.options.plot.xaxis.min) / 3.6e6;
+	var	group = vz.options.group,
+			delta = (vz.options.plot.xaxis.max - vz.options.plot.xaxis.min) / 3.6e6;
+
+	// explicit group set via url?
+	if (group !== null)
+		return group;
+
 	if (delta > 24 * vz.options.tuples/vz.options.speedupFactor) {
 		group = 'day';
 	}

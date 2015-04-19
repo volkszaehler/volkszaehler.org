@@ -195,6 +195,10 @@ vz.parseUrlParams = function() {
 						vz.options.plot.xaxis.max = ts;
 					break;
 
+				case 'group': // explicitly set data grouping
+					vz.options[key] = vars[key];
+					break;
+
 				case 'options':
 					vz.options.options = vars[key];
 					break;
