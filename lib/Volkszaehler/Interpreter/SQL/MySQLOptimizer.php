@@ -64,6 +64,10 @@ class MySQLOptimizer extends SQLOptimizer {
 				return 'YEAR(' . $ts . '), DAYOFYEAR(' . $ts . '), HOUR(' . $ts . ')';
 				break;
 
+			case '15m':
+				return 'YEAR(' . $ts . '), DAYOFYEAR(' . $ts . '), HOUR(' . $ts . '), FLOOR(MINUTE(' . $ts . ') / 15)';
+				break;
+
 			case 'minute':
 				return 'YEAR(' . $ts . '), DAYOFYEAR(' . $ts . '), HOUR(' . $ts . '), MINUTE(' . $ts . ')';
 				break;
