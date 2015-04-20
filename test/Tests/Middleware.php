@@ -73,12 +73,9 @@ abstract class Middleware extends \PHPUnit_Framework_TestCase
 	 * - has exception ($hasException = true or string)
 	 * - has exception with specific message ($hasException = message string)
 	 */
-	protected function getJson($url, $parameters = array(), $method = 'GET', $hasException = false) {
-		if ($url instanceof Request) {
-			$request = $url;
-		}
-		else {
-			$request = Request::create($url, $method, $parameters);
+	protected function getJson($request, $parameters = array(), $method = 'GET', $hasException = false) {
+		if (!$request instanceof Request) {
+			$request = Request::create($request, $method, $parameters);
 		}
 
 		$json = self::executeRequest($request);
