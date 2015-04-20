@@ -79,20 +79,20 @@ class Debug {
 			$level = self::$instance->level;
 
 			$message = array('message' => $message);
-			
+
 			if ($level > 2) {
 				$message['file'] = $info['file'];
 				$message['line'] = $info['line'];
 			}
-			
+
 			if ($level > 4) {
 				$message['args'] = array_slice($info['args'], 1);
 			}
-			
+
 			if ($level > 5) {
 				$message['trace'] = array_slice($trace, 1);
 			}
-			
+
 			self::$instance->messages[] = $message;
 		}
 	}
@@ -147,40 +147,41 @@ class Debug {
 	 * @todo encapsulate in state class? or inherit from singleton class?
 	 */
 	public static function getInstance() { return self::$instance; }
-	
+
 	/**
 	 * @return integer current debug level
 	 */
 	 public function getLevel() { return $this->level; }
-	
+
 	/**
 	 * Tries to determine the current SHA1 hash of your git commit
-	 * 
+	 *
 	 * @return string the hash
 	 */
 	public static function getCurrentCommit() {
-		if (false && file_exists(VZ_DIR . '/.git/HEAD')) {
-			$head = file_get_contents(VZ_DIR . '/.git/HEAD');
-			return substr(file_get_contents(VZ_DIR . '/.git/' . substr($head, strpos($head, ' ')+1, -1)), 0, -1);
+		if (file_exists(VZ_DIR . '/.git/HEAD') && ($head = @file_get_contents(VZ_DIR . '/.git/HEAD'))) {
+			if ($commit = substr(@file_get_contents(VZ_DIR . '/.git/' . substr($head, strpos($head, ' ')+1, -1)), 0, -1)) {
+				return $commit;
+			}
 		}
-		elseif (function_exists("shell_exec")) {
-			return shell_exec('git show --pretty=format:%H --quiet');
+
+		if (function_exists("shell_exec") && ($commit = @shell_exec('git show --pretty=format:%H --quiet'))) {
+			return $commit;
 		}
-		else {
-			return FALSE;
-		}
+
+		return FALSE;
 	}
-	
+
 	public static function getPhpVersion() {
 		return phpversion();
 	}
-	
+
 	/**
 	 * Get average server load
 	 *
 	 * @return array average load (1min, 5min, 15min)
 	 */
-	public static function getLoadAvg() { 
+	public static function getLoadAvg() {
 		if (function_exists('sys_getloadvg')) {
 			$load = sys_getloadvg();
 		}
