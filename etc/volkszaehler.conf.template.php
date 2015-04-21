@@ -71,6 +71,14 @@ $config['db']['dbname']				= 'volkszaehler';
 $config['db']['charset']			= 'UTF8';
 
 /**
+ * @var database optimizer class
+ *
+ * For automatic leave empty. Other options:
+ *   - MysqlOptimizer: provides additional group=15m setting (does not work with aggregation)
+ */
+// $config['db']['optimizer']			= 'Volkszaehler\Interpreter\SQL\MysqlOptimizer';
+
+/**
  * Administration credentials
  *
  * For administration tasks (used by doctrine cli and the setup script)
