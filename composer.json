@@ -1,12 +1,15 @@
 {
     "name": "volkszaehler/volkszaehler",
     "type": "project",
+    "description": "volkszaehler is a free smart meter implementation with focus on data privacy",
     "homepage": "http://www.volkszaehler.org/",
     "license": "GPL-3.0",
     "support": {
         "wiki": "http://wiki.volkszaehler.org/",
         "email": "volkszaehler@lists.volkszaehler.org"
     },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "require": {
         "doctrine/orm": "2.4.*",
         "andig/dbcopy": "dev-master",
@@ -14,7 +17,7 @@
         "symfony/http-kernel": "2.6.*"
     },
     "require-dev": {
-       "phpunit/phpunit": "4.1.*"
+        "phpunit/phpunit": "4.4.*"
     },
     "autoload": {
         "psr-0": {
@@ -22,8 +25,15 @@
             "Tests\\": "test/"
         }
     },
-    "suggested": [
-        "jpgraph/jpgraph"
+    "suggest": {
+        "jpgraph/jpgraph": "Server-side chart generation for volkszaehler",
+        "volkszaehler/httpd": "High-performance persistent middleware for volkszaehler"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/volkszaehler/httpd"
+        }
     ],
     "scripts": {
         "post-install-cmd": "php -r \"@copy('vendor/andig/dbcopy/dbcopy.php', 'misc/tools/dbcopy.php');\""
