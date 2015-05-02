@@ -184,7 +184,7 @@ pushd "$vz_dir"
 echo
 ask "install server-side graph generation (jpgraph, not required for frontend)?" n
 if [ "$REPLY" == "y" ]; then
-	"$COMPOSER" require jpgraph/jpgraph:dev-master
+	"$COMPOSER" require --update-no-dev jpgraph/jpgraph:dev-master
 fi
 popd
 
