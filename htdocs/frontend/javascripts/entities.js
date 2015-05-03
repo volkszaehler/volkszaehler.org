@@ -143,7 +143,7 @@ vz.entities.speedupFactor = function() {
 			delta = (vz.options.plot.xaxis.max - vz.options.plot.xaxis.min) / 3.6e6;
 
 	// explicit group set via url?
-	if (group !== null)
+	if (group !== undefined)
 		return group;
 
 	if (delta > 24 * vz.options.tuples/vz.options.speedupFactor) {
