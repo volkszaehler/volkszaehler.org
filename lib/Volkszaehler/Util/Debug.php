@@ -178,16 +178,17 @@ class Debug {
 	 * @return string the hash
 	 */
 	public static function getCurrentCommit() {
-		if (false && file_exists(VZ_DIR . '/.git/HEAD')) {
-			$head = file_get_contents(VZ_DIR . '/.git/HEAD');
-			return substr(file_get_contents(VZ_DIR . '/.git/' . substr($head, strpos($head, ' ')+1, -1)), 0, -1);
+		if (file_exists(VZ_DIR . '/.git/HEAD') && ($head = @file_get_contents(VZ_DIR . '/.git/HEAD'))) {
+			if ($commit = substr(@file_get_contents(VZ_DIR . '/.git/' . substr($head, strpos($head, ' ')+1, -1)), 0, -1)) {
+				return $commit;
+			}
 		}
-		elseif (function_exists("shell_exec")) {
-			return shell_exec('git show --pretty=format:%H --quiet');
+
+		if (function_exists("shell_exec") && ($commit = @shell_exec('git show --pretty=format:%H --quiet'))) {
+			return $commit;
 		}
-		else {
-			return FALSE;
-		}
+
+		return FALSE;
 	}
 
 	public static function getPhpVersion() {

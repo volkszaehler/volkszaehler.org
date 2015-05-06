@@ -52,6 +52,10 @@ class CapabilitiesController extends Controller {
 				'devmode' => Util\Configuration::read('devmode')
 			);
 
+			if ($commit = Util\Debug::getCurrentCommit()) {
+				$configuration['commit'] = $commit;
+			}
+
 			$capabilities['configuration'] = $configuration;
 		}
 
@@ -73,7 +77,7 @@ class CapabilitiesController extends Controller {
 			$size = $conn->fetchColumn($sql, array(Util\Configuration::read('db.dbname')));
 
 			$aggregation = Util\Configuration::read('aggregation');
-			$capabilities['database'] = array(
+			$database = array(
 				'data_rows' => $rows,
 				'data_size' => $size,
 				'aggregation_enabled' => ($aggregation) ? 1 : 0
@@ -82,9 +86,11 @@ class CapabilitiesController extends Controller {
 			// aggregation table size
 			if ($aggregation) {
 				$agg_rows = $conn->fetchColumn('SELECT COUNT(1) FROM aggregate');
-				$capabilities['database']['aggregation_rows'] = $agg_rows;
-				$capabilities['database']['aggregation_ratio'] = ($agg_rows) ? $rows/$agg_rows : 0;
+				$database['aggregation_rows'] = $agg_rows;
+				$database['aggregation_ratio'] = ($agg_rows) ? $rows/$agg_rows : 0;
 			}
+
+			$capabilities['database'] = $database;
 		}
 
 		if (is_null($section) || $section == 'formats') {
