@@ -46,7 +46,7 @@ class DataController extends Controller {
 	public function __construct(Request $request, EntityManager $em) {
 		parent::__construct($request, $em);
 
-		$this->options = self::makeArray(strtolower($this->request->parameters->get('options')));
+		$this->options = self::makeArray(strtolower($this->request->query->get('options')));
 		$this->ec = new EntityController($this->request, $this->em);
 	}
 
@@ -56,10 +56,10 @@ class DataController extends Controller {
 	 * @param Model\Entity $entity - can be null
 	 */
 	public function get(Model\Channel $entity = null) {
-		$from = $this->request->parameters->get('from');
-		$to = $this->request->parameters->get('to');
-		$tuples = $this->request->parameters->get('tuples');
-		$groupBy = $this->request->parameters->get('group');
+		$from = $this->request->query->get('from');
+		$to = $this->request->query->get('to');
+		$tuples = $this->request->query->get('tuples');
+		$groupBy = $this->request->query->get('group');
 
 		// single entity interpreter
 		if ($entity) {
@@ -68,7 +68,7 @@ class DataController extends Controller {
 		}
 
 		// multiple UUIDs
-		if ($uuids = self::makeArray($this->request->parameters->get('uuid'))) {
+		if ($uuids = self::makeArray($this->request->query->get('uuid'))) {
 			$interpreters = array();
 
 			foreach ($uuids as $uuid) {
@@ -101,8 +101,8 @@ class DataController extends Controller {
 			}, array());
 		}
 		catch (Util\JSONException $e) { /* fallback to old method */
-			$timestamp = $this->request->parameters->get('ts');
-			$value = $this->request->parameters->get('value');
+			$timestamp = $this->request->query->get('ts');
+			$value = $this->request->query->get('value');
 
 			if (is_null($timestamp)) {
 				$timestamp = (double) round(microtime(TRUE) * 1000);

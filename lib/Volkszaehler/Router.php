@@ -25,7 +25,6 @@ namespace Volkszaehler;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\ParameterBag;
 
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
@@ -133,9 +132,6 @@ class Router implements HttpKernelInterface {
 	 * Determine context, format and uuid of the raw request
 	 */
 	public function handleRaw(Request $request, $type = HttpKernelInterface::MASTER_REQUEST) {
-		// merge request parameters before first view is initialized
-		$request->parameters = new ParameterBag(array_merge($request->request->all(), $request->query->all()));
-
 		// workaround for https://github.com/symfony/symfony/issues/13617
 		$pathInfo = ($request->server->has('PATH_INFO')) ? $request->server->get('PATH_INFO') : '';
 		if (0 === strlen($pathInfo)) {
@@ -176,7 +172,7 @@ class Router implements HttpKernelInterface {
 	 */
 	function handler(Request $request, $context, $uuid) {
 		// initialize debugging
-		if (($debugLevel = $request->parameters->get('debug')) || $debugLevel = Util\Configuration::read('debug')) {
+		if (($debugLevel = $request->query->get('debug')) || $debugLevel = Util\Configuration::read('debug')) {
 			if ($debugLevel > 0) {
 				$this->debug = new Util\Debug($debugLevel, $this->em);
 			}
@@ -187,7 +183,7 @@ class Router implements HttpKernelInterface {
 		}
 
 		// get controller operation
-		if (null === ($operation = $request->parameters->get('operation'))) {
+		if (null === ($operation = $request->query->get('operation'))) {
 			$operation = self::$operationMapping[strtolower($request->getMethod())];
 		}
 

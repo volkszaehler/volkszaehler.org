@@ -138,7 +138,7 @@ abstract class View {
 	 * Format timestamp according to request
 	 */
 	public function formatTimestamp($ts) {
-		switch ($this->request->parameters->get('tsfmt')) {
+		switch ($this->request->query->get('tsfmt')) {
 			case 'sql':
 				return strftime('%Y-%m-%d %H:%M:%S', intval($ts/1000));
 			case 'unix':
