@@ -179,7 +179,7 @@ class XML extends View {
 		if ($uptime = Util\Debug::getUptime()) $xmlDebug->appendChild($this->xmlDoc->createElement('uptime', $uptime*1000));
 		if ($load = Util\Debug::getLoadAvg()) $xmlDebug->appendChild($this->xmlDoc->createElement('load', implode(', ', $load)));
 		if ($commit = Util\Debug::getCurrentCommit()) $xmlDebug->appendChild($this->xmlDoc->createElement('commit-hash', $commit));
-		if ($version = Util\Debug::getPhpVersion()) $xmlDebug->appendChild($this->xmlDoc->createElement('php-version', $version));
+		if ($version = phpversion()) $xmlDebug->appendChild($this->xmlDoc->createElement('php-version', $version));
 
 		$xmlMessages = $this->xmlDoc->createElement('messages');
 		foreach ($debug->getMessages() as $message) {

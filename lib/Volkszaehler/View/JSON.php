@@ -160,7 +160,7 @@ class JSON extends View {
 		if ($uptime = Util\Debug::getUptime()) $jsonDebug['uptime'] = $uptime*1000;
 		if ($load = Util\Debug::getLoadAvg()) $jsonDebug['load'] = $load;
 		if ($commit = Util\Debug::getCurrentCommit()) $jsonDebug['commit-hash'] = $commit;
-		if ($version = Util\Debug::getPhpVersion()) $jsonDebug['php-version'] = $version;
+		if ($version = phpversion()) $jsonDebug['php-version'] = $version;
 
 		$jsonDebug['messages'] = $debug->getMessages();
 

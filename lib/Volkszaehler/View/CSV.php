@@ -89,7 +89,7 @@ class CSV extends View {
 		if ($uptime = Util\Debug::getUptime()) echo '# uptime:' . CSV::DELIMITER . $uptime*1000;
 		if ($load = Util\Debug::getLoadAvg()) echo '# load:' . CSV::DELIMITER . implode(', ', $load) . PHP_EOL;
 		if ($commit = Util\Debug::getCurrentCommit()) echo '# commit-hash:' . CSV::DELIMITER . $commit;
-		if ($version = Util\Debug::getPhpVersion()) echo '# php-version:' . CSV::DELIMITER . $version;
+		if ($version = phpversion()) echo '# php-version:' . CSV::DELIMITER . $version;
 
 		foreach ($debug->getMessages() as $message) {
 			echo '# message:' . CSV::DELIMITER . $message['message'] . PHP_EOL;	// TODO add more information
