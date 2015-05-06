@@ -173,6 +173,20 @@ class Debug {
 	 public function getLevel() { return $this->level; }
 
 	/**
+	 * Fail-safe, non-warning, portable shell_exec
+	 */
+	public static function safeExec($cmd) {
+		// shell_exec doesn't exist in safe mode
+		if (!function_exists('shell_exec')) {
+			return FALSE;
+		}
+
+		// platform-independent null device to silence STDERR
+		$null = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? 'nul' : '/dev/null';
+		return @shell_exec($cmd . ' 2>' . $null);
+	}
+
+	/**
 	 * Tries to determine the current SHA1 hash of your git commit
 	 *
 	 * @return string the hash
@@ -184,15 +198,7 @@ class Debug {
 			}
 		}
 
-		if (function_exists("shell_exec") && ($commit = @shell_exec('git show --pretty=format:%H --quiet'))) {
-			return $commit;
-		}
-
-		return FALSE;
-	}
-
-	public static function getPhpVersion() {
-		return phpversion();
+		return self::safeExec('git show --pretty=format:%H --quiet');
 	}
 
 	/**
@@ -208,10 +214,8 @@ class Debug {
 			$load = file_get_contents('/proc/loadavg');
 			$load = array_slice(explode(' ', $load), 0, 3);
 		}
-		elseif (function_exists('shell_exec')) {
-			// fail-safe shell exec
-			$null = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? 'nul' : '/dev/null';
-			$load = explode(', ', substr(shell_exec('uptime 2>' . $null), -16));
+		elseif ($res = self::safeExec('uptime')) {
+			$load = explode(', ', substr($res, -16));
 		}
 
 		return (isset($load)) ? array_map('floatval', $load) : FALSE;
@@ -227,11 +231,9 @@ class Debug {
 			$uptime = explode(' ', file_get_contents("/proc/uptime"));
 			return (float) $uptime[0];
 		}
-		elseif (function_exists("shell_exec")) {
+		elseif ($res = self::safeExec('uptime')) {
 			$matches = array();
-			// fail-safe shell exec
-			$null = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? 'nul' : '/dev/null';
-			if (preg_match("/up (?:(?P<days>\d+) days?,? )?(?P<hours>\d+):(?P<minutes>\d{2})/", shell_exec('uptime 2>' . $null), $matches)) {
+			if (preg_match("/up (?:(?P<days>\d+) days?,? )?(?P<hours>\d+):(?P<minutes>\d{2})/", $res, $matches)) {
 				$uptime = 60*$matches['hours'] + $matches['minutes'];
 
 				if (isset($matches['days'])) {
