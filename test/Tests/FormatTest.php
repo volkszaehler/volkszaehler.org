@@ -21,7 +21,7 @@ class FormatTest extends Data
 		self::$uuid = self::createChannel('Meter', 'power', 1);
 
 		// add data
-		self::executeRequest(Request::create('/data/' . self::$uuid . '.json', 'POST',
+		self::executeJsonRequest(Request::create('/data/' . self::$uuid . '.json', 'POST',
 			array(), array(), array(), array(),
 			json_encode(array(
 				array(1000000, 1000),
@@ -35,7 +35,7 @@ class FormatTest extends Data
 	 * @group jpgraph
 	 */
 	function testImage() {
-		$response = $this->executeRequest(Request::create('/data/' . static::$uuid . '.png', 'GET',
+		$response = $this->getResponse(Request::create('/data/' . static::$uuid . '.png', 'GET',
 			array('from' => 0, 'to' => 'now')
 		));
 
@@ -49,7 +49,7 @@ class FormatTest extends Data
 	 * NOTE: this cannot be tested due to JpGraph design issues
 	 */
 	// function testImageInvalidUuidException() {
-	// 	$response = $this->executeRequest(Request::create('/data/' . self::INVALID_UUID . '.png', 'GET',
+	// 	$response = $this->getResponse(Request::create('/data/' . self::INVALID_UUID . '.png', 'GET',
 	// 		array('from' => 0, 'to' => 'now')
 	// 	));
 
@@ -58,7 +58,7 @@ class FormatTest extends Data
 	// }
 
 	function testCSV() {
-		$response = $this->executeRequest(Request::create('/data/' . static::$uuid . '.csv', 'GET',
+		$response = $this->getResponse(Request::create('/data/' . static::$uuid . '.csv', 'GET',
 			array('from' => 0, 'to' => 'now')
 		));
 
@@ -68,7 +68,7 @@ class FormatTest extends Data
 	}
 
 	function testCSVInvalidUuidException() {
-		$response = $this->executeRequest(Request::create('/data/' . self::INVALID_UUID . '.csv', 'GET',
+		$response = $this->getResponse(Request::create('/data/' . self::INVALID_UUID . '.csv', 'GET',
 			array('from' => 0, 'to' => 'now')
 		));
 
@@ -76,7 +76,7 @@ class FormatTest extends Data
 	}
 
 	function testXML() {
-		$response = $this->executeRequest(Request::create('/data/' . static::$uuid . '.xml', 'GET',
+		$response = $this->getResponse(Request::create('/data/' . static::$uuid . '.xml', 'GET',
 			array('from' => 0, 'to' => 'now')
 		));
 
@@ -86,7 +86,7 @@ class FormatTest extends Data
 	}
 
 	function testXMLInvalidUuidException() {
-		$response = $this->executeRequest(Request::create('/data/' . self::INVALID_UUID . '.xml', 'GET',
+		$response = $this->getResponse(Request::create('/data/' . self::INVALID_UUID . '.xml', 'GET',
 			array('from' => 0, 'to' => 'now')
 		));
 

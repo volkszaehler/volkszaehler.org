@@ -11,6 +11,7 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
+        "php": ">=5.4.0",
         "doctrine/orm": "2.4.*",
         "doctrine/dbal": "2.5.*",
         "andig/dbcopy": "dev-master",

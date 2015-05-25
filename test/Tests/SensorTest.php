@@ -34,10 +34,6 @@ class SensorTest extends Data
 		self::$uuid = self::createChannel('Sensor', 'powersensor', self::$resolution);
 	}
 
-	// static function tearDownAfterClass() {
-	// 	echo(" ".self::$uuid);
-	// }
-
 	function getConsumption($from, $to, $periodValue) {
 		return($periodValue * ($to - $from) / 3600000 / self::$resolution);
 	}
@@ -75,8 +71,8 @@ class SensorTest extends Data
 		$this->assertFromTo($this->ts1, $this->ts1);
 		$this->assertHeader(0, 0, 1);
 
-		// tuples
-		$this->assertFalse(isset($this->json->data->tuples));
+		// tuples not set or empty array
+		$this->assertFalse(isset($this->json->data->tuples) && count($this->json->data->tuples));
 	}
 
 	/**
@@ -151,8 +147,8 @@ class SensorTest extends Data
 		$this->assertFromTo(0, 0);
 		$this->assertHeader(0, 0, 0);
 
-		// tuples
-		$this->assertFalse(isset($this->json->data->tuples));
+		// tuples not set or empty array
+		$this->assertFalse(isset($this->json->data->tuples) && count($this->json->data->tuples));
 	}
 
 	/**

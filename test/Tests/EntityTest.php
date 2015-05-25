@@ -12,6 +12,11 @@ class EntityTest extends Middleware
 {
 	static $uuid;
 
+	function testExistence() {
+		$this->assertNotNull($this->getJson('/entity.json')->entities);
+		$this->assertInternalType('array', $this->getJson('/entity.json')->entities);
+	}
+
 	function testCreateEntity() {
 		// entities cannot be created - expect json exception
 		$this->getJson('/entity.json', array(
