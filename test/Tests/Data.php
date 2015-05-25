@@ -103,8 +103,8 @@ abstract class Data extends Middleware
 	 * Helper assertion to validate correct UUID
 	 */
 	protected function assertUUID() {
-		$this->assertEquals(static::$uuid, (isset($this->json->data->uuid) ? $this->json->data->uuid : null),
-			"Wrong UUID. Expected " . static::$uuid . ", got " . $this->json->data->uuid);
+		$uuid = isset($this->json->data->uuid) ? $this->json->data->uuid : null;
+		$this->assertEquals(static::$uuid, $uuid, "Wrong UUID. Expected " . static::$uuid . ", got " . ($uuid ?: '<null>'));
 	}
 
 	/**
