@@ -123,10 +123,6 @@ $(document).ready(function() {
 
 	// chaining ajax request with jquery deferred object
 	vz.capabilities.load().done(function() {
-		if (vz.capabilities.formats.contains('png')) {
-			$('#export option[value=png]').removeAttr('disabled');
-		}
-
 		vz.entities.loadDetails().done(function() {
 			if (vz.entities.length === 0) {
 				vz.wui.dialogs.init();
