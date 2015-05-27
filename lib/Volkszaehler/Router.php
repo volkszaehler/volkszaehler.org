@@ -102,8 +102,10 @@ class Router implements HttpKernelInterface {
 		ErrorHandler::register();
 
 		// views
-		foreach (array('png', 'jpeg', 'jpg', 'gif') as $format) {
-			self::$viewMapping[$format] = 'Volkszaehler\View\JpGraph';
+		if (class_exists('\JpGraph\JpGraph')) {
+			foreach (array('png', 'jpeg', 'jpg', 'gif') as $format) {
+				self::$viewMapping[$format] = 'Volkszaehler\View\JpGraph';
+			}
 		}
 	}
 
