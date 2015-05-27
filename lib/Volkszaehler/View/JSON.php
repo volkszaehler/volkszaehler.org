@@ -166,10 +166,11 @@ class JSON extends View {
 
 		// SQL statements
 		$this->getSQLTimes($debug->getQueries());
-		$jsonDebug['sqlTotalTime'] = $this->sqlTotalTime;
-		$jsonDebug['sqlWorstTime'] = $this->sqlWorstTime;
-
-		$jsonDebug['queries'] = array_values($debug->getQueries());
+		$jsonDebug['sql'] = array(
+			'totalTime' => $this->sqlTotalTime,
+			'worstTime' => $this->sqlWorstTime,
+			'queries' => array_values($debug->getQueries())
+		);
 
 		$this->json['debug'] = $jsonDebug;
 	}
