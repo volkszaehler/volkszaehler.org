@@ -30,7 +30,10 @@ use Doctrine\ORM\EntityManager;
  * Controller superclass for all controllers
  *
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @author Andreas Goetz <cpuidle@gmx.de>
  * @package default
+ *
+ * @todo Check how controllers can modify the response/headers
  */
 abstract class Controller {
 
