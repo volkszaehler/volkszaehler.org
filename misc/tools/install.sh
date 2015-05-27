@@ -179,13 +179,13 @@ echo
 echo "installing dependencies..."
 
 pushd "$vz_dir"
-"$COMPOSER" install --no-dev
+	"$COMPOSER" install --no-dev
 
-echo
-ask "install server-side graph generation (jpgraph, not required for frontend)?" n
-if [ "$REPLY" == "y" ]; then
-	"$COMPOSER" require --update-no-dev jpgraph/jpgraph:dev-master
-fi
+	echo
+	ask "install server-side graph generation (jpgraph, not required for frontend)?" n
+	if [ "$REPLY" == "y" ]; then
+		"$COMPOSER" require --update-no-dev jpgraph/jpgraph:dev-master
+	fi
 popd
 
 ###############################
@@ -207,11 +207,14 @@ fi
 echo
 ask "create volkszaehler.org database?" y
 if [ "$REPLY" == "y" ]; then
+	get_db_admin
+	get_db_name
+
 	echo "creating database $db_name..."
 	mysql -h"$db_host" -u"$db_admin_user" -p"$db_admin_pass" -e 'CREATE DATABASE `'"$db_name"'`'
 	pushd "$vz_dir"
-	php misc/tools/doctrine orm:schema-tool:create
-	php misc/tools/doctrine orm:generate-proxies
+		php misc/tools/doctrine orm:schema-tool:create
+		php misc/tools/doctrine orm:generate-proxies
 	popd
 fi
 
@@ -219,6 +222,9 @@ fi
 echo
 ask "create volkszaehler.org database user?" y
 if [ "$REPLY" == "y" ]; then
+	get_db_admin
+	get_db_name
+
 	echo "creating db user $db_user with proper rights..."
 	mysql -h"$db_host" -u"$db_admin_user" -p"$db_admin_pass" <<-EOF
 		CREATE USER '$db_user'@'$db_host' IDENTIFIED BY '$db_pass';
@@ -236,7 +242,7 @@ if [ "$REPLY" == "y" ]; then
 	get_db_admin
 	get_db_name
 
-	echo "adding db user $db_user delete rights..."
+	echo "granting db user $db_user delete rights..."
 	mysql -h"$db_host" -u"$db_admin_user" -p"$db_admin_pass" <<-EOF
 		GRANT DELETE ON $db_name.* TO '$db_user'@'$db_host';
 	EOF
@@ -247,9 +253,9 @@ ask "insert demo data in to database?" n
 if [ "$REPLY" == "y" ]; then
 	get_db_admin
 	get_db_name
+
 	cat "$vz_dir/misc/sql/demo/entities.sql" "$vz_dir/misc/sql/demo/properties.sql" "$vz_dir/misc/sql/demo/data-demoset1.sql" |
 		mysql -h"$db_host" -u"$db_admin_user" -p"$db_admin_pass" "$db_name"
 fi
 
 cleanup
-
