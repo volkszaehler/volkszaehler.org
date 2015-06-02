@@ -260,7 +260,7 @@ class VZcompress2 {
 
 				// Step 2.1: Get new Value for timeframe
 				$newset = $this->sql_query(
-					"SELECT " . $interpreter::groupExprSQL("value") . " AS newval, COUNT(value) AS datapoints, MIN(id) AS updateid ".
+					"SELECT " . $interpreter::groupExprSQL("value") . " AS newval, COUNT(value) AS datapoints, MAX(id) AS updateid ".
 					"FROM data WHERE channel_id = ? AND timestamp > ? AND timestamp <= ?",
 					array($channel['id'], $lastcurtime, $curtime)
 				);
