@@ -187,7 +187,7 @@ vz.parseUrlParams = function() {
 
 				case 'from':
 				case 'to':
-					// disabled automatic refresh
+					// disable automatic refresh
 					vz.options.refresh = false;
 					// ms or speaking timestamp
 					var ts = (/^-?[0-9]+$/.test(vars[key])) ? parseInt(vars[key]) : new Date(vars[key]).getTime();
@@ -201,7 +201,7 @@ vz.parseUrlParams = function() {
 					vz.options[key] = vars[key];
 					break;
 
-				case 'options':
+				case 'options': // data load options
 					vz.options.options = vars[key];
 					break;
 			}
