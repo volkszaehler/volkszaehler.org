@@ -53,41 +53,7 @@ vz.wui.init = function() {
 	$('button[name=entity-add]').click(this.dialogs.init);
 
 	$('#export select').change(function(event) {
-		switch ($(this).val()) {
-			case 'permalink':
-				window.location = vz.getPermalink();
-				break;
-			case 'png':
-				// will prompt the user to save the image as PNG
-				$('#chart-export .export')
-					.html('')
-					.css({
-						"width": $('#flot').width() * 0.8,
-						"height": $('#flot').height() * 0.8})
-					.append(
-						$(Canvas2Image.saveAsPNG(vz.plot.getCanvas(), true))
-						.css({
-							"max-width":"100%",
-							"max-height":"100%"}));
-				$('#chart-export').dialog({
-					title: unescape('Export Snapshot'),
-					width: 'auto',
-					height: 'auto',
-					resizable: false,
-					buttons: {
-						Ok: function() {
-							$(this).dialog('close');
-						}
-					}
-				});
-				break;
-			case 'csv':
-			case 'json':
-			case 'xml':
-				window.location = vz.getLink($(this).val());
-				break;
-		}
-
+		vz.wui.exportData($(this).val());
 		$(this).val('default');
 	});
 
@@ -117,6 +83,34 @@ vz.wui.init = function() {
 			entity.activate(!entity.active, parent, false).done(vz.wui.drawPlot);
 		}, true);
 	});
+};
+
+/**
+ * Export data
+ */
+vz.wui.exportData = function(value) {
+	switch (value) {
+		case 'permalink':
+			window.location = vz.getPermalink();
+			break;
+		case 'png':
+			$.when(
+				$.cachedScript('javascripts/canvas/Blob.js'),
+				$.cachedScript('javascripts/canvas/canvas-toBlob.js'),
+				$.cachedScript('javascripts/canvas/FileSaver.js'))
+			.done(function() {
+				// will prompt the user to save the image as PNG
+				vz.plot.getCanvas().toBlob(function(blob) {
+					saveAs(blob, 'Screenshot.png');
+				});
+			});
+			break;
+		case 'csv':
+		case 'json':
+		case 'xml':
+			window.location = vz.getLink(value);
+			break;
+	}
 };
 
 // show available properties for selected type
