@@ -27,13 +27,8 @@ tr.property td, tr.entity td {
 }
 
 #content {
-	margin: 10px 10px 10px;
 	padding: 10px;
 	background-color: white;
-	border: 1px solid black;
-	-moz-border-radius: 10px;
-	-webkit-border-radius: 10px;
-	border-radius: 10px;
 }
 
 #content div {
