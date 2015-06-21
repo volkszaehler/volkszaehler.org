@@ -666,8 +666,8 @@ vz.wui.formatNumber = function(number, unit, prefix) {
 	var siIndex = 0,
 			maxIndex = (typeof prefix == 'string') ? siPrefixes.indexOf(prefix)+1 : siPrefixes.length;
 
-	// flow unit?
-	if (['l', 'm3', 'm^3', 'm³', 'l/h', 'm3/h', 'm/h^3', 'm³/h'].indexOf(unit) >= 0) {
+	// flow unit or air pressure?
+	if (['l', 'm3', 'm^3', 'm³', 'l/h', 'm3/h', 'm/h^3', 'm³/h', 'hPa'].indexOf(unit) >= 0) {
 		// don't scale...
 		maxIndex = -1;
 
