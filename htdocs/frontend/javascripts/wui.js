@@ -96,8 +96,8 @@ vz.wui.init = function() {
 	$('#controls').buttonset();
 
 	// auto refresh
+	$('#refresh').prop('checked', vz.options.refresh);
 	if (vz.options.refresh) {
-		$('#refresh').prop('checked', true);
 		vz.wui.tmaxnow = true;
 		vz.wui.setTimeout();
 	}

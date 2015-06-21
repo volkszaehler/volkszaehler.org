@@ -102,6 +102,9 @@ abstract class View {
 	 * @param integer $value timestamp in seconds or offset in seconds
 	 */
 	public function setCaching($mode, $value) {
+		// unresolved artifact from Symfony migration
+		throw new \LogicException('Cannot set caching in view without access to response');
+
 		switch ($mode) {
 			case 'modified':	// Last-modified
 				$this->response->setHeader('Last-Modified', gmdate('D, d M Y H:i:s', $value) . ' GMT');

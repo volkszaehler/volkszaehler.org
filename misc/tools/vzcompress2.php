@@ -1,6 +1,5 @@
 #!php -f
-<?PHP
-
+<?php
 /**
  * Data compression tool
  *
@@ -14,11 +13,11 @@
  *
  * By default we assume the following resolution scheme:
  *   Newer than 7 Days      Keep Original
- *   Older than 7 Days      Datapoint per 1 Minute
- *   Older than 30 Days     Datapoint per 5 Minutes
- *   Older than 6 Month     Datapoint per 15 Minutes
- *   Older than 1 Year      Datapoint per 30 Minutes
- * You can set your own scheme for all or specific datapoints at the
+ *   Older than 7 Days      Data point per 1 Minute
+ *   Older than 30 Days     Data point per 5 Minutes
+ *   Older than 6 Month     Data point per 15 Minutes
+ *   Older than 1 Year      Data point per 30 Minutes
+ * You can set your own scheme for all or specific data points at the
  * bottom of this file
  *
  * By default this script saves its state in /tmp/vzcompress2/. You may want
@@ -31,6 +30,7 @@
  *
  * @copyright Copyright (c) 2013, The volkszaehler.org project
  * @author Florian Knodt <adlerweb@adlerweb.info>
+ * @author Andreas Goetz <cpuidle@gmx.de>
  * @package tools
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  */
@@ -54,253 +54,271 @@
 
 use Volkszaehler\Util;
 use Volkszaehler\Definition;
+use Doctrine\DBAL;
 
 define('VZ_DIR', realpath(__DIR__ . '/../../'));
 
 require VZ_DIR . '/lib/bootstrap.php';
 
 class VZcompress2 {
-    private $config;
-    private $sql_config;
-    private $sql;
-    private $channels;
-    private $purgecounter;
-    private $timestr = '%x %X';
+	/**
+	 * @var DBAL\Connection database connection
+	 */
+	protected $conn;
 
-    static private $sensortypemap = array(
-        'SensorInterpreter'  => 'AVG',
-        'MeterInterpreter'   => 'SUM',
-        'CounterInterpreter' => 'MAX',
+	protected $config;
+	private $channels;
 
-        'AggregatorInterpreter' => false
-    );
+	private $purgecounter = 0;
+	private $timestr = '%x %X';
 
-    public function __construct($config = array()) {
-        if(!isset($config['compressscheme'])) {
-            $config['compressscheme']['default'] = array( //Definition for all other channels
-                (7*24*60*60)    => (1*60),      //Older than 7 Days      Datapoint per 1 Minute
-                (30*24*60*60)   => (5*60),      //Older than 30 Days     Datapoint per 5 Minutes
-                (6*30*24*60*60) => (15*60),     //Older than 6 Month     Datapoint per 15 Minutes
-                (365*24*60*60)  => (30*60),     //Older than 1 Year      Datapoint per 30 Minutes
-            );
-        }
+	public function __construct($config = array()) {
+		$this->config = array_replace(
+			array(
+				'compressscheme' => array(
+					'default' => array( 				// Definition for all other channels
+						(7*24*60*60)    => (1*60),      // Older than 7 Days      Datapoint per 1 Minute
+						(30*24*60*60)   => (5*60),      // Older than 30 Days     Datapoint per 5 Minutes
+						(6*30*24*60*60) => (15*60),     // Older than 6 Month     Datapoint per 15 Minutes
+						(365*24*60*60)  => (30*60),     // Older than 1 Year      Datapoint per 30 Minutes
+					)
+				),
+				'verbose' => true,
+				'caching' => false,
+				'sleep' => 0,
+			),
+			$config
+		);
 
-        if(!isset($config['verbose'])) $config['verbose']=true;
-        if(!isset($config['caching'])) $config['caching']=false;
-        if(!isset($config['sleep'])) $config['sleep']=0;
+		$this->cache_init();
 
-        $this->config = $config;
-        $this->sql_config_load();
-        $this->sql_connect();
-        $this->cache_init();
-        $this->sql_getChannels();
-        $this->compress();
-    }
+		$this->conn = DBAL\DriverManager::getConnection(Util\Configuration::read('db'));
 
-    private function sql_config_load() {
-        $this->sql_config = Util\Configuration::read('db');
-    }
+		// SELECT * FROM entities WHERE class = 'channel' plus title property
+		$this->channels = $this->sql_query(
+			"SELECT entities.*, properties.value AS name FROM entities INNER JOIN properties ON properties.entity_id = entities.id WHERE properties.pkey = ? AND class = ?",
+			array('title', 'channel')
+		);
+	}
 
-    private function sql_connect() {
-        //Let's hack a hopefully valid DSN based on configuration
-        $dsn = str_replace('pdo_', '', $this->sql_config['driver']).':dbname='.$this->sql_config['dbname'].';host='.$this->sql_config['host'];
+	/*
+	 * Cache functions
+	 */
+	private function cache_init() {
+		if ($this->config['caching']) {
+			if (substr($this->config['caching'], -1) != '/') $this->config['caching'].='/';
 
-        try {
-            $this->sql = new PDO($dsn, $this->sql_config['user'], $this->sql_config['password']);
-        } catch (PDOException $e) {
-            trigger_error('Connection to database failed: ' . $e->getMessage(), E_USER_ERROR);
-        }
-    }
+			if (file_exists($this->config['caching'])) {
+				if (!is_dir($this->config['caching'])) {
+					trigger_error('Can not cache to '.$this->config['caching'].' - Not a directory', E_USER_WARNING);
+					$this->config['caching'] = false;
+				}
+				if (!is_writable($this->config['caching'])) {
+					trigger_error('Can not cache to'.$this->config['caching'].' - Not writable', E_USER_WARNING);
+					$this->config['caching'] = false;
+				}
+			}
+			else {
+				if (!mkdir($this->config['caching'], 0755, true)) {
+					trigger_error('Can not cache to'.$this->config['caching'].' - Could not create directory', E_USER_WARNING);
+					$this->config['caching'] = false;
+				}
+			}
+		}
+	}
 
-    private function sql_simplequery($qry) {
-        usleep($this->config['sleep']);
-        if(!$stmt = $this->sql->prepare ($qry)) return false;
-        if(!$stmt->execute()) {
-            var_dump($stmt->errorInfo());
-            return false;
-        }
-        $out = $stmt->fetchAll();
-        $stmt->closeCursor();
-        return $out;
-    }
+	private function cache_write($chanid, $timebase, $last) {
+		if (!$this->config['caching']) return false;
+		if ($timebase == 0 || $last == 0) return false;
 
-    private function sql_getChannels() {
-        $this->channels = $this->sql_simplequery("SELECT * FROM `entities` WHERE `class` = 'channel';");
-    }
+		file_put_contents($this->config['caching'].$chanid.'.'.$timebase, $last);
+	}
 
-    private function cache_init() {
-        if($this->config['caching']) {
-            if(substr($this->config['caching'], -1) != '/') $this->config['caching'].='/';
+	private function cache_read($chanid, $timebase) {
+		if (!$this->config['caching']) return false;
+		if (!file_exists($this->config['caching'].$chanid.'.'.$timebase)) return false;
 
-            if(file_exists($this->config['caching'])) {
-                if(!is_dir($this->config['caching'])) {
-                    trigger_error('Can not cache to '.$this->config['caching'].' - Not a directory', E_USER_WARNING);
-                    $this->config['caching'] = false;
-                }
-                if(!is_writable($this->config['caching'])) {
-                    trigger_error('Can not cache to'.$this->config['caching'].' - Not writable', E_USER_WARNING);
-                    $this->config['caching'] = false;
-                }
-            }else{
-                if(!mkdir($this->config['caching'], 0755, true)) {
-                    trigger_error('Can not cache to'.$this->config['caching'].' - Could not create directory', E_USER_WARNING);
-                    $this->config['caching'] = false;
-                }
-            }
-        }
-    }
+		return (float)file_get_contents($this->config['caching'].$chanid.'.'.$timebase);
+	}
 
-    private function cache_write($chanid, $timebase, $last) {
-        if(!$this->config['caching']) return false;
-        if($timebase == 0 || $last == 0) return false;
-        file_put_contents($this->config['caching'].$chanid.'.'.$timebase, $last);
-    }
+	/*
+	 * Database functions
+	 */
+	protected function sql_query($sql, $data = array()) {
+		usleep($this->config['sleep']);
+		return $this->conn->fetchAll($sql, $data);
+	}
 
-    private function cache_read($chanid, $timebase) {
-        if(!$this->config['caching']) return false;
-        if(!file_exists($this->config['caching'].$chanid.'.'.$timebase)) return false;
-        return (float)file_get_contents($this->config['caching'].$chanid.'.'.$timebase);
-    }
+	protected function sql_exec($sql, $data = array()) {
+		usleep($this->config['sleep']);
+		return $this->conn->executeQuery($sql, $data);
+	}
 
-    private function compress() {
-        $start = time();
-        foreach($this->channels as $channel) {
-            if(isset($this->config['channels']) && !in_array($channel['id'], $this->config['channels'])) continue;
+	/*
+	 * Output functions
+	 */
+	private function strftime($time = null) {
+		return strftime($this->timestr, $time);
+	}
 
-            echo strftime($this->timestr).' - Processing Sensor ID '.$channel['id'].'...'."\n";
-            $this->process($channel);
-        }
-        echo strftime($this->timestr).' - Done. Purged '.$this->purgecounter.' Datapoints from '.count($this->channels).' Channels in '.(time()-$start).' Seconds'."\n";
-    }
+	private function out($str, $delim = "\n") {
+		echo $delim . $this->strftime() . ' - ' . $str;
+	}
 
-    private function process($channel) {
-        //What type of sensor?
-        foreach(Definition\EntityDefinition::get() as $entity) {
-            if($entity->name == $channel['type']) {
-                $type = str_replace('Volkszaehler\\Interpreter\\', '', $entity->interpreter);
-                break;
-            }
-        }
-        if(!isset($type)) {
-            trigger_error('Could not detect inperpreter for type '.$channel['type'], E_USER_WARNING);
-            return false;
-        }
-        if(!isset(self::$sensortypemap[$type])) {
-            trigger_error('Interpreter '.$type.' is currently not supported', E_USER_WARNING);
-            return false;
-        }
-        $sqlfunc = self::$sensortypemap[$type];
-        if($sqlfunc == false) return false;
+	public function run() {
+		$start = time();
+		$count = 0;
 
-        //Detect compressscheme
-        if(isset($this->config['compressscheme'][$channel['id']])) {
-            $cs = $this->config['compressscheme'][$channel['id']];
-        }else{
-            $cs = $this->config['compressscheme']['default'];
-        }
+		foreach ($this->channels AS $channel) {
+			if ($this->skipChannel($channel)) continue;
 
-        //Prepare compressscheme
-        ksort($cs);
-        $times = array_keys($cs);
-        $times[] = 0;
+			$this->out('Processing channel '.$channel['uuid'].' ('.$channel['name'].')...');
+			$this->compressChannel($channel);
+			$count++;
+		}
 
-        $timestamp = time(); //Local timestamp should be consistent during our transactions
+		$this->out('Done. Purged '.$this->purgecounter.' data points from '.$count.' channels in '.(time()-$start).' seconds');
+	}
 
-        //Run compression passes
-        for($i=0; $i<count($times)-1; $i++) {
-            if($cs[$times[$i]] == 0) continue;
+	private function skipChannel($channel) {
+		if (isset($this->config['channels']) && count($this->config['channels'])) {
+			if (in_array($channel['uuid'], $this->config['channels'])) return true;
+		}
+		return false;
+	}
 
-            //Step 1: Detect oldest and newest dataset
-            $datatimes = $this->sql_simplequery("SELECT MIN(`timestamp`) as `min`, MAX(`timestamp`) as `max` FROM `data` WHERE `channel_id` =  '".$channel['id']."' AND `timestamp` <= '".(($timestamp-$times[$i])*1000)."' AND `timestamp` > '".(($times[$i+1] > 0) ? (($timestamp-$times[$i+1])*1000) : 0 )."'");
+	private function compressChannel($channel) {
+		if (null == ($definition = Definition\EntityDefinition::get($channel['type']))) {
+			trigger_error('Could not find definition for type '.$channel['type'], E_USER_WARNING);
+			return false;
+		}
 
-            if((float)$datatimes[0]['max'] == 0) {
-                echo strftime($this->timestr).' -   Skipping compression pass for datapoints between '.strftime($this->timestr, ($timestamp-$times[$i+1])).' and '.strftime($this->timestr, ($timestamp-$times[$i])).' using a '.$cs[$times[$i]].' second timeframe: No Datapoints found'."\n";
-                continue;
-            }
+		// interpreter class - provides grouping function
+		$interpreter = $definition->interpreter;
 
-            //Caching
-            $lastrun = (float)$this->cache_read($channel['id'], $times[$i]);
-            if($lastrun && (float)$lastrun >= (float)$datatimes[0]['min']) {
-                echo strftime($this->timestr).' -   Skipping datapoints between '.strftime($this->timestr, ((float)$datatimes[0]['min']/1000)).' and '.strftime($this->timestr, ((float)$lastrun/1000)).' (Cached)'."\n";
-                (float)$datatimes[0]['min'] = $lastrun;
-            }
+		// Detect compressscheme
+		if (isset($this->config['compressscheme'][$channel['uuid']])) {
+			$cs = $this->config['compressscheme'][$channel['uuid']];
+		}
+		else {
+			$cs = $this->config['compressscheme']['default'];
+		}
 
-            echo strftime($this->timestr).' -   Compressing datapoints between '.strftime($this->timestr, ((float)$datatimes[0]['min']/1000)).' and '.strftime($this->timestr, ((float)$datatimes[0]['max']/1000)).' using a '.$cs[$times[$i]].' second timeframe'."\n";
+		// Prepare compressscheme
+		ksort($cs);
+		$times = array_keys($cs);
+		$times[] = 0;
 
-            //Step 2: Loop new possible timeframes
-            $curtime = (float)$datatimes[0]['min'];
-            $lastpurgecount = $this->purgecounter;
-            $steps = (((float)$datatimes[0]['max']/1000)-((float)$datatimes[0]['min']/1000))/$cs[$times[$i]];
-            if($steps == 0) continue;
-            $step = 0;
-            $passstart = time();
-            do {
-                //Step 2.1: Increase timestamps
-                $lastcurtime = $curtime;
-                $step++;
-                $curtime += $cs[$times[$i]]*1000;
+		$timestamp = time(); // Local timestamp should be consistent during our transactions
 
-                //Print status
-                if($this->config['verbose']) echo "\r".strftime($this->timestr).' -     Processing: '.strftime($this->timestr, $lastcurtime/1000).' - '.strftime($this->timestr, $curtime/1000).' ('.round(100/$steps*$step).'%)...                    ';
+		// Run compression passes
+		for ($i=0; $i<count($times)-1; $i++) {
+			if ($cs[$times[$i]] == 0) continue;
 
-                //Step 2.1: Get new Value for timeframe
-                $newset = $this->sql_simplequery("SELECT ".$sqlfunc."(`value`) as `newval`, COUNT(`value`) as `datapoints`, MIN(`id`) as updateid FROM `data` WHERE `channel_id` = '".$channel['id']."' AND `timestamp` > '".$lastcurtime."' AND `timestamp` <= '".$curtime."';");
+			// Step 1: Detect oldest and newest dataset
+			$datatimes = $this->sql_query(
+				"SELECT MIN(timestamp) AS min, MAX(timestamp) AS max FROM data WHERE channel_id = ? AND timestamp <= ? AND timestamp > ?",
+				array($channel['id'], ($timestamp-$times[$i])*1000, ($times[$i+1] > 0) ? ($timestamp-$times[$i+1])*1000 : 0)
+			);
 
-                //Step 2.2: Skip if current timeframe has no or already just one datapoint
-                if(count($newset) == 0 || $newset[0]['datapoints'] < 2) continue;
+			if ((float)$datatimes[0]['max'] == 0) {
+				$this->out('  Skipping compression pass for data points between '.$this->strftime($timestamp-$times[$i+1]).' and '.$this->strftime($timestamp-$times[$i]).' using a '.$cs[$times[$i]].' seconds window: No data points found');
+				continue;
+			}
 
-                $this->sql->beginTransaction();
+			// Caching
+			$from = (float)$datatimes[0]['min'];
+			$lastrun = (float)$this->cache_read($channel['id'], $times[$i]);
 
-                //Step 2.3: Delete old Datapoints
-                if($this->sql_simplequery("DELETE FROM `data` WHERE `channel_id` = '".$channel['id']."' AND `timestamp` > '".$lastcurtime."' AND `timestamp` <= '".$curtime."' AND `id` != '".$newset[0]['updateid']."';") === false) {
-                    $this->sql->rollback();
-                    trigger_error('SQL FAILURE', E_USER_ERROR);
-                }
-                $this->purgecounter+=($newset[0]['datapoints']-1);
+			if ($lastrun && (float)$lastrun >= $from) {
+				$this->out('  Skipping data points between '.$this->strftime($from/1000).' and '.$this->strftime((float)$lastrun/1000).' (Cached)');
+				(float)$datatimes[0]['min'] = $lastrun;
+			}
 
-                //Step 2.4: Update oldest Datapoint
-                //          Note: Use UPDATE instead of INSERT to avoid filling up our id-pool
-                if($this->sql_simplequery("UPDATE `data` SET `timestamp` = '".($curtime-1)."', `value` = '".$newset[0]['newval']."' WHERE `channel_id` = '".$channel['id']."' AND `id` = '".$newset[0]['updateid']."';") === false) {
-                    $this->sql->rollback();
-                    trigger_error('SQL FAILURE', E_USER_ERROR);
-                }
+			$this->out('  Compressing data points between '.$this->strftime($from/1000).' and '.$this->strftime((float)$datatimes[0]['max']/1000).' using a '.$cs[$times[$i]].' seconds window');
 
-                //Step 2.6 Commit to Database
-                $this->sql->commit();
+			// Step 2: Loop new possible timeframes
+			$curtime = (float)$datatimes[0]['min'];
+			$lastpurgecount = $this->purgecounter;
 
-            }while($curtime <= (float)$datatimes[0]['max']);
-            echo "\r".strftime($this->timestr).' -     Removed '.($this->purgecounter-$lastpurgecount).' Datapoints in '.(time()-$passstart).' Seconds.                                  '."\n";
+			$steps = ((float)$datatimes[0]['max']/1000 - $from/1000) / $cs[$times[$i]];
+			if ($steps == 0) continue;
 
-            $this->cache_write($channel['id'], $times[$i], (float)$datatimes[0]['max']);
-        }
-    }
+			$step = 0;
+			$passstart = time();
+
+			do {
+				// Step 2.1: Increase timestamps
+				$lastcurtime = $curtime;
+				$curtime += $cs[$times[$i]]*1000;
+				$step++;
+
+				// Print status
+				if ($this->config['verbose']) {
+					$this->out('    Processing: '.$this->strftime($lastcurtime/1000).' - '.$this->strftime($curtime/1000).' ('.round(100/$steps*$step).'%)...', "\r");
+				}
+
+				// Step 2.1: Get new Value for timeframe
+				$newset = $this->sql_query(
+					"SELECT " . $interpreter::groupExprSQL("value") . " AS newval, COUNT(value) AS datapoints, MAX(id) AS updateid ".
+					"FROM data WHERE channel_id = ? AND timestamp > ? AND timestamp <= ?",
+					array($channel['id'], $lastcurtime, $curtime)
+				);
+
+				// Step 2.2: Skip if current timeframe has no or already just one datapoint
+				if (count($newset) == 0 || $newset[0]['datapoints'] < 2) continue;
+
+				// wrap inside transaction
+				$this->conn->transactional(function() use ($channel, $newset, $curtime, $lastcurtime) {
+					// Step 2.3: Delete old data points
+					$this->sql_exec(
+						'DELETE FROM data WHERE channel_id = ? AND timestamp > ? AND timestamp <= ? AND id != ?',
+						array($channel['id'], $lastcurtime, $curtime, $newset[0]['updateid'])
+					);
+					$this->purgecounter += $newset[0]['datapoints']-1;
+
+					// Step 2.4: Update oldest Datapoint
+					//           Note: Use UPDATE instead of INSERT to avoid filling up our id-pool
+					$this->sql_exec(
+						'UPDATE data SET timestamp = ?, value = ? WHERE channel_id = ? AND id = ?',
+						array($curtime-1, $newset[0]['newval'], $channel['id'], $newset[0]['updateid'])
+					);
+				});
+			}
+			while ($curtime <= (float)$datatimes[0]['max']);
+			$this->out('    Removed '.($this->purgecounter-$lastpurgecount).' data points in '.(time()-$passstart).' seconds.', "\r");
+
+			$this->cache_write($channel['id'], $times[$i], (float)$datatimes[0]['max']);
+		}
+	}
  }
 
 /**
  * Sample Configuration
  */
 $config = array(
-    'verbose' => true,      //Show times/percentage - should be disables on slow TTYs
-    'caching' => '/tmp/vzcompress2/', //Path or false
-    'sleep' => 500, //Microseconds to sleep between requests
+	'verbose' => true,      				// Show times/percentage - should be disabled on slow TTYs
+	'caching' => '/tmp/vzcompress2/', 		// Path or false
+	'sleep' => 0, 							// Microseconds to sleep between requests
 
-    //'channels' => array(  //If defined only this channels are compressed
-    //  '1', '2', '3'       //Note that IDs are strings
-    //),
+	'channels' => array(  					// If defined only these channels are compressed
+		//	   'abcd-abcd-abcd', ...		// List of channel uuids
+	),
 
-    'compressscheme' => array(
-    //  '1' => array(       //Definition for Channel ID 1
-    //      //...see below...
-    //  ),
-        'default' => array( //Definition for all other channels
-            (7*24*60*60)    => (1*60),      //Older than 7 Days      Datapoint per 1 Minute
-            (30*24*60*60)   => (5*60),      //Older than 30 Days     Datapoint per 5 Minutes
-            (6*30*24*60*60) => (15*60),     //Older than 6 Month     Datapoint per 15 Minutes
-            (365*24*60*60)  => (30*60),     //Older than 1 Year      Datapoint per 30 Minutes
-        )
-    )
+	'compressscheme' => array(
+		//  'abcd-abcdabcd' => array(      // Definition for channel with uuid 'abcd-abcdabcd'
+		//      // ...see below...
+		//  ),
+		'default' => array( 				// Definition for all other channels
+			(7*24*60*60)    => (1*60),      // Older than 7 Days      Datapoint per 1 Minute
+			(30*24*60*60)   => (5*60),      // Older than 30 Days     Datapoint per 5 Minutes
+			(6*30*24*60*60) => (15*60),     // Older than 6 Month     Datapoint per 15 Minutes
+			(365*24*60*60)  => (30*60),     // Older than 1 Year      Datapoint per 30 Minutes
+		)
+	)
 );
 
-$test = new VZcompress2($config);
+$compress = new VZcompress2($config);
+$compress->run();
 
 ?>

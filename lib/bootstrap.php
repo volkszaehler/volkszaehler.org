@@ -34,6 +34,10 @@ if (!defined('VZ_DIR')) {
 }
 define('VZ_VERSION', '0.3');
 
+if (!file_exists(VZ_DIR . '/vendor/autoload.php')) {
+	die('Could not find autoloader. Check that dependencies have been installed via `composer install`.');
+}
+
 require_once VZ_DIR . '/vendor/autoload.php';
 
 // load configuration

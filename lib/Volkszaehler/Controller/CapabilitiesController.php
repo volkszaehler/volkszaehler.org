@@ -23,6 +23,7 @@
 
 namespace Volkszaehler\Controller;
 
+use Volkszaehler\Router;
 use Volkszaehler\Model;
 use Volkszaehler\Util;
 use Volkszaehler\View;
@@ -94,17 +95,18 @@ class CapabilitiesController extends Controller {
 		}
 
 		if (is_null($section) || $section == 'formats') {
-			$capabilities['formats'] = array_keys(\Volkszaehler\Router::$viewMapping);
+			$capabilities['formats'] = array_keys(Router::$viewMapping);
 		}
 
 		if (is_null($section) || $section == 'contexts') {
-			$capabilities['contexts'] = array_keys(\Volkszaehler\Router::$controllerMapping);
+			$capabilities['contexts'] = array_keys(Router::$controllerMapping);
 		}
 
 		if (is_null($section) || $section == 'definitions') {
-			if (!is_null($section)) { // only caching when we don't request dynamic informations
-				$this->view->setCaching('expires', time()+2*7*24*60*60); // cache for 2 weeks
-			}
+			// unresolved artifact from Symfony migration
+			// if (!is_null($section)) { // only caching when we don't request dynamic informations
+			// 	$this->view->setCaching('expires', time()+2*7*24*60*60); // cache for 2 weeks
+			// }
 
 			$capabilities['definitions']['entities'] = Definition\EntityDefinition::get();
 			$capabilities['definitions']['properties'] = Definition\PropertyDefinition::get();
