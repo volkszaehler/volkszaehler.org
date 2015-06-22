@@ -60,11 +60,11 @@ vz.entities.loadCookie = function() {
 };
 
 /**
- * Load JSON entity details from the middleware
+ * Build queue of arbitrary requests per middleware
  */
-vz.entities.loadDetails = function() {
+vz.entities.queuePerMiddleware = function(callback) {
 	var queue = [];			// middleware calls
-	var middlewares = {};	// entities per call
+	var middlewares = {};	// hash of entities per call
 
 	vz.entities.each(function(entity) {
 		if (!(entity.middleware in middlewares)) {
@@ -74,13 +74,20 @@ vz.entities.loadDetails = function() {
 		middlewares[entity.middleware].push(entity);
 	}, true); // recursive
 
- 	for (var middleware in middlewares) {
-		if (middlewares.hasOwnProperty(middleware)) {
-			queue.push(vz.entities.loadMultipleDetails(middlewares[middleware]));
-		}
+ 	for (var mw in middlewares) {
+		queue.push(callback(middlewares[mw]));
 	}
 
-	return $.when.apply($, queue);
+	return queue;
+};
+
+/**
+ * Load JSON entity details from the middleware
+ */
+vz.entities.loadDetails = function() {
+	return $.when.apply($, vz.entities.queuePerMiddleware(function(entities) {
+		return vz.entities.loadMultipleDetails(entities);
+	}));
 };
 
 vz.entities.loadMultipleDetails = function(entities) {
@@ -161,22 +168,9 @@ vz.entities.speedupFactor = function() {
 vz.entities.loadData = function() {
 	$('#overlay').html('<img src="images/loading.gif" alt="loading..." /><p>loading...</p>');
 
-	var queue = [];
-
-	vz.middleware.each(function(idx, middleware) {
-		var entities = [];
-		vz.entities.each(function(entity) {
-			if (entity.middleware == middleware.url && entity.hasData()) {
-				entities.push(entity);
-			}
-		}, true); // recursive
-
-		if (entities.length > 0) {
-			queue.push(vz.entities.loadMultipleData(entities));
-		}
-	});
-
-	return $.when.apply($, queue);
+	return $.when.apply($, vz.entities.queuePerMiddleware(function(entities) {
+		return vz.entities.loadMultipleData(entities);
+	}));
 };
 
 vz.entities.loadMultipleData = function(entities) {
