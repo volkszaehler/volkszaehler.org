@@ -72,12 +72,7 @@ vz.getPermalink = function() {
 	var uuids = [];
 	vz.entities.each(function(entity, parent) {
 		if (entity.active) {
-			if (entity.middleware != vz.options.localMiddleware) {
-				uuids.push(entity.uuid + '@' + 	entity.middleware);
-			}
-			else {
-				uuids.push(entity.uuid);
-			}
+			uuids.push(entity.uuid + '@' + 	entity.middleware);
 		}
 	});
 
@@ -135,10 +130,10 @@ vz.load = function(args) {
 	});
 
 	if (args.url === undefined) { // local middleware by default
-		args.url = vz.options.localMiddleware;
+		args.url = vz.options.middleware[0].url;
 	}
 
-	if (args.url == vz.options.localMiddleware) { // local request
+	if (args.url == vz.options.middleware[0].url) { // local request
 		args.dataType = 'json';
 	}
 	else { // remote request
@@ -220,7 +215,7 @@ vz.parseUrlParams = function() {
 	entities.each(function(index, identifier) {
 		identifier = identifier.split('@');
 		var uuid = identifier[0];
-		var middleware = (identifier.length > 1) ? identifier[1] : vz.options.localMiddleware;
+		var middleware = (identifier.length > 1) ? identifier[1] : vz.options.middleware[0].url;
 
 		var entity = new Entity({
 			uuid: uuid,
@@ -244,6 +239,23 @@ vz.parseUrlParams = function() {
 	if (save) {
 		vz.entities.saveCookie();
 	}
+};
+
+/**
+ * Get middleware by URL param
+ */
+vz.getMiddleware = function(url) {
+	var mw = $.grep(vz.middleware, function(middleware) {
+		if (url == middleware.url) {
+			return true;
+		}
+	});
+
+	if (mw.length) {
+		return mw[0];
+	}
+
+	return null;
 };
 
 /**

@@ -289,12 +289,12 @@ vz.wui.dialogs.init = function() {
 	$('#entity-create option[value=power]').attr('selected', 'selected');
 
 	// set defaults
-	$('#entity-subscribe-middleware').val(vz.options.localMiddleware);
+	$('#entity-subscribe-middleware').val(vz.options.middleware[0].url);
 	// add middlewares
 	vz.middleware.forEach(function(middleware, idx) {
 		$('#entity-public-middleware').append($('<option>').val(middleware.url).text(middleware.title));
 	});
-	$('#entity-create-middleware').val(vz.options.localMiddleware);
+	$('#entity-create-middleware').val(vz.options.middleware[0].url);
 	$('#entity-subscribe-cookie').attr('checked', 'checked');
 	$('#entity-public-cookie').attr('checked', 'checked');
 
@@ -434,6 +434,27 @@ vz.wui.zoom = function(from, to) {
 	});
 
 	vz.entities.loadData().done(vz.wui.drawPlot);
+};
+
+/**
+ * Extend from..to range to match push updates and redraw
+ */
+vz.wui.zoomToPartialUpdate = function(to) {
+	if (vz.wui.tmaxnow) {
+		// move chart display window
+		var delta = to - vz.options.plot.xaxis.max;
+		vz.options.plot.xaxis.max = to;
+		vz.options.plot.xaxis.min += delta;
+
+		// draw after timeout
+		vz.wui.pushRedrawTimeout = window.setTimeout(function() {
+			vz.wui.pushRedrawTimeout = null;
+			vz.wui.drawPlot();
+		}, vz.options.pushRedrawTimeout);
+	}
+	else {
+		window.clearTimeout(vz.wui.pushRedrawTimeout);
+	}
 };
 
 /**
@@ -681,6 +702,11 @@ vz.wui.formatNumber = function(number, unit, prefix) {
 	if (number < 0 || number > 0) {
 		var precision = Math.max(0, vz.options.precision - Math.floor(Math.log(Math.abs(number))/Math.LN10));
 		number = Math.round(number * Math.pow(10, precision)) / Math.pow(10, precision); // rounding
+	}
+
+	// avoid almost zero
+	if (Math.abs(number) < Math.pow(10, -vz.options.precision)) {
+		number = 0;
 	}
 
 	if (prefix)
