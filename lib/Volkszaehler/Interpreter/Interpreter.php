@@ -107,6 +107,12 @@ abstract class Interpreter implements \Iterator {
 	}
 
 	/**
+	 * Convert raw meter readings.
+	 * This function will have side effects on internal member variables of the interpreter.
+	 */
+	abstract public function convertRawTuple($row);
+
+	/**
 	 * Iterator functions
 	 */
 
