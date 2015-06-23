@@ -834,9 +834,12 @@ vz.wui.dialogs.error = function(error, description, code) {
 		error = code + ': ' + error;
 	}
 
-	$('<div>')
-	.append($('<span>').html(description))
-	.dialog({
+	// make error messages singleton (suppress follow-on errors)
+	vz.wui.errorDialog = true;
+
+	$('<div>').append(
+		$('<span>').html(description)
+	).dialog({
 		title: error,
 		width: 450,
 		dialogClass: 'ui-error',
@@ -844,6 +847,7 @@ vz.wui.dialogs.error = function(error, description, code) {
 		modal: true,
 		buttons: {
 			Ok: function() {
+				vz.wui.errorDialog = false;
 				$(this).dialog('close');
 			}
 		}
@@ -851,5 +855,6 @@ vz.wui.dialogs.error = function(error, description, code) {
 };
 
 vz.wui.dialogs.exception = function(exception) {
+	if (vz.wui.errorDialog) return;
 	this.error(exception.type, exception.message, exception.code);
 };
