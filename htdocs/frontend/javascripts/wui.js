@@ -62,20 +62,9 @@ vz.wui.init = function() {
 	$('#controls').buttonset();
 
 	// auto refresh
-	$('#refresh').prop('checked', vz.options.refresh);
-	if (vz.options.refresh) {
-		vz.wui.tmaxnow = true;
+	if (false !== (vz.wui.tmaxnow = (vz.options.plot.xaxis.max >= (new Date().getTime() - 1000)))) {
 		vz.wui.setTimeout();
 	}
-	$('#refresh').change(function() {
-		vz.options.refresh = $(this).prop('checked');
-		if (vz.options.refresh) {
-			vz.wui.refresh(); // refresh once
-			vz.wui.setTimeout();
-		} else {
-			vz.wui.clearTimeout();
-		}
-	});
 
 	// toggle all channels
 	$('#entity-toggle').click(function() {
@@ -113,121 +102,9 @@ vz.wui.exportData = function(value) {
 	}
 };
 
-// show available properties for selected type
-vz.wui.dialogs.addProperties = function(container, proplist, className, entity) {
-	proplist.each(function(index, def) {
-
-		// hide properties from blacklist
-		var val = (entity && typeof entity[def] !== undefined) ? entity[def] : null;
-		if ((typeof val === 'undefined' || val === null) && vz.options.hiddenProperties.indexOf(def) >= 0) {
-			return; // hide less commonly used properties
-		}
-
-		vz.capabilities.definitions.properties.each(function(propindex, propdef) {
-			if (def == propdef.name) {
-				var cntrl = null;
-				var row = $('<tr>')
-					.addClass("property")
-					.append(
-						$('<td>').text(propdef.translation[vz.options.language])
-					);
-
-				switch (propdef.type) {
-					case 'float':
-					case 'integer':
-					case 'string':
-						cntrl = $('<input size="36">').attr("type", "text");
-						break;
-
-					case 'text':
-						cntrl = $('<textarea>');
-						break;
-
-					case 'boolean':
-						cntrl = $('<input>').attr("type", "checkbox").val("1"); // boolean value
-						break;
-
-					case 'multiple':
-						cntrl = $('<select>').attr("Size", "1");
-						propdef.options.each(function(optindex, optdef) {
-							cntrl.append(
-								$('<option>').html(optdef).val(optdef)
-							);
-						});
-						break;
-				}
-
-				// editing?
-				if (entity && cntrl !== null) {
-					// set current value
-					switch (propdef.type) {
-						case 'float':
-						case 'integer':
-						case 'string':
-						case 'text':
-							cntrl.val(val);
-							break;
-
-						case 'boolean':
-							cntrl.attr('checked', val);
-							break;
-
-						case 'multiple':
-							cntrl.find('option[value="' + val + '"]').attr('selected', 'selected');
-							break;
-					}
-				}
-
-				switch (propdef.name) {
-					case 'fillstyle':
-						cntrl = $('<div id="slider"></div>').slider({
-							value: (entity) ? entity[def] : 0,
-							min: propdef.min,
-							max: propdef.max,
-							step: (propdef.max - propdef.min) / 20,
-							slide: function(event, ui) {
-								$('.simpleColorChooser').hide();
-								$('#slider input').val(ui.value);
-							}
-						})
-						.append($('<input>')
-							.attr('type', 'hidden').attr("name", propdef.name)
-							.val((entity) ? entity[def] : 0)
-						);
-						break;
-
-					case 'color':
-						cntrl = $('<input>')
-							.attr('type', 'hidden').attr("name", propdef.name)
-							.val((entity) ? entity[def] : 'aqua');
-						$.cachedScript('javascripts/jquery/jquery.simple-color.min.js').done(function() {
-							// cntrl.attr('id', 'colorValue');
-							cntrl.simpleColor({
-								cellWidth: 16,
-								cellHeight: 16,
-								chooserCSS: { "border-color": "#a7a7a7", "z-index": 20 }, // above slider
-								displayCSS: { "border-color": "#a7a7a7" } // similar to style.css
-							});
-						});
-						break;
-				}
-
-				if (cntrl !== null) {
-					row.addClass(className);
-					cntrl.attr("name", propdef.name);
-					row.append($('<td>').append(cntrl));
-					container.append(row);
-				}
-
-				return false;
-			}
-		});
-	});
-};
-
 /**
  * Add entity after UI has already been initialized
- * Tiggers refresh of entity data, plot and axes
+ * Triggers refresh of entity data, plot and axes
  */
 vz.wui.addEntity = function(entity) {
 	vz.entities.push(entity);
@@ -410,30 +287,118 @@ vz.wui.dialogs.init = function() {
 	});
 };
 
-vz.wui.zoom = function(from, to) {
-	// we cannot zoom/pan into the future
-	var now = new Date().getTime();
-	if (to > now) {
-		var delta = to - from;
-		vz.options.plot.xaxis.min = now - delta;
-		vz.options.plot.xaxis.max = now;
-	} else {
-		vz.options.plot.xaxis.min = from;
-		vz.options.plot.xaxis.max = to;
-	}
+/**
+ * Show available properties for selected entity
+ */
+vz.wui.dialogs.addProperties = function(container, proplist, className, entity) {
+	proplist.each(function(index, def) {
 
-	vz.wui.tmaxnow = (vz.options.plot.xaxis.max >= (now - 1000));
+		// hide properties from blacklist
+		var val = (entity && typeof entity[def] !== undefined) ? entity[def] : null;
+		if ((typeof val === 'undefined' || val === null) && vz.options.hiddenProperties.indexOf(def) >= 0) {
+			return; // hide less commonly used properties
+		}
 
-	if (vz.options.plot.xaxis.min < 0) {
-		vz.options.plot.xaxis.min = 0;
-	}
+		vz.capabilities.definitions.properties.each(function(propindex, propdef) {
+			if (def == propdef.name) {
+				var cntrl = null;
+				var row = $('<tr>')
+					.addClass("property")
+					.append(
+						$('<td>').text(propdef.translation[vz.options.language])
+					);
 
-	vz.options.plot.yaxes.each(function(i) {
-		vz.options.plot.yaxes[i].max = null; // autoscaling
-		vz.options.plot.yaxes[i].min = 0; // fixed to 0
+				switch (propdef.type) {
+					case 'float':
+					case 'integer':
+					case 'string':
+						cntrl = $('<input size="36">').attr("type", "text");
+						break;
+
+					case 'text':
+						cntrl = $('<textarea>');
+						break;
+
+					case 'boolean':
+						cntrl = $('<input>').attr("type", "checkbox").val("1"); // boolean value
+						break;
+
+					case 'multiple':
+						cntrl = $('<select>').attr("Size", "1");
+						propdef.options.each(function(optindex, optdef) {
+							cntrl.append(
+								$('<option>').html(optdef).val(optdef)
+							);
+						});
+						break;
+				}
+
+				// editing?
+				if (entity && cntrl !== null) {
+					// set current value
+					switch (propdef.type) {
+						case 'float':
+						case 'integer':
+						case 'string':
+						case 'text':
+							cntrl.val(val);
+							break;
+
+						case 'boolean':
+							cntrl.attr('checked', val);
+							break;
+
+						case 'multiple':
+							cntrl.find('option[value="' + val + '"]').attr('selected', 'selected');
+							break;
+					}
+				}
+
+				switch (propdef.name) {
+					case 'fillstyle':
+						cntrl = $('<div id="slider"></div>').slider({
+							value: (entity) ? entity[def] : 0,
+							min: propdef.min,
+							max: propdef.max,
+							step: (propdef.max - propdef.min) / 20,
+							slide: function(event, ui) {
+								$('.simpleColorChooser').hide();
+								$('#slider input').val(ui.value);
+							}
+						})
+						.append($('<input>')
+							.attr('type', 'hidden').attr("name", propdef.name)
+							.val((entity) ? entity[def] : 0)
+						);
+						break;
+
+					case 'color':
+						cntrl = $('<input>')
+							.attr('type', 'hidden').attr("name", propdef.name)
+							.val((entity) ? entity[def] : 'aqua');
+						$.cachedScript('javascripts/jquery/jquery.simple-color.min.js').done(function() {
+							// cntrl.attr('id', 'colorValue');
+							cntrl.simpleColor({
+								cellWidth: 16,
+								cellHeight: 16,
+								chooserCSS: { "border-color": "#a7a7a7", "z-index": 20 }, // above slider
+								displayCSS: { "border-color": "#a7a7a7" } // similar to style.css
+							});
+						});
+						break;
+				}
+
+				if (cntrl !== null) {
+					row.addClass(className);
+					cntrl.attr("name", propdef.name);
+					row.append($('<td>').append(cntrl));
+					container.append(row);
+				}
+
+				return false;
+			}
+		});
 	});
-
-	vz.entities.loadData().done(vz.wui.drawPlot);
 };
 
 /**
@@ -472,6 +437,9 @@ vz.wui.initEvents = function() {
 		});
 };
 
+/**
+ * Update legend on mouse over
+ */
 vz.wui.updateLegend = function() {
 	vz.wui.updateLegendTimeout = null;
 
@@ -481,6 +449,10 @@ vz.wui.updateLegend = function() {
 	if (pos.x < axes.xaxis.min || pos.x > axes.xaxis.max ||
 		pos.y < axes.yaxis.min || pos.y > axes.yaxis.max)
 		return;
+
+
+	// legend container
+	var legend = $('.legend .legendLabel');
 
 	var i, j, dataset = vz.plot.getData();
 	for (i = 0; i < dataset.length; ++i) {
@@ -508,18 +480,37 @@ vz.wui.updateLegend = function() {
 				y = p1[1] + (p2[1] - p1[1]) * (pos.x - p1[0]) / (p2[0] - p1[0]);
 		}
 		if (y === null) {
-			vz.wui.legend.eq(i).text(series.title);
+			legend.eq(i).text(series.title);
 		} else {
 			// use plot wrapper instead of `new Date()` for timezone support
 			var d = $.plot.dateGenerator(pos.x, vz.options.plot.xaxis);
 			var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
 			var format = (delta > 1*24*3600*1000) ? '%d.%m.%y - %H:%M' : '%H:%M:%S';
-			vz.wui.legend.eq(i).text(series.title + ": " + $.plot.formatDate(d,format) + " - " + vz.wui.formatNumber(y, series.unit));
+			legend.eq(i).text(series.title + ": " + $.plot.formatDate(d,format) + " - " + vz.wui.formatNumber(y, series.unit));
 		}
 	}
 
 	// update opaque background sizing
 	$('.legend > div').css({ width: $('.legend table').css('width') });
+};
+
+/**
+ * Update page title
+ */
+vz.wui.updateHeadline = function() {
+	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
+	var format = '%a %e. %b %Y';
+
+	if (delta < 3*24*3600*1000) format += ' %H:%M'; // under 3 days
+	if (delta < 5*60*1000) format += ':%S'; // under 5 minutes
+
+	// timezone-aware dates if timezon-js is inlcuded
+	var from = $.plot.dateGenerator(vz.options.plot.xaxis.min, vz.options.plot.xaxis);
+	var to = $.plot.dateGenerator(vz.options.plot.xaxis.max, vz.options.plot.xaxis);
+
+	from = $.plot.formatDate(from, format, vz.options.monthNames, vz.options.dayNames, true);
+	to = $.plot.formatDate(to, format, vz.options.monthNames, vz.options.dayNames, true);
+	$('#title').html(from + ' - ' + to);
 };
 
 /**
@@ -604,6 +595,129 @@ vz.wui.handleControls = function () {
 				new Date(d.getFullYear()+1, 0, 1).getTime()
 			);
 			break;
+	}
+};
+
+/**
+ * Adjust chart to selected range, reload and draw
+ */
+vz.wui.zoom = function(from, to) {
+	// we cannot zoom/pan into the future
+	var now = new Date().getTime();
+	if (to > now) {
+		var delta = to - from;
+		vz.options.plot.xaxis.min = now - delta;
+		vz.options.plot.xaxis.max = now;
+	} else {
+		vz.options.plot.xaxis.min = from;
+		vz.options.plot.xaxis.max = to;
+	}
+
+	vz.wui.tmaxnow = (vz.options.plot.xaxis.max >= (now - 1000));
+
+	if (vz.options.plot.xaxis.min < 0) {
+		vz.options.plot.xaxis.min = 0;
+	}
+
+	vz.options.plot.yaxes.each(function(i) {
+		vz.options.plot.yaxes[i].max = null; // autoscaling
+		vz.options.plot.yaxes[i].min = 0; // fixed to 0
+	});
+
+	vz.entities.loadData().done(vz.wui.drawPlot);
+};
+
+/**
+ * Draw plot to container
+ */
+vz.wui.drawPlot = function () {
+	vz.options.interval = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
+	vz.wui.updateHeadline();
+
+	// assign entities to axes
+	if (vz.options.plot.axesAssigned === false) {
+		vz.entities.each(function(entity) {
+			entity.assignAxis();
+		}, true);
+
+		vz.options.plot.axesAssigned = true;
+	}
+
+	var series = [], index = 0;
+	vz.entities.each(function(entity) {
+		if (entity.active && entity.definition && entity.definition.model == 'Volkszaehler\\Model\\Channel' &&
+				entity.data && entity.data.tuples && entity.data.tuples.length > 0) {
+			var i, maxTuples = 0;
+
+			// work on copy here to be able to redraw
+			var tuples = entity.data.tuples.map(function(t) {
+				return t.slice(0);
+			});
+
+			// mangle data for "steps" curves by shifting one ts left ("step-before")
+			if (entity.style == "steps") {
+				tuples.unshift([entity.data.from, 1, 1]); // add new first ts
+				for (i=0; i<tuples.length-1; i++) {
+					tuples[i][1] = tuples[i+1][1];
+				}
+			}
+
+			// remove number of datapoints from each tuple to avoid flot fill error
+			if (entity.fillstyle || entity.gap) {
+				for (i=0; i<tuples.length; i++) {
+					maxTuples = Math.max(maxTuples, tuples[i][2]);
+					delete tuples[i][2];
+				}
+			}
+
+			var serie = {
+				data: tuples,
+				color: entity.color,
+				label: entity.title,
+				title: entity.title,
+				unit : entity.definition.unit,
+				lines: {
+					show: (entity.style == 'lines' || entity.style == 'steps'),
+					steps: (entity.style == 'steps'),
+					lineWidth: (index == vz.wui.selectedChannel ? vz.options.lineWidthSelected : vz.options.lineWidthDefault),
+					fill: (entity.fillstyle !== undefined) ? entity.fillstyle : false
+				},
+				points: {
+					show: (entity.style == 'points')
+				},
+				yaxis: entity.assignedYaxis
+			};
+
+			// disable interpolation when data has gaps
+			if (entity.gap) {
+				var minGapWidth = (entity.data.to - entity.data.from) / tuples.length;
+				serie.xGapThresh = Math.max(entity.gap * 1000 * maxTuples, minGapWidth);
+				vz.options.plot.xaxis.insertGaps = true;
+			}
+
+			// use this index for setting vz.wui.selectedChannel
+			entity.index = index++;
+
+			series.push(serie);
+		}
+	}, true);
+
+	if (series.length === 0) {
+		$('#overlay').html('<img src="images/empty.png" alt="no data..." /><p>nothing to plot...</p>');
+		series.push({}); // add empty dataset to show axes
+	}
+	else {
+		$('#overlay').empty();
+	}
+
+	// plot
+	vz.plot = $.plot($('#flot'), series, vz.options.plot);
+
+	// disable automatic refresh if we are in past
+	if (vz.wui.tmaxnow) {
+		vz.wui.setTimeout();
+	} else {
+		vz.wui.clearTimeout('(suspended)');
 	}
 };
 
@@ -706,123 +820,6 @@ vz.wui.formatConsumptionUnit = function(unit) {
 	}
 
 	return unit;
-};
-
-vz.wui.updateHeadline = function() {
-	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
-	var format = '%a %e. %b %Y';
-
-	if (delta < 3*24*3600*1000) format += ' %H:%M'; // under 3 days
-	if (delta < 5*60*1000) format += ':%S'; // under 5 minutes
-
-	// timezone-aware dates if timezon-js is inlcuded
-	var from = $.plot.dateGenerator(vz.options.plot.xaxis.min, vz.options.plot.xaxis);
-	var to = $.plot.dateGenerator(vz.options.plot.xaxis.max, vz.options.plot.xaxis);
-
-	from = $.plot.formatDate(from, format, vz.options.monthNames, vz.options.dayNames, true);
-	to = $.plot.formatDate(to, format, vz.options.monthNames, vz.options.dayNames, true);
-	$('#title').html(from + ' - ' + to);
-};
-
-/**
- * Draws plot to container
- */
-vz.wui.drawPlot = function () {
-	vz.options.interval = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
-	vz.wui.updateHeadline();
-
-	// assign entities to axes
-	if (vz.options.plot.axesAssigned === false) {
-		vz.entities.each(function(entity) {
-			entity.assignAxis();
-		}, true);
-
-		vz.options.plot.axesAssigned = true;
-	}
-
-	var series = [], index = 0;
-	vz.entities.each(function(entity) {
-		if (entity.active && entity.definition && entity.definition.model == 'Volkszaehler\\Model\\Channel' &&
-				entity.data && entity.data.tuples && entity.data.tuples.length > 0) {
-			var i, maxTuples = 0;
-
-			// work on copy here to be able to redraw
-			var tuples = entity.data.tuples.map(function(t) {
-				return t.slice(0);
-			});
-
-			// mangle data for "steps" curves by shifting one ts left ("step-before")
-			if (entity.style == "steps") {
-				tuples.unshift([entity.data.from, 1, 1]); // add new first ts
-				for (i=0; i<tuples.length-1; i++) {
-					tuples[i][1] = tuples[i+1][1];
-				}
-			}
-
-			// remove number of datapoints from each tuple to avoid flot fill error
-			if (entity.fillstyle || entity.gap) {
-				for (i=0; i<tuples.length; i++) {
-					maxTuples = Math.max(maxTuples, tuples[i][2]);
-					delete tuples[i][2];
-				}
-			}
-
-			var serie = {
-				data: tuples,
-				color: entity.color,
-				label: entity.title,
-				title: entity.title,
-				unit : entity.definition.unit,
-				lines: {
-					show: (entity.style == 'lines' || entity.style == 'steps'),
-					steps: (entity.style == 'steps'),
-					lineWidth: (index == vz.wui.selectedChannel ? vz.options.lineWidthSelected : vz.options.lineWidthDefault),
-					fill: (entity.fillstyle !== undefined) ? entity.fillstyle : false
-				},
-				points: {
-					show: (entity.style == 'points')
-				},
-				yaxis: entity.assignedYaxis
-			};
-
-			// disable interpolation when data has gaps
-			if (entity.gap) {
-				var minGapWidth = (entity.data.to - entity.data.from) / tuples.length;
-				serie.xGapThresh = Math.max(entity.gap * 1000 * maxTuples, minGapWidth);
-				vz.options.plot.xaxis.insertGaps = true;
-			}
-
-			// use this index for setting vz.wui.selectedChannel
-			entity.index = index++;
-
-			series.push(serie);
-		}
-	}, true);
-
-	if (series.length === 0) {
-		$('#overlay').html('<img src="images/empty.png" alt="no data..." /><p>nothing to plot...</p>');
-		series.push({}); // add empty dataset to show axes
-	}
-	else {
-		$('#overlay').empty();
-	}
-
-	var flot = $('#flot');
-	vz.plot = $.plot(flot, series, vz.options.plot);
-
-	// remember legend container for updating
-	vz.wui.legend = $('.legend .legendLabel');
-
-	// disable automatic refresh if we are in past
-	if (vz.options.refresh) {
-		if (vz.wui.tmaxnow) {
-			vz.wui.setTimeout();
-		} else {
-			vz.wui.clearTimeout('(suspended)');
-		}
-	} else {
-		vz.wui.clearTimeout();
-	}
 };
 
 /*

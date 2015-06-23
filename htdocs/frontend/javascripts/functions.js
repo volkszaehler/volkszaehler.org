@@ -187,8 +187,6 @@ vz.parseUrlParams = function() {
 
 				case 'from':
 				case 'to':
-					// disable automatic refresh
-					vz.options.refresh = false;
 					// ms or speaking timestamp
 					var ts = (/^-?[0-9]+$/.test(vars[key])) ? parseInt(vars[key]) : new Date(vars[key]).getTime();
 					if (key == 'from')
