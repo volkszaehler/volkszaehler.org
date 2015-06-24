@@ -34,6 +34,7 @@ use Volkszaehler\Model;
  *
  * @package default
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @author Andreas Goetz <cpuidle@gmx.de>
  */
 class JSON extends View {
 	/**
@@ -52,7 +53,7 @@ class JSON extends View {
 	public function __construct(Request $request) {
 		parent::__construct($request);
 
-		$this->json = new Util\JSON();
+		$this->json = array();
 		$this->json['version'] = VZ_VERSION;
 
 		// JSONP
@@ -79,16 +80,26 @@ class JSON extends View {
 	}
 
 	/**
+	 * Process, encode and print output to stdout
+	 */
+	protected function render() {
+		$json = Util\Json::encode($this->json, (Util\Debug::isActivated()) ? JSON_PRETTY : 0);
+
+		if ($this->padding) {
+			$json = $this->padding . '(' . $json . ');';
+		}
+
+		return $json;
+	}
+
+	/**
 	 * Add object to output
 	 *
 	 * @param mixed $data
 	 */
 	public function add($data) {
 		if ($data instanceof Interpreter\Interpreter) {
-			$this->addData($data);
-		}
-		elseif (is_array($data) && isset($data[0]) && $data[0] instanceof Interpreter\Interpreter) {
-			$this->addMultipleData($data);
+			$this->json['data'] = self::convertInterpreter($data);
 		}
 		elseif ($data instanceof Model\Entity) {
 			$this->json['entity'] = self::convertEntity($data);
@@ -99,7 +110,7 @@ class JSON extends View {
 		elseif ($data instanceof Util\Debug) {
 			$this->addDebug($data);
 		}
-		elseif ($data instanceof Util\JSON || is_array($data)) {
+		elseif (is_array($data)) {
 			$this->addArray($data, $this->json);
 		}
 		elseif (isset($data)) { // ignores NULL data
@@ -108,16 +119,13 @@ class JSON extends View {
 	}
 
 	/**
-	 * Process, encode and print output to stdout
+	 * Convert interpreter to json-serializable object
+	 *
+	 * @param Interpreter\Interpreter $interpreter
+	 * @return JsonInterpreterWrapper
 	 */
-	protected function render() {
-		$json = $this->json->encode((Util\Debug::isActivated()) ? JSON_PRETTY : 0);
-
-		if ($this->padding) {
-			$json = $this->padding . '(' . $json . ');';
-		}
-
-		return $json;
+	protected static function convertInterpreter(Interpreter\Interpreter $interpreter) {
+		return new JsonInterpreterWrapper($interpreter);
 	}
 
 	/**
@@ -145,6 +153,37 @@ class JSON extends View {
 		}
 
 		return $jsonEntity;
+	}
+
+	/**
+	 * Add an array of objects to the output
+	 */
+	protected function addArray($data, &$refNode) {
+		if (is_null($refNode)) {
+			$refNode = array();
+		}
+
+		foreach ($data as $index => $value) {
+			if (is_array($value)) {
+				$this->addArray($value, $refNode[$index]);
+			}
+			elseif ($value instanceof Model\Entity) {
+				$refNode[$index] = self::convertEntity($value);
+			}
+			elseif ($value instanceof Interpreter\Interpreter) {
+				// special case: interpreters are always added to the root node
+				if (!isset($this->json['data'])) {
+					$this->json['data'] = array();
+				}
+				$this->json['data'][] = self::convertInterpreter($value);
+			}
+			elseif (is_numeric($value)) {
+				$refNode[$index] = View::formatNumber($value);
+			}
+			else {
+				$refNode[$index] = $value;
+			}
+		}
 	}
 
 	/**
@@ -202,35 +241,35 @@ class JSON extends View {
 			$this->json['exception'] = $exceptionInfo;
 		}
 	}
+}
 
-	/**
-	 * Add multiple data objects to output queue
-	 *
-	 * @param $interpreter
-	 */
-	protected function addMultipleData($data) {
-		foreach ($data as $interpreter) {
-			$this->addData($interpreter, true);
-		}
-		// correct structure
-		$this->json['data'] = $this->json['data']['children'];
+/**
+ * Interpreter to JSON converter with low memory footprint
+ */
+class JsonInterpreterWrapper {
+
+	protected $interpreter;
+
+	public function __construct($interpreter) {
+		$this->interpreter = $interpreter;
 	}
 
 	/**
-	 * Add data to output queue
-	 *
-	 * @param $interpreter
-	 * @param boolean $children
+	 * Called by Zend\Json\Encode::encode to convert object to string
 	 */
-	protected function addData($interpreter, $children = false) {
-		$data = array();
-		// iterate through PDO resultset
+	public function toJson() {
+		$interpreter = $this->interpreter;
+
+		// iterate through PDO resultset to populate interpreter
+		$tuples = '';
 		foreach ($interpreter as $tuple) {
-			$data[] = array(
-				$tuple[0],
-				View::formatNumber($tuple[1]),
-				$tuple[2]
-			);
+			$tuples .= json_encode(
+				array(
+					$tuple[0],
+					View::formatNumber($tuple[1]),
+					$tuple[2]
+				)
+			) . ',';
 		}
 
 		$from = 0 + $interpreter->getFrom();
@@ -240,53 +279,24 @@ class JSON extends View {
 		$average = $interpreter->getAverage();
 		$consumption = $interpreter->getConsumption();
 
-		$wrapper = array();
-		$wrapper['uuid'] = $interpreter->getEntity()->getUuid();
-		if (isset($from)) $wrapper['from'] = $from;
-		if (isset($to)) $wrapper['to'] = $to;
-		if (isset($min)) $wrapper['min'] = $min;
-		if (isset($max)) $wrapper['max'] = $max;
-		if (isset($average)) $wrapper['average'] = View::formatNumber($average);
-		if (isset($consumption)) $wrapper['consumption'] = View::formatNumber($consumption);
+		$header = array();
+		$header['uuid'] = $interpreter->getEntity()->getUuid();
+		if (isset($from)) $header['from'] = $from;
+		if (isset($to)) $header['to'] = $to;
+		if (isset($min)) $header['min'] = $min;
+		if (isset($max)) $header['max'] = $max;
+		if (isset($average)) $header['average'] = View::formatNumber($average);
+		if (isset($consumption)) $header['consumption'] = View::formatNumber($consumption);
+		$header['rows'] = $interpreter->getRowCount();
+		$json = json_encode($header);
 
-		$wrapper['rows'] = $interpreter->getRowCount();
-
-		if (($interpreter->getTupleCount() > 0 || is_null($interpreter->getTupleCount())) && count($data) > 0) {
-			$wrapper['tuples'] = $data;
-		}
-
-		if (!isset($this->json['data'])) {
-			// make sure json['data'] is initialized when child data is added
-			$this->json['data'] = array();
-		}
-		if ($children == false) {
-			// preserve child data if existing
-			$this->json['data'] = array_merge($wrapper, $this->json['data']);
-		}
-		else {
-			$this->json['data']['children'][] = $wrapper;
-		}
-	}
-
-	protected function addArray($data, &$refNode) {
-		if (is_null($refNode)) {
-			$refNode = array();
+		// for historic reasons, add tuples after header data
+		if (strlen($tuples) > 0) {
+			// insert before closing } bracket
+			$json = substr_replace($json, ',"tuples":[' . substr($tuples, 0, -1) . ']', -1, 0);
 		}
 
-		foreach ($data as $index => $value) {
-			if ($value instanceof Util\JSON || is_array($value)) {
-				$this->addArray($value, $refNode[$index]);
-			}
-			elseif ($value instanceof Model\Entity) {
-				$refNode[$index] = self::convertEntity($value);
-			}
-			elseif (is_numeric($value)) {
-				$refNode[$index] = View::formatNumber($value);
-			}
-			else {
-				$refNode[$index] = $value;
-			}
-		}
+		return $json;
 	}
 }
 

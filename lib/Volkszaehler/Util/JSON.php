@@ -23,6 +23,8 @@
 
 namespace Volkszaehler\Util;
 
+use Zend;
+
 /**
  * Custom option constant for JSON::encode()
  */
@@ -33,22 +35,24 @@ define('JSON_PRETTY', 128);
  *
  * @package util
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @author Andreas Goetz <cpuidle@gmx.de>
  */
-class JSON extends \ArrayObject {
+class JSON {
 
 	/**
 	 * OOP wrapper and factory
 	 * @param string $json
 	 * @return Util\JSON
 	 */
-	static public function decode($json, $assoc = FALSE, $depth = 512) {
+	public static function decode($json, $assoc = FALSE, $depth = 512) {
 		$data = json_decode(self::strip($json), $assoc, $depth);
 
 		if (is_null($data)) {
-			throw new JSONException();
+			// allow DataController to try/catch empty requests
+			throw new \RuntimeException();
 		}
 
-		return new self($data);
+		return $data;
 	}
 
 	/**
@@ -56,82 +60,18 @@ class JSON extends \ArrayObject {
 	 * @param integer $options use JSON_* constants
 	 * @return string the JSON encoded string
 	 */
-	public function encode($options = 0) {
-		$json = json_encode($this->getArrayCopy(), $options);
+	public static function encode($value, $options = 0) {
+		// use Zend\Json\Encoder instead of Zend\Json\Json or toJson won't be called as arrays are short-circuited
+		$json = Zend\Json\Encoder::encode($value);
 
-		// manual pretty-printing only before PHP 5.4
-		if (($options & JSON_PRETTY) && version_compare(PHP_VERSION, '5.4.0', '<')) {
-			$json = self::format($json);
+		// remove encoded class names
+		$json = preg_replace('/"__className":\s*".*?",?/', '', $json);
+
+		if ($options & JSON_PRETTY) {
+			$json = Zend\Json\Json::prettyPrint($json, array("indent" => "\t"));
 		}
 
 		return $json;
-	}
-
-	/**
-	 * Cast to string
-	 *
-	 * @return string
-	 */
-	public function __toString() {
-		return $this->encode();
-	}
-
-	/**
-	 * Formats JSON with indents and new lines
-	 *
-	 * @param string $json
-	 * @param string $indent
-	 * @param string $newLine
-	 * @return string the formatted JSON
-	 */
-	protected static function format($json, $indent = "\t", $newLine = "\n") {
-		$formatted = '';
-		$indentLevel = 0;
-		$inString = FALSE;
-
-		$len = strlen($json);
-		for($c = 0; $c < $len; $c++) {
-			$char = $json[$c];
-			switch($char) {
-				case '{':
-				case '[':
-					$formatted .= $char;
-					if (!$inString && (ord($json[$c+1]) != ord($char)+2)) {
-						$indentLevel++;
-						$formatted .= $newLine . str_repeat($indent, $indentLevel);
-					}
-					break;
-				case '}':
-				case ']':
-					if (!$inString && (ord($json[$c-1]) != ord($char)-2)) {
-						$indentLevel--;
-						$formatted .= $newLine . str_repeat($indent, $indentLevel);
-					}
-					$formatted .= $char;
-					break;
-				case ',':
-					$formatted .= $char;
-					if (!$inString) {
-						$formatted .= $newLine . str_repeat($indent, $indentLevel);
-					}
-					break;
-				case ':':
-					$formatted .= $char;
-					if (!$inString) {
-						$formatted .= ' ';
-					}
-					break;
-				case '"':
-					if ($c > 0 && $json[$c-1] != '\\') {
-						$inString = !$inString;
-					}
-				default:
-					$formatted .= $char;
-					break;
-			}
-		}
-
-		return $formatted;
 	}
 
 	/**
@@ -152,25 +92,6 @@ class JSON extends \ArrayObject {
 
 		// eliminate extraneous space
 		return trim($json);
-	}
-}
-
-class JSONException extends \Exception {
-	/**
-	 * @var array errorcodes defined by json_last_error()
-	 * @link http://www.php.net/manual/en/json.constants.php
-	 */
-	protected static $errors = array(
-		JSON_ERROR_NONE => 'No error has occurred',
-		JSON_ERROR_DEPTH => 'The maximum stack depth has been exceeded',
-		JSON_ERROR_CTRL_CHAR => 'Control character error',
-		JSON_ERROR_SYNTAX => 'Syntax error',
-		JSON_ERROR_STATE_MISMATCH => 'Invalid or malformed JSON'
-		// JSON_ERROR_UTF8 => 'Malformed UTF-8 characters' // INFO this constant exists since PHP 5.3.3
-	);
-
-	public function __construct($message = NULL, $code = 0) {
-		parent::__construct((is_null($message)) ? self::$errors[json_last_error()] : $message, $code);
 	}
 }
 
