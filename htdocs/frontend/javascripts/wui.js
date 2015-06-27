@@ -53,41 +53,7 @@ vz.wui.init = function() {
 	$('button[name=entity-add]').click(this.dialogs.init);
 
 	$('#export select').change(function(event) {
-		switch ($(this).val()) {
-			case 'permalink':
-				window.location = vz.getPermalink();
-				break;
-			case 'png':
-				// will prompt the user to save the image as PNG
-				$('#chart-export .export')
-					.html('')
-					.css({
-						"width": $('#flot').width() * 0.8,
-						"height": $('#flot').height() * 0.8})
-					.append(
-						$(Canvas2Image.saveAsPNG(vz.plot.getCanvas(), true))
-						.css({
-							"max-width":"100%",
-							"max-height":"100%"}));
-				$('#chart-export').dialog({
-					title: unescape('Export Snapshot'),
-					width: 'auto',
-					height: 'auto',
-					resizable: false,
-					buttons: {
-						Ok: function() {
-							$(this).dialog('close');
-						}
-					}
-				});
-				break;
-			case 'csv':
-			case 'json':
-			case 'xml':
-				window.location = vz.getLink($(this).val());
-				break;
-		}
-
+		vz.wui.exportData($(this).val());
 		$(this).val('default');
 	});
 
@@ -96,20 +62,9 @@ vz.wui.init = function() {
 	$('#controls').buttonset();
 
 	// auto refresh
-	$('#refresh').prop('checked', vz.options.refresh);
-	if (vz.options.refresh) {
-		vz.wui.tmaxnow = true;
+	if (false !== (vz.wui.tmaxnow = (vz.options.plot.xaxis.max >= (new Date().getTime() - 1000)))) {
 		vz.wui.setTimeout();
 	}
-	$('#refresh').change(function() {
-		vz.options.refresh = $(this).prop('checked');
-		if (vz.options.refresh) {
-			vz.wui.refresh(); // refresh once
-			vz.wui.setTimeout();
-		} else {
-			vz.wui.clearTimeout();
-		}
-	});
 
 	// toggle all channels
 	$('#entity-toggle').click(function() {
@@ -119,121 +74,37 @@ vz.wui.init = function() {
 	});
 };
 
-// show available properties for selected type
-vz.wui.dialogs.addProperties = function(container, proplist, className, entity) {
-	proplist.each(function(index, def) {
-
-		// hide properties from blacklist
-		var val = (entity && typeof entity[def] !== undefined) ? entity[def] : null;
-		if ((typeof val === 'undefined' || val === null) && vz.options.hiddenProperties.indexOf(def) >= 0) {
-			return; // hide less commonly used properties
-		}
-
-		vz.capabilities.definitions.properties.each(function(propindex, propdef) {
-			if (def == propdef.name) {
-				var cntrl = null;
-				var row = $('<tr>')
-					.addClass("property")
-					.append(
-						$('<td>').text(propdef.translation[vz.options.language])
-					);
-
-				switch (propdef.type) {
-					case 'float':
-					case 'integer':
-					case 'string':
-						cntrl = $('<input size="36">').attr("type", "text");
-						break;
-
-					case 'text':
-						cntrl = $('<textarea>');
-						break;
-
-					case 'boolean':
-						cntrl = $('<input>').attr("type", "checkbox").val("1"); // boolean value
-						break;
-
-					case 'multiple':
-						cntrl = $('<select>').attr("Size", "1");
-						propdef.options.each(function(optindex, optdef) {
-							cntrl.append(
-								$('<option>').html(optdef).val(optdef)
-							);
-						});
-						break;
-				}
-
-				// editing?
-				if (entity && cntrl !== null) {
-					// set current value
-					switch (propdef.type) {
-						case 'float':
-						case 'integer':
-						case 'string':
-						case 'text':
-							cntrl.val(val);
-							break;
-
-						case 'boolean':
-							cntrl.attr('checked', val);
-							break;
-
-						case 'multiple':
-							cntrl.find('option[value="' + val + '"]').attr('selected', 'selected');
-							break;
-					}
-				}
-
-				switch (propdef.name) {
-					case 'fillstyle':
-						cntrl = $('<div id="slider"></div>').slider({
-							value: (entity) ? entity[def] : 0,
-							min: propdef.min,
-							max: propdef.max,
-							step: (propdef.max - propdef.min) / 20,
-							slide: function(event, ui) {
-								$('.simpleColorChooser').hide();
-								$('#slider input').val(ui.value);
-							}
-						})
-						.append($('<input>')
-							.attr('type', 'hidden').attr("name", propdef.name)
-							.val((entity) ? entity[def] : 0)
-						);
-						break;
-
-					case 'color':
-						cntrl = $('<input>')
-							.attr('type', 'hidden').attr("name", propdef.name)
-							.val((entity) ? entity[def] : 'aqua');
-						$.cachedScript('javascripts/jquery/jquery.simple-color.min.js').done(function() {
-							// cntrl.attr('id', 'colorValue');
-							cntrl.simpleColor({
-								cellWidth: 16,
-								cellHeight: 16,
-								chooserCSS: { "border-color": "#a7a7a7", "z-index": 20 }, // above slider
-								displayCSS: { "border-color": "#a7a7a7" } // similar to style.css
-							});
-						});
-						break;
-				}
-
-				if (cntrl !== null) {
-					row.addClass(className);
-					cntrl.attr("name", propdef.name);
-					row.append($('<td>').append(cntrl));
-					container.append(row);
-				}
-
-				return false;
-			}
-		});
-	});
+/**
+ * Export data
+ */
+vz.wui.exportData = function(value) {
+	switch (value) {
+		case 'permalink':
+			window.location = vz.getPermalink();
+			break;
+		case 'png':
+			$.when(
+				$.cachedScript('javascripts/canvas/Blob.js'),
+				$.cachedScript('javascripts/canvas/canvas-toBlob.js'),
+				$.cachedScript('javascripts/canvas/FileSaver.js'))
+			.done(function() {
+				// will prompt the user to save the image as PNG
+				vz.plot.getCanvas().toBlob(function(blob) {
+					saveAs(blob, 'Screenshot.png');
+				});
+			});
+			break;
+		case 'csv':
+		case 'json':
+		case 'xml':
+			window.location = vz.getLink(value);
+			break;
+	}
 };
 
 /**
  * Add entity after UI has already been initialized
- * Tiggers refresh of entity data, plot and axes
+ * Triggers refresh of entity data, plot and axes
  */
 vz.wui.addEntity = function(entity) {
 	vz.entities.push(entity);
@@ -416,30 +287,118 @@ vz.wui.dialogs.init = function() {
 	});
 };
 
-vz.wui.zoom = function(from, to) {
-	// we cannot zoom/pan into the future
-	var now = new Date().getTime();
-	if (to > now) {
-		var delta = to - from;
-		vz.options.plot.xaxis.min = now - delta;
-		vz.options.plot.xaxis.max = now;
-	} else {
-		vz.options.plot.xaxis.min = from;
-		vz.options.plot.xaxis.max = to;
-	}
+/**
+ * Show available properties for selected entity
+ */
+vz.wui.dialogs.addProperties = function(container, proplist, className, entity) {
+	proplist.each(function(index, def) {
 
-	vz.wui.tmaxnow = (vz.options.plot.xaxis.max >= (now - 1000));
+		// hide properties from blacklist
+		var val = (entity && typeof entity[def] !== undefined) ? entity[def] : null;
+		if ((typeof val === 'undefined' || val === null) && vz.options.hiddenProperties.indexOf(def) >= 0) {
+			return; // hide less commonly used properties
+		}
 
-	if (vz.options.plot.xaxis.min < 0) {
-		vz.options.plot.xaxis.min = 0;
-	}
+		vz.capabilities.definitions.properties.each(function(propindex, propdef) {
+			if (def == propdef.name) {
+				var cntrl = null;
+				var row = $('<tr>')
+					.addClass("property")
+					.append(
+						$('<td>').text(propdef.translation[vz.options.language])
+					);
 
-	vz.options.plot.yaxes.each(function(i) {
-		vz.options.plot.yaxes[i].max = null; // autoscaling
-		vz.options.plot.yaxes[i].min = 0; // fixed to 0
+				switch (propdef.type) {
+					case 'float':
+					case 'integer':
+					case 'string':
+						cntrl = $('<input size="36">').attr("type", "text");
+						break;
+
+					case 'text':
+						cntrl = $('<textarea>');
+						break;
+
+					case 'boolean':
+						cntrl = $('<input>').attr("type", "checkbox").val("1"); // boolean value
+						break;
+
+					case 'multiple':
+						cntrl = $('<select>').attr("Size", "1");
+						propdef.options.each(function(optindex, optdef) {
+							cntrl.append(
+								$('<option>').html(optdef).val(optdef)
+							);
+						});
+						break;
+				}
+
+				// editing?
+				if (entity && cntrl !== null) {
+					// set current value
+					switch (propdef.type) {
+						case 'float':
+						case 'integer':
+						case 'string':
+						case 'text':
+							cntrl.val(val);
+							break;
+
+						case 'boolean':
+							cntrl.attr('checked', val);
+							break;
+
+						case 'multiple':
+							cntrl.find('option[value="' + val + '"]').attr('selected', 'selected');
+							break;
+					}
+				}
+
+				switch (propdef.name) {
+					case 'fillstyle':
+						cntrl = $('<div id="slider"></div>').slider({
+							value: (entity) ? entity[def] : 0,
+							min: propdef.min,
+							max: propdef.max,
+							step: (propdef.max - propdef.min) / 20,
+							slide: function(event, ui) {
+								$('.simpleColorChooser').hide();
+								$('#slider input').val(ui.value);
+							}
+						})
+						.append($('<input>')
+							.attr('type', 'hidden').attr("name", propdef.name)
+							.val((entity) ? entity[def] : 0)
+						);
+						break;
+
+					case 'color':
+						cntrl = $('<input>')
+							.attr('type', 'hidden').attr("name", propdef.name)
+							.val((entity) ? entity[def] : 'aqua');
+						$.cachedScript('javascripts/jquery/jquery.simple-color.min.js').done(function() {
+							// cntrl.attr('id', 'colorValue');
+							cntrl.simpleColor({
+								cellWidth: 16,
+								cellHeight: 16,
+								chooserCSS: { "border-color": "#a7a7a7", "z-index": 20 }, // above slider
+								displayCSS: { "border-color": "#a7a7a7" } // similar to style.css
+							});
+						});
+						break;
+				}
+
+				if (cntrl !== null) {
+					row.addClass(className);
+					cntrl.attr("name", propdef.name);
+					row.append($('<td>').append(cntrl));
+					container.append(row);
+				}
+
+				return false;
+			}
+		});
 	});
-
-	vz.entities.loadData().done(vz.wui.drawPlot);
 };
 
 /**
@@ -478,6 +437,9 @@ vz.wui.initEvents = function() {
 		});
 };
 
+/**
+ * Update legend on mouse over
+ */
 vz.wui.updateLegend = function() {
 	vz.wui.updateLegendTimeout = null;
 
@@ -487,6 +449,10 @@ vz.wui.updateLegend = function() {
 	if (pos.x < axes.xaxis.min || pos.x > axes.xaxis.max ||
 		pos.y < axes.yaxis.min || pos.y > axes.yaxis.max)
 		return;
+
+
+	// legend container
+	var legend = $('.legend .legendLabel');
 
 	var i, j, dataset = vz.plot.getData();
 	for (i = 0; i < dataset.length; ++i) {
@@ -514,18 +480,37 @@ vz.wui.updateLegend = function() {
 				y = p1[1] + (p2[1] - p1[1]) * (pos.x - p1[0]) / (p2[0] - p1[0]);
 		}
 		if (y === null) {
-			vz.wui.legend.eq(i).text(series.title);
+			legend.eq(i).text(series.title);
 		} else {
 			// use plot wrapper instead of `new Date()` for timezone support
 			var d = $.plot.dateGenerator(pos.x, vz.options.plot.xaxis);
 			var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
 			var format = (delta > 1*24*3600*1000) ? '%d.%m.%y - %H:%M' : '%H:%M:%S';
-			vz.wui.legend.eq(i).text(series.title + ": " + $.plot.formatDate(d,format) + " - " + vz.wui.formatNumber(y, series.unit));
+			legend.eq(i).text(series.title + ": " + $.plot.formatDate(d,format) + " - " + vz.wui.formatNumber(y, series.unit));
 		}
 	}
 
 	// update opaque background sizing
 	$('.legend > div').css({ width: $('.legend table').css('width') });
+};
+
+/**
+ * Update page title
+ */
+vz.wui.updateHeadline = function() {
+	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
+	var format = '%a %e. %b %Y';
+
+	if (delta < 3*24*3600*1000) format += ' %H:%M'; // under 3 days
+	if (delta < 5*60*1000) format += ':%S'; // under 5 minutes
+
+	// timezone-aware dates if timezon-js is inlcuded
+	var from = $.plot.dateGenerator(vz.options.plot.xaxis.min, vz.options.plot.xaxis);
+	var to = $.plot.dateGenerator(vz.options.plot.xaxis.max, vz.options.plot.xaxis);
+
+	from = $.plot.formatDate(from, format, vz.options.monthNames, vz.options.dayNames, true);
+	to = $.plot.formatDate(to, format, vz.options.monthNames, vz.options.dayNames, true);
+	$('#title').html(from + ' - ' + to);
 };
 
 /**
@@ -614,124 +599,36 @@ vz.wui.handleControls = function () {
 };
 
 /**
- * Refresh plot with new data
+ * Adjust chart to selected range, reload and draw
  */
-vz.wui.refresh = function() {
-	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
-	vz.wui.zoom( // move plot
-		new Date().getTime() - delta,
-		new Date().getTime()
-	);
+vz.wui.zoom = function(from, to) {
+	// we cannot zoom/pan into the future
+	var now = new Date().getTime();
+	if (to > now) {
+		var delta = to - from;
+		vz.options.plot.xaxis.min = now - delta;
+		vz.options.plot.xaxis.max = now;
+	} else {
+		vz.options.plot.xaxis.min = from;
+		vz.options.plot.xaxis.max = to;
+	}
+
+	vz.wui.tmaxnow = (vz.options.plot.xaxis.max >= (now - 1000));
+
+	if (vz.options.plot.xaxis.min < 0) {
+		vz.options.plot.xaxis.min = 0;
+	}
+
+	vz.options.plot.yaxes.each(function(i) {
+		vz.options.plot.yaxes[i].max = null; // autoscaling
+		vz.options.plot.yaxes[i].min = 0; // fixed to 0
+	});
+
+	vz.entities.loadData().done(vz.wui.drawPlot);
 };
 
 /**
- * Refresh graphs after timeout ms, with a minimum of vz.options.minTimeout ms
- */
-vz.wui.setTimeout = function() {
-	// clear an already set timeout
-	if (vz.wui.timeout !== null) {
-		window.clearTimeout(vz.wui.timeout);
-		vz.wui.timeout = null;
-	}
-
-	var t = Math.max((vz.options.plot.xaxis.max - vz.options.plot.xaxis.min) / vz.options.tuples, vz.options.minTimeout);
-	vz.wui.timeout = window.setTimeout(vz.wui.refresh, t);
-
-	$('#refresh-time').html('(' + Math.round(t / 1000) + ' s)');
-};
-
-/**
- * Stop auto-refresh of graphs
- */
-vz.wui.clearTimeout = function(text) {
-	$('#refresh-time').html(text || '');
-
-	var rc = window.clearTimeout(vz.wui.timeout);
-	vz.wui.timeout = null;
-	return rc;
-};
-
-/**
- * Rounding precision
- *
- * Math.round rounds to whole numbers
- * to round to one decimal (e.g. 15.2) we multiply by 10,
- * round and reverse the multiplication again
- * therefore "vz.options.precision" needs
- * to be set to 1 (for 1 decimal) in that case
- */
-vz.wui.formatNumber = function(number, unit, prefix) {
-	prefix = prefix || true; // default on
-	var siPrefixes = ['k', 'M', 'G', 'T'];
-	var siIndex = 0,
-			maxIndex = (typeof prefix == 'string') ? siPrefixes.indexOf(prefix)+1 : siPrefixes.length;
-
-	// flow unit?
-	if (['l', 'm3', 'm^3', 'm³', 'l/h', 'm3/h', 'm/h^3', 'm³/h'].indexOf(unit) >= 0) {
-		// don't scale...
-		maxIndex = -1;
-
-		// ...unless for l->m3 conversion
-		if (Math.abs(number) > 1000 && (unit == 'l' || unit == 'l/h')) {
-			unit = 'm³' + unit.substring(1);
-			number /= 1000;
-		}
-	}
-
-	while (prefix && Math.abs(number) > 1000 && siIndex < maxIndex) {
-		number /= 1000;
-		siIndex++;
-	}
-
-	// avoid infinities/NaN
-	if (number < 0 || number > 0) {
-		var precision = Math.max(0, vz.options.precision - Math.floor(Math.log(Math.abs(number))/Math.LN10));
-		number = Math.round(number * Math.pow(10, precision)) / Math.pow(10, precision); // rounding
-	}
-
-	if (prefix)
-		number += (siIndex > 0) ? ' ' + siPrefixes[siIndex-1] : ' ';
-	else
-		number += ' ';
-
-	if (unit) number += unit;
-
-	return number;
-};
-
-/**
- * Convert units into hourly consumption unit
- */
-vz.wui.formatConsumptionUnit = function(unit) {
-	var suffix = '/h';
-	if (unit.indexOf(suffix, unit.length - suffix.length) !== -1) {
-		unit = unit.substring(0, unit.length - suffix.length);
-	}
-	else if (unit !== 'h') {
-		unit += 'h';
-	}
-
-	return unit;
-};
-
-vz.wui.updateHeadline = function() {
-	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
-	var format = '%a %e. %b %Y';
-
-	if (delta < 3*24*3600*1000) format += ' %H:%M'; // under 3 days
-	if (delta < 5*60*1000) format += ':%S'; // under 5 minutes
-
-	// timezone-aware dates if timezon-js is inlcuded
-	var from = $.plot.dateGenerator(vz.options.plot.xaxis.min, vz.options.plot.xaxis);
-	var to = $.plot.dateGenerator(vz.options.plot.xaxis.max, vz.options.plot.xaxis);
-
-	from = $.plot.formatDate(from, format, vz.options.monthNames, vz.options.dayNames, true);
-	to = $.plot.formatDate(to, format, vz.options.monthNames, vz.options.dayNames, true);
-	$('#title').html(from + ' - ' + to);
-};
-
-/**
- * Draws plot to container
+ * Draw plot to container
  */
 vz.wui.drawPlot = function () {
 	vz.options.interval = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
@@ -813,22 +710,116 @@ vz.wui.drawPlot = function () {
 		$('#overlay').empty();
 	}
 
-	var flot = $('#flot');
-	vz.plot = $.plot(flot, series, vz.options.plot);
-
-	// remember legend container for updating
-	vz.wui.legend = $('.legend .legendLabel');
+	// plot
+	vz.plot = $.plot($('#flot'), series, vz.options.plot);
 
 	// disable automatic refresh if we are in past
-	if (vz.options.refresh) {
-		if (vz.wui.tmaxnow) {
-			vz.wui.setTimeout();
-		} else {
-			vz.wui.clearTimeout('(suspended)');
-		}
+	if (vz.wui.tmaxnow) {
+		vz.wui.setTimeout();
 	} else {
-		vz.wui.clearTimeout();
+		vz.wui.clearTimeout('(suspended)');
 	}
+};
+
+/**
+ * Refresh plot with new data
+ */
+vz.wui.refresh = function() {
+	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
+	vz.wui.zoom( // move plot
+		new Date().getTime() - delta,
+		new Date().getTime()
+	);
+};
+
+/**
+ * Refresh graphs after timeout ms, with a minimum of vz.options.minTimeout ms
+ */
+vz.wui.setTimeout = function() {
+	// clear an already set timeout
+	if (vz.wui.timeout !== null) {
+		window.clearTimeout(vz.wui.timeout);
+		vz.wui.timeout = null;
+	}
+
+	var t = Math.max((vz.options.plot.xaxis.max - vz.options.plot.xaxis.min) / vz.options.tuples, vz.options.minTimeout);
+	vz.wui.timeout = window.setTimeout(vz.wui.refresh, t);
+
+	$('#refresh-time').html('(' + Math.round(t / 1000) + ' s)');
+};
+
+/**
+ * Stop auto-refresh of graphs
+ */
+vz.wui.clearTimeout = function(text) {
+	$('#refresh-time').html(text || '');
+
+	var rc = window.clearTimeout(vz.wui.timeout);
+	vz.wui.timeout = null;
+	return rc;
+};
+
+/**
+ * Rounding precision
+ *
+ * Math.round rounds to whole numbers
+ * to round to one decimal (e.g. 15.2) we multiply by 10,
+ * round and reverse the multiplication again
+ * therefore "vz.options.precision" needs
+ * to be set to 1 (for 1 decimal) in that case
+ */
+vz.wui.formatNumber = function(number, unit, prefix) {
+	prefix = prefix || true; // default on
+	var siPrefixes = ['k', 'M', 'G', 'T'];
+	var siIndex = 0,
+			maxIndex = (typeof prefix == 'string') ? siPrefixes.indexOf(prefix)+1 : siPrefixes.length;
+
+	// flow unit or air pressure?
+	if (['l', 'm3', 'm^3', 'm³', 'l/h', 'm3/h', 'm/h^3', 'm³/h', 'hPa'].indexOf(unit) >= 0) {
+		// don't scale...
+		maxIndex = -1;
+
+		// ...unless for l->m3 conversion
+		if (Math.abs(number) > 1000 && (unit == 'l' || unit == 'l/h')) {
+			unit = 'm³' + unit.substring(1);
+			number /= 1000;
+		}
+	}
+
+	while (prefix && Math.abs(number) > 1000 && siIndex < maxIndex) {
+		number /= 1000;
+		siIndex++;
+	}
+
+	// avoid infinities/NaN
+	if (number < 0 || number > 0) {
+		var precision = Math.max(0, vz.options.precision - Math.floor(Math.log(Math.abs(number))/Math.LN10));
+		number = Math.round(number * Math.pow(10, precision)) / Math.pow(10, precision); // rounding
+	}
+
+	if (prefix)
+		number += (siIndex > 0) ? ' ' + siPrefixes[siIndex-1] : ' ';
+	else
+		number += ' ';
+
+	if (unit) number += unit;
+
+	return number;
+};
+
+/**
+ * Convert units into hourly consumption unit
+ */
+vz.wui.formatConsumptionUnit = function(unit) {
+	var suffix = '/h';
+	if (unit.indexOf(suffix, unit.length - suffix.length) !== -1) {
+		unit = unit.substring(0, unit.length - suffix.length);
+	}
+	else if (unit !== 'h') {
+		unit += 'h';
+	}
+
+	return unit;
 };
 
 /*

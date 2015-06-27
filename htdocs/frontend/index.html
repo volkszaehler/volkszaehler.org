@@ -56,8 +56,6 @@
 	<script type="text/javascript" src="vendor/flot/jquery.flot.canvas.js"></script>
 	<script type="text/javascript" src="vendor/flot/jquery.flot.axislabels.js"></script>
 	<script type="text/javascript" src="vendor/flot/jquery.flot.xgap.js"></script>
-	<script type="text/javascript" src="vendor/flot/base64.js"></script>
-	<script type="text/javascript" src="vendor/flot/canvas2image.js"></script>
 	<script type="text/javascript" src="vendor/flot/date.js"></script>
 	-->
 	<!-- for timezone support ensure timezone data from ftp://ftp.iana.org/tz/tzdata-latest.tar.gz is in frontend/tz -->
@@ -90,7 +88,7 @@
 			<select class="icons">
 				<option value="default" selected="selected" class="icon-export">Export...</option>
 				<option value="permalink" class="icon-link">Permalink</option>
-				<option value="png" class="icon-image">Snapshot</option>
+				<option value="png" class="icon-image">Screenshot</option>
 				<option value="csv" class="icon-table">CSV</option>
 				<option value="xml" class="icon-xml">XML</option>
 				<option value="json" class="icon-json">JSON</option>
@@ -139,24 +137,6 @@
 			<tbody></tbody>
 		</table>
 		<div><button name="entity-add"><img src="images/blank.png" class="icon-add" alt="add" /> Kanal hinzuf&uuml;gen</button></div>
-		</div>
-		<h3><img src="images/blank.png" class="icon-wrench" alt="" /> Optionen</h3>
-		<div id="options">
-			<table>
-				<thead>
-					<tr>
-						<th>Option</th>
-						<th>Wert</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td><label for="refresh"><img src="images/blank.png" class="icon-arrow_refresh" alt="" /> Automatisch aktualisieren</label></td>
-						<td><input type="checkbox" id="refresh" /> <span id="refresh-time"></span></td>
-					</tr>
-				</tbody>
-			</table>
-			<div><button name="options-save"><img src="images/blank.png" class="icon-save" alt="save" /> Einstellungen speichern</button></div>
 		</div>
 	</div>
 </div>
