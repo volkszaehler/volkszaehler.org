@@ -60,7 +60,7 @@ class EntityController extends Controller {
 		}
 		elseif (is_array($uuids)) { // multiple entities
 			$entities = array();
-			$allowInvalidUuid = $this->request->parameters->get('nostrict');
+			$allowInvalidUuid = $this->request->query->get('nostrict');
 
 			foreach ($uuids as $uuid) {
 				try {
@@ -139,7 +139,7 @@ class EntityController extends Controller {
 	public function edit($identifier) {
 		$entity = $this->get($identifier);
 
-		$this->setProperties($entity, $this->request->parameters->all());
+		$this->setProperties($entity, $this->request->query->all());
 		$this->em->flush();
 
 		if ($this->cache) {
