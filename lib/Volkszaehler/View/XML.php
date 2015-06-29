@@ -97,7 +97,7 @@ class XML extends View {
 			}
 		}
 		elseif (isset($data)) { // ignores NULL data
-			throw new \Exception('Can\'t show: \'' . get_class($data) . '\'');
+			throw new \Exception('Can\'t show: \'' . self::getClassOrType($data) . '\'');
 		}
 	}
 
