@@ -239,10 +239,10 @@ class Router implements HttpKernelInterface {
 			apc_clear_cache('user');
 		}
 
-		$driverImpl = $config->newDefaultAnnotationDriver(VZ_DIR . '/lib/Volkszaehler/Model');
+		$driverImpl = $config->newDefaultAnnotationDriver(VZ_DIR . '/lib/Model');
 		$config->setMetadataDriverImpl($driverImpl);
 
-		$config->setProxyDir(VZ_DIR . '/lib/Volkszaehler/Model/Proxy');
+		$config->setProxyDir(VZ_DIR . '/lib/Model/Proxy');
 		$config->setProxyNamespace('Volkszaehler\Model\Proxy');
 		$config->setAutoGenerateProxyClasses(Util\Configuration::read('devmode'));
 

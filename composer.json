@@ -27,7 +27,7 @@
         "react/socket-client": "0.4.*"
     },
     "autoload": {
-        "psr-0": {
+        "psr-4": {
             "Volkszaehler\\": "lib/",
             "Tests\\": "test/"
         }
