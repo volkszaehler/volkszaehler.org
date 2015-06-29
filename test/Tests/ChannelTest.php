@@ -35,9 +35,9 @@ class ChannelTest extends Middleware
 		);
 	}
 
-	function testListChannels() {
-		$url = '/channel.json';
-		$this->getJson($url);
+	function testExistence() {
+		$this->assertNotNull($this->getJson('/channel.json')->channels);
+		$this->assertInternalType('array', $this->getJson('/channel.json')->channels);
 	}
 
 	/**

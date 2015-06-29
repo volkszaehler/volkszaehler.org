@@ -12,6 +12,12 @@ class GroupTest extends Middleware
 {
 	static $uuid;
 
+	function testExistence() {
+		// create group
+		$this->assertNotNull($this->getJson('/group.json')->channels);
+		$this->assertInternalType('array', $this->getJson('/group.json')->channels);
+	}
+
 	function testCreateGroup() {
 		// create group
 		self::$uuid = $this->getJson('/group.json', array(

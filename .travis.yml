@@ -1,7 +1,6 @@
 language: php
 
 php:
-    - 5.3
     - 5.4
     - 5.5
     - 5.6
@@ -53,7 +52,7 @@ cache:
     - vendor
 
 install:
-    - if [ "$DEPENDENCIES" = true ]; then composer install; fi
+    - if [ "$DEPENDENCIES" = true ]; then composer install -vvv; fi
     - if [ "$JSLINT" = true ]; then npm install; fi
     - if [ "$TEST_ADAPTER" = "HTTP" ]; then composer require volkszaehler/httpd:dev-master jenssegers/proxy:~2.2; fi
 

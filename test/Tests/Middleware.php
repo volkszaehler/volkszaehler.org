@@ -9,6 +9,8 @@
 namespace Tests;
 
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use GuzzleHttp\Client;
 use Proxy\Adapter\Guzzle\GuzzleAdapter;
 
@@ -25,6 +27,16 @@ abstract class Middleware extends \PHPUnit_Framework_TestCase
 	 * @var Proxy\Adapter\Guzzle\GuzzleAdapter
 	 */
 	static $adapter;
+
+	/**
+	 * @var Request memory consumption
+	 */
+	static $mem;
+
+	/**
+	 * @var Debug setting
+	 */
+	static $debug = false;
 
 	/**
 	 * Initialize router
@@ -44,27 +56,76 @@ abstract class Middleware extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
+	 * Return request memory usage
+	 */
+	protected static function memUsage() {
+		return self::$mem / 1024 / 1024;
+	}
+
+	/**
 	 * Execute barebones JSON middleware request
 	 */
 	protected static function executeRequest(Request $request) {
-		$json = false;
-
 		if (testAdapter == 'HTTP') {
 			$uri = str_replace('http://localhost', testHttpUri, $request->getUri());
 			$response = static::$adapter->send($request, $uri);
+			self::$mem = 0;
 		}
 		else {
+			self::$mem = memory_get_peak_usage();
 			$response = self::$app->handle($request);
+			self::$mem = memory_get_peak_usage() - self::$mem;
 		}
 
-		if ($response->headers->get('Content-Type') == 'application/json') {
-			try {
-				return json_decode($response->getContent());
+		if (self::$debug) {
+			echo("\nRequest: " . ($method = $request->getMethod()) . ' ' . $request->getUri() . "\n");
+			if ($method == 'POST') {
+				echo("Content: " . $request->getContent() . "\n");
 			}
-			catch (\Exception $e) {}
+		}
+
+		// always provide normal Response to test cases
+		if ($response instanceof StreamedResponse) {
+			ob_start();
+			$response->sendContent();
+			$content = ob_get_contents();
+			ob_end_clean();
+
+			$response = Response::create($content, $response->getStatusCode(), $response->headers->all());
+		}
+
+		if (self::$debug) {
+			echo("\nResponse: ".$response."\n");
 		}
 
 		return $response;
+	}
+
+	/**
+	 * Execute and parse barebones JSON middleware request
+	 */
+	protected static function executeJsonRequest(Request $request) {
+		$response = self::executeRequest($request);
+
+		try {
+			$json = json_decode($response->getContent());
+		}
+		catch (\Exception $e) {
+			$json = null;
+		}
+
+		return $json;
+	}
+
+	/**
+	 * Build HTTP request and get response
+	 */
+	protected static function getResponse($request, $parameters = array(), $method = 'GET') {
+		if (!$request instanceof Request) {
+			$request = Request::create($request, $method, $parameters);
+		}
+
+		return self::executeRequest($request);
 	}
 
 	/**
@@ -74,34 +135,35 @@ abstract class Middleware extends \PHPUnit_Framework_TestCase
 	 * - has exception with specific message ($hasException = message string)
 	 */
 	protected function getJson($request, $parameters = array(), $method = 'GET', $hasException = false) {
-		if (!$request instanceof Request) {
-			$request = Request::create($request, $method, $parameters);
+		$response = self::getResponse($request, $parameters, $method);
+
+		if (!$response) {
+			$this->fail('Expected response got nothing');
 		}
 
-		$json = self::executeRequest($request);
-		if (!$json) {
-			$this->fail('Expected JSON got nothing');
-		}
+		$this->assertEquals('application/json', $response->headers->get('Content-Type'), 'Expected JSON response got ' . print_r($response->getContent(), true));
 
-		if ($json instanceof Response) {
-			$this->fail('Expected JSON got ' . print_r($json->getContent(), true));
+		try {
+			$this->json = json_decode($response->getContent());
+		}
+		catch (\Exception $e) {
+			$this->fail('Response JSON decode error ' . $e->getMessage());
 		}
 
 		if ($hasException) {
-			if ($this->assertTrue(isset($json->exception), 'Expected <exception> got none.')) {
+			if ($this->assertTrue(isset($this->json->exception), 'Expected <exception> got none.')) {
 				if (is_string($hasException)) {
-					$this->assertTrue($json->exception->message == $hasException);
+					$this->assertTrue($this->json->exception->message == $hasException);
 				}
 			}
 		}
 		else {
-			$this->assertFalse(isset($json->exception),
+			$this->assertFalse(isset($this->json->exception),
 				'Expected no <exception> got ' .
-				(isset($json->exception) ? print_r($json->exception, true) : '') . '.');
+				(isset($this->json->exception) ? print_r($this->json->exception, true) : '') . '.');
 		}
 
-		$this->json = $json;
-		return $json;
+		return $this->json;
 	}
 }
 
