@@ -57,7 +57,7 @@ class JSON extends View {
 		$this->json = array();
 		$this->json['version'] = VZ_VERSION;
 
-		$this->padding = $request->parameters->get('padding');
+		$this->padding = $request->query->get('padding');
 	}
 
 	/**
@@ -74,31 +74,33 @@ class JSON extends View {
 
 		// set json headers
 		if ($this->padding) {
-		// JSONP
-		if ($this->padding = $request->query->get('padding')) {
+			// JSONP
 			$this->response->headers->set('Content-Type', 'application/javascript');
 		}
 		else {
+			// JSON with CORS enabled
 			$this->response->headers->set('Content-Type', 'application/json');
-			// enable CORS if not JSONP
 			$this->response->headers->set('Access-Control-Allow-Origin', '*');
 		}
 
 		if ($this->response instanceof StreamedResponse) {
 			$this->response->setCallback(function() {
+				if ($this->padding) echo($this->padding . '(');
 				$this->renderDeferred();
+				if ($this->padding) echo(');');
 				flush();
 			});
-	}
+		}
 		else {
 			ob_start();
 			$this->renderDeferred();
 			$json = ob_get_contents();
 			ob_end_clean();
 
-			// padded response is js, not json
-			if (!$this->padding) {
-				$json = Util\Json::format($json);
+			$json = Util\Json::format($json);
+
+			if ($this->padding) {
+				$json = $this->padding . '(' . $json . ');';
 			}
 
 			$this->response->setContent($json);
@@ -127,7 +129,6 @@ class JSON extends View {
 	 * Process, encode and print output to stdout
 	 */
 	protected function renderDeferred() {
-		if ($this->padding) echo($this->padding . '(');
 		echo('{');
 
 		$contentStarted = false;
@@ -162,7 +163,6 @@ class JSON extends View {
 		}
 
 		echo('}');
-		if ($this->padding) echo(');');
 	}
 
 	/**
