@@ -169,6 +169,16 @@ abstract class View {
 
 	public abstract function add($object);
 	protected abstract function render();
+
+	/**
+	 * Get primitive type or class
+	 */
+	public static function getClassOrType($var) {
+		if ('object' === ($cot = gettype($var))) {
+			$cot = get_class($var);
+		}
+		return $cot;
+	}
 }
 
 ?>
