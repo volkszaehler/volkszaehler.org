@@ -59,13 +59,8 @@ class MeterInterpreter extends Interpreter {
 			return(array_slice($row, 0, 3));
 		}
 
-		$delta = $row[0] - $this->ts_last;
-		// (1 imp * 60 min/h * 60 s/min * 1000 ms/s * scale) / (1 imp/kWh * 1ms) = 3.6e6 kW
-		$tuple = array(
-			(float) ($this->ts_last = $row[0]), // timestamp of interval end
-			(float) ($row[1] * 3.6e6 * $this->scale) / ($this->resolution * $delta), // doing df/dt
-			(int) $row[2] // num of rows
-		);
+		$tuple = $this->convertRawTuple($row);
+		$this->pulseCount += $row[1];
 
 		if (is_null($this->max) || $tuple[1] > $this->max[1]) {
 			$this->max = $tuple;
@@ -75,7 +70,21 @@ class MeterInterpreter extends Interpreter {
 			$this->min = $tuple;
 		}
 
-		$this->pulseCount += $row[1];
+		return $tuple;
+	}
+
+	/**
+	 * Convert raw meter readings
+	 */
+	public function convertRawTuple($row) {
+		$delta = $row[0] - $this->ts_last;
+
+		// (1 imp * 60 min/h * 60 s/min * 1000 ms/s * scale) / (1 imp/kWh * 1ms) = 3.6e6 kW
+		$tuple = array(
+			(float) ($this->ts_last = $row[0]), // timestamp of interval end
+			(float) ($row[1] * 3.6e6 * $this->scale) / ($this->resolution * $delta), // doing df/dt
+			(int) $row[2] // num of rows
+		);
 
 		return $tuple;
 	}

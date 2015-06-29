@@ -135,7 +135,7 @@ vz.entities.loadTotals = function() {
 
 		// set timeout for next load once completed
 		$.when.apply($, queue).done(function() {
-			vz.entities.updateTable();	// unhide total column
+			vz.entities.updateTableColumnVisibility();	// unhide total column
 			window.setTimeout(vz.entities.loadTotals, vz.options.totalsInterval * 1000);
 		});
 	}
@@ -193,7 +193,7 @@ vz.entities.loadMultipleData = function(entities) {
 			this.each(function(entity) {
 				json.data.some(function(data) {
 					if (data.uuid == entity.uuid) { // entity matched
-						entity.updateData(data);
+						entity.updateData(data, true);	// refresh totals
 						return true;
 					}
 				});
@@ -348,7 +348,7 @@ vz.entities.showTable = function() {
 		initialState: 'expanded'
 	});
 
-	vz.entities.updateTable();
+	vz.entities.updateTableColumnVisibility();
 };
 
 /**
@@ -356,7 +356,7 @@ vz.entities.showTable = function() {
  *
  * @todo move to Entity class
  */
-vz.entities.updateTable = function() {
+vz.entities.updateTableColumnVisibility = function() {
 	// hide costs if empty for all rows
 	$('.cost').css({
 		display: ($('tbody .cost').filter(function() {

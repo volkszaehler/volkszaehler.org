@@ -66,6 +66,13 @@ class AggregatorInterpreter extends Interpreter {
 		}
 	}
 
+	/**
+	 * Convert raw meter readings
+	 */
+	public function convertRawTuple($row) {
+		return null;
+	}
+
 	/*
 	 * Iterator methods - not implemented
 	 */

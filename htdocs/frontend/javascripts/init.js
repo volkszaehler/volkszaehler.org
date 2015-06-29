@@ -32,17 +32,17 @@
  * we dont want to pollute the global namespace
  */
 var vz = {
-	entities: [],	// entity properties + data
-	middleware: [],	// array of all known middlewares
-	wui: {			// web user interface
+	entities: [],			// entity properties + data
+	middleware: [],		// array of all known middlewares
+	wui: {						// web user interface
 		dialogs: { },
 		timeout: null
 	},
 	capabilities: {		// debugging and runtime information from middleware
 		definitions: {}	// definitions of entities & properties
 	},
-	plot: { },		// flot instance
-	options: { }		// options loaded from cookies in options.js
+	plot: { },				// flot instance
+	options: { }			// options loaded from cookies in options.js
 };
 
 /**
@@ -68,28 +68,19 @@ $(document).ready(function() {
 	};
 
 	// add timezone-js support
-	if (typeof timezoneJS != "undefined" && typeof timezoneJS.Date != "undefined") {
+	if (timezoneJS !== undefined && timezoneJS.Date !== undefined) {
 		timezoneJS.timezone.zoneFileBasePath = "tz";
 		timezoneJS.timezone.defaultZoneFile = [];
 		timezoneJS.timezone.init({ async: false });
 	}
 
-	// initialize variables
-	vz.middleware.push({ // default middleware
-		url: vz.options.localMiddleware,
-		title: 'Local (default)',
-		public: [ ] // public entities
-		/* capabilities: { } */
-	});
-
-	// remote middleware(s)
-	vz.options.remoteMiddleware.forEach(function(middleware) {
-		vz.middleware.push({
-			url: middleware.url,
-			title: middleware.title,
-			public: [ ] // public entities
+	// middleware(s)
+	vz.options.middleware.forEach(function(middleware) {
+		vz.middleware.push($.extend(middleware, {
+			public: [ ], // public entities
+			session: null // WAMP session
 			/* capabilities: { } */
-		});
+		}));
 	});
 
 	// TODO make language/translation dependent (vz.options.language)
@@ -132,7 +123,28 @@ $(document).ready(function() {
 				vz.wui.drawPlot();
 				vz.entities.loadTotals();
 			});
+
+			// create WAMP sessions for each middleware
+			vz.middleware.each(function(idx, middleware) {
+				// update port configured?
+				if (middleware.live) {
+					var parser = document.createElement('a');
+					parser.href = middleware.url;
+					var uri = "ws://" + parser.hostname + ":" + middleware.live;
+
+					// connect and store session
+					new ab.connect(uri, function(session) {
+						middleware.session = session;
+
+						// subscribe entities
+						vz.entities.each(function(entity) {
+							if (middleware.url == entity.middleware) {
+								entity.subscribe(session);
+							}
+						}, true);
+					});
+				}
+			});
 		});
 	});
 });
-

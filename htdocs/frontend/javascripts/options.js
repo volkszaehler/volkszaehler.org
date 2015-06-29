@@ -28,15 +28,22 @@ vz.options = {
 	language: 'de',
 	precision: 2,		// TODO update from middleware capabilities?
 	tuples: null,		// automatically determined by plot size
-	totalsInterval: 300,	// update interval for consumption is retrieved for each channel where initialconsumption > 0
+	interval: 24*60*60*1000,	// 1 day default time interval to show
+	totalsInterval: 300,			// update interval for total consumption in s (only channels where initialconsumption > 0)
+	pushRedrawTimeout: 1000,	// ms delay for collecting push updates before redrawing
+	minTimeout: 2000,					// minimum refresh time in ms
 	shortenLongTypes: false, // show shorter type names in table
-	minTimeout: 2000,	// minimum refresh time in ms
-	interval: 24*60*60*1000, // 1 day default time interval to show
-	localMiddleware: '../middleware.php',
-	remoteMiddleware: [{
+	middleware: [
+		{
+			title: 'Local (default)',
+			url: '../middleware.php',
+			live: 8082
+		}, {
 		title: 'Volkszaehler Demo',
-		url: '//demo.volkszaehler.org/middleware.php'
-	}],
+			url: '//demo.volkszaehler.org/middleware.php',
+			live: 8082
+		}
+	],
 	monthNames: ['Jan', 'Feb', unescape('M%E4r'), 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
 	dayNames: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
 	lineWidthDefault: 2,
@@ -45,6 +52,9 @@ vz.options = {
 	hiddenProperties: ['link', 'tolerance', 'local', 'active'] // hide less commonly used properties
 };
 
+/**
+ * Plot options are passed on to flot
+ */
 vz.options.plot = {
 	colors: ['#579D1C', '#7E0021', '#FFD320', '#FF420E', '#004586', '#0084D1', '#C5000B', '#FF950E', '#4B1F6F', '#AECF00', '#314004', '#83CAFF'],
 	series: {
