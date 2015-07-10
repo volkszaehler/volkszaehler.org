@@ -103,9 +103,11 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 				// optimize grouped count statement by applying aggregation table
 				$sqlGroupFields = $this->interpreter->buildGroupBySQL($this->groupBy);
 
+				// 	   table:   --DATA-- -----aggregate----- -DATA-
 				$sqlRowCount = 'SELECT DISTINCT ' . $sqlGroupFields . ' ' .
 							   'FROM data WHERE channel_id = ? ' .
 							   'AND (' . $this->sqlTimeFilterPre . ' OR' . $this->sqlTimeFilterPost . ') ';
+				// 	   table:   --data-- -----AGGREGATE----- -data-
 				$sqlRowCount.= 'UNION SELECT DISTINCT ' . $sqlGroupFields . ' ' .
 							   'FROM aggregate ' .
 							   'WHERE channel_id = ? AND type = ?' . $this->sqlTimeFilter;
@@ -114,9 +116,11 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 			}
 			else {
 				// optimize non-grouped count statement
+				// 	   table:   --DATA-- -----aggregate----- -DATA-
 				$sqlRowCount = 'SELECT COUNT(1) AS count ' .
 							   'FROM data WHERE channel_id = ? ' .
 							   'AND (' . $this->sqlTimeFilterPre . ' OR' . $this->sqlTimeFilterPost . ') ';
+				// 	   table:   --data-- -----AGGREGATE----- -data-
 				$sqlRowCount.= 'UNION SELECT SUM(count) AS count ' .
 							   'FROM aggregate ' .
 							   'WHERE channel_id = ? AND type = ?' . $this->sqlTimeFilter;
@@ -262,7 +266,12 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 			$this->aggTo = $this->conn->fetchColumn($sql, $sqlParameters, 0);
 		}
 
-		return (isset($this->aggFrom) && isset($this->aggTo));
+		// printf("from ..              aggFrom             ..               aggTo                .. to\n", pd($this->from), pd($this->aggFrom), pd($this->aggFrom), pd($this->to));
+		// printf("%s |%s .. %s| %s\n", pd($this->from), pd($this->aggFrom), pd($this->aggFrom), pd($this->to));
+
+		return isset($this->aggFrom) && isset($this->aggTo) &&
+			   $this->aggFrom < $this->aggTo &&
+			   $this->from <= $this->aggFrom && $this->aggTo <= $this->to;
 	}
 
 	/**

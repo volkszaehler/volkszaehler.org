@@ -92,7 +92,7 @@ class Aggregation {
 	 */
 	public static function getAggregationLevelTypeValue($level) {
 		if (($type = array_search($level, self::getAggregationLevels(), true)) === false) {
-			throw new \Exception('Invalid aggregation level \'' . $level . '\'');
+			throw new \RuntimeException('Invalid aggregation level \'' . $level . '\'');
 		};
 		return($type);
 	}
@@ -104,6 +104,9 @@ class Aggregation {
 	 * @return string        SQL date format
 	 */
 	public static function getAggregationDateFormat($level) {
+		if (!self::isValidAggregationLevel($level)) {
+			throw new \RuntimeException('Invalid aggregation level \'' . $level . '\'');
+		}
 		return self::$aggregationLevels[$level];
 	}
 
@@ -299,10 +302,10 @@ class Aggregation {
 	public function aggregate($uuid = null, $level = 'day', $mode = 'full', $period = null) {
 		// validate settings
 		if (!in_array($mode, array('full', 'delta'))) {
-			throw new \Exception('Unsupported aggregation mode ' . $mode);
+			throw new \RuntimeException('Unsupported aggregation mode ' . $mode);
 		}
 		if (!$this->isValidAggregationLevel($level)) {
-			throw new \Exception('Unsupported aggregation level ' . $level);
+			throw new \RuntimeException('Unsupported aggregation level ' . $level);
 		}
 
 		// get channel definition to select correct aggregation function
