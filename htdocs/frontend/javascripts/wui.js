@@ -113,118 +113,6 @@ vz.wui.exportData = function(value) {
 	}
 };
 
-// show available properties for selected type
-vz.wui.dialogs.addProperties = function(container, proplist, className, entity) {
-	proplist.each(function(index, def) {
-
-		// hide properties from blacklist
-		var val = (entity && typeof entity[def] !== undefined) ? entity[def] : null;
-		if ((typeof val === 'undefined' || val === null) && vz.options.hiddenProperties.indexOf(def) >= 0) {
-			return; // hide less commonly used properties
-		}
-
-		vz.capabilities.definitions.properties.each(function(propindex, propdef) {
-			if (def == propdef.name) {
-				var cntrl = null;
-				var row = $('<tr>')
-					.addClass("property")
-					.append(
-						$('<td>').text(propdef.translation[vz.options.language])
-					);
-
-				switch (propdef.type) {
-					case 'float':
-					case 'integer':
-					case 'string':
-						cntrl = $('<input size="36">').attr("type", "text");
-						break;
-
-					case 'text':
-						cntrl = $('<textarea>');
-						break;
-
-					case 'boolean':
-						cntrl = $('<input>').attr("type", "checkbox").val("1"); // boolean value
-						break;
-
-					case 'multiple':
-						cntrl = $('<select>').attr("Size", "1");
-						propdef.options.each(function(optindex, optdef) {
-							cntrl.append(
-								$('<option>').html(optdef).val(optdef)
-							);
-						});
-						break;
-				}
-
-				// editing?
-				if (entity && cntrl !== null) {
-					// set current value
-					switch (propdef.type) {
-						case 'float':
-						case 'integer':
-						case 'string':
-						case 'text':
-							cntrl.val(val);
-							break;
-
-						case 'boolean':
-							cntrl.attr('checked', val);
-							break;
-
-						case 'multiple':
-							cntrl.find('option[value="' + val + '"]').attr('selected', 'selected');
-							break;
-					}
-				}
-
-				switch (propdef.name) {
-					case 'fillstyle':
-						cntrl = $('<div id="slider"></div>').slider({
-							value: (entity) ? entity[def] : 0,
-							min: propdef.min,
-							max: propdef.max,
-							step: (propdef.max - propdef.min) / 20,
-							slide: function(event, ui) {
-								$('.simpleColorChooser').hide();
-								$('#slider input').val(ui.value);
-							}
-						})
-						.append($('<input>')
-							.attr('type', 'hidden').attr("name", propdef.name)
-							.val((entity) ? entity[def] : 0)
-						);
-						break;
-
-					case 'color':
-						cntrl = $('<input>')
-							.attr('type', 'hidden').attr("name", propdef.name)
-							.val((entity) ? entity[def] : 'aqua');
-						$.cachedScript('javascripts/jquery/jquery.simple-color.min.js').done(function() {
-							// cntrl.attr('id', 'colorValue');
-							cntrl.simpleColor({
-								cellWidth: 16,
-								cellHeight: 16,
-								chooserCSS: { "border-color": "#a7a7a7", "z-index": 20 }, // above slider
-								displayCSS: { "border-color": "#a7a7a7" } // similar to style.css
-							});
-						});
-						break;
-				}
-
-				if (cntrl !== null) {
-					row.addClass(className);
-					cntrl.attr("name", propdef.name);
-					row.append($('<td>').append(cntrl));
-					container.append(row);
-				}
-
-				return false;
-			}
-		});
-	});
-};
-
 /**
  * Add entity after UI has already been initialized
  * Tiggers refresh of entity data, plot and axes
@@ -410,30 +298,118 @@ vz.wui.dialogs.init = function() {
 	});
 };
 
-vz.wui.zoom = function(from, to) {
-	// we cannot zoom/pan into the future
-	var now = new Date().getTime();
-	if (to > now) {
-		var delta = to - from;
-		vz.options.plot.xaxis.min = now - delta;
-		vz.options.plot.xaxis.max = now;
-	} else {
-		vz.options.plot.xaxis.min = from;
-		vz.options.plot.xaxis.max = to;
-	}
+/**
+ * Show available properties for selected type
+ */
+vz.wui.dialogs.addProperties = function(container, proplist, className, entity) {
+	proplist.each(function(index, def) {
 
-	vz.wui.tmaxnow = (vz.options.plot.xaxis.max >= (now - 1000));
+		// hide properties from blacklist
+		var val = (entity && typeof entity[def] !== undefined) ? entity[def] : null;
+		if ((typeof val === 'undefined' || val === null) && vz.options.hiddenProperties.indexOf(def) >= 0) {
+			return; // hide less commonly used properties
+		}
 
-	if (vz.options.plot.xaxis.min < 0) {
-		vz.options.plot.xaxis.min = 0;
-	}
+		vz.capabilities.definitions.properties.each(function(propindex, propdef) {
+			if (def == propdef.name) {
+				var cntrl = null;
+				var row = $('<tr>')
+					.addClass("property")
+					.append(
+						$('<td>').text(propdef.translation[vz.options.language])
+					);
 
-	vz.options.plot.yaxes.each(function(i) {
-		vz.options.plot.yaxes[i].max = null; // autoscaling
-		vz.options.plot.yaxes[i].min = 0; // fixed to 0
+				switch (propdef.type) {
+					case 'float':
+					case 'integer':
+					case 'string':
+						cntrl = $('<input size="36">').attr("type", "text");
+						break;
+
+					case 'text':
+						cntrl = $('<textarea>');
+						break;
+
+					case 'boolean':
+						cntrl = $('<input>').attr("type", "checkbox").val("1"); // boolean value
+						break;
+
+					case 'multiple':
+						cntrl = $('<select>').attr("Size", "1");
+						propdef.options.each(function(optindex, optdef) {
+							cntrl.append(
+								$('<option>').html(optdef).val(optdef)
+							);
+						});
+						break;
+				}
+
+				// editing?
+				if (entity && cntrl !== null) {
+					// set current value
+					switch (propdef.type) {
+						case 'float':
+						case 'integer':
+						case 'string':
+						case 'text':
+							cntrl.val(val);
+							break;
+
+						case 'boolean':
+							cntrl.attr('checked', val);
+							break;
+
+						case 'multiple':
+							cntrl.find('option[value="' + val + '"]').attr('selected', 'selected');
+							break;
+					}
+				}
+
+				switch (propdef.name) {
+					case 'fillstyle':
+						cntrl = $('<div id="slider"></div>').slider({
+							value: (entity) ? entity[def] : 0,
+							min: propdef.min,
+							max: propdef.max,
+							step: (propdef.max - propdef.min) / 20,
+							slide: function(event, ui) {
+								$('.simpleColorChooser').hide();
+								$('#slider input').val(ui.value);
+							}
+						})
+						.append($('<input>')
+							.attr('type', 'hidden').attr("name", propdef.name)
+							.val((entity) ? entity[def] : 0)
+						);
+						break;
+
+					case 'color':
+						cntrl = $('<input>')
+							.attr('type', 'hidden').attr("name", propdef.name)
+							.val((entity) ? entity[def] : 'aqua');
+						$.cachedScript('javascripts/jquery/jquery.simple-color.min.js').done(function() {
+							// cntrl.attr('id', 'colorValue');
+							cntrl.simpleColor({
+								cellWidth: 16,
+								cellHeight: 16,
+								chooserCSS: { "border-color": "#a7a7a7", "z-index": 20 }, // above slider
+								displayCSS: { "border-color": "#a7a7a7" } // similar to style.css
+							});
+						});
+						break;
+				}
+
+				if (cntrl !== null) {
+					row.addClass(className);
+					cntrl.attr("name", propdef.name);
+					row.append($('<td>').append(cntrl));
+					container.append(row);
+				}
+
+				return false;
+			}
+		});
 	});
-
-	vz.entities.loadData().done(vz.wui.drawPlot);
 };
 
 /**
@@ -472,6 +448,9 @@ vz.wui.initEvents = function() {
 		});
 };
 
+/**
+ * Update legend on move hover
+ */
 vz.wui.updateLegend = function() {
 	vz.wui.updateLegendTimeout = null;
 
@@ -608,6 +587,30 @@ vz.wui.handleControls = function () {
 };
 
 /**
+ * Zoom plot to target timeframe
+ */
+vz.wui.zoom = function(from, to) {
+	// we cannot zoom/pan into the future
+	var now = new Date().getTime();
+	if (to > now) {
+		var delta = to - from;
+		vz.options.plot.xaxis.min = now - delta;
+		vz.options.plot.xaxis.max = now;
+	} else {
+		vz.options.plot.xaxis.min = from;
+		vz.options.plot.xaxis.max = to;
+	}
+
+	vz.wui.tmaxnow = (vz.options.plot.xaxis.max >= (now - 1000));
+
+	if (vz.options.plot.xaxis.min < 0) {
+		vz.options.plot.xaxis.min = 0;
+	}
+
+	vz.entities.loadData().done(vz.wui.drawPlot);
+};
+
+/**
  * Refresh plot with new data
  */
 vz.wui.refresh = function() {
@@ -708,6 +711,9 @@ vz.wui.formatConsumptionUnit = function(unit) {
 	return unit;
 };
 
+/**
+ * Update headline on zoom
+ */
 vz.wui.updateHeadline = function() {
 	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
 	var format = '%a %e. %b %Y';
