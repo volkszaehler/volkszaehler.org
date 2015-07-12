@@ -45,6 +45,8 @@ use Doctrine\DBAL;
  */
 class MySQLAggregateOptimizer extends MySQLOptimizer {
 
+	static $debug = false;	// development diagnosis
+
 	protected $aggregator;
 
 	protected $aggFrom;
@@ -89,6 +91,11 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 				// valid boundaries?
 				$this->aggValid = $this->getAggregationBoundary();
 			}
+		}
+
+		if (self::$debug) {
+			$type = $this->aggValid ? 'true (' . $this->aggLevel . ')' : 'false';
+			echo("validateAggregationUsage " . $type . "\n");
 		}
 
 		return $this->aggValid;
@@ -239,12 +246,14 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 					   'FROM_UNIXTIME(MIN(timestamp) / 1000, ' . $dateFormat . '), ' .
 					   'INTERVAL ' . $aggFromDelta . ' ' . $this->aggLevel .
 				   ')) * 1000 ' .
-			 	   'FROM aggregate WHERE channel_id=? AND type=? AND timestamp>=?';
+				   'FROM aggregate WHERE channel_id=? AND type=? AND ' .
+				   '     UNIX_TIMESTAMP(FROM_UNIXTIME(timestamp / 1000, ' . $dateFormat . ')) * 1000 >=?';
 		}
 		else {
 			// find 'left' border of aggregate table after $from
 			$sql = 'SELECT UNIX_TIMESTAMP(FROM_UNIXTIME(MIN(timestamp) / 1000, ' . $dateFormat . ')) * 1000 ' .
-			 	   'FROM aggregate WHERE channel_id=? AND type=? AND timestamp>=?';
+				   'FROM aggregate WHERE channel_id=? AND type=? AND ' .
+				   '     UNIX_TIMESTAMP(FROM_UNIXTIME(timestamp / 1000, ' . $dateFormat . ')) * 1000 >=?';
 		}
 		$this->aggFrom = $this->conn->fetchColumn($sql, $sqlParameters, 0);
 		$this->aggTo = null;
@@ -266,12 +275,22 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 			$this->aggTo = $this->conn->fetchColumn($sql, $sqlParameters, 0);
 		}
 
-		// printf("from ..              aggFrom             ..               aggTo                .. to\n", pd($this->from), pd($this->aggFrom), pd($this->aggFrom), pd($this->to));
-		// printf("%s |%s .. %s| %s\n", pd($this->from), pd($this->aggFrom), pd($this->aggFrom), pd($this->to));
+		if (self::$debug) {
+			printf("from ..              aggFrom             ..               aggTo                .. to\n");
+			printf("%s |%s .. %s| %s\n", self::pd($this->from), self::pd($this->aggFrom), self::pd($this->aggFrom), self::pd($this->to));
+		}
 
 		return isset($this->aggFrom) && isset($this->aggTo) &&
 			   $this->aggFrom < $this->aggTo &&
 			   $this->from <= $this->aggFrom && $this->aggTo <= $this->to;
+	}
+
+	/**
+	 * Print formatted date
+	 */
+	private static function pd($ts) {
+		$date = \DateTime::createFromFormat('U', (int)($ts/1000))->setTimeZone(new \DateTimeZone('Europe/Berlin'));
+		return $date->format('d.m.Y H:i:s');
 	}
 
 	/**
