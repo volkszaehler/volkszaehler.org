@@ -12,6 +12,9 @@ services:
     - mysql
     - postgresql
 
+# http://docs.travis-ci.com/user/migrating-from-legacy/
+sudo: false
+
 env:
   # run composer by default
   global:
@@ -51,9 +54,10 @@ cache:
     - $COMPOSER_CACHE_DIR
     - $HOME/.composer/cache
     - vendor
+    - node_modules
 
 install:
-    - if [ "$DEPENDENCIES" = true ]; then composer install -vvv; fi
+    - if [ "$DEPENDENCIES" = true ]; then composer install; fi
     - if [ "$JSLINT" = true ]; then npm install; fi
     - if [ "$TEST_ADAPTER" = "HTTP" ]; then composer require volkszaehler/httpd:dev-master jenssegers/proxy:~2.2; fi
 
