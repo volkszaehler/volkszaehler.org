@@ -116,7 +116,9 @@ class JpGraph extends View {
 		$this->graph->xaxis->SetLabelAngle(45);
 		$this->graph->xaxis->SetLabelFormatCallback(function($label) { return date('j.n.y G:i', $label); });
 
-		$this->graph->img->SetAntiAliasing(function_exists('imageantialias'));
+		if (function_exists('imageantialias')) {
+			$this->graph->img->SetAntiAliasing(true);
+		}
 	}
 
 	/**
