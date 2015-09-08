@@ -57,7 +57,7 @@ class JSON extends View {
 		$this->json = array();
 		$this->json['version'] = VZ_VERSION;
 
-		$this->padding = $request->parameters->get('padding');
+		$this->padding = $request->query->get('padding');
 	}
 
 	/**
@@ -72,10 +72,8 @@ class JSON extends View {
 			$this->response = new StreamedResponse();
 		}
 
-		// set json headers
-		if ($this->padding) {
 		// JSONP
-		if ($this->padding = $request->query->get('padding')) {
+		if ($this->padding) {
 			$this->response->headers->set('Content-Type', 'application/javascript');
 		}
 		else {
@@ -89,7 +87,7 @@ class JSON extends View {
 				$this->renderDeferred();
 				flush();
 			});
-	}
+		}
 		else {
 			ob_start();
 			$this->renderDeferred();
