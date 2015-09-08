@@ -52,7 +52,7 @@ cache:
   directories:
     - $COMPOSER_CACHE_DIR
     - $HOME/.composer/cache
-    - node_modules
+    - $HOME/.npm
 
 install:
     - if [ "$DEPENDENCIES" = true ]; then composer install; fi
