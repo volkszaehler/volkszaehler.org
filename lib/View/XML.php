@@ -329,7 +329,7 @@ class XML extends View {
 
 		$xmlData->appendChild($this->xmlDoc->createElement('rows', $interpreter->getRowCount()));
 
-		if (($interpreter->getTupleCount() > 0 || is_null($interpreter->getTupleCount())) && count($xmlTuples) > 0) {
+		if (count($xmlTuples) > 0) {
 			$xmlData->appendChild($xmlTuples);
 		}
 

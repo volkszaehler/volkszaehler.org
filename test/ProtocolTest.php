@@ -27,15 +27,6 @@ class ProtocolTest extends Data
 		self::$uuid = self::createChannel('Counter', 'electric meter', self::$resolution);
 	}
 
-	function testJsonP() {
-		$response = $this->getJson('/data/' . static::$uuid . '.json', array(
-			'padding' => 'callback'
-		), 'GET');
-
-		$this->assertEquals('application/javascript', $response->headers->get('Content-Type'));
-		$this->assertRegExp('/callback\(.*\);/', $response->getContent());
-	}
-
 	function testAddTupleGet() {
 		// 1 row added
 		$this->assertEquals(1, $this->getJson('/data/' . static::$uuid . '.json', array(
@@ -72,6 +63,9 @@ class ProtocolTest extends Data
 		$this->assertEquals(2, $this->getJson($request)->rows);
 	}
 
+	/**
+	 * @depends testAddTupleGet
+	 */
 	function testDuplicate() {
 		// INSERT IGNORE syntax not portable
 		if (($db = \Volkszaehler\Util\Configuration::read('db.driver')) !== 'pdo_mysql')
@@ -99,6 +93,22 @@ class ProtocolTest extends Data
 			'ts' => self::$ts,
 			'value' => self::$value
 		), 'GET', true)->exception->type);
+	}
+
+	function testJsonP() {
+		$response = $this->getResponse('/data/' . static::$uuid . '.json', array(
+			'padding' => 'callback'
+		), 'GET');
+
+		$this->assertEquals('application/javascript', $response->headers->get('Content-Type'));
+		$this->assertRegExp('/callback\(.*\);/', $response->getContent());
+	}
+
+	function testDebug() {
+		$this->assertNotNull($this->getJson('/data/' . static::$uuid . '.json', array(
+			'debug' => 1
+		))->debug, 'Missing debug output');
+		$this->assertNotNull($this->json->debug->sql->totalTime, 'Missing debug sql trace');
 	}
 }
 
