@@ -56,7 +56,7 @@ class JSON extends View {
 		$this->json['version'] = VZ_VERSION;
 
 		// JSONP
-		if ($this->padding = $request->parameters->get('padding')) {
+		if ($this->padding = $request->query->get('padding')) {
 			$this->response->headers->set('Content-Type', 'application/javascript');
 		}
 		else {

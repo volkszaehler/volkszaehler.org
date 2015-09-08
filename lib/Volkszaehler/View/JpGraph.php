@@ -83,12 +83,12 @@ class JpGraph extends View {
 		\JpGraph\JpGraph::module('date');
 		\JpGraph\JpGraph::module('line');
 
-		if ($this->request->parameters->has('width')) {
-			$this->width = $this->request->parameters->get('width');
+		if ($this->request->query->has('width')) {
+			$this->width = $this->request->query->get('width');
 		}
 
-		if ($this->request->parameters->has('height')) {
-			$this->height = $this->request->parameters->get('height');
+		if ($this->request->query->has('height')) {
+			$this->height = $this->request->query->get('height');
 		}
 
 		$this->colors = Util\Configuration::read('colors');
