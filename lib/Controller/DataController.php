@@ -96,11 +96,11 @@ class DataController extends Controller {
 			}
 
 			// convert nested ArrayObject to plain array with flattened tuples
-			$data = array_reduce($json->getArrayCopy(), function($carry, $tuple) {
+			$data = array_reduce($json, function($carry, $tuple) {
 				return array_merge($carry, $tuple);
 			}, array());
 		}
-		catch (Util\JSONException $e) { /* fallback to old method */
+		catch (\RuntimeException $e) { /* fallback to old method */
 			$timestamp = $this->request->query->get('ts');
 			$value = $this->request->query->get('value');
 

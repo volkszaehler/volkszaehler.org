@@ -24,6 +24,7 @@
 namespace Volkszaehler\View;
 
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 use Volkszaehler\Interpreter;
 use Volkszaehler\Util;
@@ -34,6 +35,7 @@ use Volkszaehler\Model;
  *
  * @package default
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @author Andreas Goetz <cpuidle@gmx.de>
  */
 class JSON extends View {
 	/**
@@ -44,7 +46,7 @@ class JSON extends View {
 	/**
 	 * @var string padding function name or NULL if disabled
 	 */
-	protected $padding = FALSE;
+	protected $padding = false;
 
 	/**
 	 * Constructor
@@ -52,9 +54,26 @@ class JSON extends View {
 	public function __construct(Request $request) {
 		parent::__construct($request);
 
-		$this->json = new Util\JSON();
+		$this->json = array();
 		$this->json['version'] = VZ_VERSION;
 
+		$this->padding = $request->parameters->get('padding');
+	}
+
+	/**
+	 * Render response and send it to the client
+	 */
+	public function send() {
+		// use StreamedResponse unless pretty-printing is required
+		if (Util\Debug::isActivated()) {
+			$this->add(Util\Debug::getInstance());
+		}
+		else {
+			$this->response = new StreamedResponse();
+		}
+
+		// set json headers
+		if ($this->padding) {
 		// JSONP
 		if ($this->padding = $request->query->get('padding')) {
 			$this->response->headers->set('Content-Type', 'application/javascript');
@@ -64,6 +83,28 @@ class JSON extends View {
 			// enable CORS if not JSONP
 			$this->response->headers->set('Access-Control-Allow-Origin', '*');
 		}
+
+		if ($this->response instanceof StreamedResponse) {
+			$this->response->setCallback(function() {
+				$this->renderDeferred();
+				flush();
+			});
+	}
+		else {
+			ob_start();
+			$this->renderDeferred();
+			$json = ob_get_contents();
+			ob_end_clean();
+
+			// padded response is js, not json
+			if (!$this->padding) {
+				$json = Util\Json::format($json);
+			}
+
+			$this->response->setContent($json);
+		}
+
+		return $this->response;
 	}
 
 	/**
@@ -78,6 +119,84 @@ class JSON extends View {
 		return $this->send();
 	}
 
+	protected function render() {
+		throw new \LogicException('Cannot call render when using StreamedResponse');
+	}
+
+	/**
+	 * Process, encode and print output to stdout
+	 */
+	protected function renderDeferred() {
+		if ($this->padding) echo($this->padding . '(');
+		echo('{');
+
+		$contentStarted = false;
+
+		foreach ($this->json as $key => $data) {
+			if ($contentStarted) {
+				echo(",");
+			}
+			$contentStarted = true;
+
+			echo('"' . $key . '":');
+
+			if ($data instanceof Interpreter\Interpreter) {
+				// single interpreter
+				$this->renderInterpreter($data);
+			}
+			elseif (is_array($data) && isset($data[0]) && $data[0] instanceof Interpreter\Interpreter) {
+				// array of interpreters
+				echo('[');
+				foreach ($data as $key => $interpreter) {
+					if ($key) echo(',');
+					$this->renderInterpreter($interpreter);
+				}
+				echo(']');
+			}
+			elseif ($data instanceof Util\Debug) {
+				echo(json_encode($this->convertDebug($data)));
+			}
+			else {
+				echo(json_encode($data));
+			}
+		}
+
+		echo('}');
+		if ($this->padding) echo(');');
+	}
+
+	/**
+	 * Render Interpreter output
+	 */
+	protected function renderInterpreter(Interpreter\Interpreter $interpreter) {
+		echo('{"tuples":[');
+
+		// start with iterating through PDO result set to populate interpreter header data
+		foreach ($interpreter as $key => $tuple) {
+			if ($key) echo(',');
+			echo('[' . $tuple[0] . ',' . View::formatNumber($tuple[1]) . ',' . $tuple[2] . ']');
+		}
+
+		$from = 0 + $interpreter->getFrom();
+		$to = 0 + $interpreter->getTo();
+		$min = $interpreter->getMin();
+		$max = $interpreter->getMax();
+		$average = $interpreter->getAverage();
+		$consumption = $interpreter->getConsumption();
+
+		$header = array();
+		$header['uuid'] = $interpreter->getEntity()->getUuid();
+		if (isset($from)) $header['from'] = $from;
+		if (isset($to)) $header['to'] = $to;
+		if (isset($min)) $header['min'] = $min;
+		if (isset($max)) $header['max'] = $max;
+		if (isset($average)) $header['average'] = View::formatNumber($average);
+		if (isset($consumption)) $header['consumption'] = View::formatNumber($consumption);
+		$header['rows'] = $interpreter->getRowCount();
+
+		echo('],' . substr(json_encode($header), 1, -1) . '}');
+	}
+
 	/**
 	 * Add object to output
 	 *
@@ -85,39 +204,23 @@ class JSON extends View {
 	 */
 	public function add($data) {
 		if ($data instanceof Interpreter\Interpreter) {
-			$this->addData($data);
-		}
-		elseif (is_array($data) && isset($data[0]) && $data[0] instanceof Interpreter\Interpreter) {
-			$this->addMultipleData($data);
+			$this->json['data'] = $data;
 		}
 		elseif ($data instanceof Model\Entity) {
 			$this->json['entity'] = self::convertEntity($data);
 		}
+		elseif ($data instanceof Util\Debug) {
+			$this->json['debug'] = $data;
+		}
 		elseif ($data instanceof \Exception) {
 			$this->addException($data);
 		}
-		elseif ($data instanceof Util\Debug) {
-			$this->addDebug($data);
-		}
-		elseif ($data instanceof Util\JSON || is_array($data)) {
+		elseif (is_array($data)) {
 			$this->addArray($data, $this->json);
 		}
 		elseif (isset($data)) { // ignores NULL data
 			throw new \Exception('Can\'t show: \'' . self::getClassOrType($data) . '\'');
 		}
-	}
-
-	/**
-	 * Process, encode and print output to stdout
-	 */
-	protected function render() {
-		$json = $this->json->encode((Util\Debug::isActivated()) ? JSON_PRETTY : 0);
-
-		if ($this->padding) {
-			$json = $this->padding . '(' . $json . ');';
-		}
-
-		return $json;
 	}
 
 	/**
@@ -152,7 +255,7 @@ class JSON extends View {
 	 *
 	 * @param Util\Debug $debug
 	 */
-	protected function addDebug(Util\Debug $debug) {
+	protected function convertDebug(Util\Debug $debug) {
 		$jsonDebug['level'] = $debug->getLevel();
 		if ($dbDriver = Util\Configuration::read('db.driver')) $jsonDebug['database'] = $dbDriver;
 		$jsonDebug['time'] = $debug->getExecutionTime();
@@ -165,14 +268,47 @@ class JSON extends View {
 		$jsonDebug['messages'] = $debug->getMessages();
 
 		// SQL statements
-		$this->getSQLTimes($debug->getQueries());
+		if (count($statements = $debug->getQueries())) {
+			$this->getSQLTimes($statements);
 		$jsonDebug['sql'] = array(
 			'totalTime' => $this->sqlTotalTime,
 			'worstTime' => $this->sqlWorstTime,
 			'queries' => array_values($debug->getQueries())
 		);
+		}
 
-		$this->json['debug'] = $jsonDebug;
+		return $jsonDebug;
+	}
+
+	/**
+	 * Add an array of objects to the output
+	 */
+	protected function addArray($data, &$refNode) {
+		if (is_null($refNode)) {
+			$refNode = array();
+		}
+
+		foreach ($data as $index => $value) {
+			if (is_array($value)) {
+				$this->addArray($value, $refNode[$index]);
+			}
+			elseif ($value instanceof Model\Entity) {
+				$refNode[$index] = self::convertEntity($value);
+			}
+			elseif ($value instanceof Interpreter\Interpreter) {
+				// special case: interpreters are always added to the root node
+				if (!isset($this->json['data'])) {
+					$this->json['data'] = array();
+				}
+				$this->json['data'][] = $value;
+			}
+			elseif (is_numeric($value)) {
+				$refNode[$index] = View::formatNumber($value);
+			}
+			else {
+				$refNode[$index] = $value;
+			}
+		}
 	}
 
 	/**
@@ -202,92 +338,6 @@ class JSON extends View {
 			$this->json['exception'] = $exceptionInfo;
 		}
 	}
-
-	/**
-	 * Add multiple data objects to output queue
-	 *
-	 * @param $interpreter
-	 */
-	protected function addMultipleData($data) {
-		foreach ($data as $interpreter) {
-			$this->addData($interpreter, true);
 		}
-		// correct structure
-		$this->json['data'] = $this->json['data']['children'];
-	}
-
-	/**
-	 * Add data to output queue
-	 *
-	 * @param $interpreter
-	 * @param boolean $children
-	 */
-	protected function addData($interpreter, $children = false) {
-		$data = array();
-		// iterate through PDO resultset
-		foreach ($interpreter as $tuple) {
-			$data[] = array(
-				$tuple[0],
-				View::formatNumber($tuple[1]),
-				$tuple[2]
-			);
-		}
-
-		$from = 0 + $interpreter->getFrom();
-		$to = 0 + $interpreter->getTo();
-		$min = $interpreter->getMin();
-		$max = $interpreter->getMax();
-		$average = $interpreter->getAverage();
-		$consumption = $interpreter->getConsumption();
-
-		$wrapper = array();
-		$wrapper['uuid'] = $interpreter->getEntity()->getUuid();
-		if (isset($from)) $wrapper['from'] = $from;
-		if (isset($to)) $wrapper['to'] = $to;
-		if (isset($min)) $wrapper['min'] = $min;
-		if (isset($max)) $wrapper['max'] = $max;
-		if (isset($average)) $wrapper['average'] = View::formatNumber($average);
-		if (isset($consumption)) $wrapper['consumption'] = View::formatNumber($consumption);
-
-		$wrapper['rows'] = $interpreter->getRowCount();
-
-		if (($interpreter->getTupleCount() > 0 || is_null($interpreter->getTupleCount())) && count($data) > 0) {
-			$wrapper['tuples'] = $data;
-		}
-
-		if (!isset($this->json['data'])) {
-			// make sure json['data'] is initialized when child data is added
-			$this->json['data'] = array();
-		}
-		if ($children == false) {
-			// preserve child data if existing
-			$this->json['data'] = array_merge($wrapper, $this->json['data']);
-		}
-		else {
-			$this->json['data']['children'][] = $wrapper;
-		}
-	}
-
-	protected function addArray($data, &$refNode) {
-		if (is_null($refNode)) {
-			$refNode = array();
-		}
-
-		foreach ($data as $index => $value) {
-			if ($value instanceof Util\JSON || is_array($value)) {
-				$this->addArray($value, $refNode[$index]);
-			}
-			elseif ($value instanceof Model\Entity) {
-				$refNode[$index] = self::convertEntity($value);
-			}
-			elseif (is_numeric($value)) {
-				$refNode[$index] = View::formatNumber($value);
-			}
-			else {
-				$refNode[$index] = $value;
-			}
-		}
-	}
-}
 
 ?>

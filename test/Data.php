@@ -40,8 +40,7 @@ abstract class Data extends Middleware
 	static function createChannel($title, $type, $resolution = null) {
 		$url = '/channel.json?operation=add&title=' . urlencode($title) . '&type=' . urlencode($type);
 		if ($resolution) $url .= '&resolution=' . $resolution;
-		$json = self::executeRequest(Request::create($url));
-
+		$json = self::executeJsonRequest(Request::create($url));
 		return (isset($json->entity->uuid)) ? $json->entity->uuid : null;
 	}
 
@@ -50,7 +49,7 @@ abstract class Data extends Middleware
 	 */
 	static function deleteChannel($uuid) {
 		$url = '/channel/' . $uuid . '.json?operation=delete';
-		return self::executeRequest(Request::create($url));
+		return self::executeJsonRequest(Request::create($url));
 	}
 
 	/*
@@ -103,8 +102,8 @@ abstract class Data extends Middleware
 	 * Helper assertion to validate correct UUID
 	 */
 	protected function assertUUID() {
-		$this->assertEquals(static::$uuid, (isset($this->json->data->uuid) ? $this->json->data->uuid : null),
-			"Wrong UUID. Expected " . static::$uuid . ", got " . $this->json->data->uuid);
+		$uuid = isset($this->json->data->uuid) ? $this->json->data->uuid : null;
+		$this->assertEquals(static::$uuid, $uuid, "Wrong UUID. Expected " . static::$uuid . ", got " . ($uuid ?: '<null>'));
 	}
 
 	/**
