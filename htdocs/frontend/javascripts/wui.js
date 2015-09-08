@@ -757,8 +757,13 @@ vz.wui.drawPlot = function () {
 				return t.slice(0);
 			});
 
+
+			var style = vz.options.style || entity.style;
+			var fillstyle = parseFloat(vz.options.fillstyle || entity.fillstyle);
+			var linewidth = parseFloat(vz.options.linewidth || vz.options[index == vz.wui.selectedChannel ? 'lineWidthSelected' : 'lineWidthDefault']);
+
 			// mangle data for "steps" curves by shifting one ts left ("step-before")
-			if (entity.style == "steps") {
+			if (style == "steps") {
 				tuples.unshift([entity.data.from, 1, 1]); // add new first ts
 				for (i=0; i<tuples.length-1; i++) {
 					tuples[i][1] = tuples[i+1][1];
@@ -766,7 +771,7 @@ vz.wui.drawPlot = function () {
 			}
 
 			// remove number of datapoints from each tuple to avoid flot fill error
-			if (entity.fillstyle || entity.gap) {
+			if (fillstyle || entity.gap) {
 				for (i=0; i<tuples.length; i++) {
 					maxTuples = Math.max(maxTuples, tuples[i][2]);
 					delete tuples[i][2];
@@ -780,13 +785,13 @@ vz.wui.drawPlot = function () {
 				title: entity.title,
 				unit : entity.definition.unit,
 				lines: {
-					show: (entity.style == 'lines' || entity.style == 'steps'),
-					steps: (entity.style == 'steps'),
-					lineWidth: (index == vz.wui.selectedChannel ? vz.options.lineWidthSelected : vz.options.lineWidthDefault),
-					fill: (entity.fillstyle !== undefined) ? entity.fillstyle : false
+					show:       style == 'lines' || style == 'steps',
+					steps:      style == 'steps' || style == 'steps',
+					fill:       fillstyle !== undefined ? fillstyle : false,
+					lineWidth:  linewidth
 				},
 				points: {
-					show: (entity.style == 'points')
+					show:       style == 'points' || style == 'points'
 				},
 				yaxis: entity.assignedYaxis
 			};

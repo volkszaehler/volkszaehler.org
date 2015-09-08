@@ -206,12 +206,12 @@ vz.parseUrlParams = function() {
 						vz.options.plot.xaxis.max = ts;
 					break;
 
+				case 'style': // explicitly set display style
+				case 'fillstyle': // explicitly set fill style
+				case 'linewidth': // explicitly set line width
 				case 'group': // explicitly set data grouping
-					vz.options[key] = vars[key];
-					break;
-
 				case 'options': // data load options
-					vz.options.options = vars[key];
+					vz.options[key] = vars[key];
 					break;
 			}
 		}
