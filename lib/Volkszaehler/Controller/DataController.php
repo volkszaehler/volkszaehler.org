@@ -86,7 +86,7 @@ class DataController extends Controller {
 	 * @todo replace by pluggable api parser
 	 * @param Model\Channel $channel
 	 */
-	public function add($channel) {
+	public function add(Model\Channel $channel) {
 		try { /* to parse new submission protocol */
 			$rawPost = $this->request->getContent(); // file_get_contents('php://input')
 			$json = Util\JSON::decode($rawPost);

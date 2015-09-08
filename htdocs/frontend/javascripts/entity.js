@@ -81,6 +81,14 @@ Entity.prototype.parseJSON = function(json) {
 	if (this.color === undefined) {
 		this.color = vz.options.plot.colors[Entity.colors++ % vz.options.plot.colors.length];
 	}
+
+	// store json data to be extensible by push updates
+	if (this.data === undefined) {
+		this.data = {
+			tuples: [],
+			// min, max remain undefined
+		};
+	}
 };
 
 /**
@@ -92,6 +100,12 @@ Entity.prototype.setMiddleware = function(middleware) {
 	this.each(function(child, parent) {
 		child.middleware = middleware;
 	}, true); // recursive!
+
+	// subscribe to updates
+	var mw = vz.getMiddleware(middleware);
+	if (mw.session) {
+		this.subscribe(mw.session);
+	}
 };
 
 /**
@@ -175,6 +189,53 @@ Entity.prototype.updateAxisScale = function() {
 };
 
 /**
+ * WAMP session subscription and handler
+ */
+Entity.prototype.subscribe = function(session) {
+	session.subscribe(this.uuid, (function(args, json) {
+		var push = JSON.parse(json);
+		if (!push.data || push.data.uuid !== this.uuid) {
+			console.log("Invalid push request");
+			return false;
+		}
+
+		var delta = push.data;
+		if (delta.tuples && delta.tuples.length) {
+			// process updates only if newer than last known timestamp
+			var last_ts = (this.data.tuples.length) ? this.data.tuples[this.data.tuples.length-1][0] : 0;
+			for (var i=0; i<delta.tuples.length; i++) {
+				if (delta.tuples[i][0] > last_ts) {
+					// relevant slice
+					var consumption = 0, deltaTuples = delta.tuples.slice(i);
+					/* jshint loopfunc: true */
+					deltaTuples.each((function(idx, el) {
+						// min/max
+						if (this.data.min === undefined || el[1] < this.data.min[1]) this.data.min = el;
+						if (this.data.max === undefined || el[1] > this.data.max[1]) this.data.max = el;
+						// consumption
+						var tsdiff = (idx === 0) ? el[0] - last_ts : el[0] - deltaTuples[idx-1][0];
+						consumption += el[1] * tsdiff;
+					}).bind(this)); // bind to entity
+
+					// update consumption
+					consumption /= 3.6e6;
+					this.consumption = (this.consumption || 0) + consumption;
+					this.totalconsumption = (this.totalconsumption || 0) + consumption;
+
+					// concatenate in-place
+					Array.prototype.push.apply(this.data.tuples, deltaTuples);
+					// update UI without reloading totals
+					this.updateData(null, false);
+
+					vz.wui.zoomToPartialUpdate(deltaTuples[deltaTuples.length-1][0]);
+					break;
+				}
+			}
+		}
+	}).bind(this)); // bind to Entity
+};
+
+/**
  * Query middleware for details
  * @return jQuery dereferred object
  */
@@ -201,11 +262,19 @@ Entity.prototype.hasData = function() {
 /**
  * Update entity data from middleware result and set axes accordingly
  */
-Entity.prototype.updateData = function(data) {
-	this.data = data;
+Entity.prototype.updateData = function(data, refreshTotal) {
+	// data == null may be used to perform update outside updateData
+	if (data !== null) {
+		this.data = data;
+	}
 
 	this.updateAxisScale();
 	this.updateDOMRow();
+
+	// load totals whenever data changes - this happens async to updateDOMRow()
+	if (refreshTotal && this.initialconsumption !== undefined) {
+		this.loadTotalConsumption();
+	}
 };
 
 /**
@@ -224,13 +293,10 @@ Entity.prototype.loadTotalConsumption = function() {
 			group: 'day' // maximum sensible grouping level, first tuple dropped!
 		},
 		success: function(json) {
-			var row = $('#entity-' + this.uuid);
-			var unit = vz.wui.formatConsumptionUnit(this.definition.unit);
+			// total observed consumption plus initial consumption value
 			this.totalconsumption = (this.definition.scale || 1) * this.initialconsumption + json.data.consumption;
-
-			$('.total', row)
-				.data('total', this.totalconsumption)
-				.text(vz.wui.formatNumber(this.totalconsumption, unit, 'k'));
+			// show in UI
+			this.updateDOMRowTotal();
 		}
 	});
 };
@@ -605,6 +671,9 @@ Entity.prototype.activate = function(state, parent, recursive) {
 	return $.when.apply($, queue);
 };
 
+/**
+ * Update UI with current entity values
+ */
 Entity.prototype.updateDOMRow = function() {
 	var row = $('#entity-' + this.uuid);
 
@@ -654,7 +723,24 @@ Entity.prototype.updateDOMRow = function() {
 		}
 	}
 
-	vz.entities.updateTable();
+	vz.entities.updateTableColumnVisibility();
+};
+
+/**
+ * Update totals column after async refresh
+ */
+Entity.prototype.updateDOMRowTotal = function() {
+	if (this.totalconsumption) {
+		var row = $('#entity-' + this.uuid);
+		var unit = vz.wui.formatConsumptionUnit(this.definition.unit);
+
+		$('.total', row)
+			.data('total', this.totalconsumption)
+			.text(vz.wui.formatNumber(this.totalconsumption, unit, 'k'));
+	}
+
+	// unhide total column
+	vz.entities.updateTableColumnVisibility();
 };
 
 /**

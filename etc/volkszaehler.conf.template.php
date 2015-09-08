@@ -102,6 +102,13 @@ $config['aggregation'] = false;
 //$config['db']['path']				= 'volkszaehler';
 
 /**
+ * Push server settings
+ */
+$config['push']['enabled'] = false;		// set to true to enable push updates
+$config['push']['server'] = 5582;		// server will always listen on 0.0.0.0
+$config['push']['broadcast'] = 8082;	// server will always listen on 0.0.0.0
+
+/**
  * Timezone for the middleware
  *
  * See PHP doc for details: http://www.php.net/manual/de/timezones.php

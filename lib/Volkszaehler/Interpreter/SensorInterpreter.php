@@ -59,18 +59,8 @@ class SensorInterpreter extends Interpreter {
 		}
 
 		$delta_ts = $row[0] - $this->ts_last;
-
-		// instead of using $row[1], which is value, get weighed average value from $row[4] which
-		// DataIterator->next provides as courtesy
-		// otherwise the default, non-optimized tuple packaging SQL statement will yield incorrect results
-		// due to non-equidistant timestamps
-
-		// @TODO check if scale is needed here
-		$tuple = array(
-			(float) ($this->ts_last = $row[0]),	// timestamp of interval end
-			(float) $row[4] / $this->resolution,
-			(int) $row[2]
-		);
+		$tuple = $this->convertRawTuple($row);
+		$this->consumption += $tuple[1] * $delta_ts;
 
 		if (is_null($this->max) || $tuple[1] > $this->max[1]) {
 			$this->max = $tuple;
@@ -80,7 +70,25 @@ class SensorInterpreter extends Interpreter {
 			$this->min = $tuple;
 		}
 
-		$this->consumption += $tuple[1] * $delta_ts;
+		return $tuple;
+	}
+
+	/**
+	 * Convert raw meter readings
+	 */
+	public function convertRawTuple($row) {
+		// instead of using $row[1], which is value, get weighed average value from $row[4] which
+		// DataIterator->next provides as courtesy
+		// otherwise the default, non-optimized tuple packaging SQL statement will yield incorrect
+		// results with non-equidistant timestamps
+		$value = isset($row[4]) ? $row[4] : $row[1];
+
+		// @TODO check if scale is needed here
+		$tuple = array(
+			(float) ($this->ts_last = $row[0]),	// timestamp of interval end
+			(float) $value / $this->resolution,
+			(int) $row[2]
+		);
 
 		return $tuple;
 	}

@@ -33,9 +33,10 @@ namespace Volkszaehler\Interpreter;
 
 class CounterInterpreter extends Interpreter {
 
-	protected $valsum;
-	protected $ts_last; // previous tuple timestamp
-	protected $last_val; // previous tuple value
+	protected $ts_last; 	// previous tuple timestamp
+	protected $last_val; 	// previous tuple value
+	protected $delta_val; 	// previous tuple delta
+	protected $valsum;		// sum of delta values
 
 	/**
 	 * Initialize data iterator
@@ -49,7 +50,7 @@ class CounterInterpreter extends Interpreter {
 
 		// get starting value from skipped first row
 		if ($this->rowCount > 0) {
-			$this->last_ts = $this->getFrom();
+			$this->ts_last = $this->getFrom();
 			$this->last_val = $this->rows->firstValue();
 		}
 	}
@@ -65,19 +66,8 @@ class CounterInterpreter extends Interpreter {
 			return(array_slice($row, 0, 3));
 		}
 
-		$delta_ts = $row[0] - $this->last_ts; // time between now and row before
-
-		// instead of reverting what DataIterator->next did by $val = $row[1] / $row[2]
-		// get max value which DataIterator->next provides as courtesy
-		$delta_val = $row[3] - $this->last_val;
-
-		// (1 imp / 1 imp/kWh) * (60 min/h * 60 s/min * 1000 ms/s * scale) / 1 ms
-		$tuple = array(
-			(float) ($this->last_ts = $row[0]), // timestamp of interval end
-			(float) ($delta_val * 3.6e6 * $this->scale) / ($delta_ts * $this->resolution), // doing df/dt
-			(int) $row[2] // num of rows
-		);
-		$this->last_val = $row[3];
+		$tuple = $this->convertRawTuple($row);
+		$this->valsum += $this->delta_val;
 
 		if (is_null($this->max) || $tuple[1] > $this->max[1]) {
 			$this->max = $tuple;
@@ -87,7 +77,27 @@ class CounterInterpreter extends Interpreter {
 			$this->min = $tuple;
 		}
 
-		$this->valsum += $delta_val;
+		return $tuple;
+	}
+
+	/**
+	 * Convert raw meter readings
+	 */
+	public function convertRawTuple($row) {
+		$delta_ts = $row[0] - $this->ts_last; // time between now and row before
+
+		// instead of reverting what DataIterator->next did when packaging by $val = $row[1] / $row[2]
+		// get max value which DataIterator->next provides as courtesy
+		$value = isset($row[3]) ? $row[3] : $row[1];
+		$this->delta_val = $value - $this->last_val;
+		$this->last_val = $value;
+
+		// (1 imp / 1 imp/kWh) * (60 min/h * 60 s/min * 1000 ms/s * scale) / 1 ms
+		$tuple = array(
+			(float) ($this->ts_last = $row[0]), // timestamp of interval end
+			(float) ($this->delta_val * 3.6e6 * $this->scale) / ($delta_ts * $this->resolution), // doing df/dt
+			(int) $row[2] // num of rows
+		);
 
 		return $tuple;
 	}
