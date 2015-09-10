@@ -336,6 +336,6 @@ class JSON extends View {
 			$this->json['exception'] = $exceptionInfo;
 		}
 	}
-		}
+}
 
 ?>
