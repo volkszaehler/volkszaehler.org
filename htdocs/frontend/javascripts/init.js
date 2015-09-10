@@ -130,7 +130,9 @@ $(document).ready(function() {
 				if (middleware.live) {
 					var parser = document.createElement('a');
 					parser.href = middleware.url;
-					var uri = "ws://" + parser.hostname + ":" + middleware.live;
+					var host = parser.hostname || location.host; // location object for IE
+					var protocol = (parser.protocol || location.protocol).toLowerCase().indexOf("https") === 0 ? "wss" : "ws";
+					var uri = protocol + "://" + host + ":" + middleware.live;
 
 					// connect and store session
 					new ab.connect(uri, function(session) {
