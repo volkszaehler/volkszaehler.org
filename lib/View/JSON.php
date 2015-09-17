@@ -96,7 +96,7 @@ class JSON extends View {
 
 			// padded response is js, not json
 			if (!$this->padding) {
-				$json = Util\Json::format($json);
+				$json = Util\JSON::format($json);
 			}
 
 			$this->response->setContent($json);
