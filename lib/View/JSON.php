@@ -49,13 +49,17 @@ class JSON extends View {
 	protected $padding = false;
 
 	/**
+	 * @var string StreamedResponse content buffer, see renderDeferred()
+	 */
+	protected $content;
+
+	/**
 	 * Constructor
 	 */
 	public function __construct(Request $request) {
 		parent::__construct($request);
 
-		$this->json = array();
-		$this->json['version'] = VZ_VERSION;
+		$this->json = array('version' => VZ_VERSION);
 
 		$this->padding = $request->query->get('padding');
 	}
@@ -95,7 +99,7 @@ class JSON extends View {
 			ob_end_clean();
 
 			// padded response is js, not json
-			if (!$this->padding) {
+			if (Util\Debug::isActivated() && !$this->padding) {
 				$json = Util\Json::format($json);
 			}
 
@@ -123,20 +127,29 @@ class JSON extends View {
 
 	/**
 	 * Process, encode and print output to stdout
+	 *
+	 * For StreamedResponse the renderDeferred happens outside Router->handle() and therefore
+	 * without surrounding try/catch. To enable exception handling via json responses, all output
+	 * must be collected until Exception occured and is handled by View.
+	 *
+	 * Since most likely source of exceptions and source of mass-data is Interpreter->processData(),
+	 * this case is implemented in renderInterpreter() below.
 	 */
 	protected function renderDeferred() {
-		if ($this->padding) echo($this->padding . '(');
-		echo('{');
+		if ($this->padding) {
+			$this->content = $this->padding . '(';
+		}
+		$this->content .= '{';
 
 		$contentStarted = false;
 
 		foreach ($this->json as $key => $data) {
 			if ($contentStarted) {
-				echo(",");
+				$this->content .= ",";
 			}
 			$contentStarted = true;
 
-			echo('"' . $key . '":');
+			$this->content .= '"' . $key . '":';
 
 			if ($data instanceof Interpreter\Interpreter) {
 				// single interpreter
@@ -144,36 +157,83 @@ class JSON extends View {
 			}
 			elseif (is_array($data) && isset($data[0]) && $data[0] instanceof Interpreter\Interpreter) {
 				// array of interpreters
-				echo('[');
+				$this->content .= '[';
 				foreach ($data as $key => $interpreter) {
-					if ($key) echo(',');
+					if ($key) $this->content .= ',';
 					$this->renderInterpreter($interpreter);
 				}
-				echo(']');
+				$this->content .= ']';
 			}
 			elseif ($data instanceof Util\Debug) {
-				echo(json_encode($this->convertDebug($data)));
+				$this->content .= json_encode($this->convertDebug($data));
 			}
 			else {
-				echo(json_encode($data));
+				$this->content .= json_encode($data);
 			}
 		}
 
-		echo('}');
-		if ($this->padding) echo(');');
+		$this->content .= '}';
+		if ($this->padding) {
+			$this->content .= ');';
+		}
+
+		$this->renderContent();
+	}
+
+	/**
+	 * Render collected buffer
+	 */
+	private function renderContent() {
+		if ($this->content) {
+			echo($this->content);
+			$this->content = '';
+		}
+	}
+
+	/**
+	 * Render exception for StreamedResponse
+	 */
+	private function renderStreamedException(\Exception $exception) {
+		// cleanup result structure
+		$this->json = array('version' => VZ_VERSION);
+		$this->content = '';
+
+		// add exception to output
+		$this->getExceptionResponse($exception);
+
+		// render
+		$this->response->sendHeaders();
+		$this->renderDeferred();
 	}
 
 	/**
 	 * Render Interpreter output
+	 *
+	 * See comments regarding StreamedResponse at renderDeferred()
 	 */
 	protected function renderInterpreter(Interpreter\Interpreter $interpreter) {
-		echo('{"tuples":[');
+		$this->content .= '{"tuples":[';
 
-		// start with iterating through PDO result set to populate interpreter header data
-		foreach ($interpreter as $key => $tuple) {
-			if ($key) echo(',');
-			echo('[' . $tuple[0] . ',' . View::formatNumber($tuple[1]) . ',' . $tuple[2] . ']');
+		try {
+			// start with iterating through PDO result set to populate interpreter header data
+			foreach ($interpreter as $key => $tuple) {
+				// render buffered content- likely no exception after loop iteration has started
+				$this->renderContent();
+
+				if ($key) echo(',');
+				echo('[' . $tuple[0] . ',' . View::formatNumber($tuple[1]) . ',' . $tuple[2] . ']');
+			}
 		}
+		catch (\Exception $e) {
+			if ($this->response instanceof StreamedResponse) {
+				$this->renderStreamedException($e);
+				die;
+			}
+			throw ($e);
+		}
+
+		// render buffered content if not rendered inside foreach loop due to Interpreter empty
+		$this->renderContent();
 
 		$from = 0 + $interpreter->getFrom();
 		$to = 0 + $interpreter->getTo();
@@ -268,11 +328,11 @@ class JSON extends View {
 		// SQL statements
 		if (count($statements = $debug->getQueries())) {
 			$this->getSQLTimes($statements);
-		$jsonDebug['sql'] = array(
-			'totalTime' => $this->sqlTotalTime,
-			'worstTime' => $this->sqlWorstTime,
-			'queries' => array_values($debug->getQueries())
-		);
+			$jsonDebug['sql'] = array(
+				'totalTime' => $this->sqlTotalTime,
+				'worstTime' => $this->sqlWorstTime,
+				'queries' => array_values($debug->getQueries())
+			);
 		}
 
 		return $jsonDebug;

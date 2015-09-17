@@ -34,6 +34,11 @@ abstract class Middleware extends \PHPUnit_Framework_TestCase
 	static $mem;
 
 	/**
+	 * @var Symfony\Component\HttpFoundation\Request
+	 */
+	static $request;
+
+	/**
 	 * @var Debug setting
 	 */
 	static $debug = false;
@@ -106,13 +111,7 @@ abstract class Middleware extends \PHPUnit_Framework_TestCase
 	 */
 	protected static function executeJsonRequest(Request $request) {
 		$response = self::executeRequest($request);
-
-		try {
-			$json = json_decode($response->getContent());
-		}
-		catch (\Exception $e) {
-			$json = null;
-		}
+		$json = json_decode($response->getContent());
 
 		return $json;
 	}
@@ -125,7 +124,7 @@ abstract class Middleware extends \PHPUnit_Framework_TestCase
 			$request = Request::create($request, $method, $parameters);
 		}
 
-		return self::executeRequest($request);
+		return self::executeRequest(self::$request = $request);
 	}
 
 	/**
@@ -143,11 +142,8 @@ abstract class Middleware extends \PHPUnit_Framework_TestCase
 
 		$this->assertEquals('application/json', $response->headers->get('Content-Type'), 'Expected JSON response got ' . print_r($response->getContent(), true));
 
-		try {
-			$this->json = json_decode($response->getContent());
-		}
-		catch (\Exception $e) {
-			$this->fail('Response JSON decode error ' . $e->getMessage());
+		if (null === ($this->json = json_decode($response->getContent()))) {
+			$this->fail("Failed to decode JSON for " . self::$request->getUri() . "\n" . $response->getContent());
 		}
 
 		if ($hasException) {
