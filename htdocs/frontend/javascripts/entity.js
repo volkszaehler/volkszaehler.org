@@ -700,7 +700,7 @@ Entity.prototype.updateDOMRow = function() {
 		if (this.data.average)
 			$('.average', row)
 			.text(vz.wui.formatNumber(this.data.average, this.definition.unit));
-		if (this.data.tuples && this.data.tuples.last)
+		if (this.data.tuples && this.data.tuples.length > 0)
 			$('.last', row)
 			.text(vz.wui.formatNumber(this.data.tuples.last()[1], this.definition.unit));
 
