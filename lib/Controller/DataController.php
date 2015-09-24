@@ -53,40 +53,36 @@ class DataController extends Controller {
 	/**
 	 * Query for data by given channel or group or multiple channels
 	 *
-	 * @param Model\Entity $entity - can be null
+	 * @param string|array uuid
 	 */
-	public function get(Model\Channel $entity = null) {
+	public function get($uuid) {
 		$from = $this->request->query->get('from');
 		$to = $this->request->query->get('to');
 		$tuples = $this->request->query->get('tuples');
 		$groupBy = $this->request->query->get('group');
 
-		// single entity interpreter
-		if ($entity) {
+		// single UUID
+		if (is_string($uuid)) {
+			$entity = $this->ec->getSingleEntity($uuid, true); // from cache
 			$class = $entity->getDefinition()->getInterpreter();
 			return new $class($entity, $this->em, $from, $to, $tuples, $groupBy, $this->options);
 		}
 
 		// multiple UUIDs
-		if ($uuids = self::makeArray($this->request->query->get('uuid'))) {
-			$interpreters = array();
-
-			foreach ($uuids as $uuid) {
-				$entity = $this->ec->getSingleEntity($uuid, true); // from cache
-				$interpreters[] = $this->get($entity);
-			}
-
-			return $interpreters;
-		}
+		return array_map(function($uuid) {
+			return $this->get($uuid);
+		}, $uuids);
 	}
 
 	/**
 	 * Add single or multiple tuples
 	 *
-	 * @todo replace by pluggable api parser
-	 * @param Model\Channel $channel
+	 * @todo deduplicate Model\Channel code
+	 * @param string|array uuid
 	 */
-	public function add(Model\Channel $channel) {
+	public function add($uuid) {
+		$channel = $this->ec->getSingleEntity($uuid, true);
+
 		try { /* to parse new submission protocol */
 			$rawPost = $this->request->getContent(); // file_get_contents('php://input')
 			$json = Util\JSON::decode($rawPost);
@@ -128,11 +124,45 @@ class DataController extends Controller {
 	}
 
 	/**
-	 * Run operation
+	 * Delete tuples from single or multiple channels
+	 *
+	 * @todo deduplicate Model\Channel code
+	 * @param string|array uuid
 	 */
-	public function run($operation, $uuid = null) {
-		$entity = isset($uuid) ? $this->ec->getSingleEntity($uuid, true) : null; // from cache (GET requests only)
-		return $this->{$operation}($entity);
+	public function delete($uuid) {
+		$params = self::makeArray($uuid);
+		$sql = ' WHERE channel_id IN (' . implode(', ', array_fill(0, count($uuid), '?')) . ') ';
+
+		// parse interval
+		if (null !== ($from = $this->request->query->get('from'))) {
+			$from = Interpreter::parseDateTimeString($from);
+			$params[] = $from;
+			$sql .= 'AND timestamp >= ?';
+
+			if (null !== ($to = $this->request->query->get('to'))) {
+				$to = Interpreter::parseDateTimeString($to);
+				$params[] = $to;
+				$sql .= 'AND timestamp <= ?';
+
+				if ($from > $to) {
+					throw new \Exception('From is larger than to');
+				}
+			}
+		}
+		elseif ($timestamp = $this->request->query->get('ts')) {
+			$params[] = $timestamp;
+			$sql .= 'AND timestamp = ?';
+		}
+		else {
+			throw new \Exception('Missing timestamp (ts, from, to)');
+		}
+
+		$this->em->getConnection()->beginTransaction();
+		$foo  = $this->em->getConnection()->executeUpdate('DELETE FROM aggregate' . $sql, $params);
+		$rows = $this->em->getConnection()->executeUpdate('DELETE FROM data' . $sql, $params);
+		$this->em->getConnection()->commit();
+
+		return array('rows' => $rows);
 	}
 }
 
