@@ -60,6 +60,7 @@ cache:
     - $HOME/.npm
 
 install:
+    - if [ -n "$DEPENDENCIES" ]; then composer config github-oauth.github.com ${GH_TOKEN}; fi
     - if [ "$DEPENDENCIES" = "standard" ]; then composer install; fi
     - if [ "$DEPENDENCIES" = "lowest" ]; then composer update --prefer-lowest -n; fi
     - if [ "$DEPENDENCIES" = "highest" ]; then composer update -n; fi
