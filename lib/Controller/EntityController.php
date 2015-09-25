@@ -122,7 +122,7 @@ class EntityController extends Controller {
 		$entity = $this->get($identifier);
 
 		if ($entity instanceof Model\Channel) {
-			$entity->clearData($this->em);
+			$entity->clearData($this->em->getConnection());
 		}
 
 		$this->em->remove($entity);

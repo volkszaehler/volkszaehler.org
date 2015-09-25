@@ -71,7 +71,7 @@ class DataController extends Controller {
 		// multiple UUIDs
 		return array_map(function($uuid) {
 			return $this->get($uuid);
-		}, $uuids);
+		}, self::makeArray($uuid));
 	}
 
 	/**
@@ -129,38 +129,35 @@ class DataController extends Controller {
 	 * @todo deduplicate Model\Channel code
 	 * @param string|array uuid
 	 */
-	public function delete($uuid) {
-		$params = self::makeArray($uuid);
-		$sql = ' WHERE channel_id IN (' . implode(', ', array_fill(0, count($uuid), '?')) . ') ';
+	public function delete($uuids) {
+		$from = null;
+		$to = null;
 
 		// parse interval
 		if (null !== ($from = $this->request->query->get('from'))) {
 			$from = Interpreter::parseDateTimeString($from);
-			$params[] = $from;
-			$sql .= 'AND timestamp >= ?';
 
 			if (null !== ($to = $this->request->query->get('to'))) {
 				$to = Interpreter::parseDateTimeString($to);
-				$params[] = $to;
-				$sql .= 'AND timestamp <= ?';
 
 				if ($from > $to) {
 					throw new \Exception('From is larger than to');
 				}
 			}
 		}
-		elseif ($timestamp = $this->request->query->get('ts')) {
-			$params[] = $timestamp;
-			$sql .= 'AND timestamp = ?';
+		elseif ($from = $this->request->query->get('ts')) {
+			$to = $from;
 		}
 		else {
 			throw new \Exception('Missing timestamp (ts, from, to)');
 		}
 
-		$this->em->getConnection()->beginTransaction();
-		$foo  = $this->em->getConnection()->executeUpdate('DELETE FROM aggregate' . $sql, $params);
-		$rows = $this->em->getConnection()->executeUpdate('DELETE FROM data' . $sql, $params);
-		$this->em->getConnection()->commit();
+		$rows = 0;
+
+		foreach (self::makeArray($uuids) as $uuid) {
+			$channel = $this->ec->getSingleEntity($uuid, true);
+			$rows += $channel->clearData($this->em->getConnection(), $from, $to);
+		}
 
 		return array('rows' => $rows);
 	}
