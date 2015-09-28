@@ -62,21 +62,30 @@ class Channel extends Entity {
 	 * Purge data
 	 *
 	 * prevents doctrine of using single delete statements
-	 * @todo filter from & to
 	 */
-	public function clearData(\Doctrine\ORM\EntityManager $em) {
-		$em->getConnection()->beginTransaction();
+	public function clearData(\Doctrine\DBAL\Connection $conn, $from = null, $to = null) {
+		$conn->transactional(function() use ($conn, $from, $to, &$res) {
+			$params = array($this->id);
 
-		$sql = 'DELETE FROM data WHERE channel_id = ?';
-		$res = $em->getConnection()->executeQuery($sql, array($this->id));
+			$sql = 'WHERE channel_id = ?';
+			if (isset($from)) {
+				$params[] = $from;
+				$sql .= ' AND timestamp >= ?';
 
-		// clean aggregation table as well
-		if (Util\Configuration::read('aggregation')) {
-			$sql = 'DELETE FROM aggregate WHERE channel_id = ?';
-			$em->getConnection()->executeQuery($sql, array($this->id));
-		}
+				if (isset($to)) {
+					$params[] = $to;
+					$sql .= ' AND timestamp <= ?';
+				}
+			}
 
-		$em->getConnection()->commit();
+			$res = $conn->executeUpdate('DELETE FROM data ' . $sql, $params);
+
+			// clean aggregation table as well
+			if (Util\Configuration::read('aggregation')) {
+				$conn->executeUpdate('DELETE FROM aggregate ' . $sql, $params);
+			}
+		});
+
 		return $res;
 	}
 }

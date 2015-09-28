@@ -98,7 +98,7 @@ abstract class Interpreter implements \Iterator {
 			$this->from = ($this->to ? $this->to : time()*1000) - 24*60*60*1000; // default: "to" or now minus 24h
 
 		if (isset($this->from) && isset($this->to) && $this->from > $this->to) {
-			throw new \Exception('from is larger than to parameter');
+			throw new \Exception('From is larger than to');
 		}
 
 		// add db-specific SQL optimizations

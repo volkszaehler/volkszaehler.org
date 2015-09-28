@@ -244,6 +244,58 @@ class MeterTest extends Data
 		$this->assertTuple(0, $this->makeTuple($this->ts1, $this->ts2, $this->value2));
 		$this->assertTuple(1, $this->makeTuple($this->ts2, $this->ts4, $this->value3 + $this->value4));
 	}
+
+	/**
+	 * delete data points by ts
+	 *
+	 * @depends testMultipleGroupByHour2
+	 */
+	function testDeleteDatapointByTs() {
+		// delete tuples
+		$this->getJson('/data/' . static::$uuid . '.json', array(
+			'operation' => 'delete',
+			'ts' => $this->ts4
+		));
+		$this->assertEquals(1, $this->json->rows);
+
+		$this->getTuples($this->ts1, $this->ts4);
+		$this->assertCount(2, $this->json->data->tuples);
+	}
+
+	/**
+	 * delete data points by from
+	 *
+	 * @depends testDeleteDatapointByTs
+	 */
+	function testDeleteDatapointFrom() {
+		// delete tuples
+		$this->getJson('/data/' . static::$uuid . '.json', array(
+			'operation' => 'delete',
+			'from' => $this->ts3
+		));
+		$this->assertEquals(1, $this->json->rows);
+
+		$this->getTuples($this->ts1, $this->ts4);
+		$this->assertCount(1, $this->json->data->tuples);
+	}
+
+	/**
+	 * delete data points by from .. to
+	 *
+	 * @depends testDeleteDatapointFrom
+	 */
+	function testDeleteDatapointFromTo() {
+		// delete tuples
+		$this->getJson('/data/' . static::$uuid . '.json', array(
+			'operation' => 'delete',
+			'from' => $this->ts2,
+			'to' => $this->ts2,
+		));
+		$this->assertEquals(1, $this->json->rows);
+
+		$this->getTuples($this->ts1, $this->ts4);
+		$this->assertCount(0, $this->json->data->tuples);
+	}
 }
 
 ?>
