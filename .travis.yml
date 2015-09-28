@@ -17,7 +17,7 @@ sudo: false
 env:
   # run composer by default
   global:
-    - DEPENDENCIES=true
+    - DEPENDENCIES=standard
     - APC=true
     - TRAVIS_TEST_EXCLUDES="--exclude-group slow,jpgraph"
   matrix:
@@ -27,12 +27,17 @@ env:
 
 matrix:
   include:
-    # add jslint-only build
-    - php: 5.6
+    # jslint-only
+    - php: 5.4
       env: DB= DEPENDENCIES= JSLINT=true
-    # add httpd-based build
-    - php: 5.6
+    # httpd-based
+    - php: 5.4
       env: DB=mysql TEST_ADAPTER=HTTP
+    # from..to
+    - php: 5.4
+      env: DB=mysql DEPENDENCIES=lowest
+    - php: 5.4
+      env: DB=mysql DEPENDENCIES=highest
   # remove hhvm/pgsql
   exclude:
     - php: hhvm
@@ -55,7 +60,10 @@ cache:
     - $HOME/.npm
 
 install:
-    - if [ "$DEPENDENCIES" = true ]; then composer install; fi
+    - if [ -n "$DEPENDENCIES" ]; then composer config github-oauth.github.com ${GH_TOKEN}; fi
+    - if [ "$DEPENDENCIES" = "standard" ]; then composer install; fi
+    - if [ "$DEPENDENCIES" = "lowest" ]; then composer update --prefer-lowest -n; fi
+    - if [ "$DEPENDENCIES" = "highest" ]; then composer update -n; fi
     - if [ "$JSLINT" = true ]; then npm install; fi
     - if [ "$TEST_ADAPTER" = "HTTP" ]; then composer require volkszaehler/httpd:dev-master jenssegers/proxy:~2.2; fi
 
