@@ -1,4 +1,0 @@
-This directory contains the configuration files for volkszaehler.org:
-
-volkszaehler.conf.php.template		please copy this file to volkszaehler.conf.php and change it to your needs
-volkszaehler.conf			this is a sample configuration for apache. Symlink it to /etc/apache2/conf.d/volkszaehler.conf
