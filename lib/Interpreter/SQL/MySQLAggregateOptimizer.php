@@ -255,7 +255,7 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 				   'FROM aggregate WHERE channel_id=? AND type=? AND ' .
 				   '     UNIX_TIMESTAMP(FROM_UNIXTIME(timestamp / 1000, ' . $dateFormat . ')) * 1000 >=?';
 		}
-		$this->aggFrom = $this->conn->fetchColumn($sql, $sqlParameters, 0);
+		$this->aggFrom = (float) $this->conn->fetchColumn($sql, $sqlParameters, 0);
 		$this->aggTo = null;
 
 		// aggregate table contains relevant data?
@@ -272,7 +272,7 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 				$sqlParameters[] = $this->to;
 				$sql .= ' AND timestamp<?';
 			}
-			$this->aggTo = $this->conn->fetchColumn($sql, $sqlParameters, 0);
+			$this->aggTo = (float) $this->conn->fetchColumn($sql, $sqlParameters, 0);
 		}
 
 		if (self::$debug) {
