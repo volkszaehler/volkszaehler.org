@@ -171,13 +171,23 @@ abstract class Interpreter implements \Iterator {
 			// get timestamps of preceding and following data points as a graciousness
 			// for the frontend to be able to draw graphs to the left and right borders
 			if (isset($this->from)) {
-				$sql = 'SELECT MIN(timestamp) FROM (SELECT timestamp FROM data WHERE channel_id=? AND timestamp<? ORDER BY timestamp DESC LIMIT 2) t';
-				$from = $this->conn->fetchColumn($sql, array($this->channel->getId(), $this->from), 0);
+				$sql = 'SELECT MAX(timestamp) FROM data WHERE channel_id=? AND timestamp < (SELECT MAX(timestamp) FROM data WHERE channel_id=? AND timestamp<?)';
+				// $sql = 'SELECT IFNULL(' .
+				// 			'SELECT MAX(timestamp) FROM data WHERE channel_id=? AND timestamp < (SELECT MAX(timestamp) FROM data WHERE channel_id=? AND timestamp<?), ' .
+				// 			'SELECT MAX(timestamp) FROM data WHERE channel_id=? AND timestamp<?' .
+				// 	   ')';
+
+				// if not second-highest timestamp take highest before $this->from
+				if (null === $from = $this->conn->fetchColumn($sql, array($this->channel->getId(), $this->channel->getId(), $this->from), 0)) {
+					$sql = 'SELECT MAX(timestamp) FROM data WHERE channel_id=? AND timestamp<?';
+					$from = $this->conn->fetchColumn($sql, array($this->channel->getId(), $this->from), 0);
+				}
+
 				if ($from)
 					$this->from = (double)$from; // bigint conversion
 			}
 			if (isset($this->to)) {
-				$sql = 'SELECT MAX(timestamp) FROM (SELECT timestamp FROM data WHERE channel_id=? AND timestamp>? ORDER BY timestamp ASC LIMIT 2) t';
+				$sql = 'SELECT MIN(timestamp) FROM data WHERE channel_id=? AND timestamp>?';
 				$to = $this->conn->fetchColumn($sql, array($this->channel->getId(), $this->to), 0);
 				if ($to)
 					$this->to = (double)$to; // bigint conversion

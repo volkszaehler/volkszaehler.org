@@ -80,10 +80,11 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 		if ($this->aggValid === null) {
 			$this->aggValid = false;
 
-			$aggregationLevel = $this->aggregator->getOptimalAggregationLevel($this->channel->getUuid(), $this->groupBy);
-			if ($aggregationLevel) {
+			$aggregationLevels = $this->aggregator->getOptimalAggregationLevel($this->channel->getUuid(), $this->groupBy);
+
+			if ($aggregationLevels) {
 				// choose highest level
-				$this->aggLevel = $aggregationLevel[0]['level'];
+				$this->aggLevel = $aggregationLevels[0]['level'];
 
 				// numeric value of desired aggregation level
 				$this->aggType = Util\Aggregation::getAggregationLevelTypeValue($this->aggLevel);
@@ -238,24 +239,29 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 		$dateFormat = Util\Aggregation::getAggregationDateFormat($this->aggLevel); // day = "%Y-%m-%d"
 
 		// aggFrom becomes beginning of first period with aggregate data
+		// find 'left' border of aggregate table after $from
 		$sqlParameters = array($this->channel->getId(), $this->aggType, $this->from);
 		if (isset($aggFromDelta)) {
-			// shift 'left' border of aggregate table use by $aggFromDelta units
+			// shift 'left' border of aggregate table by $aggFromDelta units (used to spare 1 tuple)
 			$sql = 'SELECT UNIX_TIMESTAMP(' .
 				   'DATE_ADD(' .
 					   'FROM_UNIXTIME(MIN(timestamp) / 1000, ' . $dateFormat . '), ' .
 					   'INTERVAL ' . $aggFromDelta . ' ' . $this->aggLevel .
-				   ')) * 1000 ' .
-				   'FROM aggregate WHERE channel_id=? AND type=? AND ' .
-				   '     UNIX_TIMESTAMP(FROM_UNIXTIME(timestamp / 1000, ' . $dateFormat . ')) * 1000 >=?';
+				   ')) * 1000 ';
 		}
 		else {
-			// find 'left' border of aggregate table after $from
-			$sql = 'SELECT UNIX_TIMESTAMP(FROM_UNIXTIME(MIN(timestamp) / 1000, ' . $dateFormat . ')) * 1000 ' .
-				   'FROM aggregate WHERE channel_id=? AND type=? AND ' .
-				   '     UNIX_TIMESTAMP(FROM_UNIXTIME(timestamp / 1000, ' . $dateFormat . ')) * 1000 >=?';
+			$sql = 'SELECT UNIX_TIMESTAMP(FROM_UNIXTIME(MIN(timestamp) / 1000, ' . $dateFormat . ')) * 1000 ';
 		}
-		$this->aggFrom = (float) $this->conn->fetchColumn($sql, $sqlParameters, 0);
+
+		$sql .= 'FROM aggregate WHERE channel_id=? AND type=? AND ' .
+				'timestamp >= UNIX_TIMESTAMP(' .
+					'DATE_ADD(' .
+						'FROM_UNIXTIME(? / 1000, ' . $dateFormat . '), ' .
+						'INTERVAL 1 ' . $this->aggLevel .
+					')' .
+				') * 1000';
+
+		$this->aggFrom = (double) $this->conn->fetchColumn($sql, $sqlParameters, 0);
 		$this->aggTo = null;
 
 		// aggregate table contains relevant data?
@@ -272,17 +278,18 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 				$sqlParameters[] = $this->to;
 				$sql .= ' AND timestamp<?';
 			}
-			$this->aggTo = (float) $this->conn->fetchColumn($sql, $sqlParameters, 0);
+			$this->aggTo = (double) $this->conn->fetchColumn($sql, $sqlParameters, 0);
 		}
 
 		if (self::$debug) {
 			printf("from ..              aggFrom             ..               aggTo                .. to\n");
-			printf("%s |%s .. %s| %s\n", self::pd($this->from), self::pd($this->aggFrom), self::pd($this->aggFrom), self::pd($this->to));
+			printf("%s |%s .. %s| %s\n", self::pd($this->from), self::pd($this->aggFrom), self::pd($this->aggTo), self::pd($this->to));
 		}
 
 		return isset($this->aggFrom) && isset($this->aggTo) &&
 			   $this->aggFrom < $this->aggTo &&
-			   $this->from <= $this->aggFrom && $this->aggTo <= $this->to;
+			   $this->from <= $this->aggFrom &&
+			   ($this->to === null || $this->to >= $this->aggTo);
 	}
 
 	/**
@@ -290,7 +297,7 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 	 */
 	private static function pd($ts) {
 		$date = \DateTime::createFromFormat('U', (int)($ts/1000))->setTimeZone(new \DateTimeZone('Europe/Berlin'));
-		return $date->format('d.m.Y H:i:s');
+		return (null === $ts) ? 'NULL       ' : $date->format('d.m.Y H:i:s');
 	}
 
 	/**
