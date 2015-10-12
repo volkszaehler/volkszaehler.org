@@ -101,7 +101,9 @@ class Debug {
 	 * Is debugging enabled?
 	 * @return boolean
 	 */
-	public static function isActivated() { return isset(self::$instance); }
+	public static function isActivated() {
+		return isset(self::$instance);
+	}
 
 	/**
 	 * Deactivate debugging (for http server)
@@ -125,21 +127,22 @@ class Debug {
 	/**
 	 * @return float execution time
 	 */
-	public function getExecutionTime() { return round((microtime(TRUE) - $this->created), 5); }
+	public function getExecutionTime() { 
+		return round((microtime(TRUE) - $this->created), 5); 
+	}
 
 	/**
 	 * @return 2 dimensional array with sql queries and parameters
 	 */
-	public function getQueries() { return $this->sqlLogger->queries; }
+	public function getQueries() { 
+		return $this->sqlLogger->queries; 
+	}
 
 	/**
 	 * getParametrizedQuery helper function
 	 */
 	private static function formatSQLParameter($para) {
-		if (is_numeric($para)) {
-			return $para;
-		}
-		elseif (is_string($para)) {
+		if (is_string($para)) {
 			return (strtoupper($para) == 'NULL') ?: "'" . $para . "'";
 		}
 		return $para;
@@ -170,7 +173,9 @@ class Debug {
 	/**
 	 * @return integer current debug level
 	 */
-	 public function getLevel() { return $this->level; }
+	public function getLevel() {
+		return $this->level;
+	}
 
 	/**
 	 * Fail-safe, non-warning, portable shell_exec

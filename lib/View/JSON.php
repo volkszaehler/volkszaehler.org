@@ -331,7 +331,13 @@ class JSON extends View {
 			$jsonDebug['sql'] = array(
 				'totalTime' => $this->sqlTotalTime,
 				'worstTime' => $this->sqlWorstTime,
-				'queries' => array_values($debug->getQueries())
+				'queries' =>
+					array_map(function($q) {
+						return array(
+							'sql' => Util\Debug::getParametrizedQuery($q['sql'], $q['params']),
+							'execTime' => $q['executionMS']
+						);
+					}, array_values($debug->getQueries()))
 			);
 		}
 
