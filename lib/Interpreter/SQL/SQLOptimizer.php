@@ -166,6 +166,13 @@ class SQLOptimizer {
 		// not implemented
 		return false;
 	}
+
+	/**
+	 * Disable SQL statement caching
+	 */
+	public function disableCache() {
+		throw new \RuntimeException('Disabling caching not implemented for current DBMS');
+	}
 }
 
 ?>

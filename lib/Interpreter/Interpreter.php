@@ -104,6 +104,10 @@ abstract class Interpreter implements \Iterator {
 		// add db-specific SQL optimizations
 		$class = SQL\SQLOptimizer::factory();
 		$this->optimizer = new $class($this, $this->conn);
+
+		if ($this->hasOption('nocache')) {
+			$this->optimizer->disableCache();
+		}
 	}
 
 	/**
@@ -172,10 +176,6 @@ abstract class Interpreter implements \Iterator {
 			// for the frontend to be able to draw graphs to the left and right borders
 			if (isset($this->from)) {
 				$sql = 'SELECT MAX(timestamp) FROM data WHERE channel_id=? AND timestamp < (SELECT MAX(timestamp) FROM data WHERE channel_id=? AND timestamp<?)';
-				// $sql = 'SELECT IFNULL(' .
-				// 			'SELECT MAX(timestamp) FROM data WHERE channel_id=? AND timestamp < (SELECT MAX(timestamp) FROM data WHERE channel_id=? AND timestamp<?), ' .
-				// 			'SELECT MAX(timestamp) FROM data WHERE channel_id=? AND timestamp<?' .
-				// 	   ')';
 
 				// if not second-highest timestamp take highest before $this->from
 				if (null === $from = $this->conn->fetchColumn($sql, array($this->channel->getId(), $this->channel->getId(), $this->from), 0)) {

@@ -35,6 +35,13 @@ use Doctrine\DBAL;
 class MySQLOptimizer extends SQLOptimizer {
 
 	/**
+	 * Disable SQL statement caching
+	 */
+	public function disableCache() {
+		$this->conn->executeQuery('SET SESSION query_cache_type = 0');
+	}
+
+	/**
 	 * DB-specific data grouping by date functions
 	 *
 	 * @param string $groupBy

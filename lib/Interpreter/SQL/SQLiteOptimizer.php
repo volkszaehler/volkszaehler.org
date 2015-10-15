@@ -30,6 +30,13 @@ namespace Volkszaehler\Interpreter\SQL;
 class SQLiteOptimizer extends SQLOptimizer {
 
 	/**
+	 * Disable SQL statement caching
+	 */
+	public function disableCache() {
+		$this->conn->executeQuery('PRAGMA cache_size = 0');
+	}
+
+	/**
 	 * DB-specific data grouping by date functions
 	 *
 	 * @param string $groupBy
