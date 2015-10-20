@@ -210,7 +210,7 @@ class Debug {
 		if (function_exists('sys_getloadvg')) {
 			$load = sys_getloadvg();
 		}
-		elseif (file_exists('/proc/loadavg')) {
+		elseif (@is_readable('/proc/loadavg')) {
 			$load = file_get_contents('/proc/loadavg');
 			$load = array_slice(explode(' ', $load), 0, 3);
 		}
@@ -227,7 +227,7 @@ class Debug {
 	 * @return integer server uptime in seconds
 	 */
 	public static function getUptime() {
-		if (file_exists("/proc/uptime")) {
+		if (@is_readable("/proc/uptime")) {
 			$uptime = explode(' ', file_get_contents("/proc/uptime"));
 			return (float) $uptime[0];
 		}
