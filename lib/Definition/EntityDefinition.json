@@ -302,8 +302,22 @@
 		"hasConsumption"	: true,
 		"translation"		: {
 			"de" : "Betriebsstundenzähler",
-			"en" : "Working Hour Meter",
+			"en" : "Operation Hours Meter",
 			"fr" : "Compteur horaire"
+		}
+	},
+	{
+		"name"			: "workinghourssensor",
+		"required"		: ["resolution"],
+		"optional"		: ["tolerance", "local"],
+		"icon"			: "clock.png",
+		"unit"			: "",
+		"scale"			: 1000,
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
+		"translation"		: {
+			"de" : "Betriebsstundensensor"
 		}
 	},
 	{
