@@ -118,7 +118,11 @@ $(document).ready(function() {
 			if (vz.entities.length === 0) {
 				vz.wui.dialogs.init();
 			}
+
+			// create table and apply initial state
 			vz.entities.showTable();
+			vz.entities.inheritVisibility();
+
 			vz.entities.loadData().done(function() {
 				vz.wui.drawPlot();
 				vz.entities.loadTotals();
