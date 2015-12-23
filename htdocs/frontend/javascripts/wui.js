@@ -142,8 +142,8 @@ vz.wui.dialogs.init = function() {
 				vz.middleware.forEach(function(middleware, idx) {
 					vz.load({
 						controller: 'entity',
-						url: middleware.url,
-						success: function(json) {
+						url: middleware.url
+					}).done(function(json) {
 							var public = [];
 							json.entities.each(function(index, json) {
 								var entity = new Entity(json, middleware.url);
@@ -156,7 +156,6 @@ vz.wui.dialogs.init = function() {
 							if (idx === 0) {
 								populateEntities(vz.middleware[idx]);
 							}
-						}
 					});
 				});
 			}
@@ -272,20 +271,19 @@ vz.wui.dialogs.init = function() {
 			controller: (def.model == 'Volkszaehler\\Model\\Channel') ? 'channel' : 'aggregator',
 			url: $('#entity-create-middleware').val(),
 			data: properties,
-			type: 'POST',
-			success: function(json) {
-				var entity = new Entity(json.entity, $('#entity-create-middleware').val());
+			type: 'POST'
+		}).done(function(json) {
+			var entity = new Entity(json.entity, $('#entity-create-middleware').val());
 
-				try {
-					entity.cookie = Boolean($('#entity-create-cookie').prop('checked'));
-					vz.wui.addEntity(entity);
-				}
-				catch (e) {
-					vz.wui.dialogs.exception(e);
-				}
-				finally {
-					$('#entity-add').dialog('close');
-				}
+			try {
+				entity.cookie = Boolean($('#entity-create-cookie').prop('checked'));
+				vz.wui.addEntity(entity);
+			}
+			catch (e) {
+				vz.wui.dialogs.exception(e);
+			}
+			finally {
+				$('#entity-add').dialog('close');
 			}
 		});
 

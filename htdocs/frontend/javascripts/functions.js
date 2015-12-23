@@ -94,38 +94,6 @@ vz.load = function(args) {
 		beforeSend: function (xhr, settings) {
 			// remember URL for potential error messages
 			xhr.requestUrl = settings.url;
-		},
-		error: function(xhr) {
-			try {
-				var msg;
-				if (xhr.getResponseHeader('Content-type') == 'application/json') {
-					var json = $.parseJSON(xhr.responseText);
-
-					if (json.exception) {
-						msg = xhr.requestUrl + ':<br/><br/>' + json.exception.message;
-						throw new Exception(json.exception.type, msg, (json.exception.code) ? json.exception.code : xhr.status);
-					}
-				}
-				else {
-					msg = "<a href='" + xhr.requestUrl + "' style='text-decoration:none'>" + xhr.requestUrl + "</a>";
-					if (xhr.responseText) {
-						msg += '<br/><br/>' + $(xhr.responseText).text().substring(0,300);
-					}
-
-					var title = "Network Error";
-					if (xhr.status > 0) {
-						title += " (" + xhr.status + " " + xhr.statusText + ")";
-					}
-					else if (xhr.statusText !== "") {
-						title += " (" + xhr.statusText + ")";
-					}
-
-					throw new Exception(title, msg);
-				}
-			}
-			catch (e) {
-				vz.wui.dialogs.exception(e);
-			}
 		}
 	});
 
@@ -167,7 +135,43 @@ vz.load = function(args) {
 		delete args.type; // this makes jquery append the data to the query string
 	}
 
-	return $.ajax(args);
+	return $.ajax(args).then(function(json) {
+		// success
+		if (json.exception) {
+			// handle json exceptions sent with HTTP status 200
+			vz.wui.dialogs.exception(new Exception(json.exception.type, args.url + ':<br/><br/>' + json.exception.message));
+			return $.Deferred().reject();
+		}
+		return $.Deferred().resolveWith(this, [json]);
+	}, function(xhr) {
+		// error
+		var msg;
+		if (xhr.getResponseHeader('Content-type') == 'application/json') {
+			var json = $.parseJSON(xhr.responseText);
+
+			if (json.exception) {
+				msg = xhr.requestUrl + ':<br/><br/>' + json.exception.message;
+				vz.wui.dialogs.exception(new Exception(json.exception.type, msg, (json.exception.code) ? json.exception.code : xhr.status));
+			}
+		}
+		else {
+			msg = "<a href='" + xhr.requestUrl + "' style='text-decoration:none'>" + xhr.requestUrl + "</a>";
+			if (xhr.responseText) {
+				msg += '<br/><br/>' + $(xhr.responseText).text().substring(0,300);
+			}
+
+			var title = "Network Error";
+			if (xhr.status > 0) {
+				title += " (" + xhr.status + " " + xhr.statusText + ")";
+			}
+			else if (xhr.statusText !== "") {
+				title += " (" + xhr.statusText + ")";
+			}
+
+			vz.wui.dialogs.exception(new Exception(title, msg));
+		}
+		return $.Deferred().reject();
+	});
 };
 
 /**
@@ -264,14 +268,13 @@ vz.getMiddleware = function(url) {
 vz.capabilities.load = function() {
 	// execute query asynchronously to refresh from middleware
 	var deferred = vz.load({
-		controller: 'capabilities',
-		success: function(json) {
-			$.extend(true, vz.capabilities, json.capabilities);
-			try {
-				localStorage.setItem('vz.capabilities', JSON.stringify(json)); // cache it
-			}
-			catch (e) { }
+		controller: 'capabilities'
+	}).done(function(json) {
+		$.extend(true, vz.capabilities, json.capabilities);
+		try {
+			localStorage.setItem('vz.capabilities', JSON.stringify(json)); // cache it
 		}
+		catch (e) { }
 	});
 
 	// get cached value to avoid blocking frontend startup

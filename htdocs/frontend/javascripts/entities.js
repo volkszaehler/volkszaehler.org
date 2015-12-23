@@ -92,25 +92,24 @@ vz.entities.loadMultipleDetails = function(entities) {
 			uuid: entities.map(function(entity) {
 				return entity.uuid;
 			}),
-			nostrict: 1, // don't fail if entity was removed
-		},
-		success: function(json) {
-			// @todo assuming unique UUIDs across middlewares
-			this.each(function(entity) {
-				json.entities.some(function(jsonEntity) {
-					if (jsonEntity.uuid == entity.uuid) { // entity matched
-						if (jsonEntity.type === undefined) {
-							// entity does not exist at server- remove from list of entities
-							vz.entities.remove(entity);
-						}
-						else {
-							entity.parseJSON(jsonEntity);
-						}
-						return true;
-					}
-				});
-			}, true);
+			nostrict: 1 // don't fail if entity was removed
 		}
+	}).done(function(json) {
+		// @todo assuming unique UUIDs across middlewares
+		this.each(function(entity) {
+			json.entities.some(function(jsonEntity) {
+				if (jsonEntity.uuid == entity.uuid) { // entity matched
+					if (jsonEntity.type === undefined) {
+						// entity does not exist at server- remove from list of entities
+						vz.entities.remove(entity);
+					}
+					else {
+						entity.parseJSON(jsonEntity);
+					}
+					return true;
+				}
+			});
+		}, true);
 	});
 };
 
@@ -193,18 +192,17 @@ vz.entities.loadMultipleData = function(entities) {
 				return entity.uuid;
 			}),
 			group: this.speedupFactor()
-		},
-		success: function(json) {
-			// @todo assuming unique UUIDs across middlewares
-			this.each(function(entity) {
-				json.data.some(function(data) {
-					if (data.uuid == entity.uuid) { // entity matched
-						entity.updateData(data, true);	// refresh totals
-						return true;
-					}
-				});
-			}, true);
 		}
+	}).done(function(json) {
+		// @todo assuming unique UUIDs across middlewares
+		this.each(function(entity) {
+			json.data.some(function(data) {
+				if (data.uuid == entity.uuid) { // entity matched
+					entity.updateData(data, true);	// refresh totals
+					return true;
+				}
+			});
+		}, true);
 	});
 };
 

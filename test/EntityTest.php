@@ -38,9 +38,6 @@ class EntityTest extends Middleware
 		))->entity->title);
 	}
 
-	/**
-	 * @requires PHP 5.4
-	 */
 	function testPublicEntity() {
 		// make sure the channel is NOT returned in the list of public entities
 		$this->assertEquals(0, count(array_filter($this->getJson('/entity.json')->entities, function($entity) {
@@ -60,6 +57,35 @@ class EntityTest extends Middleware
 	}
 
 	function testDeleteEntity() {
+		// expect no exception
+		$this->getJson('/entity/' . self::$uuid . '.json', array(
+			'operation' => 'delete'
+		));
+	}
+
+	function testEditEntityInvalidProperties() {
+		self::$uuid = Data::createChannel('Power', 'power', 1);
+
+		// expect float type exception
+		$this->getJson('/entity.json', array(
+			'operation' => 'edit',
+			'resolution' => '42.fourtytwo'
+		), 'GET', true);
+
+		// expect boolean type exception
+		$this->getJson('/entity.json', array(
+			'operation' => 'edit',
+			'active' => 'wahr'
+		), 'GET', true);
+
+		// expect integer type exception
+		$this->getJson('/entity.json', array(
+			'operation' => 'edit',
+			'gap' => 42.42
+		), 'GET', true);
+	}
+
+	function testDeleteInvalidValidEntity() {
 		// expect no exception
 		$this->getJson('/entity/' . self::$uuid . '.json', array(
 			'operation' => 'delete'
