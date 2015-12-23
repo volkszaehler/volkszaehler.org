@@ -245,10 +245,9 @@ Entity.prototype.loadDetails = function() {
 		url: this.middleware,
 		controller: 'entity',
 		identifier: this.uuid,
-		context: this,
-		success: function(json) {
-			this.parseJSON(json.entity);
-		}
+		context: this
+	}).done(function(json) {
+		this.parseJSON(json.entity);
 	});
 };
 
@@ -291,13 +290,12 @@ Entity.prototype.loadTotalConsumption = function() {
 			from: 0,
 			tuples: 1,
 			group: 'day' // maximum sensible grouping level, first tuple dropped!
-		},
-		success: function(json) {
-			// total observed consumption plus initial consumption value
-			this.totalconsumption = (this.definition.scale || 1) * this.initialconsumption + json.data.consumption;
-			// show in UI
-			this.updateDOMRowTotal();
 		}
+	}).done(function(json) {
+		// total observed consumption plus initial consumption value
+		this.totalconsumption = (this.definition.scale || 1) * this.initialconsumption + json.data.consumption;
+		// show in UI
+		this.updateDOMRowTotal();
 	});
 };
 
@@ -316,10 +314,9 @@ Entity.prototype.loadData = function() {
 			to: Math.ceil(vz.options.plot.xaxis.max),
 			tuples: vz.options.tuples,
 			group: vz.entities.speedupFactor()
-		},
-		success: function(json) {
-			this.updateData(json.data);
 		}
+	}).done(function(json) {
+		this.updateData(json.data);
 	});
 };
 
@@ -404,19 +401,18 @@ Entity.prototype.showDetails = function() {
 								url: entity.middleware,
 								data: properties,
 								type: 'PULL', // edit
-								success: function(json) {
-									entity.parseJSON(json.entity); // update entity
-									try {
-										vz.entities.showTable();
-										vz.entities.loadData().done(vz.wui.drawPlot);
-									}
-									catch (e) {
-										vz.wui.dialogs.exception(e);
-									}
-									finally {
-										$('#entity-edit').dialog('close');
-										dialog.dialog('close'); // close parent dialog
-									}
+							}).done(function(json) {
+								entity.parseJSON(json.entity); // update entity
+								try {
+									vz.entities.showTable();
+									vz.entities.loadData().done(vz.wui.drawPlot);
+								}
+								catch (e) {
+									vz.wui.dialogs.exception(e);
+								}
+								finally {
+									$('#entity-edit').dialog('close');
+									dialog.dialog('close'); // close parent dialog
 								}
 							});
 						},

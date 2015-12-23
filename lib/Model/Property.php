@@ -124,11 +124,11 @@ class Property {
 			throw new \Exception('Invalid property: \'' . $this->key . '\'');
 		}
 
-		$this->cast();	// TODO not safe
-
 		if (!$this->getDefinition()->validateValue($this->value)) {
 			throw new \Exception('Invalid property value: \'' . $this->value . '\'');
 		}
+
+		$this->cast();	// TODO not safe
 	}
 
 	/*
