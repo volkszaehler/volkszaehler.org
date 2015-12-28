@@ -51,8 +51,9 @@ Entity.prototype.parseJSON = function(json) {
 	// parse children
 	if (this.children) {
 		for (var i = 0; i < this.children.length; i++) {
-			// @todo check if setting middleware is really possible here
-			this.children[i].middleware = this.middleware; // children inherit parent middleware
+			if (this.children[i].middleware === undefined) {
+				this.children[i].middleware = this.middleware; // ensure middleware gets inherited
+			}
 			this.children[i] = new Entity(this.children[i]);
 			this.children[i].parent = this;
 		}
@@ -574,7 +575,7 @@ Entity.prototype.getDOMRow = function(parent) {
 	var type = this.definition.translation[vz.options.language];
 	if (vz.options.shortenLongTypes) type = type.replace(/\s*\(.+?\)/, '');
 
-	var row =  $('<tr>')
+	var row = $('<tr>')
 		.addClass((parent) ? 'child-of-entity-' + parent.uuid : '')
 		.addClass((this.definition.model == 'Volkszaehler\\Model\\Aggregator') ? 'aggregator' : 'channel')
 		.addClass('entity')
