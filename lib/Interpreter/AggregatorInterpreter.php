@@ -55,7 +55,7 @@ class AggregatorInterpreter extends Interpreter {
 	 * @todo handle channels in nested aggregators
 	 * @todo handle child entities of different units
 	 */
-	public function __construct(Model\Aggregator $aggregator, ORM\EntityManager $em, $from, $to, $tupleCount, $groupBy) {
+	public function __construct(Model\Aggregator $aggregator, ORM\EntityManager $em, $from, $to, $tupleCount = null, $groupBy = null) {
 		$this->aggregator = $aggregator;
 
 		foreach ($aggregator->getChildren() as $child) {
