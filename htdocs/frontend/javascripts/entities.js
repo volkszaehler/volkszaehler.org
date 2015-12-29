@@ -268,6 +268,10 @@ vz.entities.showTable = function() {
 					return; // drop into same group -> do nothing
 				if (to && to.definition.model == 'Volkszaehler\\Model\\Aggregator' && $.inArray(child, to.children) >= 0)
 					return;
+				if (child.middleware !== to.middleware) {
+					vz.wui.dialogs.error("Fehler", "Kanäle können nur in Gruppen der gleichen Middleware verschoben werden.");
+					return;
+				}
 
 				$('#entity-move').dialog({ // confirm prompt
 					resizable: false,
