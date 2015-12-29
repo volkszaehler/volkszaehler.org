@@ -144,7 +144,7 @@ $(document).ready(function() {
 
 						// subscribe entities
 						vz.entities.each(function(entity) {
-							if (middleware.url == entity.middleware) {
+							if (entity.active && entity.middleware == middleware.url) {
 								entity.subscribe(session);
 							}
 						}, true);
