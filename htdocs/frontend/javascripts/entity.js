@@ -27,9 +27,12 @@
 /**
  * Entity constructor
  * @var data object properties etc.
+ * @var middleware url (if not passed as data attribute)
  */
-var Entity = function(data) {
-	this.parseJSON(data);
+var Entity = function(data, middleware) {
+	this.parseJSON($.extend({
+		middleware: middleware
+	}, data));
 };
 
 /**
@@ -40,7 +43,7 @@ Entity.colors = 0;
 
 /**
  * Parse middleware response (recursive creation of children etc)
- * @var object from middleware response
+ * @var json object from middleware response
  */
 Entity.prototype.parseJSON = function(json) {
 	$.extend(true, this, json);
@@ -51,10 +54,8 @@ Entity.prototype.parseJSON = function(json) {
 	// parse children
 	if (this.children) {
 		for (var i = 0; i < this.children.length; i++) {
-			if (this.children[i].middleware === undefined) {
-				this.children[i].middleware = this.middleware; // ensure middleware gets inherited
-			}
-			this.children[i] = new Entity(this.children[i]);
+			// ensure middleware gets inherited
+			this.children[i] = new Entity(this.children[i], this.middleware);
 			this.children[i].parent = this;
 		}
 
@@ -90,22 +91,10 @@ Entity.prototype.parseJSON = function(json) {
 			// min, max remain undefined
 		};
 	}
-};
-
-/**
- * Set middleware on entity and and inherit to children
- * @var middleware url
- */
-Entity.prototype.setMiddleware = function(middleware) {
-	this.middleware = middleware;
-	this.each(function(child, parent) {
-		child.middleware = middleware;
-	}, true); // recursive!
 
 	// subscribe to updates
-	var mw = vz.getMiddleware(middleware);
-	if (mw.session) {
-		this.subscribe(mw.session);
+	if (this.active) {
+		this.subscribe();
 	}
 };
 
@@ -193,12 +182,23 @@ Entity.prototype.updateAxisScale = function() {
  * WAMP session subscription and handler
  */
 Entity.prototype.subscribe = function(session) {
+	var mw = vz.getMiddleware(this.middleware);
+	session = session || mw.session;
+	if (!session) {
+		return;
+	}
+
 	session.subscribe(this.uuid, (function(args, json) {
 		var push = JSON.parse(json);
 		if (!push.data || push.data.uuid !== this.uuid) {
 			console.log("Invalid push request");
 			return false;
 		}
+
+    // don't collect data if not subscribed
+    if (!this.active || this.data === undefined) {
+      return;
+    }
 
 		var delta = push.data;
 		if (delta.tuples && delta.tuples.length) {
@@ -234,6 +234,16 @@ Entity.prototype.subscribe = function(session) {
 			}
 		}
 	}).bind(this)); // bind to Entity
+};
+
+/**
+ * Cancel live update subscription from WAMP server
+ */
+Entity.prototype.unsubscribe = function() {
+	var mw = vz.getMiddleware(this.middleware);
+	if (mw.session) {
+		mw.session.unsubscribe(this.uuid);
+	}
 };
 
 /**
@@ -657,10 +667,14 @@ Entity.prototype.activate = function(state, parent, recursive) {
 		if (this.hasData()) {
 			queue.push(this.loadData()); // reload data
 		}
+		// start live updates
+		this.subscribe();
 	}
 	else {
 		this.data = undefined; // clear data
 		this.updateDOMRow();
+		// stop live updates
+		this.unsubscribe();
 	}
 
 	if (recursive) {

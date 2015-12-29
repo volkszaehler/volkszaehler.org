@@ -146,8 +146,7 @@ vz.wui.dialogs.init = function() {
 						success: function(json) {
 							var public = [];
 							json.entities.each(function(index, json) {
-								var entity = new Entity(json);
-								entity.setMiddleware(middleware.url);
+								var entity = new Entity(json, middleware.url);
 								public.push(entity);
 							});
 
@@ -201,10 +200,9 @@ vz.wui.dialogs.init = function() {
 		try {
 			var entity = new Entity({
 				uuid: $('#entity-subscribe-uuid').val(),
-				cookie: Boolean($('#entity-subscribe-cookie').prop('checked'))
+				cookie: Boolean($('#entity-subscribe-cookie').prop('checked')),
+				middleware: $('#entity-subscribe-middleware').val()
 			});
-
-			entity.setMiddleware($('#entity-subscribe-middleware').val());
 
 			entity.loadDetails().done(function() {
 				vz.wui.addEntity(entity);
@@ -219,11 +217,11 @@ vz.wui.dialogs.init = function() {
 	});
 
 	$('#entity-public input[type=button]').click(function() {
+		// get entity from data attribute
 		var entity = $('#entity-public-entity option:selected').data('entity');
 
 		try {
 			entity.cookie = Boolean($('#entity-public-cookie').prop('checked'));
-			entity.setMiddleware($('#entity-public-middleware option:selected').val());
 			vz.wui.addEntity(entity);
 		}
 		catch (e) {
@@ -272,11 +270,10 @@ vz.wui.dialogs.init = function() {
 			data: properties,
 			type: 'POST',
 			success: function(json) {
-				var entity = new Entity(json.entity);
+				var entity = new Entity(json.entity, $('#entity-create-middleware').val());
 
 				try {
 					entity.cookie = Boolean($('#entity-create-cookie').prop('checked'));
-					entity.setMiddleware($('#entity-create-middleware').val());
 					vz.wui.addEntity(entity);
 				}
 				catch (e) {
