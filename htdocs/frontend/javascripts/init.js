@@ -118,7 +118,11 @@ $(document).ready(function() {
 			if (vz.entities.length === 0) {
 				vz.wui.dialogs.init();
 			}
+
+			// create table and apply initial state
 			vz.entities.showTable();
+			vz.entities.inheritVisibility();
+
 			vz.entities.loadData().done(function() {
 				vz.wui.drawPlot();
 				vz.entities.loadTotals();
@@ -140,7 +144,7 @@ $(document).ready(function() {
 
 						// subscribe entities
 						vz.entities.each(function(entity) {
-							if (middleware.url == entity.middleware) {
+							if (entity.active && entity.middleware == middleware.url) {
 								entity.subscribe(session);
 							}
 						}, true);

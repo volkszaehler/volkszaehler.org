@@ -105,8 +105,8 @@ $config['aggregation'] = false;
  * Push server settings
  */
 $config['push']['enabled'] = false;		// set to true to enable push updates
-$config['push']['server'] = 5582;		// server will always listen on 0.0.0.0
-$config['push']['broadcast'] = 8082;	// server will always listen on 0.0.0.0
+$config['push']['server'] = 5582;		// vzlogger will push to this ports (binds on 0.0.0.0)
+$config['push']['broadcast'] = 8082;	// frontend will subscribe on this port (binds on 0.0.0.0)
 
 /**
  * Timezone for the middleware

@@ -1,3 +1,41 @@
+-- phpMyAdmin SQL Dump
+-- version 3.3.5.1deb1
+-- http://www.phpmyadmin.net
+--
+-- Host: localhost
+-- Erstellungszeit: 05. Oktober 2010 um 00:55
+-- Server Version: 5.1.49
+-- PHP-Version: 5.3.2-2
+
+SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
+
+--
+-- Datenbank: `volkszaehler`
+--
+
+--
+-- Daten für Tabelle `entities`
+--
+
+INSERT INTO `entities` (`id`, `uuid`, `type`, `class`) VALUES
+(1, 'a301d8d0-903b-1234-94bb-d943d061b6a8', 'power', 'channel');
+
+
+--
+-- Daten für Tabelle `properties`
+--
+
+INSERT INTO `properties` (`id`, `entity_id`, `pkey`, `value`) VALUES
+(1, 1, 'title', 'S0-Zaehler'),
+(2, 1, 'description', 'Nummer 1'),
+(4, 1, 'resolution', '2000'),
+(5, 1, 'public', '1');
+
+
+--
+-- Daten für Tabelle `data`
+--
+
 INSERT INTO `data` (`channel_id`, `timestamp`, `value`) VALUES ( 1, 1287538555340, 1),
 ( 1, 1287538674800, 1),
 ( 1, 1287538793870, 1),
