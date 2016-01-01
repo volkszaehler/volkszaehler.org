@@ -170,10 +170,12 @@ abstract class Entity {
 	 * @param mixed $value of the property
 	 */
 	public function setProperty($key, $value) {
-		if ($property = $this->findProperty($key)) {	// property already exists; just change value
+		if ($property = $this->findProperty($key)) {
+			// property already exists; just change value
 			$property->setValue($value);
 		}
-		else {						// create new property
+		else {
+			// create new property
 			$property = new Property($this, $key, $value);
 			$this->properties->add($property);
 		}
