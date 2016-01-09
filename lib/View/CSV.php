@@ -43,6 +43,12 @@ class CSV extends View {
 	 */
 	public function __construct(Request  $request) {
 		parent::__construct($request);
+
+		// set default timestamp format
+		if (!$this->request->query->has('tsfmt')) {
+			$this->request->query->set('tsfmt', 'sql');
+		}
+
 		$this->response->headers->set('Content-Type', 'text/csv');
 
 		ob_start();
@@ -128,8 +134,9 @@ class CSV extends View {
 	protected function addData(Interpreter\Interpreter $interpreter) {
 		$this->response->headers->set(
 			'Content-Disposition', 'attachment; ' .
-				'filename="' . strtolower($interpreter->getEntity()->getProperty('title')) . '.csv" ' .
-				'creation-date="' . date(DATE_RFC2822, $interpreter->getTo() / 1000). '"'
+				'filename="' . strtolower($interpreter->getEntity()->getProperty('title')) . '.csv" '
+				// removed to to lack of support in Chrome
+				// 'creation-date="' . date(DATE_RFC2822, $interpreter->getTo() / 1000). '"'
 		);
 
 		echo PHP_EOL; // UUID delimiter
