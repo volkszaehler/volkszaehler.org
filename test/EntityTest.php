@@ -36,6 +36,24 @@ class EntityTest extends Middleware
 			'operation' => 'edit',
 			'title' => $val
 		))->entity->title);
+
+		// expect float type exception
+		$this->getJson('/entity.json', array(
+			'operation' => 'edit',
+			'resolution' => '42.fourtytwo'
+		), 'GET', true);
+
+		// expect boolean type exception
+		$this->getJson('/entity.json', array(
+			'operation' => 'edit',
+			'active' => 'wahr'
+		), 'GET', true);
+
+		// expect integer type exception
+		$this->getJson('/entity.json', array(
+			'operation' => 'edit',
+			'gap' => 42.42
+		), 'GET', true);
 	}
 
 	/**
