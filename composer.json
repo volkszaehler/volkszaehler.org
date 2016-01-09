@@ -20,11 +20,13 @@
         "symfony/http-foundation": "2.6.*",
         "cboden/ratchet": "0.3.*",
         "react/socket": "0.4.*",
-        "react/http": "0.4.*"
+        "react/http": "0.4.*",
+        "volkszaehler/httpd": "dev-master"
     },
     "require-dev": {
         "phpunit/phpunit": "4.4.*",
-        "react/socket-client": "0.4.*"
+        "react/socket-client": "0.4.*",
+        "jenssegers/proxy": "2.2.*"
     },
     "autoload": {
         "psr-4": {

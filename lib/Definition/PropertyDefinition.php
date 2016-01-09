@@ -95,15 +95,18 @@ class PropertyDefinition extends Definition {
 				break;
 
 			case 'integer':
-				$invalid = !is_int($value);
+				// $invalid = !is_int($value);
+				$invalid = NULL === filter_var($value, FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE);
 				break;
 
 			case 'float':
-				$invalid = !is_float($value);
+				// $invalid = !is_float($value);
+				$invalid = NULL === filter_var($value, FILTER_VALIDATE_FLOAT, FILTER_NULL_ON_FAILURE);
 				break;
 
 			case 'boolean':
-				$invalid = !is_bool($value);
+				// $invalid = !is_bool($value);
+				$invalid = NULL === filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
 				break;
 
 			case 'multiple':
