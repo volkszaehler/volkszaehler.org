@@ -30,7 +30,7 @@
   * (Take a look at EntityDefinition.php)
   *
   * $defaultRequired = array('title');
-  * $defaultOptional = array('description', 'public', 'color', 'active', 'style', 'details:', 'owner:', 'address:', 'link');
+  * $defaultOptional = array('description', 'public', 'color', 'active', 'style', 'owner', 'address:', 'link');
   */
 
 [

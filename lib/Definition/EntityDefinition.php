@@ -108,7 +108,7 @@ class EntityDefinition extends Definition {
 	 * @var array
 	 */
 	static protected $defaultRequired = array('title');
-	static protected $defaultOptional = array('public', 'color', 'style', 'fillstyle', 'yaxis', 'active', 'description', 'details:', 'owner:', 'address:', 'link');
+	static protected $defaultOptional = array('public', 'color', 'style', 'fillstyle', 'yaxis', 'active', 'description', 'owner', 'address:', 'link');
 
 	/**
 	 * Constructor
