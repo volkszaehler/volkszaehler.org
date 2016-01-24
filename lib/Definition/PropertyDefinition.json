@@ -53,6 +53,16 @@
 		}
 	},
 	{
+		"name"			: "owner",
+		"type"			: "string",
+		"pattern"		: "\/^[\\w\\-]+$\/u",
+		"max"			: 128,
+		"translation"		: {
+			"de" : "Eigentümer",
+			"en" : "Owner"
+		}
+	},
+	{
 		"name"			: "cost",
 		"type"			: "float",
 		"min"			: 0,

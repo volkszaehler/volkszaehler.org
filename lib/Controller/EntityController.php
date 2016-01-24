@@ -183,25 +183,18 @@ class EntityController extends Controller {
 	 * @return array of entities
 	 */
 	public function filter(array $properties) {
-		$dql = 'SELECT a, p
-			FROM Volkszaehler\Model\Entity a
-			LEFT JOIN a.properties p';
+		$dql = 'SELECT e, p
+			FROM Volkszaehler\Model\Entity e
+			LEFT JOIN e.properties p';
 
 		$i = 0;
 		$sqlWhere = array();
 		$sqlParams = array();
 		foreach ($properties as $key => $value) {
-			switch (Definition\PropertyDefinition::get($key)->getType()) {
-				case 'string':
-				case 'text':
-				case 'multiple':
-					$value = "'" . $value . "'";
-					break;
-
-				case 'boolean':
-					$value = (int) $value;
+			if (Definition\PropertyDefinition::get($key)->getType() == 'boolean') {
+				$value = (int) $value;
 			}
-			$sqlWhere[] = 'EXISTS (SELECT p' . $i . ' FROM \Volkszaehler\Model\Property p' . $i . ' WHERE p' . $i . '.key = :key' . $i . ' AND p' . $i . '.value = :value' . $i . ' AND p' . $i . '.entity = a)';
+			$sqlWhere[] = 'EXISTS (SELECT p' . $i . ' FROM \Volkszaehler\Model\Property p' . $i . ' WHERE p' . $i . '.key = :key' . $i . ' AND p' . $i . '.value = :value' . $i . ' AND p' . $i . '.entity = e)';
 			$sqlParams += array(
 				'key' . $i => $key,
 				'value' . $i => $value
