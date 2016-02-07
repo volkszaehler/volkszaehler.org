@@ -1,5 +1,7 @@
 # volkszaehler.org
 
+[![Join the chat at https://gitter.im/volkszaehler/volkszaehler.org](https://badges.gitter.im/volkszaehler/volkszaehler.org.svg)](https://gitter.im/volkszaehler/volkszaehler.org?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 volkszaehler.org is a free smart meter implementation with focus on data privacy.
 
 [![Build Status](https://travis-ci.org/volkszaehler/volkszaehler.org.png?branch=master)](https://travis-ci.org/volkszaehler/volkszaehler.org)
