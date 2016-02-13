@@ -98,29 +98,18 @@
 		}
 	},
 	{
-		"name"			: "voltage",
-		"optional"		: ["resolution", "tolerance", "local", "gap"],
-		"icon"			: "bolt.png",
-		"unit"			: "V",
+		"name"			: "heatsensor",
+		"required"		: ["resolution"],
+		"optional"		: ["tolerance", "cost", "local"],
+		"icon"			: "flame.png",
+		"unit"			: "W",
+		"scale"			: 1000,
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
 		"translation"		: {
-			"de" : "Spannungssensor",
-			"en" : "Voltage Meter",
-			"fr" : "Voltmètre"
-		}
-	},
-	{
-		"name"			: "current",
-		"optional"		: ["resolution", "tolerance", "local", "gap"],
-		"icon"			: "bolt.png",
-		"unit"			: "A",
-		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
-		"model"			: "Volkszaehler\\Model\\Channel",
-		"translation"		: {
-			"de" : "Stromsensor",
-			"en" : "Current Meter",
-			"fr" : "Courantmètre"
+			"de" : "Wärmemengensensor",
+			"en" : "Heat Sensor"
 		}
 	},
 	{
@@ -211,6 +200,32 @@
 			"de" : "Wasser",
 			"en" : "Water",
 			"fr" : "Eau"
+		}
+	},
+	{
+		"name"			: "voltage",
+		"optional"		: ["resolution", "tolerance", "local", "gap"],
+		"icon"			: "bolt.png",
+		"unit"			: "V",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"		: {
+			"de" : "Spannungssensor",
+			"en" : "Voltage Meter",
+			"fr" : "Voltmètre"
+		}
+	},
+	{
+		"name"			: "current",
+		"optional"		: ["resolution", "tolerance", "local", "gap"],
+		"icon"			: "bolt.png",
+		"unit"			: "A",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"		: {
+			"de" : "Stromsensor",
+			"en" : "Current Meter",
+			"fr" : "Courantmètre"
 		}
 	},
 	{
