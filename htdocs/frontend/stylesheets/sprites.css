@@ -185,3 +185,7 @@ Icon classes can be used entirely standalone. They are named after their origina
   background-image: url(../images/sprites.png);
   background-position: 0px -480px;
 }
+.icon-freq {
+  background-image: url(../images/sprites.png);
+  background-position: 0px -720px;
+}
