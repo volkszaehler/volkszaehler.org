@@ -130,26 +130,38 @@ $(document).ready(function() {
 
 			// create WAMP sessions for each middleware
 			vz.middleware.each(function(idx, middleware) {
-				// update port configured?
-				if (middleware.live) {
-					var parser = document.createElement('a');
-					parser.href = middleware.url;
-					var host = parser.hostname || location.host; // location object for IE
-					var protocol = (parser.protocol || location.protocol).toLowerCase().indexOf("https") === 0 ? "wss" : "ws";
-					var uri = protocol + "://" + host + ":" + middleware.live;
+				var parser = document.createElement('a');
+				parser.href = middleware.url;
+				var host = parser.hostname || location.host; // location object for IE
+				var protocol = (parser.protocol || location.protocol).toLowerCase().indexOf("https") === 0 ? "wss" : "ws";
+				var uri = protocol + "://" + host;
 
-					// connect and store session
-					new ab.connect(uri, function(session) {
-						middleware.session = session;
-
-						// subscribe entities
-						vz.entities.each(function(entity) {
-							if (entity.active && entity.middleware == middleware.url) {
-								entity.subscribe(session);
-							}
-						}, true);
-					});
+				// try uri if nothing configured - requires Apache ProxyPass, see
+				// https://github.com/volkszaehler/volkszaehler.org/issues/382
+				if (isNaN(parseFloat(middleware.live))) {
+					if (parser.port) {
+						uri += ":" + parser.port;
+					}
+					// if Apache ProxyPass is used, connect with http(s) but always forward to unencrypted port
+					uri += parser.pathname.replace(/middleware.php$/, "ws");
+					console.info("Live updates not configured. Trying default path at " + uri);
 				}
+				else {
+				 	// use dedicated port
+				 	uri += ":" + middleware.live;
+				}
+
+				// connect and store session
+				new ab.connect(uri, function(session) {
+					middleware.session = session;
+
+					// subscribe entities
+					vz.entities.each(function(entity) {
+						if (entity.active && entity.middleware == middleware.url) {
+							entity.subscribe(session);
+						}
+					}, true);
+				});
 			});
 		});
 	});
