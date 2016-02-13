@@ -183,10 +183,10 @@ Entity.prototype.updateAxisScale = function() {
  */
 Entity.prototype.subscribe = function(session) {
 	var mw = vz.getMiddleware(this.middleware);
-	session = session || mw.session;
-	if (!session) {
-		return;
+	if (mw && mw.session) {
+		session = session || mw.session;
 	}
+	if (!session) return;
 
 	session.subscribe(this.uuid, (function(args, json) {
 		var push = JSON.parse(json);
@@ -241,7 +241,7 @@ Entity.prototype.subscribe = function(session) {
  */
 Entity.prototype.unsubscribe = function() {
 	var mw = vz.getMiddleware(this.middleware);
-	if (mw.session) {
+	if (mw && mw.session) {
 		mw.session.unsubscribe(this.uuid);
 	}
 };
