@@ -58,14 +58,14 @@
 	},
 	{
 		"name"                  : "frequency",
-  	"optional"              : ["resolution", "tolerance", "local", "gap"],
-  	"icon"                  : "bolt.png",
-  	"unit"                  : "Hz",
-  	"interpreter"           : "Volkszaehler\\Interpreter\\SensorInterpreter",
-  	"model"                 : "Volkszaehler\\Model\\Channel",
-  	"translation"           : {
-  		"de" : "Frequenz",
-  		"en" : "frequency"
+  		"optional"              : ["resolution", "tolerance", "local", "gap"],
+  		"icon"                  : "freq.png",
+  		"unit"                  : "Hz",
+  		"interpreter"           : "Volkszaehler\\Interpreter\\SensorInterpreter",
+  		"model"                 : "Volkszaehler\\Model\\Channel",
+  		"translation"           : {
+  			"de" : "Frequenz",
+  			"en" : "frequency"
   	}
 	},
 	{
