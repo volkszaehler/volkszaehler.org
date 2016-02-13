@@ -46,17 +46,6 @@
 		}
 	},
 	{
-		"name"			: "user",
-		"icon"			: "user.png",
-		"interpreter"		: "Volkszaehler\\Interpreter\\AggregatorInterpreter",
-		"model"			: "Volkszaehler\\Model\\Aggregator",
-		"translation"		: {
-			"de" : "Nutzer",
-			"en" : "User",
-			"fr" : "Usager"
-		}
-	},
-	{
 		"name"			: "building",
 		"icon"			: "house.png",
 		"interpreter"		: "Volkszaehler\\Interpreter\\AggregatorInterpreter",
@@ -65,51 +54,6 @@
 			"de" : "Gebäude",
 			"en" : "Building",
 			"fr" : "Immeuble"
-		}
-	},
-	{
-		"name"			: "flow",
-		"optional"		: ["resolution", "tolerance", "local"],
-		"icon"			: "waterdrop.png",
-		"unit"			: "m^3/h",
-		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
-		"model"			: "Volkszaehler\\Model\\Channel",
-		"hasConsumption"	: true,
-		"translation"		: {
-			"de" : "Fließgeschwindigkeit",
-			"en" : "Flow rate",
-			"fr" : "Vitesse d'écoulement"
-		}
-	},
-	{
-		"name"			: "heat",
-		"required"		: ["resolution"],
-		"optional"		: ["tolerance", "cost", "local"],
-		"icon"			: "flame.png",
-		"unit"			: "W",
-		"scale"			: 1000,
-		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
-		"model"			: "Volkszaehler\\Model\\Channel",
-		"hasConsumption"	: true,
-		"translation"		: {
-			"de" : "Wärmemengenzähler",
-			"en" : "Heat Meter",
-			"fr" : "Capteur d' énergie thermique"
-		}
-	},
-	{
-		"name"			: "heatsensor",
-		"required"		: ["resolution"],
-		"optional"		: ["tolerance", "cost", "local"],
-		"icon"			: "flame.png",
-		"unit"			: "W",
-		"scale"			: 1000,
-		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
-		"model"			: "Volkszaehler\\Model\\Channel",
-		"hasConsumption"	: true,
-		"translation"		: {
-			"de" : "Wärmemengensensor",
-			"en" : "Heat Sensor"
 		}
 	},
 	{
@@ -159,6 +103,32 @@
 		}
 	},
 	{
+		"name"			: "voltage",
+		"optional"		: ["resolution", "tolerance", "local", "gap"],
+		"icon"			: "bolt.png",
+		"unit"			: "V",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"		: {
+			"de" : "Spannungssensor",
+			"en" : "Voltage Meter",
+			"fr" : "Voltmètre"
+		}
+	},
+	{
+		"name"			: "current",
+		"optional"		: ["resolution", "tolerance", "local", "gap"],
+		"icon"			: "bolt.png",
+		"unit"			: "A",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"		: {
+			"de" : "Stromsensor",
+			"en" : "Current Meter",
+			"fr" : "Courantmètre"
+		}
+	},
+	{
 		"name"			: "gas",
 		"required"		: ["resolution"],
 		"optional"		: ["tolerance", "cost", "local", "initialconsumption"],
@@ -188,44 +158,34 @@
 		}
 	},
 	{
-		"name"			: "water",
+		"name"			: "heat",
 		"required"		: ["resolution"],
-		"optional"		: ["tolerance", "cost", "local", "initialconsumption"],
-		"icon"			: "waterdrop.png",
-		"unit"			: "l/h",
+		"optional"		: ["tolerance", "cost", "local"],
+		"icon"			: "flame.png",
+		"unit"			: "W",
+		"scale"			: 1000,
 		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
-			"de" : "Wasser",
-			"en" : "Water",
-			"fr" : "Eau"
+			"de" : "Wärmemengenzähler",
+			"en" : "Heat Meter",
+			"fr" : "Capteur d' énergie thermique"
 		}
 	},
 	{
-		"name"			: "voltage",
-		"optional"		: ["resolution", "tolerance", "local", "gap"],
-		"icon"			: "bolt.png",
-		"unit"			: "V",
+		"name"			: "heatsensor",
+		"required"		: ["resolution"],
+		"optional"		: ["tolerance", "cost", "local"],
+		"icon"			: "flame.png",
+		"unit"			: "W",
+		"scale"			: 1000,
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
 		"translation"		: {
-			"de" : "Spannungssensor",
-			"en" : "Voltage Meter",
-			"fr" : "Voltmètre"
-		}
-	},
-	{
-		"name"			: "current",
-		"optional"		: ["resolution", "tolerance", "local", "gap"],
-		"icon"			: "bolt.png",
-		"unit"			: "A",
-		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
-		"model"			: "Volkszaehler\\Model\\Channel",
-		"translation"		: {
-			"de" : "Stromsensor",
-			"en" : "Current Meter",
-			"fr" : "Courantmètre"
+			"de" : "Wärmemengensensor",
+			"en" : "Heat Sensor"
 		}
 	},
 	{
@@ -242,68 +202,32 @@
 		}
 	},
 	{
-		"name"			: "pressure",
-		"optional"		: ["resolution", "tolerance", "local", "gap"],
-		"icon"			: "cloud.png",
-		"unit"			: "hPa",
-		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"name"			: "water",
+		"required"		: ["resolution"],
+		"optional"		: ["tolerance", "cost", "local", "initialconsumption"],
+		"icon"			: "waterdrop.png",
+		"unit"			: "l/h",
+		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
 		"translation"		: {
-			"de" : "Luftdruck",
-			"en" : "Barometric Pressure",
-			"fr" : "Pression d'air"
+			"de" : "Wassermengenzähler",
+			"en" : "Water",
+			"fr" : "Eau"
 		}
 	},
 	{
-		"name"			: "humidity",
-		"optional"		: ["resolution", "tolerance", "local", "gap"],
-		"icon"			: "rain.png",
-		"unit"			: "%",
+		"name"			: "flow",
+		"optional"		: ["resolution", "tolerance", "local"],
+		"icon"			: "waterdrop.png",
+		"unit"			: "m^3/h",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
 		"translation"		: {
-			"de" : "Luftfeuchtigkeit",
-			"en" : "Air Humidity",
-			"fr" : "Hygrométrie"
-		}
-	},
-	{
-		"name"			: "windspeed",
-		"optional"		: ["resolution", "tolerance", "local", "gap"],
-		"icon"			: "propeller.png",
-		"unit"			: "km/h",
-		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
-		"model"			: "Volkszaehler\\Model\\Channel",
-		"translation"		: {
-			"de" : "Windgeschwindigkeit",
-			"en" : "Windspeed",
-			"fr" : "Vitesse du vent"
-		}
-	},
-	{
-		"name"			: "radiation",
-		"optional"		: ["resolution", "tolerance", "local", "gap"],
-		"icon"			: "radioactivity.png",
-		"unit"			: "μSv",
-		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
-		"model"			: "Volkszaehler\\Model\\Channel",
-		"translation"		: {
-			"de" : "Radioaktivität (Dosis)",
-			"en" : "Radioactivity (Dose)",
-			"fr" : "Radioactivité (Dose)"
-		}
-	},
-	{
-		"name"			: "luminosity",
-		"optional"		: ["resolution", "tolerance", "local", "gap"],
-		"icon"			: "sun.png",
-		"unit"			: "cd",
-		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
-		"model"			: "Volkszaehler\\Model\\Channel",
-		"translation"		: {
-			"de" : "Lichtstärke",
-			"en" : "Luminosity",
-			"fr" : "Intensité lumineuse"
+			"de" : "Wassermengensensor",
+			"en" : "Flow rate",
+			"fr" : "Vitesse d'écoulement"
 		}
 	},
 	{
@@ -346,6 +270,82 @@
 			"de" : "Ventil",
 			"en" : "valve",
 			"fr" : "valve"
+		}
+	},
+	{
+		"name"			: "pressure",
+		"optional"		: ["resolution", "tolerance", "local", "gap"],
+		"icon"			: "cloud.png",
+		"unit"			: "hPa",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"		: {
+			"de" : "Luftdruck",
+			"en" : "Barometric Pressure",
+			"fr" : "Pression d'air"
+		}
+	},
+	{
+		"name"			: "humidity",
+		"optional"		: ["resolution", "tolerance", "local", "gap"],
+		"icon"			: "rain.png",
+		"unit"			: "%",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"		: {
+			"de" : "Luftfeuchtigkeit",
+			"en" : "Air Humidity",
+			"fr" : "Hygrométrie"
+		}
+	},
+	{
+		"name"			: "windspeed",
+		"optional"		: ["resolution", "tolerance", "local", "gap"],
+		"icon"			: "propeller.png",
+		"unit"			: "km/h",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"		: {
+			"de" : "Windgeschwindigkeit",
+			"en" : "Windspeed",
+			"fr" : "Vitesse du vent"
+		}
+	},
+	{
+		"name"			: "luminosity",
+		"optional"		: ["resolution", "tolerance", "local", "gap"],
+		"icon"			: "sun.png",
+		"unit"			: "cd",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"		: {
+			"de" : "Lichtstärke",
+			"en" : "Luminosity",
+			"fr" : "Intensité lumineuse"
+		}
+	},
+	{
+		"name"			: "radiation",
+		"optional"		: ["resolution", "tolerance", "local", "gap"],
+		"icon"			: "radioactivity.png",
+		"unit"			: "μSv",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"		: {
+			"de" : "Radioaktivität (Dosis)",
+			"en" : "Radioactivity (Dose)",
+			"fr" : "Radioactivité (Dose)"
+		}
+	},
+	{
+		"name"			: "user",
+		"icon"			: "user.png",
+		"interpreter"		: "Volkszaehler\\Interpreter\\AggregatorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Aggregator",
+		"translation"		: {
+			"de" : "Nutzer",
+			"en" : "User",
+			"fr" : "Usager"
 		}
 	}
 ]
