@@ -157,7 +157,7 @@ $(document).ready(function() {
 
 					// subscribe entities
 					vz.entities.each(function(entity) {
-						if (entity.active && entity.middleware == middleware.url) {
+						if (entity.active && entity.middleware.indexOf(middleware.url) >= 0) {
 							entity.subscribe(session);
 						}
 					}, true);
