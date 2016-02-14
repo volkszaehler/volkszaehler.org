@@ -89,9 +89,9 @@ class Router implements HttpKernelInterface {
 	 * @var array format => view mapping
 	 */
 	public static $viewMapping = array(
-		'xml'			=> 'Volkszaehler\View\XML',
 		'csv'			=> 'Volkszaehler\View\CSV',
 		'json'			=> 'Volkszaehler\View\JSON',
+		'txt'			=> 'Volkszaehler\View\Text'
 	);
 
 	/**
