@@ -166,7 +166,7 @@ vz.entities.loadData = function() {
 	vz.middleware.each(function(idx, middleware) {
 		var entities = [];
 		vz.entities.each(function(entity) {
-			if (entity.middleware == middleware.url && entity.hasData()) {
+			if (entity.hasData() && entity.middleware.indexOf(middleware.url) >= 0) {
 				entities.push(entity);
 			}
 		}, true); // recursive

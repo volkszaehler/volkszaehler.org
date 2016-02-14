@@ -45,7 +45,7 @@ vz.getLink = function(format) {
 			if (entities.length === 0) {
 				middleware = entity.middleware;
 			}
-			if (entity.middleware == middleware) {
+			if (entity.middleware.indexOf(middleware) >= 0) {
 				entities.push(entity);
 			}
 			else {
