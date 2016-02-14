@@ -2,186 +2,194 @@
 Icon classes can be used entirely standalone. They are named after their original file names.
 
 ```html
-<i class="icon-home"></i>
+<!-- `display: block` sprite -->
+<div class="icon-home"></div>
+
+<!-- `display: inline-block` sprite -->
+<img class="icon-home" />
 ```
 */
 .icon-add {
   background-image: url(../images/sprites.png);
-  background-position: 0px -16px;
+  background-position: 0px -18px;
 }
 .icon-arrow_refresh {
   background-image: url(../images/sprites.png);
-  background-position: 0px -352px;
+  background-position: 0px -414px;
 }
 .icon-arrow_right {
   background-image: url(../images/sprites.png);
-  background-position: 0px -32px;
+  background-position: 0px -36px;
 }
 .icon-chart_line {
   background-image: url(../images/sprites.png);
-  background-position: 0px -48px;
+  background-position: 0px -54px;
 }
 .icon-control_end_blue {
   background-image: url(../images/sprites.png);
-  background-position: 0px -64px;
+  background-position: 0px -72px;
 }
 .icon-control_fastforward_blue {
   background-image: url(../images/sprites.png);
-  background-position: 0px -80px;
+  background-position: 0px -90px;
 }
 .icon-control_rewind_blue {
   background-image: url(../images/sprites.png);
-  background-position: 0px -96px;
+  background-position: 0px -108px;
 }
 .icon-control_start_blue {
   background-image: url(../images/sprites.png);
-  background-position: 0px -112px;
+  background-position: 0px -126px;
 }
 .icon-cross {
   background-image: url(../images/sprites.png);
-  background-position: 0px -128px;
+  background-position: 0px -144px;
 }
 .icon-delete {
   background-image: url(../images/sprites.png);
-  background-position: 0px -144px;
+  background-position: 0px -162px;
 }
 .icon-export {
   background-image: url(../images/sprites.png);
-  background-position: 0px -160px;
+  background-position: 0px -180px;
 }
 .icon-eye {
   background-image: url(../images/sprites.png);
-  background-position: 0px -176px;
+  background-position: 0px -198px;
 }
 .icon-image {
   background-image: url(../images/sprites.png);
-  background-position: 0px -192px;
+  background-position: 0px -216px;
 }
 .icon-information {
   background-image: url(../images/sprites.png);
-  background-position: 0px -208px;
+  background-position: 0px -234px;
 }
 .icon-json {
   background-image: url(../images/sprites.png);
-  background-position: 0px -224px;
+  background-position: 0px -252px;
 }
 .icon-link {
   background-image: url(../images/sprites.png);
-  background-position: 0px -240px;
+  background-position: 0px -270px;
 }
 .icon-save {
   background-image: url(../images/sprites.png);
-  background-position: 0px -256px;
+  background-position: 0px -288px;
 }
 .icon-server {
   background-image: url(../images/sprites.png);
-  background-position: 0px -272px;
+  background-position: 0px -306px;
 }
 .icon-shading {
   background-image: url(../images/sprites.png);
-  background-position: 0px -288px;
+  background-position: 0px -324px;
 }
 .icon-star {
   background-image: url(../images/sprites.png);
-  background-position: 0px -304px;
+  background-position: 0px -342px;
 }
 .icon-table {
   background-image: url(../images/sprites.png);
-  background-position: 0px -320px;
+  background-position: 0px -360px;
 }
 .icon-tick {
   background-image: url(../images/sprites.png);
-  background-position: 0px -336px;
+  background-position: 0px -378px;
 }
 .icon-toggle-collapse-dark {
   background-image: url(../images/sprites.png);
-  background-position: 0px 0px;
+  background-position: 0px -396px;
 }
 .icon-toggle-collapse-light {
   background-image: url(../images/sprites.png);
-  background-position: 0px -368px;
+  background-position: 0px 0px;
 }
 .icon-toggle-expand-dark {
   background-image: url(../images/sprites.png);
-  background-position: 0px -384px;
+  background-position: 0px -432px;
 }
 .icon-toggle-expand-light {
   background-image: url(../images/sprites.png);
-  background-position: 0px -400px;
+  background-position: 0px -450px;
 }
 .icon-bolt {
   background-image: url(../images/sprites.png);
-  background-position: 0px -496px;
+  background-position: 0px -558px;
 }
 .icon-clock {
   background-image: url(../images/sprites.png);
-  background-position: 0px -512px;
+  background-position: 0px -576px;
 }
 .icon-cloud {
   background-image: url(../images/sprites.png);
-  background-position: 0px -528px;
+  background-position: 0px -594px;
 }
 .icon-flame {
   background-image: url(../images/sprites.png);
-  background-position: 0px -544px;
+  background-position: 0px -612px;
 }
 .icon-folder {
   background-image: url(../images/sprites.png);
-  background-position: 0px -560px;
+  background-position: 0px -630px;
+}
+.icon-freq {
+  background-image: url(../images/sprites.png);
+  background-position: 0px -648px;
 }
 .icon-house {
   background-image: url(../images/sprites.png);
-  background-position: 0px -576px;
+  background-position: 0px -666px;
 }
 .icon-pipe {
   background-image: url(../images/sprites.png);
-  background-position: 0px -592px;
+  background-position: 0px -684px;
 }
 .icon-propeller {
   background-image: url(../images/sprites.png);
-  background-position: 0px -608px;
+  background-position: 0px -702px;
 }
 .icon-radioactivity {
   background-image: url(../images/sprites.png);
-  background-position: 0px -624px;
+  background-position: 0px -720px;
 }
 .icon-rain {
   background-image: url(../images/sprites.png);
-  background-position: 0px -640px;
+  background-position: 0px -738px;
 }
 .icon-sun {
   background-image: url(../images/sprites.png);
-  background-position: 0px -656px;
+  background-position: 0px -756px;
 }
 .icon-thermometer {
   background-image: url(../images/sprites.png);
-  background-position: 0px -672px;
+  background-position: 0px -774px;
 }
 .icon-user {
   background-image: url(../images/sprites.png);
-  background-position: 0px -688px;
+  background-position: 0px -792px;
 }
 .icon-waterdrop {
   background-image: url(../images/sprites.png);
-  background-position: 0px -704px;
+  background-position: 0px -810px;
 }
 .icon-wrench {
   background-image: url(../images/sprites.png);
-  background-position: 0px -416px;
+  background-position: 0px -468px;
 }
 .icon-xml {
   background-image: url(../images/sprites.png);
-  background-position: 0px -432px;
+  background-position: 0px -486px;
 }
 .icon-zoom {
   background-image: url(../images/sprites.png);
-  background-position: 0px -448px;
+  background-position: 0px -504px;
 }
 .icon-zoom_in {
   background-image: url(../images/sprites.png);
-  background-position: 0px -464px;
+  background-position: 0px -522px;
 }
 .icon-zoom_out {
   background-image: url(../images/sprites.png);
-  background-position: 0px -480px;
+  background-position: 0px -540px;
 }
