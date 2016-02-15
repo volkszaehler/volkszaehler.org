@@ -75,22 +75,14 @@ class FormatTest extends Data
 		$this->assertEquals(400, $response->getStatusCode());
 	}
 
-	function testXML() {
-		$response = $this->getResponse(Request::create('/data/' . static::$uuid . '.xml', 'GET',
+	function testTxt() {
+		$response = $this->getResponse(Request::create('/data/' . static::$uuid . '.txt', 'GET',
 			array('from' => 0, 'to' => 'now')
 		));
 
 		$this->assertEquals(200, $response->getStatusCode());
-		$this->assertContains('application/xml', $response->headers->get('Content-Type'));
-		$this->assertContains(static::$uuid, $response->getContent());
-	}
-
-	function testXMLInvalidUuidException() {
-		$response = $this->getResponse(Request::create('/data/' . self::INVALID_UUID . '.xml', 'GET',
-			array('from' => 0, 'to' => 'now')
-		));
-
-		$this->assertEquals(400, $response->getStatusCode());
+		$this->assertContains('text/plain', $response->headers->get('Content-Type'));
+		$this->assertContains('W', $response->getContent());
 	}
 }
 
