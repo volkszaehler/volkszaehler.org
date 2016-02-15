@@ -153,6 +153,7 @@ $(document).ready(function() {
 
 				// connect and store session
 				new ab.connect(uri, function(session) {
+					console.log("Autobahn connected to " + uri + " (" + session.sessionid() + ")");
 					middleware.session = session;
 
 					// subscribe entities
@@ -161,6 +162,9 @@ $(document).ready(function() {
 							entity.subscribe(session);
 						}
 					}, true);
+				}, function(code, reason) {
+					console.log("Autobahn disconnected (" + code + ", " + reason + ")");
+					delete middleware.session;
 				});
 			});
 		});
