@@ -57,7 +57,7 @@ cache:
   directories:
     - $COMPOSER_CACHE_DIR
     - $HOME/.composer/cache
-    - $HOME/.npm
+    - node_modules
 
 install:
     - if [ -n "$DEPENDENCIES" ]; then composer config github-oauth.github.com ${GH_TOKEN}; fi
