@@ -133,6 +133,7 @@ script:
         HTTPD_PID=$!
         echo "Started httpd with pid $HTTPD_PID"
       fi
+    - if [ "$DB" = "mysql" ]; then phpunit $TRAVIS_TEST_EXCLUDES; fi
 
     # run aggregation tool itself (mysql only)
     - if [ "$DB" = "mysql" ]; then php misc/tools/aggregate.php run -m delta -l hour; fi
