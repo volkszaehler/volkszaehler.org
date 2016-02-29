@@ -278,32 +278,6 @@
 			"fr" : "Radioactivité (Dose)"
 		}
 	},
- 	{
-                "name"                  : "co2concentration",
-                "optional"              : ["resolution", "tolerance", "local", "gap"],
-                "icon"                  : "co2.png",
-                "unit"                  : "ppm",
-                "interpreter"           : "Volkszaehler\\Interpreter\\SensorInterpreter",
-                "model"                 : "Volkszaehler\\Model\\Channel",
-                "translation"           : {
-                        "de" : "CO2 Konzentration (ppm)",
-                        "en" : "CO2 Concentration (ppm)",
-                        "fr" : "concentration de CO2 (ppm)"
-                }
-        },
-	{
-                "name"                  : "Ventilation",
-                "optional"              : ["resolution", "tolerance", "local", "gap"],
-                "icon"                  : "propeller.png",
-                "unit"                  : "rpm",
-                "interpreter"           : "Volkszaehler\\Interpreter\\SensorInterpreter",
-                "model"                 : "Volkszaehler\\Model\\Channel",
-                "translation"           : {
-                        "de" : "Ventilator (u/min)",
-                        "en" : "Fan (rpm)",
-                        "fr" : "Fan (tpm)"
-                }
-        },
 	{
 		"name"			: "luminosity",
 		"optional"		: ["resolution", "tolerance", "local", "gap"],
@@ -358,5 +332,18 @@
 			"en" : "valve",
 			"fr" : "valve"
 		}
-	}
+	},
+	{
+    "name"                  : "Ventilation",
+    "optional"              : ["resolution", "tolerance", "local", "gap"],
+    "icon"                  : "propeller.png",
+    "unit"                  : "rpm",
+    "interpreter"           : "Volkszaehler\\Interpreter\\SensorInterpreter",
+    "model"                 : "Volkszaehler\\Model\\Channel",
+    "translation"           : {
+      "de" : "Ventilator (u/min)",
+      "en" : "Fan (rpm)",
+      "fr" : "Fan (tpm)"
+    }
+  }
 ]
