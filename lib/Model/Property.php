@@ -74,9 +74,6 @@ class Property {
 		$this->entity = $entity;
 		$this->key = $key;
 		$this->value = $value;
-
-		// TODO should we really validate each property? Could be a performence bottleneck!
-		$this->validate();
 	}
 
 	/**
@@ -123,8 +120,6 @@ class Property {
 		if (!Definition\PropertyDefinition::exists($this->key)) {
 			throw new \Exception('Invalid property: \'' . $this->key . '\'');
 		}
-
-		$this->cast();	// TODO not safe
 
 		if (!$this->getDefinition()->validateValue($this->value)) {
 			throw new \Exception('Invalid property value: \'' . $this->value . '\'');
