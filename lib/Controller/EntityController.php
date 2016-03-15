@@ -111,7 +111,7 @@ class EntityController extends Controller {
 
 			return $entity;
 		} catch (\Doctrine\ORM\NoResultException $e) {
-			throw new \Exception('No entity found with UUID: \'' . $uuid . '\'', 404);
+			throw new \Exception('No entity found with UUID: \'' . $uuid . '\'');
 		}
 	}
 
@@ -119,7 +119,9 @@ class EntityController extends Controller {
 	 * Delete entity by uuid
 	 */
 	public function delete($identifier) {
-		$entity = $this->get($identifier);
+		if (!($entity = $this->get($identifier)) instanceof Model\Entity) {
+			throw new \Exception('Invalid operation - missing entity.');
+		}
 
 		if ($entity instanceof Model\Channel) {
 			$entity->clearData($this->em->getConnection());
@@ -137,7 +139,9 @@ class EntityController extends Controller {
 	 * Edit entity properties
 	 */
 	public function edit($identifier) {
-		$entity = $this->get($identifier);
+		if (!($entity = $this->get($identifier)) instanceof Model\Entity) {
+			throw new \Exception('Invalid operation - missing entity.');
+		}
 
 		$this->setProperties($entity, $this->request->query->all());
 		$this->em->flush();
