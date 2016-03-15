@@ -65,24 +65,28 @@ class EntityTest extends Middleware
 
 	function testEditEntityInvalidProperties() {
 		self::$uuid = Data::createChannel('Power', 'power', 1);
+		$uri = '/entity/' . self::$uuid . '.json';
 
 		// expect float type exception
-		$this->getJson('/entity.json', array(
+		$this->getJson($uri, array(
 			'operation' => 'edit',
 			'resolution' => '42.fourtytwo'
 		), 'GET', true);
+		$this->assertStringStartsWith('Invalid property value', $this->json->exception->message);
 
 		// expect boolean type exception
-		$this->getJson('/entity.json', array(
+		$this->getJson($uri, array(
 			'operation' => 'edit',
 			'active' => 'wahr'
 		), 'GET', true);
+		$this->assertStringStartsWith('Invalid property value', $this->json->exception->message);
 
-		// expect integer type exception
-		$this->getJson('/entity.json', array(
-			'operation' => 'edit',
-			'gap' => 42.42
-		), 'GET', true);
+		// expect boolean type exception - property currently not supported
+		// $this->getJson($uri, array(
+		// 	'operation' => 'edit',
+		// 	'active' => true
+		// ), 'GET', true);
+		// $this->assertStringStartsWith('Invalid property value', $this->json->exception->message);
 	}
 
 	function testDeleteInvalidValidEntity() {
