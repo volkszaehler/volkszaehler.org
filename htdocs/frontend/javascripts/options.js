@@ -81,11 +81,13 @@ vz.options.plot = {
 	},
 	yaxes: [
 		{
-			axisLabel: 'W' // assign el. energy to first axis- remove if not used
+			axisLabel: 'W', // assign el. energy to first axis- remove if not used
+			tickFormatter: vz.wui.tickFormatter		// show axis label
 		},
 		{
 			// alignTicksWithAxis: 1,
-			position: 'right'
+			position: 'right',
+			tickFormatter: vz.wui.tickFormatter		// show axis label
 		}
 	],
 	selection: { mode: 'x' },

@@ -737,6 +737,30 @@ vz.wui.formatConsumptionUnit = function(unit) {
 };
 
 /**
+ * Flot tickFormatter extension to apply axis labels
+ * Copied from jquery.flot.js
+ */
+vz.wui.tickFormatter = function (value, axis, tickIndex, ticks) {
+	// return label instead of last tick
+	if (ticks && tickIndex === ticks.length-1 && axis.options.axisLabel) {
+		return '[' + axis.options.axisLabel + ']';
+	}
+
+	var factor = axis.tickDecimals ? Math.pow(10, axis.tickDecimals) : 1;
+	var formatted = "" + Math.round(value * factor) / factor;
+
+	if (axis.tickDecimals !== null) {
+		var decimal = formatted.indexOf(".");
+		var precision = decimal == -1 ? 0 : formatted.length - decimal - 1;
+		if (precision < axis.tickDecimals) {
+			return (precision ? formatted : formatted + ".") + ("" + factor).substr(1, axis.tickDecimals - precision);
+		}
+	}
+
+	return formatted;
+};
+
+/**
  * Update headline on zoom
  */
 vz.wui.updateHeadline = function() {

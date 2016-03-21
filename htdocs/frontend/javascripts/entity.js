@@ -110,7 +110,7 @@ Entity.prototype.assignMatchingAxis = function() {
 				return true;
 			}
 		}, this) === false) { // no more axes available
-			this.assignedYaxis = vz.options.plot.yaxes.push({ position: 'right' });
+			this.assignedYaxis = vz.options.plot.yaxes.push($.extend({}, vz.options.plot.yaxes[1]));
 		}
 
 		vz.options.plot.yaxes[this.assignedYaxis-1].axisLabel = this.definition.unit;
@@ -130,8 +130,7 @@ Entity.prototype.assignAxis = function() {
 
 		while (vz.options.plot.yaxes.length < this.assignedYaxis) { // no more axes available
 			// create new right-hand axis
-			// TODO clone existing axis including its styling
-			vz.options.plot.yaxes.push({ position: 'right' });
+			vz.options.plot.yaxes.push($.extend({}, vz.options.plot.yaxes[1]));
 		}
 
 		// check if axis already has auto-allocated entities
@@ -241,7 +240,7 @@ Entity.prototype.subscribe = function(session) {
  */
 Entity.prototype.unsubscribe = function() {
 	var mw = vz.getMiddleware(this.middleware);
-	if (mw && mw.session) {
+	if (mw.session) {
 		mw.session.unsubscribe(this.uuid);
 	}
 };
