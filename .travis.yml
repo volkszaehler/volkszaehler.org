@@ -28,9 +28,6 @@ env:
 
 matrix:
   include:
-    # jslint-only
-    - php: 5.4
-      env: DB= DEPENDENCIES= JSLINT=true
     # httpd-based
     - php: 5.4
       env: DB=mysql TEST_ADAPTER=HTTP
@@ -39,6 +36,13 @@ matrix:
       env: DB=mysql DEPENDENCIES=lowest
     - php: 5.4
       env: DB=mysql DEPENDENCIES=highest
+    - php: 7.0
+      env: DB=mysql DEPENDENCIES=lowest
+    - php: 7.0
+      env: DB=mysql DEPENDENCIES=highest
+    # jslint-only
+    - php: 5.4
+      env: DB= DEPENDENCIES= JSLINT=true
   # remove hhvm/pgsql
   exclude:
     - php: hhvm
