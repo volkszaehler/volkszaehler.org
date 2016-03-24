@@ -1778,8 +1778,9 @@ Licensed under the MIT license.
                 };
             }
 
+            // cpuidle@gmx.de: pass tickIndex and ticks to tickFormatter
             if ($.isFunction(opts.tickFormatter))
-                axis.tickFormatter = function (v, axis) { return "" + opts.tickFormatter(v, axis); };
+                axis.tickFormatter = function (v, axis, tickIndex, ticks) { return "" + opts.tickFormatter(v, axis, tickIndex, ticks); };
 
             if (opts.alignTicksWithAxis != null) {
                 var otherAxis = (axis.direction == "x" ? xaxes : yaxes)[opts.alignTicksWithAxis - 1];
@@ -1846,7 +1847,8 @@ Licensed under the MIT license.
                 else
                     v = +t;
                 if (label == null)
-                    label = axis.tickFormatter(v, axis);
+                  	// cpuidle@gmx.de: pass tickIndex and ticks to tickFormatter
+                    label = axis.tickFormatter(v, axis, i, ticks);
                 if (!isNaN(v))
                     axis.ticks.push({ v: v, label: label });
             }
@@ -2525,9 +2527,9 @@ Licensed under the MIT license.
                 radius = series.points.radius,
                 symbol = series.points.symbol;
 
-            // If the user sets the line width to 0, we change it to a very 
+            // If the user sets the line width to 0, we change it to a very
             // small value. A line width of 0 seems to force the default of 1.
-            // Doing the conditional here allows the shadow setting to still be 
+            // Doing the conditional here allows the shadow setting to still be
             // optional even with a lineWidth of 0.
 
             if( lw == 0 )
