@@ -190,7 +190,6 @@ Entity.prototype.subscribe = function(session) {
 	session.subscribe(this.uuid, (function(args, json) {
 		var push = JSON.parse(json);
 		if (!push.data || push.data.uuid !== this.uuid) {
-			console.log("Invalid push request");
 			return false;
 		}
 
@@ -225,7 +224,7 @@ Entity.prototype.subscribe = function(session) {
 					// concatenate in-place
 					Array.prototype.push.apply(this.data.tuples, deltaTuples);
 					// update UI without reloading totals
-					this.updateData(null, false);
+					this.dataUpdated();
 
 					vz.wui.zoomToPartialUpdate(deltaTuples[deltaTuples.length-1][0]);
 					break;
@@ -246,6 +245,21 @@ Entity.prototype.unsubscribe = function() {
 };
 
 /**
+ * Check if data can be loaded from entity
+ */
+Entity.prototype.hasData = function() {
+	return this.active && this.definition && this.definition.model == 'Volkszaehler\\Model\\Channel';
+};
+
+/**
+ * Update UI when data changes
+ */
+Entity.prototype.dataUpdated = function(data) {
+	this.updateAxisScale();
+	this.updateDOMRow();
+};
+
+/**
  * Query middleware for details
  * @return jQuery dereferred object
  */
@@ -262,28 +276,25 @@ Entity.prototype.loadDetails = function() {
 };
 
 /**
- * Check if data can be loaded from entity
+ * Load data for current view from middleware
+ * @return jQuery dereferred object
  */
-Entity.prototype.hasData = function() {
-	return this.active && this.definition && this.definition.model == 'Volkszaehler\\Model\\Channel';
-};
-
-/**
- * Update entity data from middleware result and set axes accordingly
- */
-Entity.prototype.updateData = function(data, refreshTotal) {
-	// data == null may be used to perform update outside updateData
-	if (data !== null) {
-		this.data = data;
-	}
-
-	this.updateAxisScale();
-	this.updateDOMRow();
-
-	// load totals whenever data changes - this happens async to updateDOMRow()
-	if (refreshTotal && this.initialconsumption !== undefined) {
-		this.loadTotalConsumption();
-	}
+Entity.prototype.loadData = function() {
+	return vz.load({
+		controller: 'data',
+		url: this.middleware,
+		identifier: this.uuid,
+		context: this,
+		data: {
+			from: Math.floor(vz.options.plot.xaxis.min),
+			to: Math.ceil(vz.options.plot.xaxis.max),
+			tuples: vz.options.group === undefined ? vz.options.tuples : Number.MAX_SAFE_INTEGER,
+			group: vz.entities.speedupFactor()
+		}
+	}).done(function(json) {
+		this.data = json.data;
+		this.dataUpdated();
+	});
 };
 
 /**
@@ -306,27 +317,6 @@ Entity.prototype.loadTotalConsumption = function() {
 		this.totalconsumption = (this.definition.scale || 1) * this.initialconsumption + json.data.consumption;
 		// show in UI
 		this.updateDOMRowTotal();
-	});
-};
-
-/**
- * Load data for current view from middleware
- * @return jQuery dereferred object
- */
-Entity.prototype.loadData = function() {
-	return vz.load({
-		controller: 'data',
-		url: this.middleware,
-		identifier: this.uuid,
-		context: this,
-		data: {
-			from: Math.floor(vz.options.plot.xaxis.min),
-			to: Math.ceil(vz.options.plot.xaxis.max),
-			tuples: vz.options.tuples,
-			group: vz.entities.speedupFactor()
-		}
-	}).done(function(json) {
-		this.updateData(json.data);
 	});
 };
 
@@ -733,6 +723,9 @@ Entity.prototype.updateDOMRow = function() {
 		}
 	}
 
+	// show total value if populated
+	this.updateDOMRowTotal();
+
 	vz.entities.updateTableColumnVisibility();
 };
 
@@ -748,9 +741,6 @@ Entity.prototype.updateDOMRowTotal = function() {
 			.data('total', this.totalconsumption)
 			.text(vz.wui.formatNumber(this.totalconsumption, unit, 'k'));
 	}
-
-	// unhide total column
-	vz.entities.updateTableColumnVisibility();
 };
 
 /**

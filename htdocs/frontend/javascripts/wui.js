@@ -121,8 +121,11 @@ vz.wui.addEntity = function(entity) {
 	vz.entities.push(entity);
 	vz.entities.saveCookie();
 	vz.entities.showTable();
-	vz.entities.loadData().done(vz.wui.drawPlot);
 	vz.options.plot.axesAssigned = false; // force axis assignment
+	entity.loadData().done(function() {
+		vz.wui.drawPlot();
+		entity.loadTotalConsumption();
+	});
 };
 
 /**

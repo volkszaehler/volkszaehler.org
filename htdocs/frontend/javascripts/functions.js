@@ -138,9 +138,8 @@ vz.load = function(args) {
 	return $.ajax(args).then(function(json) {
 		// success
 		if (json.exception) {
-			// handle json exceptions sent with HTTP status 200
-			vz.wui.dialogs.exception(new Exception(json.exception.type, args.url + ':<br/><br/>' + json.exception.message));
-			return $.Deferred().reject();
+			// raise json exceptions sent with HTTP status 200
+			return $.Deferred().rejectWith(this, [json]);
 		}
 		return $.Deferred().resolveWith(this, [json]);
 	}, function(xhr) {
