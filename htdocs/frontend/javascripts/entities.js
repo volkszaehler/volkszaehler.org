@@ -63,60 +63,40 @@ vz.entities.loadCookie = function() {
  * Load JSON entity details from the middleware
  */
 vz.entities.loadDetails = function() {
-	var queue = [];			// middleware calls
-	var middlewares = {};	// entities per call
-
+	var queue = [];
 	vz.entities.each(function(entity) {
-		if (!(entity.middleware in middlewares)) {
-			middlewares[entity.middleware] = []; // new queue
-		}
-
-		middlewares[entity.middleware].push(entity);
+		queue.push(entity.loadDetails().fail(function(json) {
+			console.error(json);
+			if (json.exception && json.exception.message && json.exception.message.match(/^Invalid UUID/)) {
+				vz.entities.remove(entity);
+				return;
+			}
+			throw json.exception.message;
+		}));
 	}, true); // recursive
-
- 	for (var middleware in middlewares) {
-		if (middlewares.hasOwnProperty(middleware)) {
-			queue.push(vz.entities.loadMultipleDetails(middlewares[middleware]));
-		}
-	}
-
 	return $.when.apply($, queue);
 };
 
-vz.entities.loadMultipleDetails = function(entities) {
-	return vz.load({
-		controller: 'entity',
-		url: entities[0].middleware,
-		context: this,
-		data: {
-			uuid: entities.map(function(entity) {
-				return entity.uuid;
-			}),
-			nostrict: 1 // don't fail if entity was removed
+/**
+ * Load JSON data from the middleware
+ */
+vz.entities.loadData = function() {
+	$('#overlay').html('<img src="images/loading.gif" alt="loading..." /><p>loading...</p>');
+
+	var queue = [];
+	vz.entities.each(function(entity) {
+		if (entity.hasData()) {
+			queue.push(entity.loadData());
 		}
-	}).done(function(json) {
-		// @todo assuming unique UUIDs across middlewares
-		this.each(function(entity) {
-			json.entities.some(function(jsonEntity) {
-				if (jsonEntity.uuid == entity.uuid) { // entity matched
-					if (jsonEntity.type === undefined) {
-						// entity does not exist at server- remove from list of entities
-						vz.entities.remove(entity);
-					}
-					else {
-						entity.parseJSON(jsonEntity);
-					}
-					return true;
-				}
-			});
-		}, true);
-	});
+	}, true); // recursive
+
+	return $.when.apply($, queue);
 };
 
 /**
  * Load total consumption for all entities that have the initialconsumption property defined
  */
-vz.entities.loadTotals = function() {
+vz.entities.loadTotalConsumption = function() {
 	if (vz.options.totalsInterval) {
 		var queue = [];
 		vz.entities.each(function(entity) {
@@ -128,7 +108,7 @@ vz.entities.loadTotals = function() {
 		// set timeout for next load once completed
 		$.when.apply($, queue).done(function() {
 			vz.entities.updateTableColumnVisibility();	// unhide total column
-			window.setTimeout(vz.entities.loadTotals, vz.options.totalsInterval * 1000);
+			window.setTimeout(vz.entities.loadTotalConsumption, vz.options.totalsInterval * 1000);
 		});
 	}
 };
@@ -152,58 +132,6 @@ vz.entities.speedupFactor = function() {
 		group = 'hour';
 	}
 	return group;
-};
-
-/**
- * Load JSON data from the middleware
- */
-vz.entities.loadData = function() {
-	$('#overlay').html('<img src="images/loading.gif" alt="loading..." /><p>loading...</p>');
-
-	var queue = [];
-
-	vz.middleware.each(function(idx, middleware) {
-		var entities = [];
-		vz.entities.each(function(entity) {
-			if (entity.hasData() && entity.middleware.indexOf(middleware.url) >= 0) {
-				entities.push(entity);
-			}
-		}, true); // recursive
-
-		if (entities.length > 0) {
-			queue.push(vz.entities.loadMultipleData(entities));
-		}
-	});
-
-	return $.when.apply($, queue);
-};
-
-vz.entities.loadMultipleData = function(entities) {
-	return vz.load({
-		controller: 'data',
-		url: entities[0].middleware,
-		context: this,
-		data: {
-			from: Math.floor(vz.options.plot.xaxis.min),
-			to: Math.ceil(vz.options.plot.xaxis.max),
-			tuples: vz.options.group === undefined ? vz.options.tuples : Number.MAX_SAFE_INTEGER,
-			options: vz.options.options,
-			uuid: entities.map(function(entity) {
-				return entity.uuid;
-			}),
-			group: this.speedupFactor()
-		}
-	}).done(function(json) {
-		// @todo assuming unique UUIDs across middlewares
-		this.each(function(entity) {
-			json.data.some(function(data) {
-				if (data.uuid == entity.uuid) { // entity matched
-					entity.updateData(data, true);	// refresh totals
-					return true;
-				}
-			});
-		}, true);
-	});
 };
 
 /**
@@ -356,6 +284,11 @@ vz.entities.showTable = function() {
 	});
 
 	vz.entities.updateTableColumnVisibility();
+
+	// display the data we have already
+	vz.entities.each(function(entity) {
+		entity.updateDOMRow();
+	}, true); // recursive
 };
 
 /**

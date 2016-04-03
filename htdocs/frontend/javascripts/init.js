@@ -125,7 +125,7 @@ $(document).ready(function() {
 
 			vz.entities.loadData().done(function() {
 				vz.wui.drawPlot();
-				vz.entities.loadTotals();
+				vz.entities.loadTotalConsumption();
 			});
 
 			// create WAMP sessions for each middleware
