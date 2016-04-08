@@ -60,14 +60,6 @@ class JSON extends View {
 		parent::__construct($request);
 
 		$this->json = array('version' => VZ_VERSION);
-
-		$this->padding = $request->query->get('padding');
-	}
-
-	/**
-	 * Render response and send it to the client
-	 */
-	public function send() {
 		// use StreamedResponse unless pretty-printing is required
 		if (Util\Debug::isActivated()) {
 			$this->add(Util\Debug::getInstance());
@@ -75,6 +67,8 @@ class JSON extends View {
 		else {
 			$this->response = new StreamedResponse();
 		}
+
+		$this->padding = $request->query->get('padding');
 
 		// JSONP
 		if ($this->padding) {
@@ -85,7 +79,12 @@ class JSON extends View {
 			// enable CORS if not JSONP
 			$this->response->headers->set('Access-Control-Allow-Origin', '*');
 		}
+	}
 
+	/**
+	 * Render response and send it to the client
+	 */
+	public function send() {
 		if ($this->response instanceof StreamedResponse) {
 			$this->response->setCallback(function() {
 				$this->renderDeferred();

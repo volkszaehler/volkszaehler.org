@@ -53,11 +53,6 @@ class Router implements HttpKernelInterface {
 	public $em;
 
 	/**
-	 * @var Util\Debug optional debugging instance
-	 */
-	public $debug;
-
-	/**
 	 * @var View\View output view
 	 */
 	public $view;
@@ -154,6 +149,17 @@ class Router implements HttpKernelInterface {
 			}
 		}
 
+		// initialize debugging
+		if (($debugLevel = $request->query->get('debug')) || $debugLevel = Util\Configuration::read('debug')) {
+			if ($debugLevel > 0 && !Util\Debug::isActivated()) {
+				new Util\Debug($debugLevel, $this->em);
+			}
+		}
+		else {
+			// make sure static debug instance is removed
+			Util\Debug::deactivate();
+		}
+
 		$class = self::$viewMapping[$format];
 		$this->view = new $class($request, $format);
 
@@ -174,17 +180,6 @@ class Router implements HttpKernelInterface {
 	 * Example: http://sub.domain.local/middleware.php/channel/550e8400-e29b-11d4-a716-446655440000/data.json?operation=edit&title=New Title
 	 */
 	function handler(Request $request, $context, $uuid) {
-		// initialize debugging
-		if (($debugLevel = $request->query->get('debug')) || $debugLevel = Util\Configuration::read('debug')) {
-			if ($debugLevel > 0) {
-				$this->debug = new Util\Debug($debugLevel, $this->em);
-			}
-		}
-		else {
-			// make sure static debug instance is removed
-			Util\Debug::deactivate();
-		}
-
 		// get controller operation
 		if (null === ($operation = $request->query->get('operation'))) {
 			$operation = self::$operationMapping[strtolower($request->getMethod())];

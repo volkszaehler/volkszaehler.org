@@ -60,7 +60,7 @@ class Debug {
 		$this->em = $em;
 		$this->attachSqlLogger(new Logging\DebugStack());
 
-		if (isset(self::$instance)) {
+		if (self::isActivated()) {
 			throw new \Exception('Debugging has already been started. Please use the static functions!');
 		}
 		self::$instance = $this;
@@ -135,7 +135,7 @@ class Debug {
 	 * @return 2 dimensional array with sql queries and parameters
 	 */
 	public function getQueries() { 
-		return $this->sqlLogger->queries; 
+		return ($this->sqlLogger) ? $this->sqlLogger->queries : array();
 	}
 
 	/**
