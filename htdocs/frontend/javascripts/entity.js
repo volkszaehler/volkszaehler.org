@@ -263,14 +263,14 @@ Entity.prototype.dataUpdated = function(data) {
  * Query middleware for details
  * @return jQuery dereferred object
  */
-Entity.prototype.loadDetails = function() {
+Entity.prototype.loadDetails = function(skipDefaultErrorHandling) {
 	delete this.children; // clear children first
 	return vz.load({
 		url: this.middleware,
 		controller: 'entity',
 		identifier: this.uuid,
 		context: this
-	}).done(function(json) {
+	}, skipDefaultErrorHandling).done(function(json) {
 		this.parseJSON(json.entity);
 	});
 };
