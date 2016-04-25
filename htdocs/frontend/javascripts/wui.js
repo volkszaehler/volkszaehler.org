@@ -921,3 +921,11 @@ vz.wui.dialogs.exception = function(exception) {
 	if (vz.wui.errorDialog) return;
 	this.error(exception.type, exception.message, exception.code);
 };
+
+vz.wui.dialogs.middlewareException = function(exception, url) {
+	var msg = exception.message;
+	if (url) {
+		msg = "<a href='" + url + "' style='text-decoration:none'>" + url + "</a>:<br/><br/>" + msg;
+	}
+	this.exception(new Exception("Middleware Error (" + exception.type + ")", msg));
+};

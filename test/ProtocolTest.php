@@ -95,13 +95,41 @@ class ProtocolTest extends Data
 		), 'GET', true)->exception->type);
 	}
 
+	function testJsonException() {
+		$response = $this->getResponse('/data/' . static::$uuid . '.json', array(
+			'from' => 1,
+			'to' => 0
+		), 'GET');
+
+		// exception must be HTTP 400
+		$this->assertEquals(400, $response->getStatusCode());
+		$this->assertEquals('application/json', $response->headers->get('Content-Type'));
+	}
+
 	function testJsonP() {
 		$response = $this->getResponse('/data/' . static::$uuid . '.json', array(
 			'padding' => 'callback'
 		), 'GET');
 
+		$this->assertEquals(200, $response->getStatusCode());
 		$this->assertEquals('application/javascript', $response->headers->get('Content-Type'));
 		$this->assertRegExp('/callback\(.*\);/', $response->getContent());
+	}
+
+	function testJsonPException() {
+		$response = $this->getResponse('/data/' . static::$uuid . '.json', array(
+			'padding' => 'callback',
+			'from' => 1,
+			'to' => 0
+		), 'GET');
+
+		// if JsonP response must always be HTTP 200
+		$this->assertEquals(200, $response->getStatusCode());
+		$this->assertEquals('application/javascript', $response->headers->get('Content-Type'));
+		$this->assertRegExp('/callback\(.*\);/', $response->getContent());
+
+		$json = (preg_match('/callback\((.*)\);/', $response->getContent(), $matches)) ? json_decode($matches[1]) : null;
+		$this->assertNotNull($json, 'Not valid JSON');
 	}
 
 	function testDebug() {
@@ -109,6 +137,19 @@ class ProtocolTest extends Data
 			'debug' => 1
 		))->debug, 'Missing debug output');
 		$this->assertNotNull($this->json->debug->sql->totalTime, 'Missing debug sql trace');
+	}
+
+	function testExceptionDebug() {
+		$response = $this->getResponse('/data/' . static::$uuid . '.json', array(
+			'from' => 1,
+			'to' => 0,
+			'debug' => 1
+		), 'GET');
+
+		$json = json_decode($response->getContent());
+		$this->assertNotNull($json, 'Not valid JSON');
+
+		$this->assertNotNull($json->debug, 'Missing debug output');
 	}
 }
 

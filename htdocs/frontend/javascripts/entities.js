@@ -65,13 +65,13 @@ vz.entities.loadCookie = function() {
 vz.entities.loadDetails = function() {
 	var queue = [];
 	vz.entities.each(function(entity) {
-		queue.push(entity.loadDetails().fail(function(json) {
-			console.error(json);
+		// skip default error handling
+		queue.push(entity.loadDetails(true).fail(function(json) {
 			if (json.exception && json.exception.message && json.exception.message.match(/^Invalid UUID/)) {
 				vz.entities.remove(entity);
 				return;
 			}
-			throw json.exception.message;
+			vz.wui.middlewareException(json.exception);
 		}));
 	}, true); // recursive
 	return $.when.apply($, queue);

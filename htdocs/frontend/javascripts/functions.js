@@ -87,8 +87,10 @@ vz.getPermalink = function() {
 
 /**
  * Universal helper for middleware ajax requests with error handling
+ *
+ * @param skipDefaultErrorHandling according to http://stackoverflow.com/questions/19101670/provide-a-default-fail-method-for-a-jquery-deferred-object
  */
-vz.load = function(args) {
+vz.load = function(args, skipDefaultErrorHandling) {
 	$.extend(args, {
 		accepts: 'application/json',
 		beforeSend: function (xhr, settings) {
@@ -101,7 +103,7 @@ vz.load = function(args) {
 		args.url = vz.options.middleware[0].url;
 	}
 
-	if (args.url == vz.options.middleware[0].url) { // local request
+	if (args.url == vz.options.middleware[0].url && args.dataType === undefined) { // local request
 		args.dataType = 'json';
 	}
 	else { // remote request
@@ -135,42 +137,41 @@ vz.load = function(args) {
 		delete args.type; // this makes jquery append the data to the query string
 	}
 
-	return $.ajax(args).then(function(json) {
+	return $.ajax(args).then(
 		// success
-		if (json.exception) {
-			// raise json exceptions sent with HTTP status 200
-			return $.Deferred().rejectWith(this, [json]);
-		}
-		return $.Deferred().resolveWith(this, [json]);
-	}, function(xhr) {
-		// error
-		var msg;
-		if (xhr.getResponseHeader('Content-type') == 'application/json') {
-			var json = $.parseJSON(xhr.responseText);
-
+		function(json, textStatus, xhr) {
+			// middleware error (in case of JSONP)
 			if (json.exception) {
-				msg = xhr.requestUrl + ':<br/><br/>' + json.exception.message;
-				vz.wui.dialogs.exception(new Exception(json.exception.type, msg, (json.exception.code) ? json.exception.code : xhr.status));
+				if (!skipDefaultErrorHandling) {
+					// display the exception
+					vz.wui.dialogs.middlewareException(json.exception, xhr.requestUrl);
+				}
+				return $.Deferred().rejectWith(this, [json]);
+			}
+			return $.Deferred().resolveWith(this, [json]);
+		},
+
+		// error
+		function(xhr) {
+			if (xhr.responseJSON && xhr.responseJSON.exception) {
+				// middleware error
+				if (!skipDefaultErrorHandling) {
+					vz.wui.dialogs.middlewareException(xhr.responseJSON.exception, xhr.requestUrl);
+				}
+				return $.Deferred().rejectWith(this, [xhr.responseJSON]);
+			}
+			else {
+				// network error
+				if (!skipDefaultErrorHandling) {
+					vz.wui.dialogs.middlewareException({
+						type: "Network Error",
+						message: xhr.statusText
+					}, xhr.requestUrl);
+				}
+				return $.Deferred().rejectWith(this, [xhr]);
 			}
 		}
-		else {
-			msg = "<a href='" + xhr.requestUrl + "' style='text-decoration:none'>" + xhr.requestUrl + "</a>";
-			if (xhr.responseText) {
-				msg += '<br/><br/>' + $(xhr.responseText).text().substring(0,300);
-			}
-
-			var title = "Network Error";
-			if (xhr.status > 0) {
-				title += " (" + xhr.status + " " + xhr.statusText + ")";
-			}
-			else if (xhr.statusText !== "") {
-				title += " (" + xhr.statusText + ")";
-			}
-
-			vz.wui.dialogs.exception(new Exception(title, msg));
-		}
-		return $.Deferred().reject();
-	});
+	);
 };
 
 /**
