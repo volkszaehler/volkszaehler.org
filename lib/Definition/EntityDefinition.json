@@ -240,8 +240,23 @@
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
-			"de" : "Betriebsstundenzähler",
-			"en" : "Operation Hours Meter",
+			"de" : "Betriebsstundenzähler (Impulse)",
+			"en" : "Operation Hours Meter (Impulses)",
+			"fr" : "Compteur horaire"
+		}
+	},
+	{
+		"name"			: "workinghourstotal",
+		"required"		: ["resolution"],
+		"optional"		: ["tolerance", "local", "initialconsumption"],
+		"icon"			: "clock.png",
+		"unit"			: "h",
+		"interpreter"		: "Volkszaehler\\Interpreter\\CounterInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
+		"translation"		: {
+			"de" : "Betriebsstundenzähler (Zählerstand)",
+			"en" : "Operation Hours Meter (meter readings)",
 			"fr" : "Compteur horaire"
 		}
 	},
