@@ -65,14 +65,21 @@ vz.entities.loadCookie = function() {
 vz.entities.loadDetails = function() {
 	var queue = [];
 	vz.entities.each(function(entity) {
-		// skip default error handling
-		queue.push(entity.loadDetails(true).fail(function(json) {
-			if (json.exception && json.exception.message && json.exception.message.match(/^Invalid UUID/)) {
-				vz.entities.remove(entity);
-				return;
+		// Use thenable form and skip default error handling to allow modifying deferred resolution for handling
+		// invalid/deleted entity uuids. Otherwise frontend loading will stall.
+		queue.push(entity.loadDetails(true).then(
+			function(json) {
+				return $.Deferred().resolveWith(this, [json]);
+			},
+			function(json) {
+				if (json.exception && json.exception.message && json.exception.message.match(/^Invalid UUID|^No entity found with UUID/)) {
+					vz.entities.remove(entity);
+					return $.Deferred().resolveWith(this, [json]);
+				}
+				vz.wui.middlewareException(json.exception);
+				return $.Deferred().rejectWith(this, [json]);
 			}
-			vz.wui.middlewareException(json.exception);
-		}));
+		));
 	}, true); // recursive
 	return $.when.apply($, queue);
 };
