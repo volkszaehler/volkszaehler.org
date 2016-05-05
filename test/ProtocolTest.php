@@ -136,7 +136,8 @@ class ProtocolTest extends Data
 		$this->assertNotNull($this->getJson('/data/' . static::$uuid . '.json', array(
 			'debug' => 1
 		))->debug, 'Missing debug output');
-		$this->assertNotNull($this->json->debug->sql->totalTime, 'Missing debug sql trace');
+		$this->assertNotNull($this->json->debug->sql, 'Missing debug sql trace');
+		$this->assertNotNull($this->json->debug->sql->totalTime, 'Missing debug sql timing');
 	}
 
 	function testExceptionDebug() {
