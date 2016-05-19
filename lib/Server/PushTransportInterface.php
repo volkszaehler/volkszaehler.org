@@ -27,8 +27,8 @@ namespace Volkszaehler\Server;
 /**
  * Implement this interface to relay converted push messages
  */
-interface PushClientMessageInterface {
+interface PushTransportInterface {
 
-	function onMiddlewareUpdate($uuid, $content);
+	function onUpdate($uuid, $content);
 
 }

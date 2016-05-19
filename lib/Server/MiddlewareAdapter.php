@@ -59,11 +59,11 @@ class MiddlewareAdapter {
 		$this->adapters = new \SplObjectStorage;
 	}
 
-	public function addAdapter(PushClientMessageInterface $adapter) {
+	public function addAdapter(PushTransportInterface $adapter) {
 		$this->adapters->attach($adapter);
 	}
 
-	public function removeAdapter(PushClientMessageInterface $adapter) {
+	public function removeAdapter(PushTransportInterface $adapter) {
 		$this->adapters->detach($adapter);
 	}
 
@@ -90,22 +90,34 @@ class MiddlewareAdapter {
 		}
 	}
 
-	protected function getPayload(Interpreter $interpreter, $tuple) {
+	protected function convertRawTuple(Interpreter $interpreter, $tuple) {
 		try {
 			$this->openController();
 			$result = false;
 
-			// prevent div by zero
-			if (!isset($interpreter->calculated_ts) || ($tuple[0] > $interpreter->calculated_ts)) {
+			// convert raw reading to converted value
+			if (!isset($interpreter->push_ts)) {
+				// skip first conversion result
+				$interpreter->convertRawTuple($tuple);
+			}
+			elseif ($tuple[0] > $interpreter->push_ts) {
+				// prevent div by zero
+
+				// CounterInterpreter special handling- suppress duplicate counter values
+				if ($interpreter instanceof Interpreter\CounterInterpreter) {
+					if (isset($interpreter->push_raw_value) && $interpreter->push_raw_value == $tuple[1]) {
+						return false;
+					}
+					else {
+						$interpreter->push_raw_value = $tuple[1];
+					}
+				}
+
 				$result = $interpreter->convertRawTuple($tuple);
 			}
 
-			// 1st calculated value is invalid due to interpreter logic
-			if (!isset($interpreter->calculated_ts)) {
-				$result = false;
-			}
-
-			$interpreter->calculated_ts = $tuple[0];
+			// indicate that tuple conversion has already happened once
+			$interpreter->push_ts = $tuple[0];
 		}
 		catch (\Exception $e) {
 			// make sure EntityManager is re-initialized on error
@@ -156,8 +168,8 @@ class MiddlewareAdapter {
 					$tuple[] = 1;
 				}
 
-				// first ever tuple may be swallowed
-				if ($payload = $this->getPayload($interpreter, $tuple)) {
+				// first ever tuple may be swallowed, skip if payload == false
+				if ($payload = $this->convertRawTuple($interpreter, $tuple)) {
 					$transformed[] = $payload;
 				}
 			}

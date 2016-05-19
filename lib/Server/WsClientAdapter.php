@@ -30,7 +30,7 @@ use Ratchet\MessageComponentInterface;
 /**
  * Distribute push messages to plain web socket subscribers
  */
-class WsClientAdapter implements MessageComponentInterface, PushClientMessageInterface {
+class WsClientAdapter implements MessageComponentInterface, PushTransportInterface {
 
 	protected $subscribers;
 
@@ -38,7 +38,10 @@ class WsClientAdapter implements MessageComponentInterface, PushClientMessageInt
         $this->subscribers = new \SplObjectStorage;
 	}
 
-	function onMiddlewareUpdate($uuid, $content) {
+	/*
+	 * PushTransportInterface
+	 */
+	public function onUpdate($uuid, $content) {
 		foreach($this->subscribers as $subscriber) {
 			$subscriber->send(json_encode($content));
 		}

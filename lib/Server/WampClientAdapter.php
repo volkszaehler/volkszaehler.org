@@ -30,14 +30,17 @@ use Ratchet\Wamp\WampServerInterface;
 /**
  * Distribute push messages to WAMP subscribers
  */
-class WampClientAdapter implements WampServerInterface, PushClientMessageInterface {
+class WampClientAdapter implements WampServerInterface, PushTransportInterface {
 
 	/**
 	 * @var lookup of all the topics clients have subscribed to
 	 */
 	protected $subscribedTopics = array();
 
-	public function onMiddlewareUpdate($uuid, $content) {
+	/*
+	 * PushTransportInterface
+	 */
+	public function onUpdate($uuid, $content) {
 		// broadcast if topic subscribed
 		if ($topic = $this->getTopic($uuid)) {
 			$topic->broadcast(json_encode($content));
