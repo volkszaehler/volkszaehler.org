@@ -42,12 +42,7 @@ class EntityController extends Controller {
 	/**
 	 * Memory cache instance, e.g. APC
 	 */
-	protected $cache;
-
-	public function __construct(Request $request, EntityManager $em) {
-		parent::__construct($request, $em);
-		$this->cache = $this->em->getConfiguration()->getQueryCacheImpl();
-	}
+	protected static $cache;
 
 	/**
 	 * Get entity
@@ -85,13 +80,21 @@ class EntityController extends Controller {
 	}
 
 	public function getSingleEntity($uuid, $allowCache = false) {
+		return self::factory($this->em, $uuid, $allowCache);
+	}
+
+	static function factory(EntityManager $em, $uuid, $allowCache = false) {
 		if (!Util\UUID::validate($uuid)) {
 			throw new \Exception('Invalid UUID: \'' . $uuid . '\'');
 		}
 
-		if ($allowCache && $this->cache && $this->cache->contains($uuid)) {
+		if (!self::$cache) {
+			self::$cache = $em->getConfiguration()->getQueryCacheImpl();
+		}
+
+		if ($allowCache && self::$cache && self::$cache->contains($uuid)) {
 			// used hydrated cache result
-			return $this->cache->fetch($uuid);
+			return self::$cache->fetch($uuid);
 		}
 
 		$dql = 'SELECT a, p
@@ -99,14 +102,14 @@ class EntityController extends Controller {
 			LEFT JOIN a.properties p
 			WHERE a.uuid = :uuid';
 
-		$q = $this->em->createQuery($dql)
+		$q = $em->createQuery($dql)
 			->setParameter('uuid', $uuid);
 
 		try {
 			$entity = $q->getSingleResult();
 
-			if ($allowCache && $this->cache) {
-				$this->cache->save($uuid, $entity, Util\Configuration::read('cache.ttl'));
+			if ($allowCache && self::$cache) {
+				self::$cache->save($uuid, $entity, Util\Configuration::read('cache.ttl'));
 			}
 
 			return $entity;
@@ -130,8 +133,8 @@ class EntityController extends Controller {
 		$this->em->remove($entity);
 		$this->em->flush();
 
-		if ($this->cache) {
-			$this->cache->delete($identifier);
+		if (self::$cache) {
+			self::$cache->delete($identifier);
 		}
 	}
 
@@ -146,8 +149,8 @@ class EntityController extends Controller {
 		$this->setProperties($entity, $this->request->query->all());
 		$this->em->flush();
 
-		if ($this->cache) {
-			$this->cache->delete($identifier);
+		if (self::$cache) {
+			self::$cache->delete($identifier);
 		}
 
 		// HACK - see https://github.com/doctrine/doctrine2/pull/382
