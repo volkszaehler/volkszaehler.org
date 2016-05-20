@@ -25,7 +25,7 @@
 namespace Volkszaehler\Server;
 
 use Volkszaehler\Router;
-use Volkszaehler\Interpreter\Interpreter;
+use Volkszaehler\Interpreter;
 use Volkszaehler\Controller\EntityController;
 
 use Symfony\Component\HttpFoundation\Request;
@@ -90,7 +90,7 @@ class MiddlewareAdapter {
 		}
 	}
 
-	protected function convertRawTuple(Interpreter $interpreter, $tuple) {
+	protected function convertRawTuple(Interpreter\Interpreter $interpreter, $tuple) {
 		try {
 			$this->openController();
 			$result = false;
@@ -100,16 +100,12 @@ class MiddlewareAdapter {
 				// skip first conversion result
 				$interpreter->convertRawTuple($tuple);
 			}
+			// prevent div by zero
 			elseif ($tuple[0] > $interpreter->push_ts) {
-				// prevent div by zero
-
 				// CounterInterpreter special handling- suppress duplicate counter values
 				if ($interpreter instanceof Interpreter\CounterInterpreter) {
 					if (isset($interpreter->push_raw_value) && $interpreter->push_raw_value == $tuple[1]) {
 						return false;
-					}
-					else {
-						$interpreter->push_raw_value = $tuple[1];
 					}
 				}
 
@@ -118,6 +114,7 @@ class MiddlewareAdapter {
 
 			// indicate that tuple conversion has already happened once
 			$interpreter->push_ts = $tuple[0];
+			$interpreter->push_raw_value = $tuple[1];
 		}
 		catch (\Exception $e) {
 			// make sure EntityManager is re-initialized on error
@@ -164,7 +161,7 @@ class MiddlewareAdapter {
 			// convert raw tuples using interpreter rules
 			$transformed = array();
 			foreach ($tuples as $tuple) {
-				if (count($tuple < 3)) {
+				if (count($tuple) < 3) {
 					$tuple[] = 1;
 				}
 
@@ -194,7 +191,7 @@ class MiddlewareAdapter {
 
 	protected function broadcast($uuid, $data) {
 		foreach ($this->adapters as $adapter) {
-			$adapter->onMiddlewareUpdate($uuid, $data);
+			$adapter->onUpdate($uuid, $data);
 		}
 	}
 
