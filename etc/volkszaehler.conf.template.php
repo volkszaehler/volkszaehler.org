@@ -108,6 +108,9 @@ $config['push']['enabled'] = false;		// set to true to enable push updates
 $config['push']['server'] = 5582;		// vzlogger will push to this ports (binds on 0.0.0.0)
 $config['push']['broadcast'] = 8082;	// frontend will subscribe on this port (binds on 0.0.0.0)
 
+$config['push']['routes']['wamp'] = array('/', '/ws');		// routes for wamp access
+$config['push']['routes']['websocket'] = array();			// routes for plain web sockets, try array('/socket')
+
 /**
  * Timezone for the middleware
  *

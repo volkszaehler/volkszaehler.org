@@ -25,97 +25,102 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
+namespace Volkszaehler\Server;
+
+use Volkszaehler\Util;
+
+use React\Socket\Server as SocketServer;
+use Ratchet\Server\IoServer;
+use Ratchet\Http\HttpServer;
+use Ratchet\Http\HttpServerInterface;
+use Ratchet\WebSocket\WsServer;
+use Ratchet\Wamp\WampServer;
+use Ratchet\Http\Router;
+
+use Symfony\Component\Routing\Route;
+use Symfony\Component\Routing\RouteCollection;
+use Symfony\Component\Routing\RequestContext;
+use Symfony\Component\Routing\Matcher\UrlMatcher;
+
+use Symfony\Component\Console\Output\ConsoleOutput;
+
+
 define('VZ_DIR', realpath(__DIR__ . '/../..'));
 
 require_once VZ_DIR . '/lib/bootstrap.php';
 
-/**
- * Convert Exception to json
- *
- * Cloned from Volkszaehler\Debug\addException
- */
-function getExceptionAsJson(\Exception $exception, $debug = false) {
-	$exceptionClass = explode('\\', get_class($exception));
-	$json = array(
-		'version' => VZ_VERSION,
-		'exception' => array(
-			'message' => $exception->getMessage(),
-			'type' => end($exceptionClass),
-			'code' => $exception->getCode()
-		)
-	);
 
-	if ($debug) {
-		$json['exception'] = array_merge($json['exception'], array(
-			'file' => $exception->getFile(),
-			'line' => $exception->getLine(),
-			'backtrace' => $exception->getTrace()
-		));
-	}
-
-	return json_encode($json);
+function addRoute($path, HttpServerInterface $controller) {
+	global $routes;
+	$routes->add('r' . $routes->count(), new Route($path, array('_controller' => $controller)));
 }
 
-//
-// Main
-//
+/*
+ * Main
+ */
 
-echo "Volkszaehler push server\n";
+$output = new ConsoleOutput();
+$output->writeln("<info>Volkszaehler Push Server</info>");
 
-if (!Volkszaehler\Util\Configuration::read('push.enabled')) {
+if (!Util\Configuration::read('push.enabled')) {
 	throw new \Exception("Push server is disabled in configuration", 1);
 }
 
 // read config
-$localPort = Volkszaehler\Util\Configuration::read('push.server');
-$remotePort = Volkszaehler\Util\Configuration::read('push.broadcast');
+$localPort = Util\Configuration::read('push.server');
+$remotePort = Util\Configuration::read('push.broadcast');
 
-echo sprintf("Listening for updates on %d. Clients may connect at %d.\n", $localPort, $remotePort);
+$output->writeln(sprintf("<info>Listening for updates on %d. Clients may connect at %d.</info>", $localPort, $remotePort));
 
-$loop = React\EventLoop\Factory::create();
-$hub = new Volkszaehler\Server\PushHub();
+$loop = \React\EventLoop\Factory::create();
+$middleware = new MiddlewareAdapter();
 
 // configure local httpd interface
-$localSocket = new React\Socket\Server($loop);
-$localServer = new React\Http\Server($localSocket);
+$localSocket = new SocketServer($loop);
+$localServer = new HttpReceiver($localSocket, $middleware);
 $localSocket->listen($localPort, '0.0.0.0'); // remote loggers can push updates
 
-// main push request/ websocket response loop
-$localServer->on('request', function(React\Http\Request $request, React\Http\Response $response) use ($hub) {
-	$content = '';
-	$headers = $request->getHeaders();
-	$contentLength = isset($headers['Content-Length']) ? (int) $headers['Content-Length'] : 0;
+// configure routes
+$routes = new RouteCollection;
+$router = new Router(new UrlMatcher($routes, new RequestContext));
 
-	$request->on('data', function($data) use ($request, $response, $hub, &$content, $contentLength) {
-		// read data (may be empty for GET request)
-		$content .= $data;
+// WAMP adapter
+$wampRoutes = Util\Configuration::read('push.routes.wamp');
+if (is_array($wampRoutes) && count($wampRoutes)) {
+	$wampAdapter = new WampClientAdapter();
+	$wampServer = new WsServer(new WampServer($wampAdapter));
 
-		// handle request after receive
-		if (strlen($content) >= $contentLength) {
-			$headers = array('Content-Type' => 'application/json');
-			try {
-				$data = $hub->handleRequest($content);
-				$response->writeHead(200, $headers);
-				$response->end($data);
-			}
-			catch (\Exception $exception) {
-				$response->writeHead(500, $headers); // internal server error
-				$data = getExceptionAsJson($exception, true);
-				$response->end($data);
-			}
-		}
-	});
-});
+	foreach ($wampRoutes as $path) {
+		addRoute($path, $wampServer);
+	}
 
-// configure remote wamp interface
-$remoteSocket = new React\Socket\Server($loop);
-$remoteServer = new Ratchet\Server\IoServer(
-	new Ratchet\Http\HttpServer(
-		new Ratchet\WebSocket\WsServer(
-			new Ratchet\Wamp\WampServer(
-				$hub
-			)
-		)
+	$middleware->addAdapter($wampAdapter);
+}
+else {
+	$output->writeln("<info>No routes configured for WAMP protocol. Disabling WAMP.</info>");
+}
+
+// WebSocket adapter
+$wsRoutes = Util\Configuration::read('push.routes.websocket');
+if (is_array($wsRoutes) && count($wsRoutes)) {
+	$wsAdapter = new WsClientAdapter();
+	$wsServer = new WsServer($wsAdapter);
+
+	foreach ($wsRoutes as $path) {
+		addRoute($path, $wsServer);
+	}
+
+	$middleware->addAdapter($wsAdapter);
+}
+else {
+	$output->writeln("<info>No routes configured for WebSocket protocol. Disabling websockets.</info>");
+}
+
+// configure remote interface
+$remoteSocket = new SocketServer($loop);
+$remoteServer = new IoServer(
+	new HttpServer(
+		$router
 	),
 	$remoteSocket
 );

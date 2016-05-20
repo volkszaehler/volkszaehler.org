@@ -1,6 +1,6 @@
 <?php
 /**
- * @copyright Copyright (c) 2015, The volkszaehler.org project
+ * @copyright Copyright (c) 2016, The volkszaehler.org project
  * @author Andreas Goetz <cpuidle@gmx.de>
  * @package util
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
@@ -24,37 +24,47 @@
 
 namespace Volkszaehler\Server;
 
-use Symfony\Component\HttpFoundation\Request;
-
-use Ratchet\ConnectionInterface;
-use Ratchet\Wamp\WampServerInterface;
-
 use Volkszaehler\Router;
-use Volkszaehler\Interpreter\Interpreter;
+use Volkszaehler\Interpreter;
 use Volkszaehler\Controller\EntityController;
 
-class PushHub implements WampServerInterface {
-	/**
-	 * @var lookup of all the topics clients have subscribed to
-	 */
-	protected $subscribedTopics = array();
+use Symfony\Component\HttpFoundation\Request;
+
+/**
+ * Convert raw meter readings to frontend-compatible current values
+ */
+class MiddlewareAdapter {
 
 	/**
 	 * @var interpreters per subscribed topic
 	 */
 	protected $interpreters = array();
 
+	/**
+	 * @var Doctrine\ORM\EntityManager
+	 */
 	protected $em;
+
+	/**
+	 * @var EntityController
+	 */
 	protected $controller;
 
-	public function onSubscribe(ConnectionInterface $conn, $topic) {
-		if (null === $this->getTopic($uuid = $topic->getId())) {
-			$this->addTopic($uuid, $topic);
-		}
+	/**
+	 * @var array
+	 */
+	protected $adapters;
 
-		if (null === $this->getInterpreter($uuid)) {
-			$this->addInterpreter($uuid, $this->connectToMiddleware($uuid));
-		}
+	public function __construct() {
+		$this->adapters = new \SplObjectStorage;
+	}
+
+	public function addAdapter(PushTransportInterface $adapter) {
+		$this->adapters->attach($adapter);
+	}
+
+	public function removeAdapter(PushTransportInterface $adapter) {
+		$this->adapters->detach($adapter);
 	}
 
 	protected function openController($force = false) {
@@ -80,22 +90,31 @@ class PushHub implements WampServerInterface {
 		}
 	}
 
-	protected function getPayload(Interpreter $interpreter, $tuple) {
+	protected function convertRawTuple(Interpreter\Interpreter $interpreter, $tuple) {
 		try {
 			$this->openController();
 			$result = false;
 
+			// convert raw reading to converted value
+			if (!isset($interpreter->push_ts)) {
+				// skip first conversion result
+				$interpreter->convertRawTuple($tuple);
+			}
 			// prevent div by zero
-			if (!isset($interpreter->calculated_ts) || ($tuple[0] > $interpreter->calculated_ts)) {
+			elseif ($tuple[0] > $interpreter->push_ts) {
+				// CounterInterpreter special handling- suppress duplicate counter values
+				if ($interpreter instanceof Interpreter\CounterInterpreter) {
+					if (isset($interpreter->push_raw_value) && $interpreter->push_raw_value == $tuple[1]) {
+						return false;
+					}
+				}
+
 				$result = $interpreter->convertRawTuple($tuple);
 			}
 
-			// 1st calculated value is invalid due to interpreter logic
-			if (!isset($interpreter->calculated_ts)) {
-				$result = false;
-			}
-
-			$interpreter->calculated_ts = $tuple[0];
+			// indicate that tuple conversion has already happened once
+			$interpreter->push_ts = $tuple[0];
+			$interpreter->push_raw_value = $tuple[1];
 		}
 		catch (\Exception $e) {
 			// make sure EntityManager is re-initialized on error
@@ -107,9 +126,12 @@ class PushHub implements WampServerInterface {
 	}
 
 	/**
+	 * Handle vzlogger push request
+	 *
 	 * @param string JSON'ified string we'll receive from publisher
+	 * @return null|string Returns null on invalid request
 	 */
-	public function handleRequest($json) {
+	public function handlePushMessage($json) {
 		$msg = json_decode($json, true);
 		$response = array(
 			'version' => VZ_VERSION,
@@ -118,32 +140,33 @@ class PushHub implements WampServerInterface {
 
 		// validate input message
 		if (null === ($data = @$msg['data']) || !is_array($data)) {
-			return;
+			return null;
 		}
 
 		// loop through channels
 		foreach ($data as $channel) {
 			if (null === ($uuid = @$channel['uuid'])) {
-				return;
+				break;
 			}
 			if (null === ($tuples = @$channel['tuples']) || !is_array($tuples) || !count($tuples)) {
-				return;
+				break;
 			}
 
 			// get interpreter if no client has connected yet
 			if (null === ($interpreter = $this->getInterpreter($uuid))) {
-				$this->addInterpreter($uuid, $interpreter = $this->connectToMiddleware($uuid));
+				$interpreter = $this->connectToMiddleware($uuid);
+				$this->addInterpreter($uuid, $interpreter);
 			}
 
 			// convert raw tuples using interpreter rules
 			$transformed = array();
 			foreach ($tuples as $tuple) {
-				if (count($tuple < 3)) {
+				if (count($tuple) < 3) {
 					$tuple[] = 1;
 				}
 
-				// first ever tuple may be swallowed
-				if ($payload = $this->getPayload($interpreter, $tuple)) {
+				// first ever tuple may be swallowed, skip if payload == false
+				if ($payload = $this->convertRawTuple($interpreter, $tuple)) {
 					$transformed[] = $payload;
 				}
 			}
@@ -152,75 +175,31 @@ class PushHub implements WampServerInterface {
 				'uuid' => $uuid,
 				'tuples' => $transformed
 			);
-			$response['data'][] = $channelData;
 
-			// broadcast if transformed tuple valid and topic subscribed
-			if (count($transformed) && ($topic = $this->getTopic($uuid))) {
-				$topic->broadcast(json_encode(
-					array(
-						'version' => VZ_VERSION,
-						'data' => $channelData
-					)
+			if (count($transformed)) {
+				$this->broadcast($uuid, array(
+					'version' => VZ_VERSION,
+					'data' => $channelData
 				));
 			}
+
+			$response['data'][] = $channelData;
 		}
 
 		return json_encode($response);
 	}
 
-	public function onUnSubscribe(ConnectionInterface $conn, $topic) {
-		if ($topic->count() == 0) {
-			$this->removeTopic($topic->getId());
-		}
-	}
-
-	public function onOpen(ConnectionInterface $conn) {
-	}
-
-	public function onClose(ConnectionInterface $conn) {
-	}
-
-	public function onCall(ConnectionInterface $conn, $id, $topic, array $params) {
-		// In this application if clients send data it's because the user hacked around in console
-		$conn->callError($id, $topic, 'Calls not supported')->close();
-	}
-
-	public function onPublish(ConnectionInterface $conn, $topic, $event, array $exclude, array $eligible) {
-		// In this application if clients send data it's because the user hacked around in console
-		$conn->close();
-	}
-
-	public function onError(ConnectionInterface $conn, \Exception $e) {
-		$conn->close();
-	}
-
-
-	/*
-	 * Get/store subscription data
-	 */
-
-	protected function getTopic($uuid) {
-		if (!isset($this->subscribedTopics[$uuid])) {
-			return null;
-		}
-		return $this->subscribedTopics[$uuid];
-	}
-
-	protected function addTopic($uuid, $topic) {
-		$this->subscribedTopics[$uuid] = $topic;
-	}
-
-	protected function removeTopic($uuid) {
-		if (isset($this->subscribedTopics[$uuid])) {
-			unset($this->subscribedTopics[$uuid]);
+	protected function broadcast($uuid, $data) {
+		foreach ($this->adapters as $adapter) {
+			$adapter->onUpdate($uuid, $data);
 		}
 	}
 
 	protected function getInterpreter($uuid) {
-		if (!isset($this->interpreters[$uuid])) {
-			return null;
+		if (isset($this->interpreters[$uuid])) {
+			return $this->interpreters[$uuid];
 		}
-		return $this->interpreters[$uuid];
+		return null;
 	}
 
 	protected function addInterpreter($uuid, $interpreter) {
