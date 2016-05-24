@@ -85,6 +85,14 @@ class DataController extends Controller {
 
 		try { /* to parse new submission protocol */
 			$rawPost = $this->request->getContent(); // file_get_contents('php://input')
+
+			// check maximum size allowed
+			if ($maxSize = Util\Configuration::read('security.maxbodysize')) {
+				if (strlen($rawPost) > $maxSize) {
+					throw new \Exception('Maximum message size exceeded');
+				}
+			}
+
 			$json = Util\JSON::decode($rawPost);
 
 			if (isset($json['data'])) {
