@@ -112,6 +112,11 @@ $config['push']['routes']['wamp'] = array('/', '/ws');		// routes for wamp acces
 $config['push']['routes']['websocket'] = array();			// routes for plain web sockets, try array('/socket')
 
 /**
+ * Security settings
+ */
+$config['security']['maxbodysize'] = false;	// limit maximum POST body size, e.g. 4096
+
+/**
  * Timezone for the middleware
  *
  * See PHP doc for details: http://www.php.net/manual/de/timezones.php
