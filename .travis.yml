@@ -28,9 +28,6 @@ env:
 
 matrix:
   include:
-    # jslint-only
-    - php: 5.4
-      env: DB= DEPENDENCIES= JSLINT=true
     # httpd-based
     - php: 5.4
       env: DB=mysql TEST_ADAPTER=HTTP
@@ -39,6 +36,12 @@ matrix:
       env: DB=mysql DEPENDENCIES=lowest
     - php: 5.4
       env: DB=mysql DEPENDENCIES=highest
+    # jslint-only
+    - php: 5.4
+      env: DB= DEPENDENCIES= JSLINT=true
+    # security
+    - php: 5.4
+      env: DB= DEPENDENCIES= SECURITY=true
   # remove hhvm/pgsql
   exclude:
     - php: hhvm
@@ -60,12 +63,19 @@ cache:
     - $HOME/.composer/cache
     - node_modules
 
+before_install:
+    # disable xdebug for composer performance
+    - if [ -e /home/travis/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini ]; then rm /home/travis/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini; fi
+
 install:
+    # set token if composer is used
     - if [ -n "$DEPENDENCIES" ]; then composer config github-oauth.github.com ${GH_TOKEN}; fi
+
     - if [ "$DEPENDENCIES" = "standard" ]; then composer install; fi
     - if [ "$DEPENDENCIES" = "lowest" ]; then composer update --prefer-lowest -n; fi
     - if [ "$DEPENDENCIES" = "highest" ]; then composer update -n; fi
     - if [ "$JSLINT" = true ]; then npm install; fi
+    - if [ "$SECURITY" = true ]; then wget http://get.sensiolabs.org/security-checker.phar; fi
     - if [ "$TEST_ADAPTER" = "HTTP" ]; then composer require volkszaehler/httpd:dev-master jenssegers/proxy:~2.2; fi
 
     # add apc cache
@@ -98,14 +108,7 @@ before_script:
     - if [ "$DB" = "pgsql" ]; then psql -c "create database $DATABASE;" -U postgres; fi
 
     # create schema
-    - if [ -n "$DB" ]; then php misc/tools/doctrine orm:schema-tool:create --dump-sql > misc/sql/schema.sql; fi
-    - if [ -n "$DB" ]; then sed -i 's/ATTENTION/-- /' misc/sql/schema.sql; fi
-    - if [ -n "$DB" ]; then echo ';' >> misc/sql/schema.sql; fi
-    - if [ -n "$DB" ]; then cat misc/sql/schema.sql; fi
-
-    - if [ "$DB" = "mysql" ]; then cat misc/sql/schema.sql | mysql -u $USER $DATABASE; fi
-    - if [ "$DB" = "pgsql" ]; then cat misc/sql/schema.sql | psql -U postgres $DATABASE; fi
-    - if [ "$DB" = "sqlite" ]; then cat misc/sql/schema.sql | sqlite3 sqlite.db3; sqlite3 sqlite.db3 .dump; fi
+    - if [ -n "$DB" ]; then php misc/tools/doctrine orm:schema-tool:create; fi
 
     # setup local middleware
     - |
@@ -140,3 +143,6 @@ script:
 
     # jslint javascript sources
     - if [ "$JSLINT" = true ]; then gulp jshint; fi
+
+    # check package security
+    - if [ "$SECURITY" = true ]; then php security-checker.phar security:check composer.lock; fi
