@@ -107,7 +107,13 @@ class Router implements HttpKernelInterface {
 	/**
 	 * Handle the request
 	 * Source: Symfony\Component\HttpKernel\HttpKernel
-	 */
+	 *
+     * @param Request $request A Request instance
+     * @param int     $type    The type of the request (for Symfony compatibility, not implemented)
+     * @param bool    $catch   Whether to catch exceptions or not
+     *
+     * @return Response A Response instance
+   	 */
 	public function handle(Request $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true) {
 		try {
 			// initialize entity manager
@@ -128,6 +134,11 @@ class Router implements HttpKernelInterface {
 
 	/**
 	 * Determine context, format and uuid of the raw request
+	 *
+     * @param Request $request A Request instance
+     * @param int     $type    The type of the request (for Symfony compatibility, not implemented)
+     *
+     * @return Response A Response instance
 	 */
 	public function handleRaw(Request $request, $type = HttpKernelInterface::MASTER_REQUEST) {
 		// workaround for https://github.com/symfony/symfony/issues/13617
@@ -200,7 +211,7 @@ class Router implements HttpKernelInterface {
 	 *
 	 * @param \Exception $e       An \Exception instance
 	 * @param Request    $request A Request instance
-	 * @param int        $type    The type of the request
+     * @param int        $type    The type of the request (for Symfony compatibility, not implemented)
 	 *
 	 * @return Response A Response instance
 	 */
