@@ -64,8 +64,8 @@ cache:
     - node_modules
 
 before_install:
-    # disable xdebug. We aren't generating code coverage, and it has a huge impact upon test performance
-    - rm /home/travis/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini
+    # disable xdebug for composer performance
+    - if [ -e /home/travis/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini ]; then rm /home/travis/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini; fi
 
 install:
     # set token if composer is used
@@ -108,14 +108,7 @@ before_script:
     - if [ "$DB" = "pgsql" ]; then psql -c "create database $DATABASE;" -U postgres; fi
 
     # create schema
-    - if [ -n "$DB" ]; then php misc/tools/doctrine orm:schema-tool:create --dump-sql > misc/sql/schema.sql; fi
-    - if [ -n "$DB" ]; then sed -i 's/ATTENTION/-- /' misc/sql/schema.sql; fi
-    - if [ -n "$DB" ]; then echo ';' >> misc/sql/schema.sql; fi
-    - if [ -n "$DB" ]; then cat misc/sql/schema.sql; fi
-
-    - if [ "$DB" = "mysql" ]; then cat misc/sql/schema.sql | mysql -u $USER $DATABASE; fi
-    - if [ "$DB" = "pgsql" ]; then cat misc/sql/schema.sql | psql -U postgres $DATABASE; fi
-    - if [ "$DB" = "sqlite" ]; then cat misc/sql/schema.sql | sqlite3 sqlite.db3; sqlite3 sqlite.db3 .dump; fi
+    - if [ -n "$DB" ]; then php misc/tools/doctrine orm:schema-tool:create; fi
 
     # setup local middleware
     - |
