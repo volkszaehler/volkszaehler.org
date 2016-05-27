@@ -146,3 +146,22 @@ When exposing the `push-server` to internet (hostile) clients via WAMP clients g
 Plain web sockets will currently forward **all** push notifications to connected clients. That implies that a client- once connected- obtains read access to all data updates and is also able to collect valid UUIDs for all updated channels, including UUIDs for non-public channels.
 
 **NOTE** make sure you read and understand the above. If your volkszaehler installation allows frontend users to update or delete channels (or even to add/remove data) exposing plain web sockets will give away even private channel's UUIDs which can be misused.
+
+
+## Installation
+
+To install `push-server` as a service create the service using `sudo nano /etc/systemd/system/push-server.service` and paste the following template:
+
+    [Unit]
+    Description=push-server
+    After=syslog.target network.target
+    Requires=
+
+    [Service]
+    ExecStart=/usr/bin/php /var/www/volkszaehler.org/misc/tools/push-server.php
+    ExecReload=/bin/kill -HUP $MAINPID
+    StandardOutput=null
+    Restart=always
+
+    [Install]
+    WantedBy=multi-user.target
