@@ -65,7 +65,6 @@
 	{
 		"name"			: "cost",
 		"type"			: "float",
-		"min"			: 0,
 		"translation"		: {
 			"de" : "Kosten",
 			"en" : "Costs"
