@@ -24,6 +24,7 @@
 namespace Volkszaehler\View;
 
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 use Volkszaehler\Interpreter;
@@ -42,11 +43,6 @@ class JSON extends View {
 	 * @var array holds the JSON data in an array
 	 */
 	protected $json;
-
-	/**
-	 * @var string padding function name or NULL if disabled
-	 */
-	protected $padding = false;
 
 	/**
 	 * @var string StreamedResponse content buffer, see renderDeferred()
@@ -68,17 +64,9 @@ class JSON extends View {
 			$this->response = new StreamedResponse();
 		}
 
-		$this->padding = $request->query->get('padding');
-
-		// JSONP
-		if ($this->padding) {
-			$this->response->headers->set('Content-Type', 'application/javascript');
-		}
-		else {
-			$this->response->headers->set('Content-Type', 'application/json');
-			// enable CORS if not JSONP
-			$this->response->headers->set('Access-Control-Allow-Origin', '*');
-		}
+		// add JSON headers
+		$this->response->headers->set('Content-Type', 'application/json');
+		$this->response->headers->set('Access-Control-Allow-Origin', '*');
 	}
 
 	/**
@@ -97,8 +85,7 @@ class JSON extends View {
 			$json = ob_get_contents();
 			ob_end_clean();
 
-			// padded response is js, not json
-			if (Util\Debug::isActivated() && !$this->padding) {
+			if (Util\Debug::isActivated()) {
 				$json = Util\JSON::format($json);
 			}
 
@@ -115,7 +102,7 @@ class JSON extends View {
 	 */
 	public function getExceptionResponse(\Exception $exception) {
 		$this->add($exception);
-		$this->response->setStatusCode(($this->padding) ? 200 : 400);
+		$this->response->setStatusCode(Response::HTTP_BAD_REQUEST);
 
 		return $this->send();
 	}
@@ -135,11 +122,7 @@ class JSON extends View {
 	 * this case is implemented in renderInterpreter() below.
 	 */
 	protected function renderDeferred() {
-		if ($this->padding) {
-			$this->content = $this->padding . '(';
-		}
 		$this->content .= '{';
-
 		$contentStarted = false;
 
 		foreach ($this->json as $key => $data) {
@@ -172,9 +155,6 @@ class JSON extends View {
 		}
 
 		$this->content .= '}';
-		if ($this->padding) {
-			$this->content .= ');';
-		}
 
 		$this->renderContent();
 	}
