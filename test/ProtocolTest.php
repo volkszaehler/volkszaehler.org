@@ -106,32 +106,6 @@ class ProtocolTest extends Data
 		$this->assertEquals('application/json', $response->headers->get('Content-Type'));
 	}
 
-	function testJsonP() {
-		$response = $this->getResponse('/data/' . static::$uuid . '.json', array(
-			'padding' => 'callback'
-		), 'GET');
-
-		$this->assertEquals(200, $response->getStatusCode());
-		$this->assertEquals('application/javascript', $response->headers->get('Content-Type'));
-		$this->assertRegExp('/callback\(.*\);/', $response->getContent());
-	}
-
-	function testJsonPException() {
-		$response = $this->getResponse('/data/' . static::$uuid . '.json', array(
-			'padding' => 'callback',
-			'from' => 1,
-			'to' => 0
-		), 'GET');
-
-		// if JsonP response must always be HTTP 200
-		$this->assertEquals(200, $response->getStatusCode());
-		$this->assertEquals('application/javascript', $response->headers->get('Content-Type'));
-		$this->assertRegExp('/callback\(.*\);/', $response->getContent());
-
-		$json = (preg_match('/callback\((.*)\);/', $response->getContent(), $matches)) ? json_decode($matches[1]) : null;
-		$this->assertNotNull($json, 'Not valid JSON');
-	}
-
 	function testDebug() {
 		$this->getJson('/data/' . static::$uuid . '.json', array(
 			'debug' => 1

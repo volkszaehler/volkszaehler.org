@@ -103,14 +103,6 @@ vz.load = function(args, skipDefaultErrorHandling) {
 		args.url = vz.options.middleware[0].url;
 	}
 
-	if (args.url == vz.options.middleware[0].url && args.dataType === undefined) { // local request
-		args.dataType = 'json';
-	}
-	else { // remote request
-		args.dataType = 'jsonp';
-		args.jsonp = 'padding';
-	}
-
 	if (args.controller !== undefined) {
 		args.url += '/' + args.controller;
 	}
@@ -138,19 +130,8 @@ vz.load = function(args, skipDefaultErrorHandling) {
 	}
 
 	return $.ajax(args).then(
-		// success
-		function(json, textStatus, xhr) {
-			// middleware error (in case of JSONP)
-			if (json.exception) {
-				if (!skipDefaultErrorHandling) {
-					// display the exception
-					vz.wui.dialogs.middlewareException(json.exception, xhr.requestUrl);
-				}
-				return $.Deferred().rejectWith(this, [json]);
-			}
-			return $.Deferred().resolveWith(this, [json]);
-		},
-
+		// success - no changes needed
+		null,
 		// error
 		function(xhr) {
 			if (xhr.responseJSON && xhr.responseJSON.exception) {
