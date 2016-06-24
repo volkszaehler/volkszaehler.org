@@ -33,14 +33,46 @@ use Volkszaehler\Definition;
  * Capabilities controller
  *
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @author Andreas Götz <cpuidle@gmx.de>
  * @package default
  */
 class CapabilitiesController extends Controller {
 
 	/**
-	 * @todo
-	 * @param string $capabilities
-	 * @param string $sub
+	 * Fast MyISAM/ InnoDB table count
+	 */
+	private function sqlCount($conn, $table) {
+		$explain = $conn->fetchAssoc('EXPLAIN SELECT COUNT(id) FROM ' . $table . ' USE INDEX (PRIMARY)');
+		if (isset($explain['rows']))
+			// estimated for InnoDB
+			$rows = $conn->fetchColumn(
+				'SELECT table_rows FROM information_schema.tables WHERE LOWER(table_schema) = LOWER(?) AND LOWER(table_name) = LOWER(?)',
+				array(Util\Configuration::read('db.dbname'), $table)
+			);
+		else
+			// get correct values for MyISAM
+			$rows = $conn->fetchColumn('SELECT COUNT(1) FROM ' . $table);
+
+		return $rows;
+	}
+
+	/**
+	 * Estimated table disk space
+	 */
+	private function dbSize($conn, $table = null) {
+		$sql = 'SELECT SUM(data_length + index_length) FROM information_schema.tables WHERE LOWER(table_schema) = LOWER(?)';
+		$params = array(Util\Configuration::read('db.dbname'));
+
+		if ($table) {
+			 $sql .= ' AND LOWER(table_name) = LOWER(?)';
+			 $params[] = $table;
+		}
+
+		return $conn->fetchColumn($sql, $params);
+	}
+
+	/**
+	 * @param string $section select specific sub section for output
 	 */
 	public function get($section = NULL) {
 		$capabilities = array();
@@ -65,17 +97,8 @@ class CapabilitiesController extends Controller {
 			$conn = $this->em->getConnection(); // get DBAL connection from EntityManager
 
 			// estimate InnoDB tables to avoid performance penalty
-			$rows = $conn->fetchAssoc('EXPLAIN SELECT COUNT(id) FROM data USE INDEX (PRIMARY)');
-			if (isset($rows['rows']))
-				$rows = $rows['rows'];
-			else // get correct values for MyISAM
-				$rows = $conn->fetchColumn('SELECT COUNT(1) FROM data');
-
-			// database disc space consumption
-			$sql = 'SELECT SUM(data_length + index_length) '.
-				   'FROM information_schema.tables '.
-				   'WHERE table_schema = ?';
-			$size = $conn->fetchColumn($sql, array(Util\Configuration::read('db.dbname')));
+			$rows = $this->sqlCount($conn, 'data');
+			$size = $this->dbSize($conn, 'data');
 
 			$aggregation = Util\Configuration::read('aggregation');
 			$database = array(
@@ -86,8 +109,11 @@ class CapabilitiesController extends Controller {
 
 			// aggregation table size
 			if ($aggregation) {
-				$agg_rows = $conn->fetchColumn('SELECT COUNT(1) FROM aggregate');
+				$agg_rows = $this->sqlCount($conn, 'aggregate');
+				$agg_size = $this->dbSize($conn, 'aggregate');
+
 				$database['aggregation_rows'] = $agg_rows;
+				$database['aggregation_size'] = $agg_size;
 				$database['aggregation_ratio'] = ($agg_rows) ? $rows/$agg_rows : 0;
 			}
 
