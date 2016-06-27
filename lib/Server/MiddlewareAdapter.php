@@ -102,8 +102,8 @@ class MiddlewareAdapter {
 			}
 			// prevent div by zero
 			elseif ($tuple[0] > $interpreter->push_ts) {
-				// CounterInterpreter special handling- suppress duplicate counter values
-				if ($interpreter instanceof Interpreter\CounterInterpreter) {
+				// AccumulatorInterpreter special handling- suppress duplicate counter values
+				if ($interpreter instanceof Interpreter\AccumulatorInterpreter) {
 					if (isset($interpreter->push_raw_value) && $interpreter->push_raw_value == $tuple[1]) {
 						return false;
 					}

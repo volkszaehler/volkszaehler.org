@@ -63,7 +63,7 @@
 		"icon"			: "bolt.png",
 		"unit"			: "W",
 		"scale"			: 1000,
-		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
+		"interpreter"		: "Volkszaehler\\Interpreter\\ImpulseInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
@@ -93,7 +93,7 @@
 		"icon"			: "bolt.png",
 		"unit"			: "W",
 		"scale"			: 1000,
-		"interpreter"		: "Volkszaehler\\Interpreter\\CounterInterpreter",
+		"interpreter"		: "Volkszaehler\\Interpreter\\AccumulatorInterpreter",
 		"style"			: "steps",
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
@@ -134,7 +134,7 @@
 		"optional"		: ["tolerance", "cost", "local", "initialconsumption"],
 		"icon"			: "flame.png",
 		"unit"			: "m³/h",
-		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
+		"interpreter"		: "Volkszaehler\\Interpreter\\ImpulseInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
@@ -149,7 +149,7 @@
 		"optional"		: ["tolerance", "cost", "local", "initialconsumption"],
 		"icon"			: "flame.png",
 		"unit"			: "m³/h",
-		"interpreter"		: "Volkszaehler\\Interpreter\\CounterInterpreter",
+		"interpreter"		: "Volkszaehler\\Interpreter\\AccumulatorInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
@@ -164,7 +164,7 @@
 		"icon"			: "flame.png",
 		"unit"			: "W",
 		"scale"			: 1000,
-		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
+		"interpreter"		: "Volkszaehler\\Interpreter\\ImpulseInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
@@ -207,7 +207,7 @@
 		"optional"		: ["tolerance", "cost", "local", "initialconsumption"],
 		"icon"			: "waterdrop.png",
 		"unit"			: "l/h",
-		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
+		"interpreter"		: "Volkszaehler\\Interpreter\\ImpulseInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
@@ -236,7 +236,7 @@
 		"optional"		: ["tolerance", "local"],
 		"icon"			: "clock.png",
 		"unit"			: "h",
-		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
+		"interpreter"		: "Volkszaehler\\Interpreter\\ImpulseInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
@@ -251,7 +251,7 @@
 		"optional"		: ["tolerance", "local", "initialconsumption"],
 		"icon"			: "clock.png",
 		"unit"			: "h",
-		"interpreter"		: "Volkszaehler\\Interpreter\\CounterInterpreter",
+		"interpreter"		: "Volkszaehler\\Interpreter\\AccumulatorInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {

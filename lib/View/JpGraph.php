@@ -193,7 +193,7 @@ class JpGraph extends View {
 
 			$plot->setLegend($interpreter->getEntity()->getProperty('title') . ':  [' . $interpreter->getEntity()->getDefinition()->getUnit() . ']');
 			$plot->SetColor($this->colors[$this->count]);
-			$plot->SetStepStyle($interpreter instanceof Interpreter\MeterInterpreter);
+			$plot->SetStepStyle($interpreter instanceof Interpreter\ImpulseInterpreter);
 
 			$axis = $this->getAxisIndex($interpreter->getEntity());
 			if ($axis >= 0) {

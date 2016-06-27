@@ -8,7 +8,7 @@
 
 namespace Tests;
 
-class MeterTest extends Data
+class ImpulseTest extends Data
 {
 	// channel properties
 	static $resolution = 100;

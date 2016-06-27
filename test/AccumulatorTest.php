@@ -8,7 +8,7 @@
 
 namespace Tests;
 
-class CounterTest extends Data
+class AccumulatorTest extends Data
 {
 	// channel properties
 	static $resolution = 100;
