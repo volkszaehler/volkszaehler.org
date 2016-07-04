@@ -1,6 +1,6 @@
 <?php
 /**
- * @copyright Copyright (c) 2011, The volkszaehler.org project
+ * @copyright Copyright (c) 2012, The volkszaehler.org project
  * @package default
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  */
@@ -24,17 +24,19 @@
 namespace Volkszaehler\Interpreter;
 
 /**
- * Meter interpreter
+ * Counter interpreter
  *
  * @package default
- * @author Steffen Vogel <info@steffenvogel.de>
+ * @author Jakob Hirsch <jh.vz@plonk.de>
  * @author Andreas Götz <cpuidle@gmx.de>
  */
 
-class MeterInterpreter extends Interpreter {
+class AccumulatorInterpreter extends Interpreter {
 
-	protected $pulseCount;
-	protected $ts_last; // previous tuple timestamp
+	protected $ts_last; 	// previous tuple timestamp
+	protected $last_val; 	// previous tuple value
+	protected $delta_val; 	// previous tuple delta
+	protected $valsum;		// sum of delta values
 
 	/**
 	 * Initialize data iterator
@@ -44,8 +46,13 @@ class MeterInterpreter extends Interpreter {
 		$this->rows = $this->getData();
 		$this->rows->rewind();
 
-		$this->pulseCount = 0;
-		$this->ts_last = $this->getFrom();
+		$this->valsum = 0;
+
+		// get starting value from skipped first row
+		if ($this->rowCount > 0) {
+			$this->ts_last = $this->getFrom();
+			$this->last_val = $this->rows->firstValue();
+		}
 	}
 
 	/**
@@ -60,7 +67,7 @@ class MeterInterpreter extends Interpreter {
 		}
 
 		$tuple = $this->convertRawTuple($row);
-		$this->pulseCount += $row[1];
+		$this->valsum += $this->delta_val;
 
 		if (is_null($this->max) || $tuple[1] > $this->max[1]) {
 			$this->max = $tuple;
@@ -77,12 +84,18 @@ class MeterInterpreter extends Interpreter {
 	 * Convert raw meter readings
 	 */
 	public function convertRawTuple($row) {
-		$delta = $row[0] - $this->ts_last;
+		$delta_ts = $row[0] - $this->ts_last; // time between now and row before
 
-		// (1 imp * 60 min/h * 60 s/min * 1000 ms/s * scale) / (1 imp/kWh * 1ms) = 3.6e6 kW
+		// instead of reverting what DataIterator->next did when packaging by $val = $row[1] / $row[2]
+		// get max value which DataIterator->next provides as courtesy
+		$value = isset($row[3]) ? $row[3] : $row[1];
+		$this->delta_val = $value - $this->last_val;
+		$this->last_val = $value;
+
+		// (1 imp / 1 imp/kWh) * (60 min/h * 60 s/min * 1000 ms/s * scale) / 1 ms
 		$tuple = array(
 			(float) ($this->ts_last = $row[0]), // timestamp of interval end
-			(float) ($row[1] * 3.6e6 * $this->scale) / ($this->resolution * $delta), // doing df/dt
+			(float) ($this->delta_val * 3.6e6 * $this->scale) / ($delta_ts * $this->resolution), // doing df/dt
 			(int) $row[2] // num of rows
 		);
 
@@ -95,7 +108,7 @@ class MeterInterpreter extends Interpreter {
 	 * @return float total consumption in Wh
 	 */
 	public function getConsumption() {
-		return $this->channel->getDefinition()->hasConsumption ? $this->scale * $this->pulseCount / $this->resolution : NULL;
+		return $this->channel->getDefinition()->hasConsumption ? $this->valsum * $this->scale / $this->resolution : NULL;
 	}
 
 	/**
@@ -104,10 +117,10 @@ class MeterInterpreter extends Interpreter {
 	 * @return float average in W
 	 */
 	public function getAverage() {
-		if ($this->pulseCount) {
+		if ($this->valsum) {
 			$delta = $this->getTo() - $this->getFrom();
-			// 60 s/min * 60 min/h * 1.000 ms/s * 1.000 W/kW = 3.6e9 (Units: s/h*ms/s*W/KW = s/3.600s*.001s/s*W/1.000W = 1)
-			return (3.6e6 * $this->scale * $this->pulseCount) / ($this->resolution * $delta);
+			// 60 s/min * 60 min/h * 1.000 ms/s * 1.000 W/kW = 3.6e9 (Units: s/h*ms/s*W/kW = s/3.600s*.001s/s*W/1.000W = 1)
+			return (3.6e6 * $this->scale * $this->valsum) / ($this->resolution * $delta);
 		}
 		else { // prevents division by zero
 			return 0;
@@ -120,14 +133,14 @@ class MeterInterpreter extends Interpreter {
 	 * Override Interpreter->groupExpr
 	 *
 	 * For precision when bundling tuples into packages
-	 * CounterInterpreter needs MAX instead of SUM.
+	 * AccumulatorInterpreter needs MAX instead of SUM.
 	 *
 	 * @author Andreas Götz <cpuidle@gmx.de>
 	 * @param string $expression sql parameter
 	 * @return string grouped sql expression
 	 */
 	public static function groupExprSQL($expression) {
-		return 'SUM(' . $expression . ')';
+		return 'MAX(' . $expression . ')';
 	}
 }
 

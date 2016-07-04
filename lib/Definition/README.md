@@ -27,7 +27,7 @@ Is `true` if a physical entity supports integration over time.
 
 ### initialconsumption
 
-Initial consumption can be set to define how much consumption a channel has accumulated before measurement in volkszaehler has started. For channels using `CounterInterpreter` hat value is actually stored in the database, but not easily accessible by the middleware. Using `initialconsumption` instead any arbitrary value can be used as starting point. Unit for initialconsumption is the base unit (scaled according to `scale`) converted to an hourly consumption.
+Initial consumption can be set to define how much consumption a channel has accumulated before measurement in volkszaehler has started. For channels using `AccumulatorInterpreter` hat value is actually stored in the database, but not easily accessible by the middleware. Using `initialconsumption` instead any arbitrary value can be used as starting point. Unit for initialconsumption is the base unit (scaled according to `scale`) converted to an hourly consumption.
 
 ## Examples
 
@@ -41,12 +41,12 @@ Initial consumption can be set to define how much consumption a channel has accu
 		"unit"			: "W",
 		"scale"			: 1000,
 		"hasConsumption"	: true,
-		"interpreter"		: "Volkszaehler\\Interpreter\\CounterInterpreter",
+		"interpreter"		: "Volkszaehler\\Interpreter\\AccumulatorInterpreter",
 		...
 	}
 ````
 
-Defines a channel type of `electric meter` that is measured in W. Unit `scale` is 1000, that is kW. As it uses `CounterInterpreter`, the readings are in impulses/ticks/counts per consumption unit:
+Defines a channel type of `electric meter` that is measured in W. Unit `scale` is 1000, that is kW. As it uses `AccumulatorInterpreter`, the readings are in impulses/ticks/counts per consumption unit:
 
   - `resolution`: impulses per kWh (accoding to `scale`)
   - `cost`: cost in € per per kWh (again accoding to `scale`)
@@ -60,11 +60,11 @@ Defines a channel type of `electric meter` that is measured in W. Unit `scale` i
 		"required"		: ["resolution"],
 		"optional"		: ["tolerance", "cost", "local", "initialconsumption"],
 		"unit"			: "m³/h",
-		"interpreter"		: "Volkszaehler\\Interpreter\\MeterInterpreter",
+		"interpreter"		: "Volkszaehler\\Interpreter\\ImpulseInterpreter",
 		"hasConsumption"	: true,
 ````
 
-Defines a channel type of `gas` that is measured in m³/h. Unit `scale` is not defined and therefore defaults to 1. As it uses `MeterInterpreter`, the readings are consumption values:
+Defines a channel type of `gas` that is measured in m³/h. Unit `scale` is not defined and therefore defaults to 1. As it uses `ImpulseInterpreter`, the readings are consumption values:
 
   - `resolution`: impulses per m³
   - `cost`: cost in € per per m³

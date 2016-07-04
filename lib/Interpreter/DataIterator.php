@@ -94,7 +94,7 @@ class DataIterator implements \Iterator, \Countable {
 			$package[2] += $tuple[2];
 
 			// special cases - auxilary information for specific interpreters
-			$package[3] = max($package[3], $tuple[1]);						// CounterInterpreter
+			$package[3] = max($package[3], $tuple[1]);						// AccumulatorInterpreter
 			$package[4] += $tuple[1] * ($tuple[0] - $this->lastTimestamp);	// SensorInterpreter
 
 			$this->lastTimestamp = $tuple[0];
