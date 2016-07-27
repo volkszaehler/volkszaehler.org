@@ -64,6 +64,7 @@
 		"unit"			: "W",
 		"scale"			: 1000,
 		"interpreter"		: "Volkszaehler\\Interpreter\\ImpulseInterpreter",
+		"style"			: "steps",
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
@@ -78,7 +79,6 @@
 		"unit"			: "W",
 		"scale"			: 1000,
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
-		"style"			: "steps",
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
@@ -135,6 +135,7 @@
 		"icon"			: "flame.png",
 		"unit"			: "m³/h",
 		"interpreter"		: "Volkszaehler\\Interpreter\\ImpulseInterpreter",
+		"style"			: "steps",
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
@@ -150,6 +151,7 @@
 		"icon"			: "flame.png",
 		"unit"			: "m³/h",
 		"interpreter"		: "Volkszaehler\\Interpreter\\AccumulatorInterpreter",
+		"style"			: "steps",
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
@@ -268,6 +270,7 @@
 		"unit"			: "",
 		"scale"			: 1000,
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"style"			: "switches",
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
