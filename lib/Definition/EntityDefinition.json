@@ -270,7 +270,7 @@
 		"unit"			: "",
 		"scale"			: 1000,
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
-		"style"			: "switches",
+		"style"			: "states",
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {

@@ -502,7 +502,7 @@ vz.wui.updateLegend = function() {
 				y = p[1];
 			else
 				y = null;
-		} else if (series.lines.switches) {
+		} else if (series.lines.states) {
 			y = null;
 			if (j < series.data.length) {				
 				var p2 = series.data[j];
@@ -844,8 +844,8 @@ vz.wui.drawPlot = function () {
 				title: entity.title,
 				unit : entity.definition.unit,
 				lines: {
-					show:       style == 'lines' || style == 'steps' || style == 'switches',
-					steps:      style == 'steps' || style == 'switches',
+					show:       style == 'lines' || style == 'steps' || style == 'states',
+					steps:      style == 'steps' || style == 'states',
 					fill:       fillstyle !== undefined ? fillstyle : false,
 					lineWidth:  linewidth
 				},
