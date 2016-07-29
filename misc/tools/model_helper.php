@@ -76,14 +76,19 @@ class ValidateCommand extends Command {
 			echo("\n== " . $group . " ==\n");
 
 			foreach($entities as $entity) {
-				echo(str_pad($entity->getName() . ":", 16));
+				$name = $entity->getName();
+				echo(str_pad($name . ":", 20));
+
+				$value = (isset($entity->$property)) ? $entity->$property : '';
 
 				if (in_array($property, $entity->required))
-					echo("required\n");
+					$required = "required";
 				elseif (in_array($property, $entity->optional))
-					echo("optional\n");
+					$required = "optional";
 				else
-					echo("not allowed\n");
+					$required = "not allowed";
+
+				printf("%s\t%s\n", $required, $value);
 			}
 
 			echo("\n");

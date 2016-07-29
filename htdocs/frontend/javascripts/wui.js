@@ -502,6 +502,13 @@ vz.wui.updateLegend = function() {
 				y = p[1];
 			else
 				y = null;
+		} else if (series.lines.states) {
+			y = null;
+			if (j < series.data.length) {				
+				var p2 = series.data[j];
+				if (p2)
+					y = p2[1];
+			}
 		} else { // no steps -> interpolate
 			var p1 = series.data[j - 1], p2 = series.data[j];
 			if (p1 == null || p2 == null) // jshint ignore:line
@@ -837,13 +844,13 @@ vz.wui.drawPlot = function () {
 				title: entity.title,
 				unit : entity.definition.unit,
 				lines: {
-					show:       style == 'lines' || style == 'steps',
-					steps:      style == 'steps' || style == 'steps',
+					show:       style == 'lines' || style == 'steps' || style == 'states',
+					steps:      style == 'steps' || style == 'states',
 					fill:       fillstyle !== undefined ? fillstyle : false,
 					lineWidth:  linewidth
 				},
 				points: {
-					show:       style == 'points' || style == 'points'
+					show:       style == 'points'
 				},
 				yaxis: entity.assignedYaxis
 			};
