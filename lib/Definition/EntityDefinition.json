@@ -283,6 +283,7 @@
 		"icon"			: "pipe.png",
 		"unit"			: "%",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"style"			: "states",
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"translation"		: {
 			"de" : "Ventil",
