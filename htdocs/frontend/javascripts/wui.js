@@ -254,8 +254,14 @@ vz.wui.dialogs.init = function() {
 		$('#entity-create form table .optional').remove();
 
 		var container = $('#entity-create form table');
-		vz.wui.dialogs.addProperties(container, vz.capabilities.definitions.entities[$(this)[0].selectedIndex].required, "required");
-		vz.wui.dialogs.addProperties(container, vz.capabilities.definitions.entities[$(this)[0].selectedIndex].optional, "optional");
+		var entityDefinition = vz.capabilities.definitions.entities[$(this)[0].selectedIndex];
+		vz.wui.dialogs.addProperties(container, entityDefinition.required, "required");
+		vz.wui.dialogs.addProperties(container, entityDefinition.optional, "optional");
+
+		// set default style
+		if (entityDefinition.style) {
+			$(container).find('select[name=style] option[value=' + entityDefinition.style + ']').attr('selected', 'selected');
+		}
 	});
 	$('#entity-create select').change();
 
