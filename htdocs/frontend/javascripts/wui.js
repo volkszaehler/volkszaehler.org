@@ -511,9 +511,9 @@ vz.wui.updateLegend = function() {
 		} else if (series.lines.states) {
 			y = null;
 			if (j < series.data.length) {				
-				var p2 = series.data[j];
-				if (p2)
-					y = p2[1];
+				var p3 = series.data[j];
+				if (p3)
+					y = p3[1];
 			}
 		} else { // no steps -> interpolate
 			var p1 = series.data[j - 1], p2 = series.data[j];
