@@ -197,7 +197,7 @@ class Router implements HttpKernelInterface {
 		}
 
 		$class = self::$controllerMapping[$context];
-		$controller = new $class($request, $this->em);
+		$controller = new $class($request, $this->em, $this->view);
 
 		$result = $controller->run($operation, $uuid);
 		$this->view->add($result);

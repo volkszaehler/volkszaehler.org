@@ -71,6 +71,13 @@ abstract class View {
 	}
 
 	/**
+	 * Get response instance
+	 */
+	public function getResponse() {
+		return $this->response;
+	}
+
+	/**
 	 * Creates exception response
 	 *
 	 * @param \Exception $exception
@@ -102,25 +109,22 @@ abstract class View {
 	 * @param integer $value timestamp in seconds or offset in seconds
 	 */
 	public function setCaching($mode, $value) {
-		// unresolved artifact from Symfony migration
-		throw new \LogicException('Cannot set caching in view without access to response');
-
 		switch ($mode) {
 			case 'modified':	// Last-modified
-				$this->response->setHeader('Last-Modified', gmdate('D, d M Y H:i:s', $value) . ' GMT');
+				$this->response->headers->set('Last-Modified', gmdate('D, d M Y H:i:s', $value) . ' GMT');
 
 			case 'expires': 	// Expire
-				$this->response->setHeader('Expires', gmdate('D, d M Y H:i:s', $value) . ' GMT');
+				$this->response->headers->set('Expires', gmdate('D, d M Y H:i:s', $value) . ' GMT');
 				break;
 
 			case 'age':		// Cache-control: max-age=
-				$this->response->setHeader('Cache-control', 'max-age=' . $value);
+				$this->response->headers->set('Cache-control', 'max-age=' . $value);
 				break;
 
 			case 'off':
 			case FALSE:
-				$this->response->setHeader('Cache-control', 'no-cache');
-				$this->response->setHeader('Pragma', 'no-cache');
+				$this->response->headers->set('Cache-control', 'no-cache');
+				$this->response->headers->set('Pragma', 'no-cache');
 
 			default:
 				throw new \Exception('Unknown caching mode: \'' . $mode . '\'');

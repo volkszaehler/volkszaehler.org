@@ -25,6 +25,7 @@ namespace Volkszaehler\Controller;
 
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityManager;
+use Volkszaehler\View\View;
 
 /**
  * Controller for mapping external identifiers to entity uuids
@@ -39,8 +40,8 @@ class IotController extends Controller {
 	 */
 	protected $ec;
 
-	public function __construct(Request $request, EntityManager $em) {
-		parent::__construct($request, $em);
+	public function __construct(Request $request, EntityManager $em, View $view) {
+		parent::__construct($request, $em, $view);
 		$this->ec = new EntityController($request, $em);
 	}
 

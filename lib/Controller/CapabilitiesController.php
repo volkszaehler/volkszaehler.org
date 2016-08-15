@@ -130,9 +130,9 @@ class CapabilitiesController extends Controller {
 
 		if (is_null($section) || $section == 'definitions') {
 			// unresolved artifact from Symfony migration
-			// if (!is_null($section)) { // only caching when we don't request dynamic informations
-			// 	$this->view->setCaching('expires', time()+2*7*24*60*60); // cache for 2 weeks
-			// }
+			if (!is_null($section)) { // only caching when we don't request dynamic informations
+				$this->view->setCaching('expires', time()+2*7*24*60*60); // cache for 2 weeks
+			}
 
 			$capabilities['definitions']['entities'] = Definition\EntityDefinition::get();
 			$capabilities['definitions']['properties'] = Definition\PropertyDefinition::get();
