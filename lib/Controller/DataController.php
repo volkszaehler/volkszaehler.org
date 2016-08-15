@@ -29,6 +29,7 @@ use Doctrine\ORM\EntityManager;
 use Volkszaehler\Model;
 use Volkszaehler\Util;
 use Volkszaehler\Interpreter\Interpreter;
+use Volkszaehler\View\View;
 
 /**
  * Data controller
@@ -40,14 +41,12 @@ class DataController extends Controller {
 
 	const OPT_SKIP_DUPLICATES = 'skipduplicates';
 
-	protected $ec;	// EntityController instance
 	protected $options;	// optional request parameters
 
-	public function __construct(Request $request, EntityManager $em) {
-		parent::__construct($request, $em);
+	public function __construct(Request $request, EntityManager $em, View $view) {
+		parent::__construct($request, $em, $view);
 
 		$this->options = self::makeArray(strtolower($this->request->query->get('options')));
-		$this->ec = new EntityController($this->request, $this->em);
 	}
 
 	/**
@@ -63,7 +62,7 @@ class DataController extends Controller {
 
 		// single UUID
 		if (is_string($uuid)) {
-			$entity = $this->ec->getSingleEntity($uuid, true); // from cache
+			$entity = EntityController::factory($this->em, $uuid, true); // from cache
 			$class = $entity->getDefinition()->getInterpreter();
 			return new $class($entity, $this->em, $from, $to, $tuples, $groupBy, $this->options);
 		}
@@ -81,7 +80,7 @@ class DataController extends Controller {
 	 * @param string|array uuid
 	 */
 	public function add($uuid) {
-		$channel = $this->ec->getSingleEntity($uuid, true);
+		$channel = EntityController::factory($this->em, $uuid, true);
 
 		try { /* to parse new submission protocol */
 			$rawPost = $this->request->getContent(); // file_get_contents('php://input')
@@ -163,7 +162,7 @@ class DataController extends Controller {
 		$rows = 0;
 
 		foreach (self::makeArray($uuids) as $uuid) {
-			$channel = $this->ec->getSingleEntity($uuid, true);
+			$channel = EntityController::factory($this->em, $uuid, true);
 			$rows += $channel->clearData($this->em->getConnection(), $from, $to);
 		}
 

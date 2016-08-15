@@ -25,6 +25,7 @@ namespace Volkszaehler\Controller;
 
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityManager;
+use Volkszaehler\View\View;
 
 /**
  * Controller superclass for all controllers
@@ -48,14 +49,20 @@ abstract class Controller {
 	protected $request;
 
 	/**
+	 * @var Volkszaehler\View
+	 */
+	protected $view;
+
+	/**
 	 * Constructor
 	 *
 	 * @param Request $request
 	 * @param EntityManager $em
 	 */
-	public function __construct(Request $request, EntityManager $em) {
+	public function __construct(Request $request, EntityManager $em, View $view) {
 		$this->request = $request;
 		$this->em = $em;
+		$this->view = $view;
 	}
 
 	/**
