@@ -76,7 +76,7 @@ vz.entities.loadDetails = function() {
 					vz.entities.remove(entity);
 					return $.Deferred().resolveWith(this, [json]);
 				}
-				vz.wui.middlewareException(json.exception);
+				vz.wui.dialogs.middlewareException(json.exception);
 				return $.Deferred().rejectWith(this, [json]);
 			}
 		));
