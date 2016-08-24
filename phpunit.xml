@@ -12,6 +12,7 @@
       <exclude>
         <group>slow</group>
         <group>jpgraph</group>
+        <group>pushserver</group>
       </exclude>
     </groups>
 
