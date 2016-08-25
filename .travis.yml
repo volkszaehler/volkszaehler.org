@@ -20,7 +20,7 @@ env:
   global:
     - DEPENDENCIES=standard
     - APC=true
-    - TRAVIS_TEST_EXCLUDES="--exclude-group slow,jpgraph"
+    - TRAVIS_TEST_EXCLUDES="--exclude-group slow,jpgraph,pushserver"
   matrix:
     - DB=mysql
     - DB=pgsql
@@ -30,7 +30,10 @@ matrix:
   include:
     # httpd-based
     - php: 5.4
-      env: DB=mysql TEST_ADAPTER=HTTP
+      env: DB=mysql TEST_COMPONENT=HTTPD
+    # push-server
+    - php: 5.4
+      env: DB=mysql TEST_COMPONENT=PUSH_SERVER
     # from..to
     - php: 5.4
       env: DB=mysql DEPENDENCIES=lowest
@@ -76,7 +79,7 @@ install:
     - if [ "$DEPENDENCIES" = "highest" ]; then composer update -n; fi
     - if [ "$JSLINT" = true ]; then npm install; fi
     - if [ "$SECURITY" = true ]; then wget http://get.sensiolabs.org/security-checker.phar; fi
-    - if [ "$TEST_ADAPTER" = "HTTP" ]; then composer require volkszaehler/httpd:dev-master jenssegers/proxy:~2.2; fi
+    - if [ "$TEST_COMPONENT" = "HTTPD" ]; then composer require volkszaehler/httpd:dev-master jenssegers/proxy:~2.2; fi
 
     # add apc cache
     - |
@@ -100,7 +103,7 @@ before_script:
     - sed -i "s/'vz'/'$USER'/" etc/volkszaehler.conf.php
     - sed -i "s/'demo'/'$PASSWORD'/" etc/volkszaehler.conf.php
     - sed -i "s/'volkszaehler'/'$DATABASE'/" etc/volkszaehler.conf.php
-    - if [ "$DB" = "sqlite" ]; then sed -i "s/\?>/\$config['db']['path']\ =\ VZ_DIR.'\/sqlite.db3'\n?>/" etc/volkszaehler.conf.php; fi
+    - if [ "$DB" = "sqlite" ]; then sed -i "s/\?>/\$config['db']['path']\ =\ VZ_DIR.'\/sqlite.db3'\;\n?>/" etc/volkszaehler.conf.php; fi
     - cat etc/volkszaehler.conf.php
 
     # create database
@@ -112,15 +115,21 @@ before_script:
 
     # setup local middleware
     - |
-      if [ "$TEST_ADAPTER" = "HTTP" ]; then
-        sed -i "s/testAdapter\" value=\".*\"/testAdapter\" value=\"$TEST_ADAPTER\"/" phpunit.xml
+      if [ "$TEST_COMPONENT" = "HTTPD" ]; then
+        sed -i "s/testAdapter\" value=\".*\"/testAdapter\" value=\"$TEST_COMPONENT\"/" phpunit.xml
         vendor/bin/httpd.php start &
         HTTPD_PID=$!
         echo "Started httpd with pid $HTTPD_PID"
       fi
 
+    # push server tests
+    - if [ "$TEST_COMPONENT" = "PUSH_SERVER" ]; then sed -i "s/\?>/\$config['push']['enabled']\ =\ true\;\n?>/" etc/volkszaehler.conf.php; fi
+    - if [ "$TEST_COMPONENT" = "PUSH_SERVER" ]; then
+        php misc/tools/push-server.php &
+      fi
+
 after_script:
-    - if [ "$TEST_ADAPTER" = "HTTP" ]; then kill -9 $HTTPD_PID; fi
+    - if [ "$TEST_COMPONENT" = "HTTPD" ]; then kill -9 $HTTPD_PID; fi
 
 script:
     # run core tests
@@ -129,7 +138,7 @@ script:
     # run aggregation tests (mysql only)
     - if [ "$DB" = "mysql" ]; then sed -i "s/\?>/\$config['aggregation']\ =\ true;\n?>/" etc/volkszaehler.conf.php; fi
     - |
-      if [ "$DB" = "mysql" -a "$TEST_ADAPTER" = "HTTP" ]; then
+      if [ "$DB" = "mysql" -a "$TEST_COMPONENT" = "HTTPD" ]; then
         kill -9 $HTTPD_PID
         sleep 10
         vendor/bin/httpd.php start &
@@ -140,6 +149,9 @@ script:
 
     # run aggregation tool itself (mysql only)
     - if [ "$DB" = "mysql" ]; then php misc/tools/aggregate.php run -m delta -l hour; fi
+
+    # push server tests
+    - if [ "$TEST_COMPONENT" = "PUSH_SERVER" ]; then phpunit --group pushserver; fi
 
     # jslint javascript sources
     - if [ "$JSLINT" = true ]; then gulp jshint; fi

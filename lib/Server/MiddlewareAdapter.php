@@ -46,11 +46,6 @@ class MiddlewareAdapter {
 	protected $em;
 
 	/**
-	 * @var EntityController
-	 */
-	protected $controller;
-
-	/**
 	 * @var array
 	 */
 	protected $adapters;
@@ -68,9 +63,8 @@ class MiddlewareAdapter {
 	}
 
 	protected function openController($force = false) {
-		if ($force || $this->em == null || $this->controller == null || !$this->em->isOpen()) {
+		if ($force || $this->em == null || !$this->em->isOpen()) {
 			$this->em = Router::createEntityManager(false);
-			$this->controller = new EntityController(new Request(), $this->em);
 		}
 	}
 
@@ -78,7 +72,7 @@ class MiddlewareAdapter {
 		try {
 			$this->openController();
 
-			$entity = $this->controller->getSingleEntity($uuid);
+			$entity = EntityController::factory($this->em, $uuid);
 			$class = $entity->getDefinition()->getInterpreter();
 			$interpreter = new $class($entity, $this->em, null, null);
 
@@ -132,24 +126,27 @@ class MiddlewareAdapter {
 	 * @return null|string Returns null on invalid request
 	 */
 	public function handlePushMessage($json) {
-		$msg = json_decode($json, true);
 		$response = array(
 			'version' => VZ_VERSION,
 			'data' => array()
 		);
 
 		// validate input message
+		if (null === ($msg = json_decode($json, true))) {
+			return null;
+		}
 		if (null === ($data = @$msg['data']) || !is_array($data)) {
 			return null;
 		}
 
 		// loop through channels
 		foreach ($data as $channel) {
+			// validate channel structure
 			if (null === ($uuid = @$channel['uuid'])) {
-				break;
+				return null;
 			}
 			if (null === ($tuples = @$channel['tuples']) || !is_array($tuples) || !count($tuples)) {
-				break;
+				return null;
 			}
 
 			// get interpreter if no client has connected yet
@@ -161,6 +158,10 @@ class MiddlewareAdapter {
 			// convert raw tuples using interpreter rules
 			$transformed = array();
 			foreach ($tuples as $tuple) {
+				if (!is_array($tuple) || count($tuple) < 2) {
+					return null;
+				}
+
 				if (count($tuple) < 3) {
 					$tuple[] = 1;
 				}
