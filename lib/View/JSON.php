@@ -67,6 +67,7 @@ class JSON extends View {
 		// add JSON headers
 		$this->response->headers->set('Content-Type', 'application/json');
 		$this->response->headers->set('Access-Control-Allow-Origin', '*');
+		$this->response->headers->set('Access-Control-Allow-Headers', 'Authorization');
 	}
 
 	/**
