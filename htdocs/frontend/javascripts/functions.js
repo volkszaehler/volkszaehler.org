@@ -117,18 +117,6 @@ vz.load = function(args, skipDefaultErrorHandling) {
 		args.data = { };
 	}
 
-	if (args.type) {
-		var operationMapping = {
-			post:	'add',
-			delete:	'delete',
-			get:	'get',
-			pull:	'edit'
-		};
-
-		args.data.operation = operationMapping[args.type.toLowerCase()];
-		delete args.type; // this makes jquery append the data to the query string
-	}
-
 	return $.ajax(args).then(
 		// success - no changes needed
 		null,

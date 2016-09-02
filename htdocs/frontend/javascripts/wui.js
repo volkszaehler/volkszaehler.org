@@ -280,7 +280,7 @@ vz.wui.dialogs.init = function() {
 			controller: (def.model == 'Volkszaehler\\Model\\Channel') ? 'channel' : 'aggregator',
 			url: $('#entity-create-middleware').val(),
 			data: properties,
-			type: 'POST'
+			method: 'POST'
 		}).done(function(json) {
 			var entity = new Entity(json.entity, $('#entity-create-middleware').val());
 

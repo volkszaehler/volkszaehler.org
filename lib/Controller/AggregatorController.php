@@ -59,7 +59,7 @@ class AggregatorController extends EntityController {
 		if (isset($identifier)) {	// add entity to aggregator
 			$aggregator = $this->get($identifier);
 
-			if ($uuids = self::makeArray($this->request->query->get('uuid'))) {
+			if ($uuids = self::makeArray($this->getParameters()->get('uuid'))) {
 				foreach ($uuids as $uuid) {
 					$aggregator->addChild(EntityController::factory($this->em, $uuid));
 				}
@@ -69,7 +69,7 @@ class AggregatorController extends EntityController {
 			}
 		}
 		else {	// create new aggregator
-			$type = $this->request->query->get('type');
+			$type = $this->getParameters()->get('type');
 
 			if (!isset($type)) {
 				$type = 'group';
@@ -77,7 +77,7 @@ class AggregatorController extends EntityController {
 
 			$aggregator = new Model\Aggregator($type);
 
-			$this->setProperties($aggregator, $this->request->query->all());
+			$this->setProperties($aggregator, $this->getParameters()->all());
 			$this->em->persist($aggregator);
 		}
 
@@ -94,7 +94,7 @@ class AggregatorController extends EntityController {
 			return;
 
 		$aggregator = NULL;
-		if ($uuids = self::makeArray($this->request->query->get('uuid'))) { // remove entity from aggregator
+		if ($uuids = self::makeArray($this->getParameters()->get('uuid'))) { // remove entity from aggregator
 			$aggregator = $this->get($identifier);
 
 			foreach ($uuids as $uuid) {
