@@ -1,8 +1,6 @@
 language: php
 
 php:
-    - 5.4
-    - 5.5
     - 5.6
     - 7.0
     - nightly
@@ -29,21 +27,21 @@ env:
 matrix:
   include:
     # httpd-based
-    - php: 5.4
+    - php: 5.6
       env: DB=mysql TEST_COMPONENT=HTTPD
     # push-server
-    - php: 5.4
+    - php: 5.6
       env: DB=mysql TEST_COMPONENT=PUSH_SERVER
     # from..to
-    - php: 5.4
+    - php: 5.6
       env: DB=mysql DEPENDENCIES=lowest
-    - php: 5.4
+    - php: 5.6
       env: DB=mysql DEPENDENCIES=highest
     # jslint-only
-    - php: 5.4
+    - php: 5.6
       env: DB= DEPENDENCIES= JSLINT=true
     # security
-    - php: 5.4
+    - php: 5.6
       env: DB= DEPENDENCIES= SECURITY=true
   # remove hhvm/pgsql
   exclude:

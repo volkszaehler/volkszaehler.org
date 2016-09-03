@@ -35,7 +35,7 @@ use Doctrine\ORM;
  * @author Steffen Vogel <info@steffenvogel.de>
  * @author Andreas Götz <cpuidle@gmx.de>
  */
-abstract class Interpreter implements \Iterator {
+abstract class Interpreter implements \IteratorAggregate {
 
 	/**
 	 * @var Database connection
@@ -55,8 +55,6 @@ abstract class Interpreter implements \Iterator {
 	protected $rowCount;	// number of rows in the database
 	protected $tupleCount;	// number of requested tuples
 	protected $rows;		// DataIterator instance for aggregating rows
-
-	protected $key; 		// result interator index
 
 	protected $min = NULL;
 	protected $max = NULL;
@@ -110,32 +108,26 @@ abstract class Interpreter implements \Iterator {
 		}
 	}
 
+	/*
+	 * IteratorAggregate functions
+	 */
+
 	/**
-	 * Convert raw meter readings.
-	 * This function will have side effects on internal member variables of the interpreter.
+	 * Generate database tuples
+	 *
+	 * @todo with wide-spread availability of PHP7 consider moving the raw value iteration here:
+	 * 		yield from ($this->raw) ? $this->getRawIterator() : $this->getDefaultIterator();
+	 *
+	 * @return \Generator
+	 */
+	abstract public function getIterator();
+
+	/**
+	 * Convert raw meter readings
+	 *
+	 * This function will have side effects on internal member variables of the interpreter
 	 */
 	abstract public function convertRawTuple($row);
-
-	/**
-	 * Iterator functions
-	 */
-
-	abstract public function rewind();
-
-	abstract public function current();
-
-	public function next() {
-		$this->key++;
-		$this->rows->next();
-	}
-
-	public function valid() {
-		return $this->rows->valid();
-	}
-
-	public function key() {
-		return $this->key;
-	}
 
 	/**
 	 * Check if option is specified

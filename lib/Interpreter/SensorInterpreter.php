@@ -37,40 +37,35 @@ class SensorInterpreter extends Interpreter {
 	protected $ts_last; // previous tuple timestamp
 
 	/**
-	 * Initialize data iterator
+	 * Generate database tuples
+	 *
+	 * @return \Generator
 	 */
-	public function rewind() {
-		$this->key = 0;
+	public function getIterator() {
 		$this->rows = $this->getData();
-		$this->rows->rewind();
-
 		$this->ts_last = $this->getFrom();
-	}
 
-	/**
-	 * Iterate over result set
-	 */
-	public function current() {
-		$row = $this->rows->current();
+		foreach ($this->rows as $row) {
+			if ($this->raw) {
+				// raw database values
+				yield array_slice($row, 0, 3);
+			}
+			else {
+				$delta_ts = $row[0] - $this->ts_last;
+				$tuple = $this->convertRawTuple($row);
+				$this->consumption += $tuple[1] * $delta_ts;
 
-		// raw database values
-		if ($this->raw) {
-			return(array_slice($row, 0, 3));
+				if (is_null($this->max) || $tuple[1] > $this->max[1]) {
+					$this->max = $tuple;
+				}
+
+				if (is_null($this->min) || $tuple[1] < $this->min[1]) {
+					$this->min = $tuple;
+				}
+
+				yield $tuple;
+			}
 		}
-
-		$delta_ts = $row[0] - $this->ts_last;
-		$tuple = $this->convertRawTuple($row);
-		$this->consumption += $tuple[1] * $delta_ts;
-
-		if (is_null($this->max) || $tuple[1] > $this->max[1]) {
-			$this->max = $tuple;
-		}
-
-		if (is_null($this->min) || $tuple[1] < $this->min[1]) {
-			$this->min = $tuple;
-		}
-
-		return $tuple;
 	}
 
 	/**
