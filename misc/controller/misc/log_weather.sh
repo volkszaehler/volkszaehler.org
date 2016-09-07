@@ -22,9 +22,9 @@ OWM="http://api.openweathermap.org/data/2.5/weather?q=$CITY&mode=xml&units=$UNIT
 URL="http://127.0.0.1/volkszaehler.org/htdocs/middleware"
 
 ##  uuid of the sensor in the volkszaehler database
-UUID_temperature='5a4d0060-288b-11e3-98bd-33f1ae9ddbf4'
-UUID_pressure='695fc940-288b-11e3-a314-5fd9ee08cd3a'
-UUID_relative_humidity='76c42520-288b-11e3-bafb-5545f3524dab'
+UUID_temperature='12345678-1234-1234-1234-1234567890as'
+UUID_pressure='12345678-1234-1234-1234-1234567890ad'
+UUID_relative_humidity='12345678-1234-1234-1234-1234567890ah'
 
 ## 
 ## paths to binaries - you should not need to change these
