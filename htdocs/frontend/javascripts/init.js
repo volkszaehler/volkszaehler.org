@@ -143,7 +143,7 @@ $(document).ready(function() {
 						uri += ":" + parser.port;
 					}
 					// if Apache ProxyPass is used, connect with http(s) but always forward to unencrypted port
-					uri += parser.pathname.replace(/middleware.php$/, "ws");
+					uri += "/ws"; // parser.pathname.replace(/(\.\.\/)?middleware.php$/, "ws")
 					console.info("Live updates not configured. Trying default path at " + uri);
 				}
 				else {
