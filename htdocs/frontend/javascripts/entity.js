@@ -400,7 +400,7 @@ Entity.prototype.showDetails = function() {
 								identifier: entity.uuid,
 								url: entity.middleware,
 								data: properties,
-								type: 'PULL', // edit
+								method: 'PATCH', // edit
 							}).done(function(json) {
 								entity.parseJSON(json.entity); // update entity
 								try {
@@ -752,7 +752,7 @@ Entity.prototype.delete = function() {
 		context: this,
 		identifier: this.uuid,
 		url: this.middleware,
-		type: 'DELETE'
+		method: 'DELETE'
 	});
 };
 
@@ -768,7 +768,7 @@ Entity.prototype.addChild = function(child) {
 		controller: 'group',
 		identifier: this.uuid,
 		url: this.middleware,
-		type: 'POST',
+		method: 'POST',
 		data: {
 			uuid: child.uuid
 		}
@@ -789,7 +789,7 @@ Entity.prototype.removeChild = function(child) {
 		controller: 'group',
 		identifier: this.uuid,
 		url: this.middleware,
-		type: 'DELETE',
+		method: 'DELETE',
 		data: {
 			uuid: child.uuid
 		}

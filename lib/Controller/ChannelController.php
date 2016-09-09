@@ -58,14 +58,14 @@ class ChannelController extends EntityController {
 	 * Add channel
 	 */
 	public function add() {
-		$type = $this->request->query->get('type');
+		$type = $this->getParameters()->get('type');
 
 		if (!isset($type)) {
 			throw new \Exception('Missing entity type');
 		}
 
 		$channel = new Model\Channel($type);
-		$this->setProperties($channel, $this->request->query->all());
+		$this->setProperties($channel, $this->getParameters()->all());
 
 		$this->em->persist($channel);
 		$this->em->flush();

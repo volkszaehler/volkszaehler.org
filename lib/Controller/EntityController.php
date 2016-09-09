@@ -55,7 +55,7 @@ class EntityController extends Controller {
 		}
 		elseif (is_array($uuids)) { // multiple entities
 			$entities = array();
-			$allowInvalidUuid = $this->request->query->get('nostrict');
+			$allowInvalidUuid = $this->getParameters()->get('nostrict');
 
 			foreach ($uuids as $uuid) {
 				try {
@@ -146,7 +146,7 @@ class EntityController extends Controller {
 			throw new \Exception('Invalid operation - missing entity.');
 		}
 
-		$this->setProperties($entity, $this->request->query->all());
+		$this->setProperties($entity, $this->getParameters()->all());
 		$this->em->flush();
 
 		if (self::$cache) {

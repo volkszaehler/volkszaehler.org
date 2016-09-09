@@ -61,10 +61,11 @@ class Router implements HttpKernelInterface {
 	 * @var array HTTP-method => operation mapping
 	 */
 	public static $operationMapping = array(
-		'post'			=> 'add',
-		'delete'		=> 'delete',
-		'get'			=> 'get',
-		'pull'			=> 'edit'
+		'POST'			=> 'add',
+		'DELETE'		=> 'delete',
+		'GET'			=> 'get',
+		'PATCH'			=> 'edit',
+		'PULL'			=> 'edit'		// not REST-conform
 	);
 
 	/**
@@ -193,7 +194,7 @@ class Router implements HttpKernelInterface {
 	function handler(Request $request, $context, $uuid) {
 		// get controller operation
 		if (null === ($operation = $request->query->get('operation'))) {
-			$operation = self::$operationMapping[strtolower($request->getMethod())];
+			$operation = self::$operationMapping[$request->getMethod()];
 		}
 
 		$class = self::$controllerMapping[$context];

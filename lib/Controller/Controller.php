@@ -24,6 +24,7 @@
 namespace Volkszaehler\Controller;
 
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\ParameterBag;
 use Doctrine\ORM\EntityManager;
 use Volkszaehler\View\View;
 
@@ -49,6 +50,11 @@ abstract class Controller {
 	protected $request;
 
 	/**
+	 * @var Symfony\Component\HttpFoundation\ParameterBag
+	 */
+	protected $parameters;
+
+	/**
 	 * @var Volkszaehler\View
 	 */
 	protected $view;
@@ -58,11 +64,26 @@ abstract class Controller {
 	 *
 	 * @param Request $request
 	 * @param EntityManager $em
+	 * @param View $view
 	 */
 	public function __construct(Request $request, EntityManager $em, View $view) {
 		$this->request = $request;
 		$this->em = $em;
 		$this->view = $view;
+	}
+
+	/**
+	 * Return request parameter from query or post body
+	 */
+	public function getParameters() {
+		if ($this->parameters === null) {
+			$this->parameters = new ParameterBag($this->request->query->all());
+			if ($this->request->getMethod() !== Request::METHOD_GET) {
+				$this->parameters->add($this->request->request->all());
+			}
+		}
+
+		return $this->parameters;
 	}
 
 	/**
@@ -77,7 +98,7 @@ abstract class Controller {
 
 		// one or more uuid(s) as query parameters?
 		if (null == $uuid) {
-			$uuid = $this->request->query->get('uuid');
+			$uuid = $this->getParameters()->get('uuid');
 		}
 
 		// call the operation
@@ -89,10 +110,7 @@ abstract class Controller {
 	 */
 	protected static function makeArray($data) {
 		if (!is_array($data)) {
-			if (isset($data))
-				$data = array($data);
-			else
-				$data = array();
+			$data = isset($data) ? array($data) : array();
 		}
 		return $data;
 	}

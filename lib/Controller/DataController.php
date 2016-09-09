@@ -46,7 +46,7 @@ class DataController extends Controller {
 	public function __construct(Request $request, EntityManager $em, View $view) {
 		parent::__construct($request, $em, $view);
 
-		$this->options = self::makeArray(strtolower($this->request->query->get('options')));
+		$this->options = self::makeArray(strtolower($this->getParameters()->get('options')));
 	}
 
 	/**
@@ -55,10 +55,10 @@ class DataController extends Controller {
 	 * @param string|array uuid
 	 */
 	public function get($uuid) {
-		$from = $this->request->query->get('from');
-		$to = $this->request->query->get('to');
-		$tuples = $this->request->query->get('tuples');
-		$groupBy = $this->request->query->get('group');
+		$from = $this->getParameters()->get('from');
+		$to = $this->getParameters()->get('to');
+		$tuples = $this->getParameters()->get('tuples');
+		$groupBy = $this->getParameters()->get('group');
 
 		// single UUID
 		if (is_string($uuid)) {
@@ -104,8 +104,8 @@ class DataController extends Controller {
 			}, array());
 		}
 		catch (\RuntimeException $e) { /* fallback to old method */
-			$timestamp = $this->request->query->get('ts');
-			$value = $this->request->query->get('value');
+			$timestamp = $this->getParameters()->get('ts');
+			$value = $this->getParameters()->get('value');
 
 			if (is_null($timestamp)) {
 				$timestamp = (double) round(microtime(TRUE) * 1000);
@@ -141,10 +141,10 @@ class DataController extends Controller {
 		$to = null;
 
 		// parse interval
-		if (null !== ($from = $this->request->query->get('from'))) {
+		if (null !== ($from = $this->getParameters()->get('from'))) {
 			$from = Interpreter::parseDateTimeString($from);
 
-			if (null !== ($to = $this->request->query->get('to'))) {
+			if (null !== ($to = $this->getParameters()->get('to'))) {
 				$to = Interpreter::parseDateTimeString($to);
 
 				if ($from > $to) {
@@ -152,7 +152,7 @@ class DataController extends Controller {
 				}
 			}
 		}
-		elseif ($from = $this->request->query->get('ts')) {
+		elseif ($from = $this->getParameters()->get('ts')) {
 			$to = $from;
 		}
 		else {
