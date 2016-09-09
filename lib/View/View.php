@@ -29,6 +29,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Volkszaehler\Interpreter;
 use Volkszaehler\Model;
 use Volkszaehler\Util;
+use Volkszaehler\Exception\HttpExceptionInterface;
 
 /**
  * Base class for all view formats
@@ -84,7 +85,12 @@ abstract class View {
 	 */
 	public function getExceptionResponse(\Exception $exception) {
 		$this->add($exception);
-		$this->response->setStatusCode(400);
+
+		// only set status code if default - allows controllers to overwrite
+		if ($this->response->getStatusCode() == Response::HTTP_OK) {
+			$code = $exception instanceof HttpExceptionInterface ? $exception->getStatusCode() : Response::HTTP_BAD_REQUEST;
+			$this->response->setStatusCode($code);
+		}
 
 		return $this->send();
 	}
