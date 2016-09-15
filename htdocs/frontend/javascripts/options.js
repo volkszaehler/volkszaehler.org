@@ -26,18 +26,28 @@
 
 vz.options = {
 	language: 'de',
-	precision: 2,		// TODO update from middleware capabilities?
-	tuples: null,		// automatically determined by plot size
-	refresh: true,	// update chart if zoomed to current timestamp
-	totalsInterval: 300,	// update interval for consumption is retrieved for each channel where initialconsumption > 0
-	shortenLongTypes: false, // show shorter type names in table
-	minTimeout: 2000,	// minimum refresh time in ms
-	interval: 24*60*60*1000, // 1 day default time interval to show
-	localMiddleware: '../middleware.php',
-	remoteMiddleware: [{
-		title: 'Volkszaehler Demo',
-		url: '//demo.volkszaehler.org/middleware.php'
-	}],
+	precision: 2,							// TODO update from middleware capabilities?
+	tuples: null,							// automatically determined by plot size
+	refresh: true,						// update chart if zoomed to current timestamp
+	interval: 24*60*60*1000,	// 1 day default time interval to show
+	totalsInterval: 300,			// update interval for total consumption in s (only channels where initialconsumption > 0)
+	pushRedrawTimeout: 1000,	// ms delay for collecting push updates before redrawing
+	minTimeout: 2000,					// minimum refresh time in ms
+	shortenLongTypes: false,	// show shorter type names in table
+	middleware: [
+		{
+			title: 'Local (default)',
+			url: '../middleware.php'
+			// live: 8082					// NOTE: live updates require
+														//    - push-server running and
+														//    - either apache proxy forwarding configured according to
+														//			https://github.com/volkszaehler/volkszaehler.org/issues/382
+														// 		- or push-server live update port configured and accessible
+		}, {
+			title: 'Volkszaehler Demo',
+			url: '//demo.volkszaehler.org/middleware.php'
+		}
+	],
 	monthNames: ['Jan', 'Feb', unescape('M%E4r'), 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
 	dayNames: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
 	lineWidthDefault: 2,
@@ -46,6 +56,9 @@ vz.options = {
 	hiddenProperties: ['link', 'tolerance', 'local', 'active'] // hide less commonly used properties
 };
 
+/**
+ * Plot options are passed on to flot
+ */
 vz.options.plot = {
 	colors: ['#579D1C', '#7E0021', '#FFD320', '#FF420E', '#004586', '#0084D1', '#C5000B', '#FF950E', '#4B1F6F', '#AECF00', '#314004', '#83CAFF'],
 	series: {
@@ -68,11 +81,13 @@ vz.options.plot = {
 	},
 	yaxes: [
 		{
-			axisLabel: 'W' // assign el. energy to first axis- remove if not used
+			axisLabel: 'W', // assign el. energy to first axis- remove if not used
+			tickFormatter: vz.wui.tickFormatter		// show axis label
 		},
 		{
 			// alignTicksWithAxis: 1,
-			position: 'right'
+			position: 'right',
+			tickFormatter: vz.wui.tickFormatter		// show axis label
 		}
 	],
 	selection: { mode: 'x' },

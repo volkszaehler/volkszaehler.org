@@ -1,10 +1,10 @@
 language: php
 
 php:
-    - 5.3
     - 5.4
     - 5.5
     - 5.6
+    - 7.0
     - nightly
     - hhvm
 
@@ -18,9 +18,9 @@ sudo: false
 env:
   # run composer by default
   global:
-    - DEPENDENCIES=true
+    - DEPENDENCIES=standard
     - APC=true
-    - TRAVIS_TEST_EXCLUDES="--exclude-group slow,jpgraph"
+    - TRAVIS_TEST_EXCLUDES="--exclude-group slow,jpgraph,pushserver"
   matrix:
     - DB=mysql
     - DB=pgsql
@@ -28,12 +28,23 @@ env:
 
 matrix:
   include:
-    # add jslint-only build
-    - php: 5.6
+    # httpd-based
+    - php: 5.4
+      env: DB=mysql TEST_COMPONENT=HTTPD
+    # push-server
+    - php: 5.4
+      env: DB=mysql TEST_COMPONENT=PUSH_SERVER
+    # from..to
+    - php: 5.4
+      env: DB=mysql DEPENDENCIES=lowest
+    - php: 5.4
+      env: DB=mysql DEPENDENCIES=highest
+    # jslint-only
+    - php: 5.4
       env: DB= DEPENDENCIES= JSLINT=true
-    # add httpd-based build
-    - php: 5.6
-      env: DB=mysql TEST_ADAPTER=HTTP
+    # security
+    - php: 5.4
+      env: DB= DEPENDENCIES= SECURITY=true
   # remove hhvm/pgsql
   exclude:
     - php: hhvm
@@ -53,13 +64,22 @@ cache:
   directories:
     - $COMPOSER_CACHE_DIR
     - $HOME/.composer/cache
-    - vendor
     - node_modules
 
+before_install:
+    # disable xdebug for composer performance
+    - if [ -e /home/travis/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini ]; then rm /home/travis/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini; fi
+
 install:
-    - if [ "$DEPENDENCIES" = true ]; then composer install; fi
+    # set token if composer is used
+    - if [ -n "$DEPENDENCIES" ]; then composer config github-oauth.github.com ${GH_TOKEN}; fi
+
+    - if [ "$DEPENDENCIES" = "standard" ]; then composer install; fi
+    - if [ "$DEPENDENCIES" = "lowest" ]; then composer update --prefer-lowest -n; fi
+    - if [ "$DEPENDENCIES" = "highest" ]; then composer update -n; fi
     - if [ "$JSLINT" = true ]; then npm install; fi
-    - if [ "$TEST_ADAPTER" = "HTTP" ]; then composer require volkszaehler/httpd:dev-master jenssegers/proxy:~2.2; fi
+    - if [ "$SECURITY" = true ]; then wget http://get.sensiolabs.org/security-checker.phar; fi
+    - if [ "$TEST_COMPONENT" = "HTTPD" ]; then composer require volkszaehler/httpd:dev-master jenssegers/proxy:~2.2; fi
 
     # add apc cache
     - |
@@ -83,7 +103,7 @@ before_script:
     - sed -i "s/'vz'/'$USER'/" etc/volkszaehler.conf.php
     - sed -i "s/'demo'/'$PASSWORD'/" etc/volkszaehler.conf.php
     - sed -i "s/'volkszaehler'/'$DATABASE'/" etc/volkszaehler.conf.php
-    - if [ "$DB" = "sqlite" ]; then sed -i "s/\?>/\$config['db']['path']\ =\ VZ_DIR.'\/sqlite.db3'\n?>/" etc/volkszaehler.conf.php; fi
+    - if [ "$DB" = "sqlite" ]; then sed -i "s/\?>/\$config['db']['path']\ =\ VZ_DIR.'\/sqlite.db3'\;\n?>/" etc/volkszaehler.conf.php; fi
     - cat etc/volkszaehler.conf.php
 
     # create database
@@ -91,47 +111,50 @@ before_script:
     - if [ "$DB" = "pgsql" ]; then psql -c "create database $DATABASE;" -U postgres; fi
 
     # create schema
-    - if [ -n "$DB" ]; then php misc/tools/doctrine orm:schema-tool:create --dump-sql > misc/sql/schema.sql; fi
-    - if [ -n "$DB" ]; then sed -i 's/ATTENTION/-- /' misc/sql/schema.sql; fi
-    - if [ -n "$DB" ]; then echo ';' >> misc/sql/schema.sql; fi
-    - if [ -n "$DB" ]; then cat misc/sql/schema.sql; fi
-
-    - if [ "$DB" = "mysql" ]; then cat misc/sql/schema.sql | mysql -u $USER $DATABASE; fi
-    - if [ "$DB" = "pgsql" ]; then cat misc/sql/schema.sql | psql -U postgres $DATABASE; fi
-    - if [ "$DB" = "sqlite" ]; then cat misc/sql/schema.sql | sqlite3 sqlite.db3; sqlite3 sqlite.db3 .dump; fi
+    - if [ -n "$DB" ]; then php misc/tools/doctrine orm:schema-tool:create; fi
 
     # setup local middleware
     - |
-      if [ "$TEST_ADAPTER" = "HTTP" ]; then
-        sed -i "s/testAdapter\" value=\".*\"/testAdapter\" value=\"$TEST_ADAPTER\"/" test/phpunit.xml
+      if [ "$TEST_COMPONENT" = "HTTPD" ]; then
+        sed -i "s/testAdapter\" value=\".*\"/testAdapter\" value=\"$TEST_COMPONENT\"/" phpunit.xml
         vendor/bin/httpd.php start &
         HTTPD_PID=$!
         echo "Started httpd with pid $HTTPD_PID"
       fi
 
+    # push server tests
+    - if [ "$TEST_COMPONENT" = "PUSH_SERVER" ]; then sed -i "s/\?>/\$config['push']['enabled']\ =\ true\;\n?>/" etc/volkszaehler.conf.php; fi
+    - if [ "$TEST_COMPONENT" = "PUSH_SERVER" ]; then
+        php misc/tools/push-server.php &
+      fi
+
 after_script:
-    - if [ "$TEST_ADAPTER" = "HTTP" ]; then kill -9 $HTTPD_PID; fi
+    - if [ "$TEST_COMPONENT" = "HTTPD" ]; then kill -9 $HTTPD_PID; fi
 
 script:
-    - cd test
     # run core tests
     - if [ -n "$DB" ]; then phpunit $TRAVIS_TEST_EXCLUDES,aggregation; fi
 
-    # re-run with aggregation enabled
-    - if [ "$DB" = "mysql" ]; then sed -i "s/\?>/\$config['aggregation']\ =\ true;\n?>/" ../etc/volkszaehler.conf.php; fi
+    # run aggregation tests (mysql only)
+    - if [ "$DB" = "mysql" ]; then sed -i "s/\?>/\$config['aggregation']\ =\ true;\n?>/" etc/volkszaehler.conf.php; fi
     - |
-      if [ "$DB" = "mysql" -a "$TEST_ADAPTER" = "HTTP" ]; then
+      if [ "$DB" = "mysql" -a "$TEST_COMPONENT" = "HTTPD" ]; then
         kill -9 $HTTPD_PID
         sleep 10
-        ../vendor/bin/httpd.php start &
+        vendor/bin/httpd.php start &
         HTTPD_PID=$!
         echo "Started httpd with pid $HTTPD_PID"
       fi
-    - if [ "$DB" = "mysql" ]; then phpunit $TRAVIS_TEST_EXCLUDES --coverage-text; fi
-    - cd ..
+    - if [ "$DB" = "mysql" ]; then phpunit $TRAVIS_TEST_EXCLUDES; fi
 
-    # test running aggregation tool
+    # run aggregation tool itself (mysql only)
     - if [ "$DB" = "mysql" ]; then php misc/tools/aggregate.php run -m delta -l hour; fi
+
+    # push server tests
+    - if [ "$TEST_COMPONENT" = "PUSH_SERVER" ]; then phpunit --group pushserver; fi
 
     # jslint javascript sources
     - if [ "$JSLINT" = true ]; then gulp jshint; fi
+
+    # check package security
+    - if [ "$SECURITY" = true ]; then php security-checker.phar security:check composer.lock; fi

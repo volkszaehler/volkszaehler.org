@@ -1,13 +1,25 @@
 volkszaehler.org uses doctrine [1] as database abstraction and object relation model.
 
+Database Setup
+==============
+
 To setup your database follow these steps:
 
 1. Make sure you have a proper configuration file (etc/volkszaehler.conf.php)
 2. Adjust the configuration to your database setup
-3. Call misc/tools/doctrine orm:schema-tool:create --dump-sql > misc/sql/mysql.sql
-4. import the resulting file using your favorite sql tool
+3. Call misc/tools/doctrine orm:schema-tool:create --dump-sql > database.sql
+4. Import the resulting file using your favorite sql tool
 
-Alternatively you can directly import a existing mysql.sql file or
-force the script to do it for you by leaving the "--dump-sql" option.
+Alternatively you can directly import a existing .sql file or
+force the script to do it for you by leaving out the --dump-sql option.
+
+
+Importing Demo Data
+===================
+
+This directory contains a MySQL data dump for demonstration purposes.
+
+Import the demo.sql file into your database for a demonstration.
+
 
 [1] http://www.doctrine-project.org

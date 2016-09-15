@@ -27,9 +27,12 @@
 /**
  * Entity constructor
  * @var data object properties etc.
+ * @var middleware url (if not passed as data attribute)
  */
-var Entity = function(data) {
-	this.parseJSON(data);
+var Entity = function(data, middleware) {
+	this.parseJSON($.extend({
+		middleware: middleware
+	}, data));
 };
 
 /**
@@ -40,7 +43,7 @@ Entity.colors = 0;
 
 /**
  * Parse middleware response (recursive creation of children etc)
- * @var object from middleware response
+ * @var json object from middleware response
  */
 Entity.prototype.parseJSON = function(json) {
 	$.extend(true, this, json);
@@ -51,9 +54,8 @@ Entity.prototype.parseJSON = function(json) {
 	// parse children
 	if (this.children) {
 		for (var i = 0; i < this.children.length; i++) {
-			// @todo check if setting middleware is really possible here
-			this.children[i].middleware = this.middleware; // children inherit parent middleware
-			this.children[i] = new Entity(this.children[i]);
+			// ensure middleware gets inherited
+			this.children[i] = new Entity(this.children[i], this.middleware);
 			this.children[i].parent = this;
 		}
 
@@ -81,17 +83,19 @@ Entity.prototype.parseJSON = function(json) {
 	if (this.color === undefined) {
 		this.color = vz.options.plot.colors[Entity.colors++ % vz.options.plot.colors.length];
 	}
-};
 
-/**
- * Set middleware on entity and and inherit to children
- * @var middleware url
- */
-Entity.prototype.setMiddleware = function(middleware) {
-	this.middleware = middleware;
-	this.each(function(child, parent) {
-		child.middleware = middleware;
-	}, true); // recursive!
+	// store json data to be extensible by push updates
+	if (this.data === undefined) {
+		this.data = {
+			tuples: [],
+			// min, max remain undefined
+		};
+	}
+
+	// subscribe to updates
+	if (this.active) {
+		this.subscribe();
+	}
 };
 
 /**
@@ -106,7 +110,7 @@ Entity.prototype.assignMatchingAxis = function() {
 				return true;
 			}
 		}, this) === false) { // no more axes available
-			this.assignedYaxis = vz.options.plot.yaxes.push({ position: 'right' });
+			this.assignedYaxis = vz.options.plot.yaxes.push($.extend({}, vz.options.plot.yaxes[1]));
 		}
 
 		vz.options.plot.yaxes[this.assignedYaxis-1].axisLabel = this.definition.unit;
@@ -126,8 +130,7 @@ Entity.prototype.assignAxis = function() {
 
 		while (vz.options.plot.yaxes.length < this.assignedYaxis) { // no more axes available
 			// create new right-hand axis
-			// TODO clone existing axis including its styling
-			vz.options.plot.yaxes.push({ position: 'right' });
+			vz.options.plot.yaxes.push($.extend({}, vz.options.plot.yaxes[1]));
 		}
 
 		// check if axis already has auto-allocated entities
@@ -175,20 +178,70 @@ Entity.prototype.updateAxisScale = function() {
 };
 
 /**
- * Query middleware for details
- * @return jQuery dereferred object
+ * WAMP session subscription and handler
  */
-Entity.prototype.loadDetails = function() {
-	delete this.children; // clear children first
-	return vz.load({
-		url: this.middleware,
-		controller: 'entity',
-		identifier: this.uuid,
-		context: this,
-		success: function(json) {
-			this.parseJSON(json.entity);
+Entity.prototype.subscribe = function(session) {
+	var mw = vz.getMiddleware(this.middleware);
+	if (mw && mw.session) {
+		session = session || mw.session;
+	}
+	if (!session) return;
+
+	session.subscribe(this.uuid, (function(args, json) {
+		var push = JSON.parse(json);
+		if (!push.data || push.data.uuid !== this.uuid) {
+			return false;
 		}
-	});
+
+    // don't collect data if not subscribed
+    if (!this.active || this.data === undefined) {
+      return;
+    }
+
+		var delta = push.data;
+		if (delta.tuples && delta.tuples.length) {
+			// process updates only if newer than last known timestamp
+			var last_ts = (this.data.tuples.length) ? this.data.tuples[this.data.tuples.length-1][0] : 0;
+			for (var i=0; i<delta.tuples.length; i++) {
+				if (delta.tuples[i][0] > last_ts) {
+					// relevant slice
+					var consumption = 0, deltaTuples = delta.tuples.slice(i);
+					/* jshint loopfunc: true */
+					deltaTuples.each((function(idx, el) {
+						// min/max
+						if (this.data.min === undefined || el[1] < this.data.min[1]) this.data.min = el;
+						if (this.data.max === undefined || el[1] > this.data.max[1]) this.data.max = el;
+						// consumption
+						var tsdiff = (idx === 0) ? el[0] - last_ts : el[0] - deltaTuples[idx-1][0];
+						consumption += el[1] * tsdiff;
+					}).bind(this)); // bind to entity
+
+					// update consumption
+					consumption /= 3.6e6;
+					this.consumption = (this.consumption || 0) + consumption;
+					this.totalconsumption = (this.totalconsumption || 0) + consumption;
+
+					// concatenate in-place
+					Array.prototype.push.apply(this.data.tuples, deltaTuples);
+					// update UI without reloading totals
+					this.dataUpdated();
+
+					vz.wui.zoomToPartialUpdate(deltaTuples[deltaTuples.length-1][0]);
+					break;
+				}
+			}
+		}
+	}).bind(this)); // bind to Entity
+};
+
+/**
+ * Cancel live update subscription from WAMP server
+ */
+Entity.prototype.unsubscribe = function() {
+	var mw = vz.getMiddleware(this.middleware);
+	if (mw.session) {
+		mw.session.unsubscribe(this.uuid);
+	}
 };
 
 /**
@@ -199,39 +252,26 @@ Entity.prototype.hasData = function() {
 };
 
 /**
- * Update entity data from middleware result and set axes accordingly
+ * Update UI when data changes
  */
-Entity.prototype.updateData = function(data) {
-	this.data = data;
-
+Entity.prototype.dataUpdated = function(data) {
 	this.updateAxisScale();
 	this.updateDOMRow();
 };
 
 /**
- * Load total consumption from middleware
+ * Query middleware for details
  * @return jQuery dereferred object
  */
-Entity.prototype.loadTotalConsumption = function() {
+Entity.prototype.loadDetails = function(skipDefaultErrorHandling) {
+	delete this.children; // clear children first
 	return vz.load({
-		controller: 'data',
 		url: this.middleware,
+		controller: 'entity',
 		identifier: this.uuid,
-		context: this,
-		data: {
-			from: 0,
-			tuples: 1,
-			group: 'day' // maximum sensible grouping level, first tuple dropped!
-		},
-		success: function(json) {
-			var row = $('#entity-' + this.uuid);
-			var unit = vz.wui.formatConsumptionUnit(this.definition.unit);
-			this.totalconsumption = (this.definition.scale || 1) * this.initialconsumption + json.data.consumption;
-
-			$('.total', row)
-				.data('total', this.totalconsumption)
-				.text(vz.wui.formatNumber(this.totalconsumption, unit, 'k'));
-		}
+		context: this
+	}, skipDefaultErrorHandling).done(function(json) {
+		this.parseJSON(json.entity);
 	});
 };
 
@@ -248,12 +288,35 @@ Entity.prototype.loadData = function() {
 		data: {
 			from: Math.floor(vz.options.plot.xaxis.min),
 			to: Math.ceil(vz.options.plot.xaxis.max),
-			tuples: vz.options.tuples,
+			tuples: vz.options.group === undefined ? vz.options.tuples : Number.MAX_SAFE_INTEGER,
 			group: vz.entities.speedupFactor()
-		},
-		success: function(json) {
-			this.updateData(json.data);
 		}
+	}).done(function(json) {
+		this.data = json.data;
+		this.dataUpdated();
+	});
+};
+
+/**
+ * Load total consumption from middleware
+ * @return jQuery dereferred object
+ */
+Entity.prototype.loadTotalConsumption = function() {
+	return vz.load({
+		controller: 'data',
+		url: this.middleware,
+		identifier: this.uuid,
+		context: this,
+		data: {
+			from: 0,
+			tuples: 1,
+			group: 'day' // maximum sensible grouping level, first tuple dropped!
+		}
+	}).done(function(json) {
+		// total observed consumption plus initial consumption value
+		this.totalconsumption = (this.definition.scale || 1) * this.initialconsumption + json.data.consumption;
+		// show in UI
+		this.updateDOMRowTotal();
 	});
 };
 
@@ -337,20 +400,19 @@ Entity.prototype.showDetails = function() {
 								identifier: entity.uuid,
 								url: entity.middleware,
 								data: properties,
-								type: 'PULL', // edit
-								success: function(json) {
-									entity.parseJSON(json.entity); // update entity
-									try {
-										vz.entities.showTable();
-										vz.entities.loadData().done(vz.wui.drawPlot);
-									}
-									catch (e) {
-										vz.wui.dialogs.exception(e);
-									}
-									finally {
-										$('#entity-edit').dialog('close');
-										dialog.dialog('close'); // close parent dialog
-									}
+								method: 'PATCH', // edit
+							}).done(function(json) {
+								entity.parseJSON(json.entity); // update entity
+								try {
+									vz.entities.showTable();
+									vz.entities.loadData().done(vz.wui.drawPlot);
+								}
+								catch (e) {
+									vz.wui.dialogs.exception(e);
+								}
+								finally {
+									$('#entity-edit').dialog('close');
+									dialog.dialog('close'); // close parent dialog
 								}
 							});
 						},
@@ -508,7 +570,7 @@ Entity.prototype.getDOMRow = function(parent) {
 	var type = this.definition.translation[vz.options.language];
 	if (vz.options.shortenLongTypes) type = type.replace(/\s*\(.+?\)/, '');
 
-	var row =  $('<tr>')
+	var row = $('<tr>')
 		.addClass((parent) ? 'child-of-entity-' + parent.uuid : '')
 		.addClass((this.definition.model == 'Volkszaehler\\Model\\Aggregator') ? 'aggregator' : 'channel')
 		.addClass('entity')
@@ -590,10 +652,14 @@ Entity.prototype.activate = function(state, parent, recursive) {
 		if (this.hasData()) {
 			queue.push(this.loadData()); // reload data
 		}
+		// start live updates
+		this.subscribe();
 	}
 	else {
 		this.data = undefined; // clear data
 		this.updateDOMRow();
+		// stop live updates
+		this.unsubscribe();
 	}
 
 	if (recursive) {
@@ -605,6 +671,9 @@ Entity.prototype.activate = function(state, parent, recursive) {
 	return $.when.apply($, queue);
 };
 
+/**
+ * Update UI with current entity values
+ */
 Entity.prototype.updateDOMRow = function() {
 	var row = $('#entity-' + this.uuid);
 
@@ -631,7 +700,7 @@ Entity.prototype.updateDOMRow = function() {
 		if (this.data.average)
 			$('.average', row)
 			.text(vz.wui.formatNumber(this.data.average, this.definition.unit));
-		if (this.data.tuples && this.data.tuples.last)
+		if (this.data.tuples && this.data.tuples.length > 0)
 			$('.last', row)
 			.text(vz.wui.formatNumber(this.data.tuples.last()[1], this.definition.unit));
 
@@ -654,7 +723,24 @@ Entity.prototype.updateDOMRow = function() {
 		}
 	}
 
-	vz.entities.updateTable();
+	// show total value if populated
+	this.updateDOMRowTotal();
+
+	vz.entities.updateTableColumnVisibility();
+};
+
+/**
+ * Update totals column after async refresh
+ */
+Entity.prototype.updateDOMRowTotal = function() {
+	if (this.totalconsumption) {
+		var row = $('#entity-' + this.uuid);
+		var unit = vz.wui.formatConsumptionUnit(this.definition.unit);
+
+		$('.total', row)
+			.data('total', this.totalconsumption)
+			.text(vz.wui.formatNumber(this.totalconsumption, unit, 'k'));
+	}
 };
 
 /**
@@ -666,7 +752,7 @@ Entity.prototype.delete = function() {
 		context: this,
 		identifier: this.uuid,
 		url: this.middleware,
-		type: 'DELETE'
+		method: 'DELETE'
 	});
 };
 
@@ -682,7 +768,7 @@ Entity.prototype.addChild = function(child) {
 		controller: 'group',
 		identifier: this.uuid,
 		url: this.middleware,
-		type: 'POST',
+		method: 'POST',
 		data: {
 			uuid: child.uuid
 		}
@@ -703,7 +789,7 @@ Entity.prototype.removeChild = function(child) {
 		controller: 'group',
 		identifier: this.uuid,
 		url: this.middleware,
-		type: 'DELETE',
+		method: 'DELETE',
 		data: {
 			uuid: child.uuid
 		}

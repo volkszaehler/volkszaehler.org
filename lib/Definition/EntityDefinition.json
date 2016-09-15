@@ -1,0 +1,382 @@
+/**
+ * Definition of entities
+ *
+ * Format is specified in EntityDefinition model
+ *
+ * @author Steffen Vogel <info@steffenvogel.de>
+ * @copyright Copyright (c) 2011, The volkszaehler.org project
+ * @package default
+ * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ */
+/*
+ * This file is part of volkzaehler.org
+ *
+ * volkzaehler.org is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * volkzaehler.org is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+ /**
+  * By default the follwing properties are required/optional for all Entities!
+  * (Take a look at EntityDefinition.php)
+  *
+  * $defaultRequired = array('title');
+  * $defaultOptional = array('description', 'public', 'color', 'active', 'style', 'owner', 'address:', 'link');
+  */
+
+[
+	{
+		"name"			: "group",
+		"icon"			: "folder.png",
+		"interpreter"		: "Volkszaehler\\Interpreter\\AggregatorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Aggregator",
+		"translation"		: {
+			"de" : "Gruppe",
+			"en" : "Group",
+			"fr" : "Groupe"
+		}
+	},
+	{
+		"name"			: "building",
+		"icon"			: "house.png",
+		"interpreter"		: "Volkszaehler\\Interpreter\\AggregatorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Aggregator",
+		"translation"		: {
+			"de" : "Gebäude",
+			"en" : "Building",
+			"fr" : "Immeuble"
+		}
+	},
+	{
+		"name"			: "power",
+		"required"		: ["resolution"],
+		"optional"		: ["tolerance", "cost", "local", "initialconsumption"],
+		"icon"			: "bolt.png",
+		"unit"			: "W",
+		"scale"			: 1000,
+		"interpreter"		: "Volkszaehler\\Interpreter\\ImpulseInterpreter",
+		"style"			: "steps",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
+		"translation"		: {
+			"de" : "El. Energie (S0-Impulse)",
+			"en" : "El. Energy (s0-pulses)"
+		}
+	},
+	{
+		"name"			: "powersensor",
+		"optional"		: ["resolution", "tolerance", "cost", "local", "initialconsumption"],
+		"icon"			: "bolt.png",
+		"unit"			: "W",
+		"scale"			: 1000,
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
+		"translation"		: {
+			"de" : "El. Energie (Leistungswerte)",
+			"en" : "El. Energy (power readings)"
+		}
+	},
+	{
+		"name" : "electric meter",
+		"required"		: ["resolution"],
+		"optional" : ["tolerance", "cost", "local", "initialconsumption"],
+		"icon"			: "bolt.png",
+		"unit"			: "W",
+		"scale"			: 1000,
+		"interpreter"		: "Volkszaehler\\Interpreter\\AccumulatorInterpreter",
+		"style"			: "steps",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
+		"translation"		: {
+			"de" : "El. Energie (Zählerstände)",
+			"en" : "El. Energy (absolute meter readings)"
+		}
+	},
+	{
+		"name"			: "voltage",
+		"optional"		: ["resolution", "tolerance", "local", "gap"],
+		"icon"			: "bolt.png",
+		"unit"			: "V",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"		: {
+			"de" : "Spannungssensor",
+			"en" : "Voltage Meter",
+			"fr" : "Voltmètre"
+		}
+	},
+	{
+		"name"			: "current",
+		"optional"		: ["resolution", "tolerance", "local", "gap"],
+		"icon"			: "bolt.png",
+		"unit"			: "A",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"		: {
+			"de" : "Stromsensor",
+			"en" : "Current Meter",
+			"fr" : "Courantmètre"
+		}
+	},
+	{
+		"name"			: "gas",
+		"required"		: ["resolution"],
+		"optional"		: ["tolerance", "cost", "local", "initialconsumption"],
+		"icon"			: "flame.png",
+		"unit"			: "m³/h",
+		"interpreter"		: "Volkszaehler\\Interpreter\\ImpulseInterpreter",
+		"style"			: "steps",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
+		"translation"		: {
+			"de" : "Gas (S0-Impulse)",
+			"en" : "Gas (S0-pulses)",
+			"fr" : "Gaz (S0)"
+		}
+	},
+	{
+		"name"			: "gas meter",
+		"required"		: ["resolution"],
+		"optional"		: ["tolerance", "cost", "local", "initialconsumption"],
+		"icon"			: "flame.png",
+		"unit"			: "m³/h",
+		"interpreter"		: "Volkszaehler\\Interpreter\\AccumulatorInterpreter",
+		"style"			: "steps",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
+		"translation"		: {
+			"de" : "Gas (Zählerstände)",
+			"en" : "Gas (meter readings)"
+		}
+	},
+	{
+		"name"			: "heat",
+		"required"		: ["resolution"],
+		"optional"		: ["tolerance", "cost", "local"],
+		"icon"			: "flame.png",
+		"unit"			: "W",
+		"scale"			: 1000,
+		"interpreter"		: "Volkszaehler\\Interpreter\\ImpulseInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
+		"translation"		: {
+			"de" : "Wärmemengenzähler",
+			"en" : "Heat Meter",
+			"fr" : "Capteur d' énergie thermique"
+		}
+	},
+	{
+		"name"			: "heatsensor",
+		"required"		: ["resolution"],
+		"optional"		: ["tolerance", "cost", "local"],
+		"icon"			: "flame.png",
+		"unit"			: "W",
+		"scale"			: 1000,
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
+		"translation"		: {
+			"de" : "Wärmemengensensor",
+			"en" : "Heat Sensor"
+		}
+	},
+	{
+		"name"			: "temperature",
+		"optional"		: ["resolution", "tolerance", "local", "gap"],
+		"icon"			: "thermometer.png",
+		"unit"			: "°C",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"		: {
+			"de" : "Temperatur",
+			"en" : "Temperature",
+			"fr" : "Température"
+		}
+	},
+	{
+		"name"			: "water",
+		"required"		: ["resolution"],
+		"optional"		: ["tolerance", "cost", "local", "initialconsumption"],
+		"icon"			: "waterdrop.png",
+		"unit"			: "l/h",
+		"interpreter"		: "Volkszaehler\\Interpreter\\ImpulseInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
+		"translation"		: {
+			"de" : "Wassermengenzähler",
+			"en" : "Water",
+			"fr" : "Eau"
+		}
+	},
+	{
+		"name"			: "flow",
+		"optional"		: ["resolution", "tolerance", "local"],
+		"icon"			: "waterdrop.png",
+		"unit"			: "m^3/h",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
+		"translation"		: {
+			"de" : "Wassermengensensor",
+			"en" : "Flow rate",
+			"fr" : "Vitesse d'écoulement"
+		}
+	},
+	{
+		"name"			: "workinghours",
+		"required"		: ["resolution"],
+		"optional"		: ["tolerance", "local"],
+		"icon"			: "clock.png",
+		"unit"			: "h",
+		"interpreter"		: "Volkszaehler\\Interpreter\\ImpulseInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
+		"translation"		: {
+			"de" : "Betriebsstundenzähler (Impulse)",
+			"en" : "Operation Hours Meter (Impulses)",
+			"fr" : "Compteur horaire"
+		}
+	},
+	{
+		"name"			: "workinghourstotal",
+		"required"		: ["resolution"],
+		"optional"		: ["tolerance", "local", "initialconsumption"],
+		"icon"			: "clock.png",
+		"unit"			: "h",
+		"interpreter"		: "Volkszaehler\\Interpreter\\AccumulatorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
+		"translation"		: {
+			"de" : "Betriebsstundenzähler (Zählerstand)",
+			"en" : "Operation Hours Meter (meter readings)",
+			"fr" : "Compteur horaire"
+		}
+	},
+	{
+		"name"			: "workinghourssensor",
+		"required"		: ["resolution"],
+		"optional"		: ["tolerance", "local"],
+		"icon"			: "clock.png",
+		"unit"			: "",
+		"scale"			: 1000,
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"style"			: "states",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
+		"translation"		: {
+			"de" : "Betriebsstundensensor"
+		}
+	},
+	{
+		"name"			: "valve",
+		"optional"		: ["resolution", "tolerance", "local", "gap"],
+		"icon"			: "pipe.png",
+		"unit"			: "%",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"style"			: "states",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"		: {
+			"de" : "Ventil",
+			"en" : "valve",
+			"fr" : "valve"
+		}
+	},
+	{
+		"name"			: "pressure",
+		"optional"		: ["resolution", "tolerance", "local", "gap"],
+		"icon"			: "cloud.png",
+		"unit"			: "hPa",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"		: {
+			"de" : "Luftdruck",
+			"en" : "Barometric Pressure",
+			"fr" : "Pression d'air"
+		}
+	},
+	{
+		"name"			: "humidity",
+		"optional"		: ["resolution", "tolerance", "local", "gap"],
+		"icon"			: "rain.png",
+		"unit"			: "%",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"		: {
+			"de" : "Luftfeuchtigkeit",
+			"en" : "Air Humidity",
+			"fr" : "Hygrométrie"
+		}
+	},
+	{
+		"name"			: "windspeed",
+		"optional"		: ["resolution", "tolerance", "local", "gap"],
+		"icon"			: "propeller.png",
+		"unit"			: "km/h",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"		: {
+			"de" : "Windgeschwindigkeit",
+			"en" : "Windspeed",
+			"fr" : "Vitesse du vent"
+		}
+	},
+	{
+		"name"			: "luminosity",
+		"optional"		: ["resolution", "tolerance", "local", "gap"],
+		"icon"			: "sun.png",
+		"unit"			: "cd",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"		: {
+			"de" : "Lichtstärke",
+			"en" : "Luminosity",
+			"fr" : "Intensité lumineuse"
+		}
+	},
+	{
+		"name"			: "frequency",
+		"optional"		: ["resolution", "tolerance", "local", "gap"],
+		"icon"			: "freq.png",
+		"unit"			: "Hz",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"		: {
+			"de" : "Frequenz",
+			"en" : "Frequency"
+		}
+	},
+	{
+		"name"			: "radiation",
+		"optional"		: ["resolution", "tolerance", "local", "gap"],
+		"icon"			: "radioactivity.png",
+		"unit"			: "μSv",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"		: {
+			"de" : "Radioaktivität (Dosis)",
+			"en" : "Radioactivity (Dose)",
+			"fr" : "Radioactivité (Dose)"
+		}
+	},
+	{
+		"name"			: "user",
+		"icon"			: "user.png",
+		"interpreter"		: "Volkszaehler\\Interpreter\\AggregatorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Aggregator",
+		"translation"		: {
+			"de" : "Nutzer",
+			"en" : "User",
+			"fr" : "Usager"
+		}
+	}
+]

@@ -1,20 +1,8 @@
 // include plug-ins
 var gulp = require('gulp');
-
-var del = require('del');
-var concat = require('gulp-concat');
-var rename = require('gulp-rename');
-var size = require('gulp-size');
-var replace = require('gulp-replace');
-var watch = require('gulp-watch');
-
-var jshint = require('gulp-jshint');
-var uglify = require('gulp-uglify');
-
-var spritesmith = require("gulp.spritesmith");
-var imagemin = require('gulp-imagemin');
-var uncss = require('gulp-uncss');
-var minifyCSS = require('gulp-minify-css');
+var $ = require('gulp-load-plugins')({
+	pattern: ['gulp-*', 'gulp.*', 'watch', 'del'],
+});
 
 // settings
 var base = './htdocs/frontend/';
@@ -31,20 +19,28 @@ var vendor = base + 'vendor/';
 var javascripts = base + 'javascripts/';
 var flot = base + 'vendor/flot/';
 var extensions = base + 'javascripts/jquery/';
+var jsfiles = [
+	'gulpfile.js',
+	base + 'javascripts/**/*.js',
+	'!' + base + 'javascripts/canvas/**/*.js',
+	'!' + base + 'javascripts/jquery/**/*.js',
+	'!**/*.min.js'
+];
 
 /**
  * Defaults
  */
-gulp.task('default', function() {
-	// watch for JS changes
-	gulp.src([
-		base + 'javascripts/**/*.js',
-		'!**/*.min.js',							// omit minified files
-	], { read: false })
-		.pipe(watch())
-		.pipe(jshint())
-		.pipe(jshint.reporter('default'))
-		.pipe(jshint.reporter('fail'));
+gulp.task('default', ['jshint', 'watch']);
+
+
+/**
+ * Watch javascripts
+ */
+gulp.task('watch', function() {
+	gulp.src(jsfiles)
+		.pipe($.watch(jsfiles))
+		.pipe($.jshint())
+		.pipe($.jshint.reporter('default'));
 });
 
 
@@ -54,20 +50,16 @@ gulp.task('default', function() {
 gulp.task('build', ['clean', 'jshint', 'scripts', 'sprites']);
 
 gulp.task('clean', function () {
-	del([
+	$.del([
 		build + '**'
 	]);
 });
 
-
 gulp.task('jshint', function() {
-	gulp.src([
-		base + 'javascripts/*.js',
-		'!**/*.min.js',							// omit minified files
-	])
-		.pipe(jshint())
-		.pipe(jshint.reporter('default'))
-		.pipe(jshint.reporter('fail'));
+	gulp.src(jsfiles)
+		.pipe($.jshint())
+		.pipe($.jshint.reporter('default'))
+		.pipe($.jshint.reporter('fail'));
 });
 
 
@@ -86,13 +78,13 @@ gulp.task('vz-scripts', function() {
 		javascripts + 'entity.js',
 		'!**/options.js',						// exclude options
 	])
-	.pipe(concat('scripts.js'))
-	.pipe(gulp.dest(build))				// for reference only
-	.pipe(size({showFiles: true}))
-	.pipe(uglify())
-	.pipe(rename('scripts.min.js'))
-	.pipe(gulp.dest(javascripts))
-	.pipe(size({showFiles: true}))
+		.pipe($.concat('scripts.js'))
+		.pipe(gulp.dest(build))				// for reference only
+		.pipe($.size({showFiles: true}))
+		.pipe($.uglify())
+		.pipe($.rename('scripts.min.js'))
+		.pipe(gulp.dest(javascripts))
+		.pipe($.size({showFiles: true}));
 });
 
 gulp.task('flot', function() {
@@ -111,13 +103,13 @@ gulp.task('flot', function() {
 		'!**/excanvas*.js',					// omit canvas helper
 		'!**/*.min.js',							// omit minified files
 	])
-	.pipe(concat('flot.js'))
-	.pipe(gulp.dest(build))				// for reference only
-	.pipe(size({showFiles: true}))
-	.pipe(uglify())
-	.pipe(rename('flot.min.js'))
-	.pipe(gulp.dest(flot))
-	.pipe(size({showFiles: true}))
+		.pipe($.concat('flot.js'))
+		.pipe(gulp.dest(build))				// for reference only
+		.pipe($.size({showFiles: true}))
+		.pipe($.uglify())
+		.pipe($.rename('flot.min.js'))
+		.pipe(gulp.dest(flot))
+		.pipe($.size({showFiles: true}));
 });
 
 gulp.task('jquery-ext', function() {
@@ -125,46 +117,42 @@ gulp.task('jquery-ext', function() {
 		extensions + '**.js',
 		'!**/*.min.js',							// omit minified files
 	])
-	.pipe(concat('jquery-ext.js'))
-	.pipe(gulp.dest(build))				// for reference only
-	.pipe(size({showFiles: true}))
-	.pipe(uglify())
-	.pipe(rename('jquery-ext.min.js'))
-	.pipe(gulp.dest(extensions))
-	.pipe(size({showFiles: true}))
+		.pipe($.concat('jquery-ext.js'))
+		.pipe(gulp.dest(build))				// for reference only
+		.pipe($.size({showFiles: true}))
+		.pipe($.uglify())
+		.pipe($.rename('jquery-ext.min.js'))
+		.pipe(gulp.dest(extensions))
+		.pipe($.size({showFiles: true}));
 });
 
 
 /**
  * Sprites
  */
-gulp.task('sprites', ['sprites-combine', 'sprites-optimize']);
-
-// Combine images into sprite
-gulp.task('sprites-combine', function () {
+gulp.task('sprites', function () {
+	// Combine images into sprite
 	var spriteData = gulp.src([
 		images + '!(sprites|blank|ui-|style_|empty)*.png',
 		images + 'types/*!(32).png'
 	])
-		.pipe(spritesmith({
+		.pipe($.spritesmith({
 			imgName: '../images/sprites.png',	// link to images folder
 			cssName: 'sprites.css',
-			algorithm: 'top-down'
+			algorithm: 'top-down',
+			padding: 2
 		}));
 
 	spriteData.img
-		.pipe(imagemin())
+		.pipe($.imagemin())
 		.pipe(gulp.dest(images));
 
 	spriteData.css
 		.pipe(gulp.dest(build));
-});
 
-// Rewrite sprites.css
-gulp.task('sprites-optimize', function () {
 	// remove dimensions and save as new css file
 	gulp.src(build + 'sprites.css')
-		.pipe(replace(/  width: 16px;\n  height: 16px;\n/g, ''))
+		.pipe($.replace(/  width: 16px;\n  height: 16px;\n/g, ''))
 		.pipe(gulp.dest(styles));
 });
 
@@ -175,9 +163,27 @@ gulp.task('sprites-optimize', function () {
 // not used
 gulp.task('css-minimize', function () {
 	gulp.src(styles + '*.css')
-		.pipe(concat('styles.css'))
+		.pipe($.concat('styles.css'))
 		.pipe(gulp.dest(build))
-		.pipe(minifyCSS({keepBreaks:true}))
+		.pipe($.cssnano({
+			keepBreaks:true
+		}))
+		.pipe($.rename('styles.min.css'))
+		.pipe(gulp.dest(build));
+});
+
+// not used
+gulp.task('css-strip', function() {
+	gulp.src(styles + '*.css')
+		// gulp.src(build + 'styles.min.css')
+		.pipe($.uncss({
+			html: [base + 'index.html']
+		}))
+		// .pipe($.rename('styles.min.css'))
+		.pipe(gulp.dest(build))
+		.pipe(cssnano({
+			keepBreaks:true
+		}))
 		.pipe(rename('styles.min.css'))
 		.pipe(gulp.dest(build));
 });

@@ -45,7 +45,7 @@ vz.getLink = function(format) {
 			if (entities.length === 0) {
 				middleware = entity.middleware;
 			}
-			if (entity.middleware == middleware) {
+			if (entity.middleware.indexOf(middleware) >= 0) {
 				entities.push(entity);
 			}
 			else {
@@ -72,12 +72,7 @@ vz.getPermalink = function() {
 	var uuids = [];
 	vz.entities.each(function(entity, parent) {
 		if (entity.active) {
-			if (entity.middleware != vz.options.localMiddleware) {
-				uuids.push(entity.uuid + '@' + 	entity.middleware);
-			}
-			else {
-				uuids.push(entity.uuid);
-			}
+			uuids.push(entity.uuid + '@' + 	entity.middleware);
 		}
 	});
 
@@ -92,58 +87,20 @@ vz.getPermalink = function() {
 
 /**
  * Universal helper for middleware ajax requests with error handling
+ *
+ * @param skipDefaultErrorHandling according to http://stackoverflow.com/questions/19101670/provide-a-default-fail-method-for-a-jquery-deferred-object
  */
-vz.load = function(args) {
+vz.load = function(args, skipDefaultErrorHandling) {
 	$.extend(args, {
 		accepts: 'application/json',
 		beforeSend: function (xhr, settings) {
 			// remember URL for potential error messages
 			xhr.requestUrl = settings.url;
-		},
-		error: function(xhr) {
-			try {
-				var msg;
-				if (xhr.getResponseHeader('Content-type') == 'application/json') {
-					var json = $.parseJSON(xhr.responseText);
-
-					if (json.exception) {
-						msg = xhr.requestUrl + ':<br/><br/>' + json.exception.message;
-						throw new Exception(json.exception.type, msg, (json.exception.code) ? json.exception.code : xhr.status);
-					}
-				}
-				else {
-					msg = "<a href='" + xhr.requestUrl + "' style='text-decoration:none'>" + xhr.requestUrl + "</a>";
-					if (xhr.responseText) {
-						msg += '<br/><br/>' + $(xhr.responseText).text().substring(0,300);
-					}
-
-					var title = "Network Error";
-					if (xhr.status > 0) {
-						title += " (" + xhr.status + " " + xhr.statusText + ")";
-					}
-					else if (xhr.statusText !== "") {
-						title += " (" + xhr.statusText + ")";
-					}
-
-					throw new Exception(title, msg);
-				}
-			}
-			catch (e) {
-				vz.wui.dialogs.exception(e);
-			}
 		}
 	});
 
 	if (args.url === undefined) { // local middleware by default
-		args.url = vz.options.localMiddleware;
-	}
-
-	if (args.url == vz.options.localMiddleware) { // local request
-		args.dataType = 'json';
-	}
-	else { // remote request
-		args.dataType = 'jsonp';
-		args.jsonp = 'padding';
+		args.url = vz.options.middleware[0].url;
 	}
 
 	if (args.controller !== undefined) {
@@ -160,19 +117,30 @@ vz.load = function(args) {
 		args.data = { };
 	}
 
-	if (args.type) {
-		var operationMapping = {
-			post:	'add',
-			delete:	'delete',
-			get:	'get',
-			pull:	'edit'
-		};
-
-		args.data.operation = operationMapping[args.type.toLowerCase()];
-		delete args.type; // this makes jquery append the data to the query string
-	}
-
-	return $.ajax(args);
+	return $.ajax(args).then(
+		// success - no changes needed
+		null,
+		// error
+		function(xhr) {
+			if (xhr.responseJSON && xhr.responseJSON.exception) {
+				// middleware error
+				if (!skipDefaultErrorHandling) {
+					vz.wui.dialogs.middlewareException(xhr.responseJSON.exception, xhr.requestUrl);
+				}
+				return $.Deferred().rejectWith(this, [xhr.responseJSON]);
+			}
+			else {
+				// network error
+				if (!skipDefaultErrorHandling) {
+					vz.wui.dialogs.middlewareException({
+						type: "Network Error",
+						message: xhr.statusText
+					}, xhr.requestUrl);
+				}
+				return $.Deferred().rejectWith(this, [xhr]);
+			}
+		}
+	);
 };
 
 /**
@@ -206,12 +174,12 @@ vz.parseUrlParams = function() {
 						vz.options.plot.xaxis.max = ts;
 					break;
 
+				case 'style': // explicitly set display style
+				case 'fillstyle': // explicitly set fill style
+				case 'linewidth': // explicitly set line width
 				case 'group': // explicitly set data grouping
-					vz.options[key] = vars[key];
-					break;
-
 				case 'options': // data load options
-					vz.options.options = vars[key];
+					vz.options[key] = vars[key];
 					break;
 			}
 		}
@@ -220,7 +188,7 @@ vz.parseUrlParams = function() {
 	entities.each(function(index, identifier) {
 		identifier = identifier.split('@');
 		var uuid = identifier[0];
-		var middleware = (identifier.length > 1) ? identifier[1] : vz.options.localMiddleware;
+		var middleware = (identifier.length > 1) ? identifier[1] : vz.options.middleware[0].url;
 
 		var entity = new Entity({
 			uuid: uuid,
@@ -247,19 +215,35 @@ vz.parseUrlParams = function() {
 };
 
 /**
+ * Get middleware by URL param
+ */
+vz.getMiddleware = function(url) {
+	var mw = $.grep(vz.middleware, function(middleware) {
+		if (url == middleware.url) {
+			return true;
+		}
+	});
+
+	if (mw.length) {
+		return mw[0];
+	}
+
+	return null;
+};
+
+/**
  * Load capabilities from middleware
  */
 vz.capabilities.load = function() {
 	// execute query asynchronously to refresh from middleware
 	var deferred = vz.load({
-		controller: 'capabilities',
-		success: function(json) {
-			$.extend(true, vz.capabilities, json.capabilities);
-			try {
-				localStorage.setItem('vz.capabilities', JSON.stringify(json)); // cache it
-			}
-			catch (e) { }
+		controller: 'capabilities'
+	}).done(function(json) {
+		$.extend(true, vz.capabilities, json.capabilities);
+		try {
+			localStorage.setItem('vz.capabilities', JSON.stringify(json)); // cache it
 		}
+		catch (e) { }
 	});
 
 	// get cached value to avoid blocking frontend startup

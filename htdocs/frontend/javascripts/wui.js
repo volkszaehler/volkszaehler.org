@@ -121,8 +121,11 @@ vz.wui.addEntity = function(entity) {
 	vz.entities.push(entity);
 	vz.entities.saveCookie();
 	vz.entities.showTable();
-	vz.entities.loadData().done(vz.wui.drawPlot);
 	vz.options.plot.axesAssigned = false; // force axis assignment
+	entity.loadData().done(function() {
+		vz.wui.drawPlot();
+		entity.loadTotalConsumption();
+	});
 };
 
 /**
@@ -142,12 +145,11 @@ vz.wui.dialogs.init = function() {
 				vz.middleware.forEach(function(middleware, idx) {
 					vz.load({
 						controller: 'entity',
-						url: middleware.url,
-						success: function(json) {
+						url: middleware.url
+					}).done(function(json) {
 							var public = [];
 							json.entities.each(function(index, json) {
-								var entity = new Entity(json);
-								entity.setMiddleware(middleware.url);
+								var entity = new Entity(json, middleware.url);
 								public.push(entity);
 							});
 
@@ -157,7 +159,6 @@ vz.wui.dialogs.init = function() {
 							if (idx === 0) {
 								populateEntities(vz.middleware[idx]);
 							}
-						}
 					});
 				});
 			}
@@ -177,12 +178,12 @@ vz.wui.dialogs.init = function() {
 	$('#entity-create option[value=power]').attr('selected', 'selected');
 
 	// set defaults
-	$('#entity-subscribe-middleware').val(vz.options.localMiddleware);
+	$('#entity-subscribe-middleware').val(vz.options.middleware[0].url);
 	// add middlewares
 	vz.middleware.forEach(function(middleware, idx) {
 		$('#entity-public-middleware').append($('<option>').val(middleware.url).text(middleware.title));
 	});
-	$('#entity-create-middleware').val(vz.options.localMiddleware);
+	$('#entity-create-middleware').val(vz.options.middleware[0].url);
 	$('#entity-subscribe-cookie').attr('checked', 'checked');
 	$('#entity-public-cookie').attr('checked', 'checked');
 
@@ -201,12 +202,15 @@ vz.wui.dialogs.init = function() {
 		try {
 			var entity = new Entity({
 				uuid: $('#entity-subscribe-uuid').val(),
-				cookie: Boolean($('#entity-subscribe-cookie').prop('checked'))
+				cookie: Boolean($('#entity-subscribe-cookie').prop('checked')),
+				middleware: $('#entity-subscribe-middleware').val()
 			});
 
-			entity.setMiddleware($('#entity-subscribe-middleware').val());
-
-			entity.loadDetails().done(function() {
+			entity.loadDetails().done(function(json) {
+				if (json.exception) {
+					vz.wui.dialogs.exception(json.exception);
+					return;
+				}
 				vz.wui.addEntity(entity);
 			}); // reload entity details and load data
 		}
@@ -219,11 +223,11 @@ vz.wui.dialogs.init = function() {
 	});
 
 	$('#entity-public input[type=button]').click(function() {
+		// get entity from data attribute
 		var entity = $('#entity-public-entity option:selected').data('entity');
 
 		try {
 			entity.cookie = Boolean($('#entity-public-cookie').prop('checked'));
-			entity.setMiddleware($('#entity-public-middleware option:selected').val());
 			vz.wui.addEntity(entity);
 		}
 		catch (e) {
@@ -250,8 +254,14 @@ vz.wui.dialogs.init = function() {
 		$('#entity-create form table .optional').remove();
 
 		var container = $('#entity-create form table');
-		vz.wui.dialogs.addProperties(container, vz.capabilities.definitions.entities[$(this)[0].selectedIndex].required, "required");
-		vz.wui.dialogs.addProperties(container, vz.capabilities.definitions.entities[$(this)[0].selectedIndex].optional, "optional");
+		var entityDefinition = vz.capabilities.definitions.entities[$(this)[0].selectedIndex];
+		vz.wui.dialogs.addProperties(container, entityDefinition.required, "required");
+		vz.wui.dialogs.addProperties(container, entityDefinition.optional, "optional");
+
+		// set default style
+		if (entityDefinition.style) {
+			$(container).find('select[name=style] option[value=' + entityDefinition.style + ']').attr('selected', 'selected');
+		}
 	});
 	$('#entity-create select').change();
 
@@ -270,21 +280,19 @@ vz.wui.dialogs.init = function() {
 			controller: (def.model == 'Volkszaehler\\Model\\Channel') ? 'channel' : 'aggregator',
 			url: $('#entity-create-middleware').val(),
 			data: properties,
-			type: 'POST',
-			success: function(json) {
-				var entity = new Entity(json.entity);
+			method: 'POST'
+		}).done(function(json) {
+			var entity = new Entity(json.entity, $('#entity-create-middleware').val());
 
-				try {
-					entity.cookie = Boolean($('#entity-create-cookie').prop('checked'));
-					entity.setMiddleware($('#entity-create-middleware').val());
-					vz.wui.addEntity(entity);
-				}
-				catch (e) {
-					vz.wui.dialogs.exception(e);
-				}
-				finally {
-					$('#entity-add').dialog('close');
-				}
+			try {
+				entity.cookie = Boolean($('#entity-create-cookie').prop('checked'));
+				vz.wui.addEntity(entity);
+			}
+			catch (e) {
+				vz.wui.dialogs.exception(e);
+			}
+			finally {
+				$('#entity-add').dialog('close');
 			}
 		});
 
@@ -413,6 +421,27 @@ vz.wui.dialogs.addProperties = function(container, proplist, className, entity) 
 };
 
 /**
+ * Extend from..to range to match push updates and redraw
+ */
+vz.wui.zoomToPartialUpdate = function(to) {
+	if (vz.wui.tmaxnow) {
+		// move chart display window
+		var delta = to - vz.options.plot.xaxis.max;
+		vz.options.plot.xaxis.max = to;
+		vz.options.plot.xaxis.min += delta;
+
+		// draw after timeout
+		vz.wui.pushRedrawTimeout = window.setTimeout(function() {
+			vz.wui.pushRedrawTimeout = null;
+			vz.wui.drawPlot();
+		}, vz.options.pushRedrawTimeout);
+	}
+	else {
+		window.clearTimeout(vz.wui.pushRedrawTimeout);
+	}
+};
+
+/**
  * Bind events to handle plot zooming & panning
  */
 vz.wui.initEvents = function() {
@@ -479,6 +508,13 @@ vz.wui.updateLegend = function() {
 				y = p[1];
 			else
 				y = null;
+		} else if (series.lines.states) {
+			y = null;
+			if (j < series.data.length) {				
+				var p3 = series.data[j];
+				if (p3)
+					y = p3[1];
+			}
 		} else { // no steps -> interpolate
 			var p1 = series.data[j - 1], p2 = series.data[j];
 			if (p1 == null || p2 == null) // jshint ignore:line
@@ -686,6 +722,11 @@ vz.wui.formatNumber = function(number, unit, prefix) {
 		number = Math.round(number * Math.pow(10, precision)) / Math.pow(10, precision); // rounding
 	}
 
+	// avoid almost zero
+	if (Math.abs(number) < Math.pow(10, -vz.options.precision)) {
+		number = 0;
+	}
+
 	if (prefix)
 		number += (siIndex > 0) ? ' ' + siPrefixes[siIndex-1] : ' ';
 	else
@@ -709,6 +750,30 @@ vz.wui.formatConsumptionUnit = function(unit) {
 	}
 
 	return unit;
+};
+
+/**
+ * Flot tickFormatter extension to apply axis labels
+ * Copied from jquery.flot.js
+ */
+vz.wui.tickFormatter = function (value, axis, tickIndex, ticks) {
+	// return label instead of last tick
+	if (ticks && tickIndex === ticks.length-1 && axis.options.axisLabel) {
+		return '[' + axis.options.axisLabel + ']';
+	}
+
+	var factor = axis.tickDecimals ? Math.pow(10, axis.tickDecimals) : 1;
+	var formatted = "" + Math.round(value * factor) / factor;
+
+	if (axis.tickDecimals !== null) {
+		var decimal = formatted.indexOf(".");
+		var precision = decimal == -1 ? 0 : formatted.length - decimal - 1;
+		if (precision < axis.tickDecimals) {
+			return (precision ? formatted : formatted + ".") + ("" + factor).substr(1, axis.tickDecimals - precision);
+		}
+	}
+
+	return formatted;
 };
 
 /**
@@ -757,8 +822,13 @@ vz.wui.drawPlot = function () {
 				return t.slice(0);
 			});
 
+
+			var style = vz.options.style || entity.style;
+			var fillstyle = parseFloat(vz.options.fillstyle || entity.fillstyle);
+			var linewidth = parseFloat(vz.options.linewidth || vz.options[index == vz.wui.selectedChannel ? 'lineWidthSelected' : 'lineWidthDefault']);
+
 			// mangle data for "steps" curves by shifting one ts left ("step-before")
-			if (entity.style == "steps") {
+			if (style == "steps") {
 				tuples.unshift([entity.data.from, 1, 1]); // add new first ts
 				for (i=0; i<tuples.length-1; i++) {
 					tuples[i][1] = tuples[i+1][1];
@@ -766,7 +836,7 @@ vz.wui.drawPlot = function () {
 			}
 
 			// remove number of datapoints from each tuple to avoid flot fill error
-			if (entity.fillstyle || entity.gap) {
+			if (fillstyle || entity.gap) {
 				for (i=0; i<tuples.length; i++) {
 					maxTuples = Math.max(maxTuples, tuples[i][2]);
 					delete tuples[i][2];
@@ -780,13 +850,13 @@ vz.wui.drawPlot = function () {
 				title: entity.title,
 				unit : entity.definition.unit,
 				lines: {
-					show: (entity.style == 'lines' || entity.style == 'steps'),
-					steps: (entity.style == 'steps'),
-					lineWidth: (index == vz.wui.selectedChannel ? vz.options.lineWidthSelected : vz.options.lineWidthDefault),
-					fill: (entity.fillstyle !== undefined) ? entity.fillstyle : false
+					show:       style == 'lines' || style == 'steps' || style == 'states',
+					steps:      style == 'steps' || style == 'states',
+					fill:       fillstyle !== undefined ? fillstyle : false,
+					lineWidth:  linewidth
 				},
 				points: {
-					show: (entity.style == 'points')
+					show:       style == 'points'
 				},
 				yaxis: entity.assignedYaxis
 			};
@@ -863,4 +933,12 @@ vz.wui.dialogs.error = function(error, description, code) {
 vz.wui.dialogs.exception = function(exception) {
 	if (vz.wui.errorDialog) return;
 	this.error(exception.type, exception.message, exception.code);
+};
+
+vz.wui.dialogs.middlewareException = function(exception, url) {
+	var msg = exception.message;
+	if (url) {
+		msg = "<a href='" + url + "' style='text-decoration:none'>" + url + "</a>:<br/><br/>" + msg;
+	}
+	this.exception(new Exception("Middleware Error (" + exception.type + ")", msg));
 };

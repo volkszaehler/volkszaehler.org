@@ -102,6 +102,21 @@ $config['aggregation'] = false;
 //$config['db']['path']				= 'volkszaehler';
 
 /**
+ * Push server settings
+ */
+$config['push']['enabled'] = false;		// set to true to enable push updates
+$config['push']['server'] = 5582;		// vzlogger will push to this ports (binds on 0.0.0.0)
+$config['push']['broadcast'] = 8082;	// frontend will subscribe on this port (binds on 0.0.0.0)
+
+$config['push']['routes']['wamp'] = array('/', '/ws');		// routes for wamp access
+$config['push']['routes']['websocket'] = array();			// routes for plain web sockets, try array('/socket')
+
+/**
+ * Security settings
+ */
+$config['security']['maxbodysize'] = false;	// limit maximum POST body size, e.g. 4096
+
+/**
  * Timezone for the middleware
  *
  * See PHP doc for details: http://www.php.net/manual/de/timezones.php

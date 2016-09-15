@@ -30,12 +30,6 @@
  * Array extensions
  * according to js language specification ECMA 1.6
  */
-Array.prototype.indexOf = function(n) {
-	for (var i = 0, l = this.length; i < l; i++) {
-		if (n == this[i]) return i;
-	}
-};
-
 Array.prototype.remove = function(n) {
 	this.splice(this.indexOf(n), 1);
 };

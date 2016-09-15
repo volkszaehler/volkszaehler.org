@@ -28,14 +28,20 @@ use Volkszaehler\Util;
 // enable strict error reporting
 error_reporting(E_ALL | E_STRICT);
 
+// api version
+define('VZ_VERSION', '0.3');
+
 // Note: users of bootstrap.php can set VZ_DIR before calling bootstrap
 if (!defined('VZ_DIR')) {
 	define('VZ_DIR', realpath(__DIR__ . '/..'));
 }
-define('VZ_VERSION', '0.3');
 
 if (!file_exists(VZ_DIR . '/vendor/autoload.php')) {
 	die('Could not find autoloader. Check that dependencies have been installed via `composer install`.');
+}
+
+if (!file_exists(VZ_DIR . '/etc/volkszaehler.conf.php')) {
+	die('Could not find config file. Check that etc/volkszaehler.conf.php exists.');
 }
 
 require_once VZ_DIR . '/vendor/autoload.php';

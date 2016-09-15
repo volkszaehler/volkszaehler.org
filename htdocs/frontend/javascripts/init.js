@@ -32,17 +32,17 @@
  * we dont want to pollute the global namespace
  */
 var vz = {
-	entities: [],	// entity properties + data
-	middleware: [],	// array of all known middlewares
-	wui: {			// web user interface
+	entities: [],			// entity properties + data
+	middleware: [],		// array of all known middlewares
+	wui: {						// web user interface
 		dialogs: { },
 		timeout: null
 	},
 	capabilities: {		// debugging and runtime information from middleware
 		definitions: {}	// definitions of entities & properties
 	},
-	plot: { },		// flot instance
-	options: { }		// options loaded from cookies in options.js
+	plot: { },				// flot instance
+	options: { }			// options loaded from cookies in options.js
 };
 
 /**
@@ -68,28 +68,19 @@ $(document).ready(function() {
 	};
 
 	// add timezone-js support
-	if (typeof timezoneJS != "undefined" && typeof timezoneJS.Date != "undefined") {
+	if (timezoneJS !== undefined && timezoneJS.Date !== undefined) {
 		timezoneJS.timezone.zoneFileBasePath = "tz";
 		timezoneJS.timezone.defaultZoneFile = [];
 		timezoneJS.timezone.init({ async: false });
 	}
 
-	// initialize variables
-	vz.middleware.push({ // default middleware
-		url: vz.options.localMiddleware,
-		title: 'Local (default)',
-		public: [ ] // public entities
-		/* capabilities: { } */
-	});
-
-	// remote middleware(s)
-	vz.options.remoteMiddleware.forEach(function(middleware) {
-		vz.middleware.push({
-			url: middleware.url,
-			title: middleware.title,
-			public: [ ] // public entities
+	// middleware(s)
+	vz.options.middleware.forEach(function(middleware) {
+		vz.middleware.push($.extend(middleware, {
+			public: [ ], // public entities
+			session: null // WAMP session
 			/* capabilities: { } */
-		});
+		}));
 	});
 
 	// TODO make language/translation dependent (vz.options.language)
@@ -127,12 +118,55 @@ $(document).ready(function() {
 			if (vz.entities.length === 0) {
 				vz.wui.dialogs.init();
 			}
+
+			// create table and apply initial state
 			vz.entities.showTable();
+			vz.entities.inheritVisibility();
+
 			vz.entities.loadData().done(function() {
 				vz.wui.drawPlot();
-				vz.entities.loadTotals();
+				vz.entities.loadTotalConsumption();
+			});
+
+			// create WAMP sessions for each middleware
+			vz.middleware.each(function(idx, middleware) {
+				var parser = document.createElement('a');
+				parser.href = middleware.url;
+				var host = parser.hostname || location.host; // location object for IE
+				var protocol = (parser.protocol || location.protocol).toLowerCase().indexOf("https") === 0 ? "wss" : "ws";
+				var uri = protocol + "://" + host;
+
+				// try uri if nothing configured - requires Apache ProxyPass, see
+				// https://github.com/volkszaehler/volkszaehler.org/issues/382
+				if (isNaN(parseFloat(middleware.live))) {
+					if (parser.port) {
+						uri += ":" + parser.port;
+					}
+					// if Apache ProxyPass is used, connect with http(s) but always forward to unencrypted port
+					uri += "/ws"; // parser.pathname.replace(/(\.\.\/)?middleware.php$/, "ws")
+					console.info("Live updates not configured. Trying default path at " + uri);
+				}
+				else {
+				 	// use dedicated port
+				 	uri += ":" + middleware.live;
+				}
+
+				// connect and store session
+				new ab.connect(uri, function(session) {
+					console.log("Autobahn connected to " + uri + " (" + session.sessionid() + ")");
+					middleware.session = session;
+
+					// subscribe entities
+					vz.entities.each(function(entity) {
+						if (entity.active && entity.middleware.indexOf(middleware.url) >= 0) {
+							entity.subscribe(session);
+						}
+					}, true);
+				}, function(code, reason) {
+					console.log("Autobahn disconnected (" + code + ", " + reason + ")");
+					delete middleware.session;
+				});
 			});
 		});
 	});
 });
-

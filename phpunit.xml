@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<phpunit bootstrap="./lib/bootstrap.php">
+
+  <testsuites>
+    <testsuite name="Middleware">
+      <directory suffix="Test.php">test</directory>
+    </testsuite>
+  </testsuites>
+
+  <!-- exclude performance tests by default -->
+    <groups>
+      <exclude>
+        <group>slow</group>
+        <group>jpgraph</group>
+        <group>pushserver</group>
+      </exclude>
+    </groups>
+
+  <!-- configure code coverage -->
+  <filter>
+    <blacklist>
+      <directory suffix=".php">../vendor</directory>
+    </blacklist>
+  </filter>
+
+  <php>
+    <!-- use HTTP to access middleware via HTTP -->
+    <const name="testAdapter" value="DIRECT" />
+    <const name="testHttpUri" value="http://127.0.0.1:8080" />
+  </php>
+</phpunit>
