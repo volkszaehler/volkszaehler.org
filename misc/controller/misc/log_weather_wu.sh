@@ -4,41 +4,51 @@
 ## This is a service from www.wunderground.com
 ## Please install on Ubuntu the package curl before using the script
 ## This script get accurate weather data directly from personal weather stations
-## in your environment. Word wide are more than 200.000 stations active.
+## in your environment. World wide are more than 200.000 stations active.
 ## Info: Not all stations send all weather data. Please check the station on
 ## the webpage before using.
 
-
-## Personal weater station location identifyer 
-PWS='ISACHSEN356'
 ## WeatherUnderground Application Key
 ## Create a free user account on www.wunderground.com and use the free application key
 ## Limitations! max 500 requests per day and max 10 reqiests per minute
 ## Save interval must grater than 5 min otherwise stop the service!
-APPID='1234567890123456'
+## eg. APPID='1234567890123456'
+APPID=''
+
 ## Personal weater station location name
 ## The station name you find on the webpage www.wunderground.com
 ## Notice: Using only the personal weather station (PWS) name. Other names are not
 ## working!
 PWS='ISACHSEN356'
-## WeatherUnderground url
-## http://api.wunderground.com/api/1234567890123456/conditions/q/pws:ISACHSEN356.json
-WU="http://api.wunderground.com/api/$APPID/conditions/q/pws:$PWS.json"
+
+## Selection time source for saving in database
+## 0 = using local PC time
+## 1 = using update timestamp from WeatherUnderground
+TS='0'
+
 ## middleware url
 ## http://yourserverip/volkszaehler.org/htdocs/middleware
 URL="http://127.0.0.1/volkszaehler.org/htdocs/middleware"
 
-##  uuid of the sensor in the volkszaehler database
-UUID_temperature='12345678-1234-1234-1234-123456789012'
-UUID_pressure='12345678-1234-1234-1234-123456789012'
-UUID_relative_humidity='12345678-1234-1234-1234-123456789012'
-UUID_dewpoint='12345678-1234-1234-1234-123456789012'
-UUID_winddirection='12345678-1234-1234-1234-123456789012'
-UUID_wind='12345678-1234-1234-1234-123456789012'
-UUID_solar='12345678-1234-1234-1234-123456789012'
-UUID_uvindex='12345678-1234-1234-1234-123456789012'
+## UUID of the sensor in the volkszaehler database
+## Is the UUID empty then dont saving in the VZ database
+## eg. UUID_temperature='12345678-1234-1234-1234-12345678901a' 
+UUID_temperature=''
+UUID_pressure=''
+UUID_relative_humidity=''
+UUID_dewpoint=''
+UUID_winddirection=''
+UUID_wind=''
+UUID_solar=''
+UUID_uvindex=''
 
-## 
+
+#### Dont edit the following lines! ####
+
+## WeatherUnderground url
+## http://api.wunderground.com/api/1b0d33c840c54ac4/conditions/q/pws:ISACHSEN356.json
+WU="http://api.wunderground.com/api/$APPID/conditions/q/pws:$PWS.json"
+ 
 ## paths to binaries - you should not need to change these
 CURL=/usr/bin/curl
 NC=/bin/nc
@@ -72,11 +82,11 @@ timestamp=$last_update"000"
  echo -e "LocalTime: "`date`
  echo -e "UTC Time: "`date -u`
  echo "PWS: "$PWS
- echo "Temp: "$temperature"°C"
+ echo "Temp: "$temperature"Â°C"
  echo "Humi: "$relative_humidity"%"
  echo "Pres: "$pressure"hPa"
- echo "Dewp: "$dewpoint"°C"
- echo "WDir: "$winddirection"°"
+ echo "Dewp: "$dewpoint"Â°C"
+ echo "WDir: "$winddirection"Â°"
  echo "Wind: "$wind"km/h"
  echo "Solar: "$solar"W/m2"
  echo "UV: "$uvindex""
@@ -85,22 +95,79 @@ timestamp=$last_update"000"
  echo "Timestamp: "$timestamp
 ### Debug
 
-# With timestemp from weather service
-# $CURL --data "" "$URL/data/$UUID_temperature.json?ts=$timestamp&value=$temperature" &>/dev/null
-# $CURL --data "" "$URL/data/$UUID_pressure.json?ts=$timestamp&value=$pressure" &>/dev/null
-# $CURL --data "" "$URL/data/$UUID_relative_humidity.json?ts=$timestamp&value=$relative_humidity" &>/dev/null
-# $CURL --data "" "$URL/data/$UUID_dewpoint.json?ts=$timestamp&value=$dewpoint" &>/dev/null
-# $CURL --data "" "$URL/data/$UUID_winddirection.json?ts=$timestamp&value=$winddirection" &>/dev/null
-# $CURL --data "" "$URL/data/$UUID_wind.json?ts=$timestamp&value=$wind" &>/dev/null
-# $CURL --data "" "$URL/data/$UUID_solar.json?ts=$timestamp&value=$solar" &>/dev/null
-# $CURL --data "" "$URL/data/$UUID_uvindex.json?ts=$timestamp&value=$uvindex" &>/dev/null
 
-# Withou timestamp, using local PC time
-$CURL --data "" "$URL/data/$UUID_temperature.json?value=$temperature" &>/dev/null
-$CURL --data "" "$URL/data/$UUID_pressure.json?value=$pressure" &>/dev/null
-$CURL --data "" "$URL/data/$UUID_relative_humidity.json?value=$relative_humidity" &>/dev/null
-$CURL --data "" "$URL/data/$UUID_dewpoint.json?value=$dewpoint" &>/dev/null
-$CURL --data "" "$URL/data/$UUID_winddirection.json?value=$winddirection" &>/dev/null
-$CURL --data "" "$URL/data/$UUID_wind.json?value=$wind" &>/dev/null
-$CURL --data "" "$URL/data/$UUID_solar.json?value=$solar" &>/dev/null
-$CURL --data "" "$URL/data/$UUID_uvindex.json?value=$uvindex" &>/dev/null
+# Save the data with or withou timestamp from WeatherUnderground
+# when exist a UUID
+if [ -n "$APPID" ]; then
+  if [ $TS = "0" ]; then
+  echo "Saving all values with local PC time"
+  else
+  echo "Saving all values with update time from WeatherUnderground"
+  fi
+  if [ -n "$UUID_temperature" ]; then
+  echo "Save Temp with UUID: "$UUID_temperature" in database"
+    if [ $TS = "0" ]; then
+    $CURL --data "" "$URL/data/$UUID_temperature.json?value=$temperature" &>/dev/null
+    else
+    $CURL --data "" "$URL/data/$UUID_temperature.json?ts=$timestamp&value=$temperature" &>/dev/null
+    fi
+  fi
+  if [ -n "$UUID_pressure" ]; then
+  echo "Save Pressure with UUID: "$UUID_pressure" in database"
+    if [ $TS = "0" ]; then
+    $CURL --data "" "$URL/data/$UUID_temperature.json?value=$pressure" &>/dev/null
+    else
+    $CURL --data "" "$URL/data/$UUID_pressure.json?ts=$timestamp&value=$pressure" &>/dev/null
+    fi
+  fi
+  if [ -n "$UUID_relative_humidity" ]; then
+  echo "Save Humidity  with UUID: "$UUID_relative_humidity" in database"
+    if [ $TS = "0" ]; then
+    $CURL --data "" "$URL/data/$UUID_relative_humidity.json?value=$relative_humidity" &>/dev/null
+    else
+    $CURL --data "" "$URL/data/$UUID_relative_humidity.json?ts=$timestamp&value=$relative_humidity" &>/dev/null
+    fi
+  fi
+  if [ -n "$UUID_dewpoint" ]; then
+  echo "Save Dewpoint with UUID: "$UUID_dewpoint" in database"
+    if [ $TS = "0" ]; then
+    $CURL --data "" "$URL/data/$UUID_dewpoint.json?value=$dewpoint" &>/dev/null
+    else
+    $CURL --data "" "$URL/data/$UUID_dewpoint.json?ts=$timestamp&value=$dewpoint" &>/dev/null
+    fi
+  fi
+  if [ -n "$UUID_winddirection" ]; then
+  echo "Save Winddirection with UUID: "$UUID_winddirection" in database"
+    if [ $TS = "0" ]; then
+    $CURL --data "" "$URL/data/$UUID_winddirection.json?value=$winddirection" &>/dev/null
+    else
+    $CURL --data "" "$URL/data/$UUID_winddirection.json?ts=$timestamp&value=$winddirection" &>/dev/null
+    fi
+  fi
+  if [ -n "$UUID_wind" ]; then
+  echo "Save Windspeed with UUID: "$UUID_wind" in database"
+    if [ $TS = "0" ]; then
+    $CURL --data "" "$URL/data/$UUID_wind.json?value=$wind" &>/dev/null
+    else
+    $CURL --data "" "$URL/data/$UUID_wind.json?ts=$timestamp&value=$wind" &>/dev/null
+    fi
+  fi
+  if [ -n "$UUID_solar" ]; then
+  echo "Save Solar with UUID: "$UUID_solar" in database"
+    if [ $TS = "0" ]; then
+    $CURL --data "" "$URL/data/$UUID_solar.json?value=$solar" &>/dev/null
+    else
+    $CURL --data "" "$URL/data/$UUID_solar.json?ts=$timestamp&value=$solar" &>/dev/null
+    fi
+  fi
+  if [ -n "$UUID_uvindex" ]; then
+  echo "Save UV-Index with UUID: "$UUID_uvindex" in database"
+    if [ $TS = "0" ]; then
+    $CURL --data "" "$URL/data/$UUID_uvindex.json?value=$uvindex" &>/dev/null
+    else
+    $CURL --data "" "$URL/data/$UUID_uvindex.json?ts=$timestamp&value=$uvindex" &>/dev/null
+    fi
+  fi
+else
+echo "APPID is empty! Please set the Application Key"
+fi
