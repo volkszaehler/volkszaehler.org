@@ -139,6 +139,21 @@ abstract class Interpreter implements \IteratorAggregate {
 	}
 
 	/**
+	 * Update min max based on current tuple
+	 *
+	 * @param  array  $tuple
+	 */
+	protected function updateMinMax($tuple) {
+		if (is_null($this->max) || $tuple[1] > $this->max[1]) {
+			$this->max = $tuple;
+		}
+
+		if (is_null($this->min) || $tuple[1] < $this->min[1]) {
+			$this->min = $tuple;
+		}
+	}
+
+	/**
 	 * Get minimum
 	 *
 	 * @return array (0 => timestamp, 1 => value)

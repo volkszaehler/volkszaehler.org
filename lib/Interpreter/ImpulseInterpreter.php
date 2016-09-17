@@ -55,13 +55,7 @@ class ImpulseInterpreter extends Interpreter {
 				$tuple = $this->convertRawTuple($row);
 				$this->pulseCount += $row[1];
 
-				if (is_null($this->max) || $tuple[1] > $this->max[1]) {
-					$this->max = $tuple;
-				}
-
-				if (is_null($this->min) || $tuple[1] < $this->min[1]) {
-					$this->min = $tuple;
-				}
+				$this->updateMinMax($tuple);
 
 				yield $tuple;
 			}

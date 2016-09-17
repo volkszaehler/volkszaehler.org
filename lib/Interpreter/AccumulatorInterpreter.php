@@ -62,13 +62,7 @@ class AccumulatorInterpreter extends Interpreter {
 				$tuple = $this->convertRawTuple($row);
 				$this->valsum += $this->delta_val;
 
-				if (is_null($this->max) || $tuple[1] > $this->max[1]) {
-					$this->max = $tuple;
-				}
-
-				if (is_null($this->min) || $tuple[1] < $this->min[1]) {
-					$this->min = $tuple;
-				}
+				$this->updateMinMax($tuple);
 
 				yield $tuple;
 			}
