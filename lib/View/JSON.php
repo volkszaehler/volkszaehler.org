@@ -73,12 +73,12 @@ class JSON extends View {
 	 * Prepare json response structure and clean intermediate streaming buffer
 	 */
 	public function prepareResponse() {
-		if (isset($json['debug'])) {
+		if (isset($this->json['debug'])) {
 			$this->json = array('version' => VZ_VERSION, 'debug' => $this->json['debug']);
-
 		}
-		else
-		$this->json = array('version' => VZ_VERSION);
+		else {
+			$this->json = array('version' => VZ_VERSION);
+		}
 		$this->content = '';
 	}
 
