@@ -30,12 +30,8 @@ use Doctrine\DBAL;
  * @author Steffen Vogel <info@steffenvogel.de>
  * @package default
  */
-class DataIterator implements \Iterator, \Countable {
+class DataIterator implements \IteratorAggregate, \Countable {
 	protected $stmt;	// PDO statement
-
-	protected $current;	// the current data
-	protected $key;		// key
-	protected $rowKey;	// internal key for PDO statement
 
 	protected $rowCount;	// num of readings in PDOStatement
 	protected $tupleCount;	// num of requested tuples
@@ -81,34 +77,34 @@ class DataIterator implements \Iterator, \Countable {
 	}
 
 	/**
-	 * Aggregate data
-	 * @return next aggregated tuple
+	 * @return \Generator
 	 */
-	public function next() {
-		$firstTimestamp = $this->lastTimestamp; // SensorInterpreter
+	public function getIterator() {
+		$this->lastTimestamp = $this->from;
 
-		$package = array(0, 0, 0, 0, 0);
-		for ($i = 0; $i < $this->packageSize && $tuple = $this->stmt->fetch(); $i++) {
-			$package[0] = $tuple[0]; // last timestamp of package will be used
-			$package[1] += $tuple[1];
-			$package[2] += $tuple[2];
+		do {
+			$firstTimestamp = $this->lastTimestamp; // SensorInterpreter
 
-			// special cases - auxilary information for specific interpreters
-			$package[3] = max($package[3], $tuple[1]);						// AccumulatorInterpreter
-			$package[4] += $tuple[1] * ($tuple[0] - $this->lastTimestamp);	// SensorInterpreter
+			$package = array(0, 0, 0, 0, 0);
+			for ($i = 0; $i < $this->packageSize && $tuple = $this->stmt->fetch(); $i++) {
+				$package[0] = $tuple[0]; 	// use timestamp of last package tuple as package timestamp
+				$package[1] += $tuple[1];										// ImpulseInterpreter
+				$package[2] += $tuple[2];										// number of rows in package
+				$package[3] = max($package[3], $tuple[1]);						// AccumulatorInterpreter
+				$package[4] += $tuple[1] * ($tuple[0] - $this->lastTimestamp);	// SensorInterpreter
 
-			$this->lastTimestamp = $tuple[0];
-			$this->rowKey++;
-		}
+				$this->lastTimestamp = $tuple[0];
+			}
 
-		$this->key++;
+			if ($package[2]) {
+				$this->to = $package[0];
+				$package[4] /= $this->lastTimestamp - $firstTimestamp; // weighed average for SensorInterpreter
 
-		if ($package[2]) {
-			$this->to = $package[0];
-			$package[4] /= $this->lastTimestamp - $firstTimestamp; // weighed average for SensorInterpreter
-		}
+				yield $package;
+			}
+		} while ($tuple !== false);
 
-		$this->current = $package;
+		$this->stmt->closeCursor();
 	}
 
 	/**
@@ -116,31 +112,13 @@ class DataIterator implements \Iterator, \Countable {
 	 */
 	public function firstValue() { return $this->firstValue; }
 
-	/**
-	 * Rewind the iterator
-	 *
-	 * @internal Should only be called once: PDOStatement hasn't a rewind()
-	 */
-	public function rewind() {
-		$this->key = $this->rowKey = 0;
-		$this->lastTimestamp = $this->from;
-		$this->next(); // fetch first tuple
-	}
-
-	public function valid() {
-		return ($this->current[2] > 0); // current package contains at least 1 tuple
-	}
-
-	/**
+	/*
 	 * Getter & setter
 	 */
-	public function getPackageSize() { return $this->packageSize; }
 	public function getFrom() { return $this->from; }
 	public function getTo() { return $this->to; }
 
 	public function count() { return $this->tupleCount; }
-	public function key() { return $this->key; }
-	public function current() { return $this->current; }
 }
 
 ?>

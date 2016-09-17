@@ -26,6 +26,9 @@ class GroupTest extends Middleware
 		))->entity->uuid;
 	}
 
+	/**
+	 * @depends testCreateGroup
+	 */
 	function testEditGroup() {
 		// edit group
 		$val = 'NewValue';
@@ -35,6 +38,9 @@ class GroupTest extends Middleware
 		))->entity->title);
 	}
 
+	/**
+	 * @depends testCreateGroup
+	 */
 	function testAddChildren() {
 		// create child
 		$child = $this->getJson('/group.json', array(
@@ -67,6 +73,32 @@ class GroupTest extends Middleware
 		$this->assertObjectNotHasAttribute('children', $this->getJson('/group/' . self::$uuid . '.json')->entity);
 	}
 
+	/**
+	 * @depends testCreateGroup
+	 */
+	function testAddDataToGroup() {
+		// $this->addTuple($this->ts1, $this->value1);
+		$this->json = $this->getJson('/data/' . self::$uuid . '.json', array(
+			'operation' => 'add',
+			'value' => 1
+		), 'GET', true);
+
+		$this->assertTrue(isset($this->json->exception));
+	}
+
+	/**
+	 * @depends testCreateGroup
+	 */
+	function testGetDataFromGroup() {
+		// $this->getTuples($this->ts1-1, $this->ts2);
+		$this->json = $this->getJson('/data/' . self::$uuid . '.json', array(), 'GET', true);
+
+		$this->assertTrue(isset($this->json->exception));
+	}
+
+	/**
+	 * @depends testCreateGroup
+	 */
 	function testDeleteGroup() {
 		// delete group
 		$this->getJson('/group/' . self::$uuid . '.json', array(

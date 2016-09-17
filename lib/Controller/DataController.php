@@ -82,6 +82,10 @@ class DataController extends Controller {
 	public function add($uuid) {
 		$channel = EntityController::factory($this->em, $uuid, true);
 
+		if (!$channel instanceof Model\Channel) {
+			throw new \Exception('Adding data is only supported for channels');
+		}
+
 		try { /* to parse new submission protocol */
 			$rawPost = $this->request->getContent(); // file_get_contents('php://input')
 

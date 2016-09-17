@@ -30,20 +30,13 @@ use Volkszaehler\Util;
 /**
  * Interpreter to aggregate child Channels or Aggregators
  *
- * The AggregatorInterpreter is used to aggregate multiple channels with the same
- * indicator
+ * Placeholder only- aggregating child data is not implemented
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @author Andreas Goetz <cpuidle@gmx.de>
  * @package default
  */
 class AggregatorInterpreter extends Interpreter {
-	/**
-	 * @var array of Interpreter
-	 */
-	protected $childrenInterpreter = array();
-
-	protected $aggregator;
 
 	/**
 	 * Constructor
@@ -52,95 +45,20 @@ class AggregatorInterpreter extends Interpreter {
 	 * @param ORM\EntityManager $em
 	 * @param integer $from timestamp in ms since 1970
 	 * @param integer $to timestamp in ms since 1970
-	 * @todo handle channels in nested aggregators
-	 * @todo handle child entities of different units
 	 */
 	public function __construct(Model\Aggregator $aggregator, ORM\EntityManager $em, $from, $to, $tupleCount = null, $groupBy = null) {
-		$this->aggregator = $aggregator;
+		throw new \Exception('Getting data is not supported for groups');
+	}
 
-		foreach ($aggregator->getChildren() as $child) {
-			if ($child instanceof Model\Channel) {
-				$class = $child->getDefinition()->getInterpreter();
-				$this->childrenInterpreter[] = new $class($child, $em, $from, $to, $tupleCount, $groupBy);
-			}
-		}
+	/**
+	 * Generate database tuples
+	 */
+	public function getIterator() {
 	}
 
 	/**
 	 * Convert raw meter readings
 	 */
 	public function convertRawTuple($row) {
-		return null;
 	}
-
-	/*
-	 * Iterator methods - not implemented
-	 */
-	public function rewind() {
-	}
-
-	public function current() {
-	}
-
-	public function valid() {
-		return false;
-	}
-
-	/**
-	 * Get total consumption of all channels - not implemented
-	 */
-	public function getConsumption() {
-	}
-
-	/**
-	 * Just a passthrough to the channel interpreters
-	 *
-	 * @return array with the smallest value
-	 */
-	public function getMin() {
-		$min = null;
-		foreach ($this->childrenInterpreter as $interpreter) {
-			$arr = $interpreter->getMax();
-			if (! $min or $arr[1] < $min[1]) {
-				$min = $arr;
-			}
-		}
-		return $min;
-	}
-
-	/**
-	 * Just a passthrough to the channel interpreters
-	 *
-	 * @return array with the biggest value
-	 */
-	public function getMax() {
-		$max = null;
-		foreach ($this->childrenInterpreter as $interpreter) {
-			$arr = $interpreter->getMax();
-			if (! $max or $arr[1] > $max[1]) {
-				$max = $arr;
-			}
-		}
-		return $max;
-	}
-
-	/**
-	 * Just a passthrough to the channel interpreters
-	 *
-	 * @return float average value
-	 */
-	public function getAverage() {
-		$sum = 0;
-		foreach ($this->childrenInterpreter as $interpreter) {
-			$sum += $interpreter->getAverage();
-		}
-		return (count($this->childrenInterpreter)) ? $sum / count($this->childrenInterpreter) : null;
-	}
-
-	/*
-	 * Getter & setter
-	 */
-
-	public function getEntity() { return $this->aggregator; }
-	public function getChildrenInterpreter() { return $this->childrenInterpreter; }
 }

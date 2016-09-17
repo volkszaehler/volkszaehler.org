@@ -54,8 +54,8 @@ class JSON extends View {
 	 */
 	public function __construct(Request $request) {
 		parent::__construct($request);
+		$this->prepareResponse();
 
-		$this->json = array('version' => VZ_VERSION);
 		// use StreamedResponse unless pretty-printing is required
 		if (Util\Debug::isActivated()) {
 			$this->add(Util\Debug::getInstance());
@@ -70,12 +70,31 @@ class JSON extends View {
 	}
 
 	/**
+	 * Prepare json response structure and clean intermediate streaming buffer
+	 */
+	public function prepareResponse() {
+		if (isset($this->json['debug'])) {
+			$this->json = array('version' => VZ_VERSION, 'debug' => $this->json['debug']);
+		}
+		else {
+			$this->json = array('version' => VZ_VERSION);
+		}
+		$this->content = '';
+	}
+
+	/**
 	 * Render response and send it to the client
 	 */
 	public function send() {
 		if ($this->response instanceof StreamedResponse) {
 			$this->response->setCallback(function() {
-				$this->renderDeferred();
+				// callback happens outside Router->handle() and requires explicit exception handling
+				try {
+					$this->renderDeferred();
+				}
+				catch (\Exception $e) {
+					$this->renderStreamedException($e);
+				}
 				flush();
 			});
 		}
@@ -105,9 +124,6 @@ class JSON extends View {
 	 * For StreamedResponse the renderDeferred happens outside Router->handle() and therefore
 	 * without surrounding try/catch. To enable exception handling via json responses, all output
 	 * must be collected until Exception occured and is handled by View.
-	 *
-	 * Since most likely source of exceptions and source of mass-data is Interpreter->processData(),
-	 * this case is implemented in renderInterpreter() below.
 	 */
 	protected function renderDeferred() {
 		$this->content .= '{';
@@ -161,16 +177,15 @@ class JSON extends View {
 	 * Render exception for StreamedResponse
 	 */
 	private function renderStreamedException(\Exception $exception) {
-		// cleanup result structure
-		$this->json = array('version' => VZ_VERSION);
-		$this->content = '';
+		$this->prepareResponse();
 
 		// add exception to output
 		$this->getExceptionResponse($exception);
 
 		// render
 		$this->response->sendHeaders();
-		$this->renderDeferred();
+		$this->content = json_encode($this->json);
+		$this->renderContent();
 	}
 
 	/**
@@ -181,22 +196,13 @@ class JSON extends View {
 	protected function renderInterpreter(Interpreter\Interpreter $interpreter) {
 		$this->content .= '{"tuples":[';
 
-		try {
-			// start with iterating through PDO result set to populate interpreter header data
-			foreach ($interpreter as $key => $tuple) {
-				// render buffered content- likely no exception after loop iteration has started
-				$this->renderContent();
+		// start with iterating through PDO result set to populate interpreter header data
+		foreach ($interpreter as $key => $tuple) {
+			// render buffered content- likely no exception after loop iteration has started
+			$this->renderContent();
 
-				if ($key) echo(',');
-				echo('[' . $tuple[0] . ',' . View::formatNumber($tuple[1]) . ',' . $tuple[2] . ']');
-			}
-		}
-		catch (\Exception $e) {
-			if ($this->response instanceof StreamedResponse) {
-				$this->renderStreamedException($e);
-				die;
-			}
-			throw ($e);
+			if ($key) echo(',');
+			echo('[' . $tuple[0] . ',' . View::formatNumber($tuple[1]) . ',' . $tuple[2] . ']');
 		}
 
 		// render buffered content if not rendered inside foreach loop due to Interpreter empty

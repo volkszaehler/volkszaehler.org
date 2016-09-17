@@ -1,8 +1,6 @@
 language: php
 
 php:
-    - 5.4
-    - 5.5
     - 5.6
     - 7.0
     - nightly
@@ -29,21 +27,21 @@ env:
 matrix:
   include:
     # httpd-based
-    - php: 5.4
+    - php: 5.6
       env: DB=mysql TEST_COMPONENT=HTTPD
     # push-server
-    - php: 5.4
+    - php: 5.6
       env: DB=mysql TEST_COMPONENT=PUSH_SERVER
     # from..to
-    - php: 5.4
+    - php: 5.6
       env: DB=mysql DEPENDENCIES=lowest
-    - php: 5.4
+    - php: 5.6
       env: DB=mysql DEPENDENCIES=highest
     # jslint-only
-    - php: 5.4
+    - php: 5.6
       env: DB= DEPENDENCIES= JSLINT=true
     # security
-    - php: 5.4
+    - php: 5.6
       env: DB= DEPENDENCIES= SECURITY=true
   # remove hhvm/pgsql
   exclude:
@@ -54,6 +52,8 @@ matrix:
   allow_failures:
     - php: nightly
     - php: hhvm
+    - php: 5.6
+      env: DB=mysql TEST_COMPONENT=HTTPD
 
 notifications:
     mail: "volkszaehler-dev@lists.volkszaehler.org"
@@ -85,8 +85,8 @@ install:
     - |
       if [ "$APC" = true ]; then
         phpenv config-add ./test/bin/apc.ini
-        if php -r 'exit(version_compare(PHP_VERSION, "5.5", ">=")?0:1);'; then echo "no" | pecl install apcu-beta; fi
-        if php -r 'exit(function_exists("apc_store")?0:1);'; then echo "APC enabled"; else echo "APC disabled"; fi
+        if php -r 'exit(version_compare(PHP_VERSION, "5.5", ">=")?0:1);'; then echo "no" | pecl install apcu; fi
+        if php -r 'exit(function_exists("apcu_store")?0:1);'; then echo "APCu enabled"; else echo "APCu disabled"; fi
       fi
 
 before_script:
