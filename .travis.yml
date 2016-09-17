@@ -83,8 +83,8 @@ install:
     - |
       if [ "$APC" = true ]; then
         phpenv config-add ./test/bin/apc.ini
-        if php -r 'exit(version_compare(PHP_VERSION, "5.5", ">=")?0:1);'; then echo "no" | pecl install apcu-beta; fi
-        if php -r 'exit(function_exists("apc_store")?0:1);'; then echo "APC enabled"; else echo "APC disabled"; fi
+        if php -r 'exit(version_compare(PHP_VERSION, "5.5", ">=")?0:1);'; then echo "no" | pecl install apcu; fi
+        if php -r 'exit(function_exists("apcu_store")?0:1);'; then echo "APCu enabled"; else echo "APCu disabled"; fi
       fi
 
 before_script:

@@ -235,16 +235,16 @@ class Router implements HttpKernelInterface {
 
 		if (Util\Configuration::read('devmode') == FALSE) {
 			$cache = null;
-			if (extension_loaded('apc'))
-				$cache = new Cache\ApcCache;
+			if (extension_loaded('apcu'))
+				$cache = new Cache\ApcuCache;
 			if ($cache) {
 				$config->setMetadataCacheImpl($cache);
 				$config->setQueryCacheImpl($cache);
 			}
 		}
-		else if (extension_loaded('apc')) {
+		else if (extension_loaded('apcu')) {
 			// clear cache
-			apc_clear_cache('user');
+			apcu_clear_cache('user');
 		}
 
 		$driverImpl = $config->newDefaultAnnotationDriver(VZ_DIR . '/lib/Model');
