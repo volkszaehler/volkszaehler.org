@@ -79,7 +79,7 @@ timeA=`date +%H:%M:%S`
 timestamp=$last_update"000"
 
 ### Debug
- echo "Frendly weather service from WeatherUnderground"
+ echo "Frendly weather service from WeatherUnderground (C)"
  echo "www.wunderground.com"
  echo -e "LocalTime: "`date`
  echo -e "UTC Time: "`date -u`
@@ -105,7 +105,7 @@ if [ -n "$APPID" ]; then
   echo "Saving all values with local PC time"
   timestring=""
   else
-  echo "Saving all values with update time from WeatherUnderground (C)"
+  echo "Saving all values with update time from WeatherUnderground"
   timestring="ts="$timestamp"&"
   fi
   if [ -n "$UUID_temperature" ]; then
