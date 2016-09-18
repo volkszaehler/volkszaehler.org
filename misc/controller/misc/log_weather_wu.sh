@@ -105,7 +105,7 @@ if [ -n "$APPID" ]; then
   echo "Saving all values with local PC time"
   timestring=""
   else
-  echo "Saving all values with update time from WeatherUnderground"
+  echo "Saving all values with update time from WeatherUnderground (C)"
   timestring="ts="$timestamp"&"
   fi
   if [ -n "$UUID_temperature" ]; then
