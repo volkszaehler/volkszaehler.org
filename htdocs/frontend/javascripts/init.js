@@ -95,7 +95,7 @@ $(document).ready(function() {
 	// parse additional url params (new uuid etc e.g. for permalink) after loading defaults
 	vz.parseUrlParams();
 
-	// initialize user interface
+	// initialize user interface (may need to wait for onLoad on Safari)
 	vz.wui.init();
 
 	// chaining ajax request with jquery deferred object
