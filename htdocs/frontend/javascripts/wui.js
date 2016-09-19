@@ -35,7 +35,7 @@ vz.wui.init = function() {
 	// resize handling
 	$(window).resize(vz.wui.resizePlot);
 	$('#accordion h3').click(function() {
-		$(this).next().toggle('fast', vz.wui.resizePlot);
+		$(this).next().toggle(0, vz.wui.resizePlot);
 		return false;
 	}).next().hide();
 	$('#entity-list').show(); // open entity list by default
@@ -84,7 +84,7 @@ vz.wui.init = function() {
 vz.wui.resizePlot = function() {
 	// resize container depending on window vs. content height
 	var delta = $(window).height() - $('html').height();
-	$('#flot').height(Math.max($('#flot').height() + delta, vz.options.plot.minHeight || 400));
+	$('#flot').height(Math.max($('#flot').height() + delta, vz.options.plot.minHeight || 300));
 	vz.options.tuples = Math.round($('#flot').width() / 3);
 	if (vz.plot && vz.plot.resize) {
 		vz.plot.resize();
