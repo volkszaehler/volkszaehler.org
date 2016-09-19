@@ -79,7 +79,7 @@ timeA=`date +%H:%M:%S`
 timestamp=$last_update"000"
 
 ### Debug
- echo "Frendly weather service from WeatherUnderground (C)"
+ echo "Friendly weather service from WeatherUnderground (C)"
  echo "www.wunderground.com"
  echo -e "LocalTime: "`date`
  echo -e "UTC Time: "`date -u`
