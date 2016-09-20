@@ -50,19 +50,6 @@ var vz = {
  * this is where it all starts...
  */
 $(document).ready(function() {
-	// late binding
-	$(window).resize(function() {
-		vz.options.tuples = Math.round($('#flot').width() / 3);
-		if (vz && vz.plot) {
-			if (vz.plot.resize)
-				vz.plot.resize();
-			if (vz.plot.setupGrid)
-				vz.plot.setupGrid();
-			if (vz.plot.draw)
-				vz.plot.draw();
-		}
-	});
-
 	window.onerror = function(errorMsg, url, lineNumber) {
 		vz.wui.dialogs.error('Javascript Runtime Error', errorMsg);
 	};
@@ -108,9 +95,8 @@ $(document).ready(function() {
 	// parse additional url params (new uuid etc e.g. for permalink) after loading defaults
 	vz.parseUrlParams();
 
-	// initialize user interface
+	// initialize user interface (may need to wait for onLoad on Safari)
 	vz.wui.init();
-	vz.wui.initEvents();
 
 	// chaining ajax request with jquery deferred object
 	vz.capabilities.load().done(function() {

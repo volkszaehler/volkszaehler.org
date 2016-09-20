@@ -29,20 +29,13 @@
  * Initialize the WUI (Web User Interface)
  */
 vz.wui.init = function() {
-	vz.options.tuples = Math.round($('#flot').width() / 3);
+	vz.wui.initEvents();
+	vz.wui.resizePlot();
 
-	// initialize dropdown accordion
+	// resize handling
+	$(window).resize(vz.wui.resizePlot);
 	$('#accordion h3').click(function() {
-		$(this).next().toggle('fast', function() {
-			// resizing plot: workaround for #76
-			for (var i in vz.plot) { // run only if vz is actually initialized
-				vz.plot.resize();
-				vz.plot.setupGrid();
-				vz.plot.draw();
-				break;
-			}
-		});
-
+		$(this).next().toggle(0, vz.wui.resizePlot);
 		return false;
 	}).next().hide();
 	$('#entity-list').show(); // open entity list by default
@@ -83,6 +76,21 @@ vz.wui.init = function() {
 			entity.activate(!entity.active, parent, false).done(vz.wui.drawPlot);
 		}, true);
 	});
+};
+
+/**
+ * Adjust plot when screen size changes
+ */
+vz.wui.resizePlot = function() {
+	// resize container depending on window vs. content height
+	var delta = $(window).height() - $('html').height();
+	$('#flot').height(Math.max($('#flot').height() + delta, vz.options.plot.minHeight || 300));
+	vz.options.tuples = Math.round($('#flot').width() / 3);
+	if (vz.plot && vz.plot.resize) {
+		vz.plot.resize();
+		vz.plot.setupGrid();
+		vz.plot.draw();
+	}
 };
 
 /**
@@ -482,7 +490,6 @@ vz.wui.initEvents = function() {
  */
 vz.wui.updateLegend = function() {
 	vz.wui.updateLegendTimeout = null;
-
 	var pos = vz.wui.latestPosition;
 
 	var axes = vz.plot.getAxes();
@@ -510,7 +517,7 @@ vz.wui.updateLegend = function() {
 				y = null;
 		} else if (series.lines.states) {
 			y = null;
-			if (j < series.data.length) {				
+			if (j < series.data.length) {
 				var p3 = series.data[j];
 				if (p3)
 					y = p3[1];
@@ -522,14 +529,16 @@ vz.wui.updateLegend = function() {
 			else
 				y = p1[1] + (p2[1] - p1[1]) * (pos.x - p1[0]) / (p2[0] - p1[0]);
 		}
+
+		var legend = $('.legend .legendLabel');
 		if (y === null) {
-			vz.wui.legend.eq(i).text(series.title);
+			legend.eq(i).text(series.title);
 		} else {
 			// use plot wrapper instead of `new Date()` for timezone support
 			var d = $.plot.dateGenerator(pos.x, vz.options.plot.xaxis);
 			var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
 			var format = (delta > 1*24*3600*1000) ? '%d.%m.%y - %H:%M' : '%H:%M:%S';
-			vz.wui.legend.eq(i).text(series.title + ": " + $.plot.formatDate(d,format) + " - " + vz.wui.formatNumber(y, series.unit));
+			legend.eq(i).text(series.title + ": " + $.plot.formatDate(d,format) + " - " + vz.wui.formatNumber(y, series.unit));
 		}
 	}
 
@@ -883,8 +892,7 @@ vz.wui.drawPlot = function () {
 		$('#overlay').empty();
 	}
 
-	var flot = $('#flot');
-	vz.plot = $.plot(flot, series, vz.options.plot);
+	vz.plot = $.plot($('#flot'), series, vz.options.plot);
 
 	// remember legend container for updating
 	vz.wui.legend = $('.legend .legendLabel');
