@@ -32,7 +32,7 @@ tr.property td, tr.entity td {
 }
 
 #content div {
-	padding: 2px;
+	padding: 2px 0;
 }
 
 #content h3 {
@@ -59,7 +59,7 @@ tr.property td, tr.entity td {
 }
 
 #flot {
-	height: 500px;
+	height: 300px;
 	z-index: 1;
 	margin-bottom: 5px;
 }
@@ -67,8 +67,8 @@ tr.property td, tr.entity td {
 #overlay {
 	position: absolute;
 	width: 100%;
-	top: 0;
-	margin: 200px auto;
+	top: 50%;
+	margin-top: -42px;
 	text-align: center;
 	color: grey;
 }
@@ -85,9 +85,27 @@ tr.property td, tr.entity td {
 	margin-right: 0px; /* override jquery ui */
 }
 
+#controls {
+	padding: 2px!important;
+}
+
 #controls button {
 	width: 10.0%;
 	height: 30px;
+	margin-right: 0px; /* override jquery ui */
+	font-size: 1em;
+}
+
+#controls button img {
+	vertical-align: text-bottom;
+}
+
+#accordion button {
+	font-size: 0.9em;
+}
+
+#accordion button img {
+	vertical-align: text-top;
 }
 
 button {
@@ -100,7 +118,7 @@ button {
 
 /* header */
 #title {
-	margin: 0.2em;
+	margin: 0.2em 0;
 	float: left;
 }
 
