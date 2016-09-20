@@ -30,7 +30,6 @@
  */
 vz.wui.init = function() {
 	vz.wui.initEvents();
-	vz.wui.resizePlot();
 
 	// resize handling
 	$(window).resize(vz.wui.resizePlot);
