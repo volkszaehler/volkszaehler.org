@@ -110,6 +110,7 @@ $(document).ready(function() {
 			vz.entities.inheritVisibility();
 
 			vz.entities.loadData().done(function() {
+				vz.wui.resizePlot();
 				vz.wui.drawPlot();
 				vz.entities.loadTotalConsumption();
 			});
