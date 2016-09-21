@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 ## @outhor Norbert Walter <norbert-walter@web.de>
 ## Cron: 39  *	* * *		~/log_weather_wu.sh >> log.weather_wu
 ## This is a service from www.wunderground.com
@@ -32,7 +32,7 @@ URL="http://127.0.0.1/volkszaehler.org/htdocs/middleware"
 
 ## UUID of the sensor in the volkszaehler database
 ## Is the UUID empty then dont saving in the VZ database
-## eg. UUID_temperature='12345678-1234-1234-1234-12345678901a' 
+## eg. UUID_temperature='12345678-1234-1234-1234-12345678901a'
 UUID_temperature='12345678-1234-1234-1234-12345678901a'
 UUID_pressure='12345678-1234-1234-1234-12345678901b'
 UUID_relative_humidity='12345678-1234-1234-1234-12345678901c'
@@ -48,7 +48,7 @@ UUID_uvindex='12345678-1234-1234-1234-12345678901h'
 ## WeatherUnderground url
 ## http://api.wunderground.com/api/1b0d33c840c54ac4/conditions/q/pws:ISACHSEN356.json
 WU="http://api.wunderground.com/api/$APPID/conditions/q/pws:$PWS.json"
- 
+
 ## paths to binaries - you should not need to change these
 CURL=/usr/bin/curl
 NC=/bin/nc
