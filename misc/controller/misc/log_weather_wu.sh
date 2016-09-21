@@ -27,20 +27,18 @@ PWS='ISACHSEN356'
 TS='1'
 
 ## middleware url
-## http://yourserverip/volkszaehler.org/htdocs/middleware
-URL="http://127.0.0.1/volkszaehler.org/htdocs/middleware"
+URL="http://127.0.0.1/middleware"
 
-## UUID of the sensor in the volkszaehler database
-## Is the UUID empty then dont saving in the VZ database
-## eg. UUID_temperature='12345678-1234-1234-1234-12345678901a'
-UUID_temperature='12345678-1234-1234-1234-12345678901a'
-UUID_pressure='12345678-1234-1234-1234-12345678901b'
-UUID_relative_humidity='12345678-1234-1234-1234-12345678901c'
-UUID_dewpoint='12345678-1234-1234-1234-12345678901d'
-UUID_winddirection='12345678-1234-1234-1234-12345678901e'
-UUID_wind='12345678-1234-1234-1234-12345678901f'
-UUID_solar='12345678-1234-1234-1234-12345678901g'
-UUID_uvindex='12345678-1234-1234-1234-12345678901h'
+## UUIDs of the sensor in the volkszaehler database
+## If UUID is empty, data won't be persisted.
+UUID_temperature=''
+UUID_pressure=''
+UUID_relative_humidity=''
+UUID_dewpoint=''
+UUID_winddirection=''
+UUID_wind=''
+UUID_solar=''
+UUID_uvindex=''
 
 
 #### Dont edit the following lines! ####
@@ -79,22 +77,22 @@ timeA=`date +%H:%M:%S`
 timestamp=$last_update"000"
 
 ### Debug
- echo "Friendly weather service from WeatherUnderground (C)"
- echo "www.wunderground.com"
- echo -e "LocalTime: "`date`
- echo -e "UTC Time: "`date -u`
- echo "PWS: "$PWS
- echo "Temp: "$temperature"°C"
- echo "Humi: "$relative_humidity"%"
- echo "Pres: "$pressure"hPa"
- echo "Dewp: "$dewpoint"°C"
- echo "WDir: "$winddirection"°"
- echo "Wind: "$wind"km/h"
- echo "Solar: "$solar"W/m2"
- echo "UV: "$uvindex""
- echo "Date: "$dateA $timeA
- echo "Last Update: "$last_update
- echo "Timestamp: "$timestamp
+echo "Friendly weather service from WeatherUnderground (C)"
+echo "www.wunderground.com"
+echo -e "LocalTime: "`date`
+echo -e "UTC Time: "`date -u`
+echo "PWS: "$PWS
+echo "Temp: "$temperature"°C"
+echo "Humi: "$relative_humidity"%"
+echo "Pres: "$pressure"hPa"
+echo "Dewp: "$dewpoint"°C"
+echo "WDir: "$winddirection"°"
+echo "Wind: "$wind"km/h"
+echo "Solar: "$solar"W/m2"
+echo "UV: "$uvindex""
+echo "Date: "$dateA $timeA
+echo "Last Update: "$last_update
+echo "Timestamp: "$timestamp
 ### Debug
 
 
@@ -102,44 +100,45 @@ timestamp=$last_update"000"
 # when exist a UUID
 if [ -n "$APPID" ]; then
   if [ $TS = "0" ]; then
-  echo "Saving all values with local PC time"
-  timestring=""
+    echo "Saving all values with local PC time"
+    timestring=""
   else
-  echo "Saving all values with update time from WeatherUnderground"
-  timestring="ts="$timestamp"&"
+    echo "Saving all values with update time from WeatherUnderground"
+    timestring="ts="$timestamp"&"
   fi
+
   if [ -n "$UUID_temperature" ]; then
-  echo "Save Temp with UUID: "$UUID_temperature" in database"
-  $CURL --data "" "$URL/data/$UUID_temperature.json?$timestring""value=$temperature" &>/dev/null
+    echo "Save Temp with UUID: "$UUID_temperature" in database"
+    $CURL --data "" "$URL/data/$UUID_temperature.json?$timestring""value=$temperature" &>/dev/null
   fi
   if [ -n "$UUID_pressure" ]; then
-  echo "Save Pressure with UUID: "$UUID_pressure" in database"
-  $CURL --data "" "$URL/data/$UUID_pressure.json?$timestring""value=$pressure" &>/dev/null
+    echo "Save Pressure with UUID: "$UUID_pressure" in database"
+    $CURL --data "" "$URL/data/$UUID_pressure.json?$timestring""value=$pressure" &>/dev/null
   fi
   if [ -n "$UUID_relative_humidity" ]; then
-  echo "Save Humidity  with UUID: "$UUID_relative_humidity" in database"
-  $CURL --data "" "$URL/data/$UUID_relative_humidity.json?$timestring""value=$relative_humidity" &>/dev/null
+    echo "Save Humidity  with UUID: "$UUID_relative_humidity" in database"
+    $CURL --data "" "$URL/data/$UUID_relative_humidity.json?$timestring""value=$relative_humidity" &>/dev/null
   fi
   if [ -n "$UUID_dewpoint" ]; then
-  echo "Save Dewpoint with UUID: "$UUID_dewpoint" in database"
-  $CURL --data "" "$URL/data/$UUID_dewpoint.json?$timestring""value=$dewpoint" &>/dev/null
+    echo "Save Dewpoint with UUID: "$UUID_dewpoint" in database"
+    $CURL --data "" "$URL/data/$UUID_dewpoint.json?$timestring""value=$dewpoint" &>/dev/null
   fi
   if [ -n "$UUID_winddirection" ]; then
-  echo "Save Winddirection with UUID: "$UUID_winddirection" in database"
-  $CURL --data "" "$URL/data/$UUID_winddirection.json?$timestring""value=$winddirection" &>/dev/null
+    echo "Save Winddirection with UUID: "$UUID_winddirection" in database"
+    $CURL --data "" "$URL/data/$UUID_winddirection.json?$timestring""value=$winddirection" &>/dev/null
   fi
   if [ -n "$UUID_wind" ]; then
-  echo "Save Windspeed with UUID: "$UUID_wind" in database"
-  $CURL --data "" "$URL/data/$UUID_wind.json?$timestring""value=$wind" &>/dev/null
+    echo "Save Windspeed with UUID: "$UUID_wind" in database"
+    $CURL --data "" "$URL/data/$UUID_wind.json?$timestring""value=$wind" &>/dev/null
   fi
   if [ -n "$UUID_solar" ]; then
-  echo "Save Solar with UUID: "$UUID_solar" in database"
-  $CURL --data "" "$URL/data/$UUID_solar.json?$timestring""value=$solar" &>/dev/null
+    echo "Save Solar with UUID: "$UUID_solar" in database"
+    $CURL --data "" "$URL/data/$UUID_solar.json?$timestring""value=$solar" &>/dev/null
   fi
   if [ -n "$UUID_uvindex" ]; then
-  echo "Save UV-Index with UUID: "$UUID_uvindex" in database"
-  $CURL --data "" "$URL/data/$UUID_uvindex.json?$timestring""value=$uvindex" &>/dev/null
+    echo "Save UV-Index with UUID: "$UUID_uvindex" in database"
+    $CURL --data "" "$URL/data/$UUID_uvindex.json?$timestring""value=$uvindex" &>/dev/null
   fi
 else
-echo "APPID is empty! Please set the Application Key"
+  echo "APPID is empty! Please set the Application Key"
 fi
