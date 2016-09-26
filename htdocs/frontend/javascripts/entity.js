@@ -280,6 +280,9 @@ Entity.prototype.loadDetails = function(skipDefaultErrorHandling) {
  * @return jQuery dereferred object
  */
 Entity.prototype.loadData = function() {
+	if (!this.hasData()) {
+		return $.Deferred().resolve().promise();
+	}
 	return vz.load({
 		controller: 'data',
 		url: this.middleware,
@@ -302,6 +305,9 @@ Entity.prototype.loadData = function() {
  * @return jQuery dereferred object
  */
 Entity.prototype.loadTotalConsumption = function() {
+	if (this.initialconsumption === undefined) {
+		return $.Deferred().resolve().promise();
+	}
 	return vz.load({
 		controller: 'data',
 		url: this.middleware,
@@ -644,14 +650,11 @@ Entity.prototype.getDOMRow = function(parent) {
 
 Entity.prototype.activate = function(state, parent, recursive) {
 	this.active = state;
-	var queue = [];
-
 	$('#entity-' + this.uuid + ((parent) ? '.child-of-entity-' + parent.uuid : '') + ' input[type=checkbox]').prop('checked', state);
 
+	var queue = [];
 	if (this.active) {
-		if (this.hasData()) {
-			queue.push(this.loadData()); // reload data
-		}
+		queue.push(this.loadData()); // reload data
 		// start live updates
 		this.subscribe();
 	}
