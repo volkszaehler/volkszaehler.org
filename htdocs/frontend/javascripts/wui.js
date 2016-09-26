@@ -225,10 +225,6 @@ vz.wui.dialogs.init = function() {
 			});
 
 			entity.loadDetails().done(function(json) {
-				if (json.exception) {
-					vz.wui.dialogs.exception(json.exception);
-					return;
-				}
 				vz.wui.addEntity(entity);
 			}); // reload entity details and load data
 		}
