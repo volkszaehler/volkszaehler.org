@@ -357,7 +357,7 @@
 	},
 	{
 		"name"			: "universalsensor",
-		"optional"		: ["resolution", "tolerance", "cost", "local"],
+		"optional"		: ["resolution", "tolerance", "cost", "local", "unit"],
 		"icon"			: "gauge.png",
 		"unit"			: "",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
