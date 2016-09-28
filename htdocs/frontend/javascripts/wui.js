@@ -122,16 +122,27 @@ vz.wui.exportData = function(value) {
 
 /**
  * Add entity after UI has already been initialized
- * Tiggers refresh of entity data, plot and axes
+ * Triggers refresh of entity data, plot and axes
  */
 vz.wui.addEntity = function(entity) {
 	vz.entities.push(entity);
 	vz.entities.saveCookie();
 	vz.entities.showTable();
 	vz.options.plot.axesAssigned = false; // force axis assignment
-	entity.loadData().done(function() {
+
+	// load data including children
+	var queue = [];
+	queue.push(entity.loadData());
+	entity.each(function(child) {
+		queue.push(child.loadData());
+	}, true); // recursive
+
+	$.when.apply($, queue).then(function() {
 		vz.wui.drawPlot();
 		entity.loadTotalConsumption();
+		entity.each(function(child) {
+			child.loadTotalConsumption();
+		}, true); // recursive
 	});
 };
 
@@ -214,10 +225,6 @@ vz.wui.dialogs.init = function() {
 			});
 
 			entity.loadDetails().done(function(json) {
-				if (json.exception) {
-					vz.wui.dialogs.exception(json.exception);
-					return;
-				}
 				vz.wui.addEntity(entity);
 			}); // reload entity details and load data
 		}
@@ -232,7 +239,6 @@ vz.wui.dialogs.init = function() {
 	$('#entity-public input[type=button]').click(function() {
 		// get entity from data attribute
 		var entity = $('#entity-public-entity option:selected').data('entity');
-
 		try {
 			entity.cookie = Boolean($('#entity-public-cookie').prop('checked'));
 			vz.wui.addEntity(entity);
@@ -938,7 +944,7 @@ vz.wui.dialogs.error = function(error, description, code) {
 };
 
 vz.wui.dialogs.exception = function(exception) {
-	if (vz.wui.errorDialog) return;
+	if (vz.wui.errorDialog) return; // only one error dialog at a time
 	this.error(exception.type, exception.message, exception.code);
 };
 

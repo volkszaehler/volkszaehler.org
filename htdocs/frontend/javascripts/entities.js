@@ -92,11 +92,8 @@ vz.entities.loadData = function() {
 
 	var queue = [];
 	vz.entities.each(function(entity) {
-		if (entity.hasData()) {
-			queue.push(entity.loadData());
-		}
+		queue.push(entity.loadData());
 	}, true); // recursive
-
 	return $.when.apply($, queue);
 };
 
@@ -107,9 +104,7 @@ vz.entities.loadTotalConsumption = function() {
 	if (vz.options.totalsInterval) {
 		var queue = [];
 		vz.entities.each(function(entity) {
-			if (entity.initialconsumption !== undefined) {
-				queue.push(entity.loadTotalConsumption());
-			}
+			queue.push(entity.loadTotalConsumption());
 		}, true); // recursive
 
 		// set timeout for next load once completed
