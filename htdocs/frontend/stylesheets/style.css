@@ -18,7 +18,9 @@ tr th {
 	font-size: 0.9em;
 }
 
-tr.optional {
+tr.optional,
+tr.stale td.min, tr.stale td.max, tr.stale td.average, tr.stale td.last,
+tr.stale td.consumption, tr.stale td.cost, tr.stale td.total {
   color: grey;
 }
 
