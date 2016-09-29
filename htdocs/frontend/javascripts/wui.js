@@ -35,7 +35,11 @@ vz.wui.init = function() {
 	// resize handling
 	$(window).resize(vz.wui.resizePlot);
 	$('#accordion h3').click(function() {
-		$(this).next().toggle(0, vz.wui.resizePlot);
+		// capture window height before toggling section to avoid miscalculation due to scrollbar flickering
+		var windowHeight = $(window).height();
+		$(this).next().toggle(0, function() {
+			vz.wui.resizePlot(null, windowHeight);
+		});
 		return false;
 	}).next().hide();
 	$('#entity-list').show(); // open entity list by default
@@ -81,11 +85,12 @@ vz.wui.init = function() {
 /**
  * Adjust plot when screen size changes
  */
-vz.wui.resizePlot = function() {
+vz.wui.resizePlot = function(evt, windowHeight) {
 	// resize container depending on window vs. content height
-	var delta = $(window).height() - $('html').height();
+	var delta = (windowHeight || $(window).height()) - $('html').height();
 	$('#flot').height(Math.max($('#flot').height() + delta, vz.options.plot.minHeight || 300));
 	vz.options.tuples = Math.round($('#flot').width() / 3);
+
 	if (vz.plot && vz.plot.resize) {
 		vz.plot.resize();
 		vz.plot.setupGrid();
