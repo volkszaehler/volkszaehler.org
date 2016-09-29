@@ -692,6 +692,10 @@ Entity.prototype.updateDOMRow = function() {
 	if (this.data && this.data.rows > 0) { // update statistics if data available
 		var yearMultiplier = 365*24*60*60*1000 / (this.data.to - this.data.from); // ms
 
+		// indicate stale data
+		if (this.data.to)
+			row.toggleClass('stale', vz.options.plot.xaxis.max - this.data.to > (vz.options.plot.stale || 24 * 3.6e6));
+
 		if (this.data.min)
 			$('.min', row)
 			.text(vz.wui.formatNumber(this.data.min[1], this.definition.unit))
