@@ -80,6 +80,10 @@ tr.property td, tr.entity td {
 	margin: 10px;
 }
 
+#footer a, #footer a:visited {
+	color: white;
+}
+
 #controls {
 	background-color: grey;
 	margin-right: 0px; /* override jquery ui */
