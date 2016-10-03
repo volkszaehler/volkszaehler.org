@@ -193,10 +193,10 @@ Entity.prototype.subscribe = function(session) {
 			return false;
 		}
 
-    // don't collect data if not subscribed
-    if (!this.active || this.data === undefined) {
-      return;
-    }
+		// don't collect data if not subscribed
+		if (!this.active || this.data === undefined) {
+		  return;
+		}
 
 		var delta = push.data;
 		if (delta.tuples && delta.tuples.length) {
@@ -216,10 +216,12 @@ Entity.prototype.subscribe = function(session) {
 						consumption += el[1] * tsdiff;
 					}).bind(this)); // bind to entity
 
-					// update consumption
-					consumption /= 3.6e6;
-					this.consumption = (this.consumption || 0) + consumption;
-					this.totalconsumption = (this.totalconsumption || 0) + consumption;
+					if (this.initialconsumption !== undefined) {
+						// update consumption
+						consumption /= 3.6e6;
+						this.consumption = (this.consumption || 0) + consumption;
+						this.totalconsumption = (this.totalconsumption || 0) + consumption;
+					}
 
 					// concatenate in-place
 					Array.prototype.push.apply(this.data.tuples, deltaTuples);
