@@ -64,7 +64,7 @@ fi
 ## Grep the weather data from answare
 ## $ echo "foo start blah blah blah stop bar" | sed 's/.*start \(.*\) stop.*/\1/'
 ## result: blah blah blah
-last_update="`(grep "observation_epoch" <<< "$weatherfile" | sed -e 's/.*":"\(.*\)".*/\1/')`"
+last_update="`grep 'observation_epoch":"' <<< "$weatherfile"|sed -e 's/.*":"\(.*\)".*/\1/'`"
 temperature="`grep '"temp_c":' <<< "$weatherfile"|sed -e 's/.*c":\(.*\),.*/\1/'`"
 pressure="`grep '"pressure_mb"' <<< "$weatherfile"|sed -e 's/.*mb":"\(.*\)".*/\1/'`"
 relative_humidity="`grep '"relative_humidity"' <<< "$weatherfile"|sed -e 's/.*":"\(.*\)%.*/\1/'`"
