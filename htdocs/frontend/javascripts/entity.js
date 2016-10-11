@@ -699,18 +699,18 @@ Entity.prototype.updateDOMRow = function() {
 
 		if (this.data.min)
 			$('.min', row)
-			.text(vz.wui.formatNumber(this.data.min[1], this.unit))
+			.text(vz.wui.formatNumber(this.data.min[1], unit))
 			.attr('title', $.plot.formatDate(new Date(this.data.min[0]), '%d. %b %y %H:%M:%S', vz.options.monthNames, vz.options.dayNames, true));
 		if (this.data.max)
 			$('.max', row)
-			.text(vz.wui.formatNumber(this.data.max[1], this.unit))
+			.text(vz.wui.formatNumber(this.data.max[1], unit))
 			.attr('title', $.plot.formatDate(new Date(this.data.max[0]), '%d. %b %y %H:%M:%S', vz.options.monthNames, vz.options.dayNames, true));
 		if (this.data.average)
 			$('.average', row)
-			.text(vz.wui.formatNumber(this.data.average, this.unit));
+			.text(vz.wui.formatNumber(this.data.average, unit));
 		if (this.data.tuples && this.data.tuples.length > 0)
 			$('.last', row)
-			.text(vz.wui.formatNumber(this.data.tuples.last()[1], this.unit));
+			.text(vz.wui.formatNumber(this.data.tuples.last()[1], unit));
 
 		if (this.data.consumption) {
 			var consumptionUnit = vz.wui.formatConsumptionUnit(unit);
