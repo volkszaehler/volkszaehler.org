@@ -104,7 +104,7 @@ echo "Timestamp: $timestamp"
 
 if [ "$TS" = "0" ]; then
         echo "Saving all values with local PC time"
-        timestring=""
+        timestring="$(date +%s)"000
 else
         echo "Saving all values with update time from WeatherUnderground"
         timestring="$timestamp"
