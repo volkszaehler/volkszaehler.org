@@ -356,6 +356,18 @@
 		}
 	},
 	{
+		"name"			: "universalsensor",
+		"optional"		: ["resolution", "tolerance", "cost", "local", "unit"],
+		"icon"			: "gauge.png",
+		"unit"			: "",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"		: {
+			"de" : "Sensor",
+			"en" : "Sensor"
+		}
+	},
+	{
 		"name"			: "radiation",
 		"optional"		: ["resolution", "tolerance", "local", "gap"],
 		"icon"			: "radioactivity.png",

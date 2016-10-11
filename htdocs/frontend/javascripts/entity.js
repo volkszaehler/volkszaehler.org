@@ -99,13 +99,20 @@ Entity.prototype.parseJSON = function(json) {
 };
 
 /**
+ * Get entity unit
+ */
+Entity.prototype.getUnit = function() {
+	return this.definition.unit || this.unit;
+};
+
+/**
  * Assign entity an axis with matching unit
  */
 Entity.prototype.assignMatchingAxis = function() {
 	if (this.definition) {
 		// find axis with matching unit
 		if (vz.options.plot.yaxes.some(function(yaxis, idx) {
-			if (yaxis.axisLabel === undefined || (this.definition.unit == yaxis.axisLabel)) { // unoccupied or matching unit
+			if (yaxis.axisLabel === undefined || (this.getUnit() == yaxis.axisLabel)) { // unoccupied or matching unit
 				this.assignedYaxis = idx + 1;
 				return true;
 			}
@@ -113,7 +120,7 @@ Entity.prototype.assignMatchingAxis = function() {
 			this.assignedYaxis = vz.options.plot.yaxes.push($.extend({}, vz.options.plot.yaxes[1]));
 		}
 
-		vz.options.plot.yaxes[this.assignedYaxis-1].axisLabel = this.definition.unit;
+		vz.options.plot.yaxes[this.assignedYaxis-1].axisLabel = this.getUnit();
 	}
 };
 
@@ -136,7 +143,7 @@ Entity.prototype.assignAxis = function() {
 		// check if axis already has auto-allocated entities
 		var yaxis = vz.options.plot.yaxes[this.assignedYaxis-1];
 		if (yaxis.forcedGroup === undefined) { // axis auto-assigned
-			if (yaxis.axisLabel !== undefined && this.definition.unit !== yaxis.axisLabel) { // unit mismatch
+			if (yaxis.axisLabel !== undefined && this.getUnit() !== yaxis.axisLabel) { // unit mismatch
 				// move previously auto-assigned entities to different axis
 				yaxis.axisLabel = '*'; // force unit mismatch
 				vz.entities.each((function(entity) {
@@ -147,7 +154,7 @@ Entity.prototype.assignAxis = function() {
 			}
 		}
 
-		yaxis.axisLabel = this.definition.unit;
+		yaxis.axisLabel = this.getUnit();
 		yaxis.forcedGroup = this.yaxis;
 	}
 
@@ -527,12 +534,12 @@ Entity.prototype.getDOMDetails = function(edit) {
 				switch (property) {
 					case 'cost':
 						prefix = (this.definition.scale == 1000) ? ' ct/k' : ' ct/'; // ct per Wh or kWh
-						value = Number(value * 100).toFixed(2) + prefix + vz.wui.formatConsumptionUnit(this.definition.unit);
+						value = Number(value * 100).toFixed(2) + prefix + vz.wui.formatConsumptionUnit(this.getUnit());
 						break;
 
 					case 'resolution':
 						prefix = (this.definition.scale == 1000) ? 'k' : ''; // per Wh or kWh
-						value += '/' + prefix + vz.wui.formatConsumptionUnit(this.definition.unit);
+						value += '/' + prefix + vz.wui.formatConsumptionUnit(this.getUnit());
 						break;
 
 					case 'color':
@@ -693,27 +700,28 @@ Entity.prototype.updateDOMRow = function() {
 
 	if (this.data && this.data.rows > 0) { // update statistics if data available
 		var yearMultiplier = 365*24*60*60*1000 / (this.data.to - this.data.from); // ms
+		var unit = this.getUnit();
 
 		if (this.data.min)
 			$('.min', row)
-			.text(vz.wui.formatNumber(this.data.min[1], this.definition.unit))
+			.text(vz.wui.formatNumber(this.data.min[1], unit))
 			.attr('title', $.plot.formatDate(new Date(this.data.min[0]), '%d. %b %y %H:%M:%S', vz.options.monthNames, vz.options.dayNames, true));
 		if (this.data.max)
 			$('.max', row)
-			.text(vz.wui.formatNumber(this.data.max[1], this.definition.unit))
+			.text(vz.wui.formatNumber(this.data.max[1], unit))
 			.attr('title', $.plot.formatDate(new Date(this.data.max[0]), '%d. %b %y %H:%M:%S', vz.options.monthNames, vz.options.dayNames, true));
 		if (this.data.average)
 			$('.average', row)
-			.text(vz.wui.formatNumber(this.data.average, this.definition.unit));
+			.text(vz.wui.formatNumber(this.data.average, unit));
 		if (this.data.tuples && this.data.tuples.length > 0)
 			$('.last', row)
-			.text(vz.wui.formatNumber(this.data.tuples.last()[1], this.definition.unit));
+			.text(vz.wui.formatNumber(this.data.tuples.last()[1], unit));
 
 		if (this.data.consumption) {
-			var unit = vz.wui.formatConsumptionUnit(this.definition.unit);
+			var consumptionUnit = vz.wui.formatConsumptionUnit(unit);
 			$('.consumption', row)
-				.text(vz.wui.formatNumber(this.data.consumption, unit))
-				.attr('title', vz.wui.formatNumber(this.data.consumption * yearMultiplier, unit) + '/Jahr');
+				.text(vz.wui.formatNumber(this.data.consumption, consumptionUnit))
+				.attr('title', vz.wui.formatNumber(this.data.consumption * yearMultiplier, consumptionUnit) + '/Jahr');
 		}
 
 		if (this.cost) {

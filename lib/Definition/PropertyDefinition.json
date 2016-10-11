@@ -442,5 +442,15 @@
 			"de" : "Initialverbrauch",
 			"en" : "Initial consumption"
 		}
+	},
+	{
+		"name"			: "unit",
+		"type"			: "string",
+		"pattern"		: "\/^\\w+$\/u",
+		"max"			: 5,
+		"translation"		: {
+			"de" : "Einheit",
+			"en" : "Unit"
+		}
 	}
 ]
