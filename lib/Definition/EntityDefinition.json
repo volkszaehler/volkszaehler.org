@@ -368,19 +368,6 @@
 		}
 	},
 	{
-		"name"			: "radiation",
-		"optional"		: ["resolution", "tolerance", "local", "gap"],
-		"icon"			: "radioactivity.png",
-		"unit"			: "μSv",
-		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
-		"model"			: "Volkszaehler\\Model\\Channel",
-		"translation"		: {
-			"de" : "Radioaktivität (Dosis)",
-			"en" : "Radioactivity (Dose)",
-			"fr" : "Radioactivité (Dose)"
-		}
-	},
-	{
 		"name"			: "user",
 		"icon"			: "user.png",
 		"interpreter"		: "Volkszaehler\\Interpreter\\AggregatorInterpreter",
