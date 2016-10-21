@@ -116,7 +116,7 @@ $(document).ready(function() {
 			});
 
 			// create WAMP sessions for each middleware
-			vz.middleware.each(function(idx, middleware) {
+			vz.middleware.forEach(function(middleware) {
 				var parser = document.createElement('a');
 				parser.href = middleware.url;
 				var host = parser.hostname || location.host; // location object for IE

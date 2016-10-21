@@ -72,14 +72,17 @@ vz.getPermalink = function() {
 	var uuids = [];
 	vz.entities.each(function(entity, parent) {
 		if (entity.active) {
-			uuids.push(entity.uuid + '@' + 	entity.middleware);
+			var uuid = entity.uuid + '@' + 	entity.middleware;
+			if (uuids.indexOf(uuid) < 0) {
+				uuids.push(uuid);
+			}
 		}
 	});
 
 	var params = {
 		from: Math.floor(vz.options.plot.xaxis.min),
 		to: Math.ceil(vz.options.plot.xaxis.max),
-		uuid: uuids.unique()
+		uuid: uuids
 	};
 
 	return window.location.protocol + '//' + window.location.host + window.location.pathname + '?' + $.param(params);
@@ -185,7 +188,7 @@ vz.parseUrlParams = function() {
 		}
 	}
 
-	entities.each(function(index, identifier) {
+	entities.forEach(function(identifier) {
 		identifier = identifier.split('@');
 		var uuid = identifier[0];
 		var middleware = (identifier.length > 1) ? identifier[1] : vz.options.middleware[0].url;
