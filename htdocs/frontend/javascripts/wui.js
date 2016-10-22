@@ -139,14 +139,14 @@ vz.wui.addEntity = function(entity) {
 	// load data including children
 	var queue = [];
 	queue.push(entity.loadData());
-	entity.each(function(child) {
+	entity.eachChild(function(child) {
 		queue.push(child.loadData());
 	}, true); // recursive
 
 	$.when.apply($, queue).then(function() {
 		vz.wui.drawPlot();
 		entity.loadTotalConsumption();
-		entity.each(function(child) {
+		entity.eachChild(function(child) {
 			child.loadTotalConsumption();
 		}, true); // recursive
 	});
@@ -172,7 +172,7 @@ vz.wui.dialogs.init = function() {
 						url: middleware.url
 					}).done(function(json) {
 							var public = [];
-							json.entities.each(function(index, json) {
+							json.entities.forEach(function(json) {
 								var entity = new Entity(json, middleware.url);
 								public.push(entity);
 							});
@@ -190,7 +190,7 @@ vz.wui.dialogs.init = function() {
 	});
 
 	// show available entity types
-	vz.capabilities.definitions.entities.each(function(index, def) {
+	vz.capabilities.definitions.entities.forEach(function(def) {
 		$('#entity-create select[name=type]').append(
 			$('<option>')
 				.html(def.translation[vz.options.language])
@@ -258,10 +258,8 @@ vz.wui.dialogs.init = function() {
 	});
 
 	function populateEntities(middleware) {
-		var public = middleware.public;
-
 		$('#entity-public-entity').empty();
-		public.each(function(index, entity) {
+		middleware.public.forEach(function(entity) {
 			$('#entity-public-entity').append(
 				$('<option>').html(entity.title).val(entity.uuid).data('entity', entity)
 			);
@@ -329,7 +327,7 @@ vz.wui.dialogs.init = function() {
  * Show available properties for selected type
  */
 vz.wui.dialogs.addProperties = function(container, proplist, className, entity) {
-	proplist.each(function(index, def) {
+	proplist.forEach(function(def) {
 
 		// hide properties from blacklist
 		var val = (entity && typeof entity[def] !== undefined) ? entity[def] : null;

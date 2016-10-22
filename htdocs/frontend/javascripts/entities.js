@@ -48,7 +48,7 @@ vz.entities.loadCookie = function() {
 	var cookie = $.getCookie('vz_entities');
 	if (cookie) {
 		var arr = cookie.split('|');
-		arr.each(function(index, entry) {
+		arr.forEach(function(entry) {
 			var entity = entry.split('@');
 			vz.entities.push(new Entity({
 				middleware: entity[1],
@@ -73,7 +73,7 @@ vz.entities.loadDetails = function() {
 			},
 			function(json) {
 				if (json.exception && json.exception.message && json.exception.message.match(/^Invalid UUID|^No entity found with UUID/)) {
-					vz.entities.remove(entity);
+					vz.entities.splice(vz.entities.indexOf(entity), 1); // remove
 					return $.Deferred().resolveWith(this, [json]);
 				}
 				vz.wui.dialogs.middlewareException(json.exception);
@@ -144,7 +144,7 @@ vz.entities.each = function(cb, recursive) {
 		cb(this[i]);
 
 		if (recursive && this[i] !== undefined) {
-			this[i].each(cb, true);
+			this[i].eachChild(cb, true);
 		}
 	}
 };

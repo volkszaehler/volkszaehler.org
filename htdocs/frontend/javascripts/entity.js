@@ -364,7 +364,7 @@ Entity.prototype.showDetails = function() {
 								vz.entities.each(function(it, parent) { // remove from tree
 									if (entity.uuid == it.uuid) {
 										var array = (parent) ? parent.children : vz.entities;
-										array.remove(it);
+										array.splice(array.indexOf(it), 1); // remove
 									}
 								}, true);
 
@@ -455,7 +455,7 @@ Entity.prototype.getDOMDetails = function(edit) {
 	var general = ['uuid', 'middleware', 'type', /*'title', 'color', 'style', 'active',*/ 'cookie'];
 	var sections = ['required', 'optional'];
 
-	general.each(function(index, property) {
+	general.forEach(function(property) {
 		var definition = vz.capabilities.definitions.get('properties', property);
 		var title = (definition) ? definition.translation[vz.options.language] : property;
 		var value = this[property];
@@ -518,9 +518,9 @@ Entity.prototype.getDOMDetails = function(edit) {
 		);
 	}, this);
 
-	sections.each(function(index, section) {
-		this.definition[section].each(function(index, property) {
-			if (this.hasOwnProperty(property) && !general.contains(property)) {
+	sections.forEach(function(section) {
+		this.definition[section].forEach(function(property) {
+			if (this.hasOwnProperty(property) && general.indexOf(property) < 0) {
 				var definition = vz.capabilities.definitions.get('properties', property);
 				var title = definition.translation[vz.options.language];
 				var value = this[property];
@@ -646,7 +646,7 @@ Entity.prototype.getDOMRow = function(parent) {
 			.addClass('icon-delete')
 			.attr('alt', 'delete')
 			.bind('click', this, function(event) {
-				vz.entities.remove(event.data);
+				vz.entities.splice(vz.entities.indexOf(event.data), 1); // remove
 				vz.entities.saveCookie();
 				vz.entities.showTable();
 				vz.wui.drawPlot();
@@ -675,7 +675,7 @@ Entity.prototype.activate = function(state, parent, recursive) {
 	}
 
 	if (recursive) {
-		this.each(function(child, parent) {
+		this.eachChild(function(child, parent) {
 			queue.push(child.activate(state, parent, true));
 		}, true); // recursive!
 	}
@@ -715,7 +715,7 @@ Entity.prototype.updateDOMRow = function() {
 			.text(vz.wui.formatNumber(this.data.average, unit));
 		if (this.data.tuples && this.data.tuples.length > 0)
 			$('.last', row)
-			.text(vz.wui.formatNumber(this.data.tuples.last()[1], unit));
+			.text(vz.wui.formatNumber(this.data.tuples[this.data.tuples.length-1][1], unit));
 
 		if (this.data.consumption) {
 			var consumptionUnit = vz.wui.formatConsumptionUnit(unit);
@@ -814,13 +814,13 @@ Entity.prototype.removeChild = function(child) {
  *
  * @param cb callback function
  */
-Entity.prototype.each = function(cb, recursive) {
+Entity.prototype.eachChild = function(cb, recursive) {
 	if (this.children) {
 		for (var i = 0; i < this.children.length; i++) {
 			cb(this.children[i], this);
 
 			if (recursive && this.children[i] !== undefined) {
-				this.children[i].each(cb, true); // call recursive
+				this.children[i].eachChild(cb, true); // call recursive
 			}
 		}
 	}
