@@ -287,7 +287,7 @@ vz.wui.dialogs.init = function() {
 		var properties = {};
 
 		// serializeArray instead of serializeArrayWithCheckBoxes is sufficient as non-active checkboxes don't need to create properties
-		$(this).serializeArray().each(function(index, value) {
+		$(this).serializeArray().forEach(function(value) {
 			if (value.value !== '') {
 				properties[value.name] = value.value;
 			}

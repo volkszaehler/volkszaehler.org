@@ -404,7 +404,7 @@ Entity.prototype.showDetails = function() {
 						'Speichern': function() { // adapted from #entity-create
 							var properties = {};
 
-							$(this).find('form').serializeArrayWithCheckBoxes().each(function(index, value) {
+							$(this).find('form').serializeArrayWithCheckBoxes().forEach(function(value) {
 								if (value.value !== '' || entity[value.name]) {
 									properties[value.name] = value.value;
 								}
