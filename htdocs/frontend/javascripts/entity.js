@@ -214,7 +214,7 @@ Entity.prototype.subscribe = function(session) {
 					// relevant slice
 					var consumption = 0, deltaTuples = delta.tuples.slice(i);
 					/* jshint loopfunc: true */
-					deltaTuples.each((function(idx, el) {
+					deltaTuples.forEach((function(el, idx) {
 						// min/max
 						if (this.data.min === undefined || el[1] < this.data.min[1]) this.data.min = el;
 						if (this.data.max === undefined || el[1] > this.data.max[1]) this.data.max = el;

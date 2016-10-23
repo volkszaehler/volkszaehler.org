@@ -335,7 +335,7 @@ vz.wui.dialogs.addProperties = function(container, proplist, className, entity) 
 			return; // hide less commonly used properties
 		}
 
-		vz.capabilities.definitions.properties.each(function(propindex, propdef) {
+		vz.capabilities.definitions.properties.forEach(function(propdef, propindex) {
 			if (def == propdef.name) {
 				var cntrl = null;
 				var row = $('<tr>')
@@ -361,7 +361,7 @@ vz.wui.dialogs.addProperties = function(container, proplist, className, entity) 
 
 					case 'multiple':
 						cntrl = $('<select>').attr("Size", "1");
-						propdef.options.each(function(optindex, optdef) {
+						propdef.options.forEach(function(optdef, optindex) {
 							cntrl.append(
 								$('<option>').html(optdef).val(optdef)
 							);
