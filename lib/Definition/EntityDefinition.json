@@ -314,7 +314,8 @@
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
-			"de" : "Betriebsstundensensor"
+			"de" : "Betriebsstundensensor",
+			"en" : "Operating Hours Sensor"
 		}
 	},
 	{
@@ -408,6 +409,19 @@
 		}
 	},
 	{
+		"name"			: "consumptionsensor",
+		"required"		: ["unit"],
+		"optional"		: ["resolution", "tolerance", "cost", "local"],
+		"icon"			: "gauge.png",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
+		"translation"		: {
+			"de" : "Verbrauchssensor",
+			"en" : "Consumption Sensor"
+		}
+	},
+	{
 		"name"                  : "filllevel",
 		"optional"              : ["resolution", "tolerance", "cost", "local"],
 		"icon"                  : "waterdrop.png",
@@ -418,6 +432,31 @@
 			"de" : "Füllstand",
 			"en" : "Fill Level",
 			"fr" : "Niveau de remplissage"
+		}
+	},
+	{
+		"name"			: "virtualsensor",
+		"required"		: ["unit", "rule", "in1"],
+		"optional"		: ["in2", "in3", "in4"],
+		"icon"			: "bolt.png",
+		"interpreter"		: "Volkszaehler\\Interpreter\\VirtualInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"		: {
+			"de" : "Sensor (virt.)",
+			"en" : "Sensor (virt.)"
+		}
+	},
+	{
+		"name"			: "virtualconsumption",
+		"required"		: ["unit", "rule", "in1"],
+		"optional"		: ["in2", "in3", "in4"],
+		"icon"			: "bolt.png",
+		"interpreter"		: "Volkszaehler\\Interpreter\\VirtualInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
+		"translation"		: {
+			"de" : "Verbrauchssensor (virt.)",
+			"en" : "Consumption Sensor (virt.)"
 		}
 	}
 ]
