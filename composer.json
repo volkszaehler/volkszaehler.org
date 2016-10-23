@@ -15,6 +15,7 @@
         "doctrine/orm": "^2.5",
         "doctrine/dbal": "^2.5",
         "andig/dbcopy": "dev-master",
+        "andig/php-shunting-yard": "dev-master",
         "symfony/console": "^2.6|^3.0",
         "symfony/http-kernel": "^2.6|^3.0",
         "symfony/http-foundation": "^2.6|^3.0",
