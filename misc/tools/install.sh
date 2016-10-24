@@ -35,7 +35,7 @@ shopt -s nocasematch
 # some configuration
 
 # minimum php version required
-php_ver_min=5.4
+php_ver_min=5.6
 
 # git url
 vz_git=https://github.com/volkszaehler/volkszaehler.org
@@ -134,25 +134,35 @@ fi
 echo
 echo "volkszaehler setup..."
 
-ask "volkszaehler path?" "$vz_dir"
-vz_dir="$REPLY"
-config="$vz_dir/etc/volkszaehler.conf.php"
+if [ -e './etc/volkszaehler.conf.template.php' ]; then
+	vz_dir="."
 
-if [ -e "$vz_dir" ]; then
-	ask "$vz_dir already exists. remove it and get new git clone? (you have to type 'Yes' to do this!)" n
-	if [ "$REPLY" == 'Yes' ]; then
-		rm -fr "$vz_dir"
-		REPLY=y
-	else
-		REPLY=n
+	ask "volkszaehler.org already exists in the current directory. Update git repository?" y
+	if [ "$REPLY" == 'y' ]; then
+		git pull
 	fi
 else
-	REPLY=y
+	ask "volkszaehler path?" "$vz_dir"
+	vz_dir="$REPLY"
+
+	if [ -e "$vz_dir" ]; then
+		ask "$vz_dir already exists. Remove it and get new git clone? (you have to type 'Yes' to do this!)" n
+		if [ "$REPLY" == 'Yes' ]; then
+			rm -fr "$vz_dir"
+			REPLY=y
+		else
+			REPLY=n
+		fi
+	else
+		REPLY=y
+	fi
+	if [ "$REPLY" == 'y' ]; then
+		echo "git clone volkszaehler.org into $vz_dir"
+		git clone "$vz_git" "$vz_dir"
+	fi
 fi
-if [ "$REPLY" == 'y' ]; then
-	echo "git clone volkszaehler.org into $vz_dir"
-	git clone "$vz_git" "$vz_dir"
-fi
+
+config="$vz_dir/etc/volkszaehler.conf.php"
 
 ###############################
 echo
