@@ -74,7 +74,7 @@
 	},
 	{
 		"name"			: "powersensor",
-		"optional"		: ["resolution", "tolerance", "cost", "local", "initialconsumption"],
+		"optional"		: ["resolution", "tolerance", "cost", "local", "gap", "initialconsumption"],
 		"icon"			: "bolt.png",
 		"unit"			: "W",
 		"scale"			: 1000,
@@ -162,7 +162,7 @@
 	{
 		"name"			: "heat",
 		"required"		: ["resolution"],
-		"optional"		: ["tolerance", "cost", "local"],
+		"optional"		: ["tolerance", "cost", "local", "initialconsumption"],
 		"icon"			: "flame.png",
 		"unit"			: "W",
 		"scale"			: 1000,
@@ -178,7 +178,7 @@
 	{
 		"name"			: "heatsensor",
 		"required"		: ["resolution"],
-		"optional"		: ["tolerance", "cost", "local"],
+		"optional"		: ["tolerance", "cost", "local", "gap", "initialconsumption"],
 		"icon"			: "flame.png",
 		"unit"			: "W",
 		"scale"			: 1000,
@@ -220,7 +220,7 @@
 	},
 	{
 		"name"			: "flow",
-		"optional"		: ["resolution", "tolerance", "local"],
+		"optional"		: ["resolution", "tolerance", "local", "gap", "initialconsumption"],
 		"icon"			: "waterdrop.png",
 		"unit"			: "m^3/h",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
@@ -235,7 +235,7 @@
 	{
 		"name"			: "workinghours",
 		"required"		: ["resolution"],
-		"optional"		: ["tolerance", "local"],
+		"optional"		: ["tolerance", "local", "initialconsumption"],
 		"icon"			: "clock.png",
 		"unit"			: "h",
 		"interpreter"		: "Volkszaehler\\Interpreter\\ImpulseInterpreter",
@@ -265,7 +265,7 @@
 	{
 		"name"			: "workinghourssensor",
 		"required"		: ["resolution"],
-		"optional"		: ["tolerance", "local"],
+		"optional"		: ["tolerance", "local", "gap", "initialconsumption"],
 		"icon"			: "clock.png",
 		"unit"			: "",
 		"scale"			: 1000,
@@ -357,9 +357,9 @@
 	},
 	{
 		"name"			: "universalsensor",
-		"optional"		: ["resolution", "tolerance", "cost", "local", "unit"],
+		"required"		: ["unit"],
+		"optional"		: ["resolution", "tolerance", "cost", "local", "gap"],
 		"icon"			: "gauge.png",
-		"unit"			: "",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"translation"		: {
