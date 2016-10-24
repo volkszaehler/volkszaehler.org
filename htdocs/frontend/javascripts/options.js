@@ -53,7 +53,7 @@ vz.options = {
 	lineWidthDefault: 2,
 	lineWidthSelected: 4,
 	speedupFactor: 2,   // higher values give higher speedup but can produce chunky display
-	hiddenProperties: ['link', 'tolerance', 'local', 'active'] // hide less commonly used properties
+	hiddenProperties: ['link', 'tolerance', 'local', 'owner', 'description', 'gap', 'active'] // hide less commonly used properties
 };
 
 /**
