@@ -73,7 +73,7 @@ class VirtualInterpreter extends Interpreter {
 		// create parser context
 		$this->ctx = new Shunt\Context();
 		$this->createStaticContextFunctions();
-		$this->createDynamicContextFunctions($channel->getProperties('in'));
+		$this->createDynamicContextFunctions($channel->getPropertiesByRegex('/in\d/'));
 	}
 
 	/**
