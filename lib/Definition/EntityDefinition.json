@@ -411,7 +411,7 @@
 	{
 		"name"			: "consumptionsensor",
 		"required"		: ["unit"],
-		"optional"		: ["resolution", "tolerance", "cost", "local"],
+		"optional"		: ["resolution", "tolerance", "cost", "local", "gap", "initialconsumption"],
 		"icon"			: "gauge.png",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
@@ -437,7 +437,7 @@
 	{
 		"name"			: "virtualsensor",
 		"required"		: ["unit", "rule", "in1"],
-		"optional"		: ["in2", "in3", "in4"],
+		"optional"		: ["in2", "in3", "in4", "tolerance", "cost", "local", "gap"],
 		"icon"			: "bolt.png",
 		"interpreter"		: "Volkszaehler\\Interpreter\\VirtualInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
@@ -449,7 +449,7 @@
 	{
 		"name"			: "virtualconsumption",
 		"required"		: ["unit", "rule", "in1"],
-		"optional"		: ["in2", "in3", "in4"],
+		"optional"		: ["in2", "in3", "in4", "tolerance", "cost", "local", "gap", "initialconsumption"],
 		"icon"			: "bolt.png",
 		"interpreter"		: "Volkszaehler\\Interpreter\\VirtualInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
