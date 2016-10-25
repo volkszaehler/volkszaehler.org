@@ -133,6 +133,23 @@ abstract class Entity {
 	}
 
 	/**
+	 * Get properties by regexp pattern
+	 *
+	 * @param string $regex
+	 * @return array
+	 */
+	public function getPropertiesByRegex($regex) {
+		$properties = array();
+		foreach ($this->properties as $property) {
+			if (preg_match($regex, $property->getKey())) {
+				$properties[$property->getKey()] = $property->getValue();
+			}
+		}
+
+		return $properties;
+	}
+
+	/**
 	 * Find property by key
 	 *
 	 * @param string $key
