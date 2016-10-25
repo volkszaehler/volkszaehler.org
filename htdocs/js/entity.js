@@ -778,7 +778,7 @@ Entity.prototype.updateDOMRow = function() {
 Entity.prototype.updateDOMRowTotal = function() {
 	var row = $('#entity-' + this.uuid);
 	if (this.totalconsumption) {
-		var unit = vz.wui.formatConsumptionUnit(this.definition.unit);
+		var unit = vz.wui.formatConsumptionUnit(this.getUnit());
 
 		$('.total', row)
 			.data('total', this.totalconsumption)
