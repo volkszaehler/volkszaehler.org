@@ -33,13 +33,24 @@ use Volkszaehler\Util;
  */
 class InterpreterProxy implements \IteratorAggregate {
 
-	const MATCH = 1;
+	protected $interpreter;			// wrapped Interpreter instance
+	protected $iterator;			// interpreter's tuple iterator
 
-	protected $interpreter;		// wrapped Interpreter instance
-	protected $iterator;		// interpreter's tuple iterator
+	const MODE_BEST = -1;			// best match
+	const MODE_BEFORE = 0;			// match up to timestamp
 
-	protected $passthrough;		// true indicates timestamps will be used as they are
-	protected $current;			// tuple for matching iterator timestamp
+	protected $matchMode;
+
+	protected $passthrough;			// true indicates timestamps will be used as they are
+	protected $current;				// tuple for matching iterator timestamp
+	protected $delta;				// timestamp delta for current tuple
+
+	const STATE_INITIAL = 0;		// no valid tuple
+	const STATE_VALID = 10;			// valid tuple
+	const STATE_USE_CURRENT = 20;	// current tuple matches
+	const STATE_USE_PREVIOUS = 30;	// previous tuple matches
+
+	protected $state;
 
 	/**
 	 * Constructor
@@ -49,6 +60,14 @@ class InterpreterProxy implements \IteratorAggregate {
 	public function __construct(Interpreter $interpreter, $passthrough = false) {
 		$this->interpreter = $interpreter;
 		$this->passthrough = $passthrough;
+		$this->matchMode = InterpreterProxy::MODE_BEST;
+
+		// first result if no matching tuple exists
+		$this->current = array(0, 0, 0);
+	}
+
+	public function setMatchMode($matchMode) {
+		return $this->matchMode = $matchMode;
 	}
 
 	/*
@@ -65,31 +84,66 @@ class InterpreterProxy implements \IteratorAggregate {
 	/**
 	 * Select matching tuple by moving iterator n tuples ahead
 	 */
-	public function advanceIteratorToTimestamp($ts, $strategy = InterpreterProxy::MATCH) {
+	public function advanceIteratorToTimestamp($ts) {
 		$iterator = $this->getIterator();
 
-		while ($iterator->valid() && $this->current[0] <= $ts) {
+		$this->state = InterpreterProxy::STATE_INITIAL;
+
+		while ($iterator->valid()) {
+			$this->lastCurrent = $this->current;
 			$this->current = $iterator->current();
 
-			if ($this->current[0] == $ts) {
-				return true;
+			$this->lastDelta = $this->delta;
+			$this->delta = abs($this->current[0] - $ts);
+
+			// printf("* %d %d (%s)\n", $this->current[0], $this->delta, $this->lastDelta);
+
+			if ($this->delta === 0) {
+				$this->state = InterpreterProxy::STATE_USE_CURRENT;
+				return;
 			}
-			elseif ($this->current[0] < $ts) {
-				$iterator->next();
+
+			// MODE_BEFORE or before delta: timestamp > target + delta
+			if ($this->matchMode >= InterpreterProxy::MODE_BEFORE && ($this->current[0] > $ts + $this->matchMode)) {
+				// printf("b >>\n");
+				$this->state = InterpreterProxy::STATE_USE_PREVIOUS;
+				return;
 			}
-			else /*if ($this->current[0] > $ts)*/ {
-				$iterator->next();
+
+			// MODE_BEST: delta getting larger
+			if ($this->state !== InterpreterProxy::STATE_INITIAL && ($this->delta > $this->lastDelta)) {
+				// printf("* >>\n");
+				$this->state = InterpreterProxy::STATE_USE_PREVIOUS;
+				return;
 			}
+
+			$iterator->next();
+			$this->state = InterpreterProxy::STATE_VALID;
 		}
 
-		return false;
+		// printf("* <<\n");
+		$this->state = InterpreterProxy::STATE_USE_CURRENT;
 	}
 
 	/**
 	 * Get current tuple from iterator
 	 */
-	public function getTuple() {
-		return $this->passthrough ? $this->getIterator()->current() : $this->current;
+	public function current() {
+		if ($this->passthrough) {
+			return $this->getIterator()->current();
+		}
+
+		if ($this->state == InterpreterProxy::STATE_USE_CURRENT) {
+			// printf("o >>\n");
+			return $this->current;
+		}
+		elseif ($this->state == InterpreterProxy::STATE_USE_PREVIOUS) {
+			// printf("o <<\n");
+			return $this->lastCurrent;
+		}
+		else {
+			throw new \LogicException('Invalid InterpreterProxy state');
+		}
 	}
 
 	/**
