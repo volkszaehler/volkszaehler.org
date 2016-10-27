@@ -135,14 +135,14 @@ class VirtualInterpreter extends Interpreter {
 	 * Context function: get channel timestamp
 	 */
 	public function _ts($key = self::PRIMARY) {
-		return $this->interpreters[$key]->getTuple()[0] / 1e3;
+		return $this->interpreters[$key]->current()[0] / 1e3;
 	}
 
 	/**
 	 * Context function: get channel value
 	 */
 	public function _val($key = self::PRIMARY) {
-		return $this->interpreters[$key]->getTuple()[1];
+		return $this->interpreters[$key]->current()[1];
 	}
 
 	/**
