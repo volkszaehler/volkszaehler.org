@@ -99,7 +99,7 @@ class OptimizeCommand extends BasicCommand {
 
 	protected function configure() {
 		$this->setName('optimize')
-			->setDescription('Opimize data and aggregate tables');
+			->setDescription('Optimize data and aggregate tables');
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
