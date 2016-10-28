@@ -166,13 +166,18 @@ class VirtualInterpreter extends Interpreter {
 	 */
 	public function getIterator() {
 		$this->rowCount = 0;
-		$ts_last = $this->getFrom();
 
 		// loop primary channel for timestamps
 		foreach ($this->interpreters[self::PRIMARY] as $tuple) {
-			// move all interpreters
+			// move interpreter to match primary timestamp
 			foreach ($this->interpreters as $key => $interpreter) {
-				if ($key !== self::PRIMARY) {
+				if ($key == self::PRIMARY) {
+					// get initial timestamp after iterator is initialized
+					if (!isset($ts_last)) {
+						$ts_last = $this->getFrom();
+					}
+				}
+				else {
 					$interpreter->advanceIteratorToTimestamp($tuple[0]);
 				}
 			}
@@ -180,13 +185,18 @@ class VirtualInterpreter extends Interpreter {
 			// calculate
 			$value = $this->parser->reduce($this->ctx);
 
-			$delta_ts = $tuple[0] - $ts_last;
-			$this->consumption += $value * $delta_ts;
-			$ts_last = $tuple[0];
-
 			if (!is_numeric($value)) {
 				throw new \Exception("Virtual channel rule must yield numeric value.");
 			}
+
+			if ($this->output == self::CONSUMPTION_VALUES) {
+				$this->consumption += $value * 3.6e6;
+			}
+			else {
+				$this->consumption += $value * ($tuple[0] - $ts_last);
+			}
+
+			$ts_last = $tuple[0];
 
 			$res = array($tuple[0], $value, 1);
 
@@ -235,8 +245,13 @@ class VirtualInterpreter extends Interpreter {
 			return 0;
 		}
 
-		$delta = $this->getTo() - $this->getFrom();
-		return $this->consumption / $delta;
+		if ($this->output == self::CONSUMPTION_VALUES) {
+			return $this->getConsumption() / $this->rowCount;
+		}
+		else {
+			$delta = $this->getTo() - $this->getFrom();
+			return $this->consumption / $delta;
+		}
 	}
 
 	/**
