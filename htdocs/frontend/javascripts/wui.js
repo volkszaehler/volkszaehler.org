@@ -56,7 +56,7 @@ vz.wui.init = function() {
 
 	// bind plot actions
 	$('#controls button').click(this.handleControls);
-	$('#controls').buttonset();
+	$('#controls').controlgroup();
 
 	// auto refresh
 	$('#refresh').prop('checked', vz.options.refresh);
