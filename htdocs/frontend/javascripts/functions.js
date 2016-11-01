@@ -184,6 +184,10 @@ vz.parseUrlParams = function() {
 				case 'options': // data load options
 					vz.options[key] = vars[key];
 					break;
+
+				case 'hide':
+					$(vars[key]).hide();
+					break;
 			}
 		}
 	}
