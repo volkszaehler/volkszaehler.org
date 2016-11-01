@@ -244,7 +244,7 @@ class Router implements HttpKernelInterface {
 		}
 		else if (extension_loaded('apcu')) {
 			// clear cache
-			apcu_clear_cache('user');
+			apcu_clear_cache();
 		}
 
 		$driverImpl = $config->newDefaultAnnotationDriver(VZ_DIR . '/lib/Model');

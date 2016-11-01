@@ -72,11 +72,16 @@ vz.entities.loadDetails = function() {
 				return $.Deferred().resolveWith(this, [json]);
 			},
 			function(json) {
+				// default error handling is skipped - be careful
 				if (json.exception && json.exception.message && json.exception.message.match(/^Invalid UUID|^No entity found with UUID/)) {
 					vz.entities.splice(vz.entities.indexOf(entity), 1); // remove
 					return $.Deferred().resolveWith(this, [json]);
 				}
-				vz.wui.dialogs.middlewareException(json.exception);
+				// not a json exception - json contains the xhr instead
+				vz.wui.dialogs.middlewareException({
+					type: "Network Error",
+					message: json.statusText
+				});
 				return $.Deferred().rejectWith(this, [json]);
 			}
 		));

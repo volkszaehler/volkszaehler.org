@@ -35,6 +35,7 @@ tr.property td, tr.entity td {
 
 #content div {
 	padding: 2px 0;
+	display: block;
 }
 
 #content h3 {
@@ -44,6 +45,10 @@ tr.property td, tr.entity td {
 	color: white;
 	cursor: pointer;
 	font-size: 0.9em;
+}
+
+#content h3 img {
+	vertical-align: bottom;
 }
 
 #plot {

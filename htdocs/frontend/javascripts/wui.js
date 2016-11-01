@@ -56,7 +56,7 @@ vz.wui.init = function() {
 
 	// bind plot actions
 	$('#controls button').click(this.handleControls);
-	$('#controls').buttonset();
+	$('#controls').controlgroup();
 
 	// auto refresh
 	$('#refresh').prop('checked', vz.options.refresh);
@@ -171,18 +171,18 @@ vz.wui.dialogs.init = function() {
 						controller: 'entity',
 						url: middleware.url
 					}).done(function(json) {
-							var public = [];
-							json.entities.forEach(function(json) {
-								var entity = new Entity(json, middleware.url);
-								public.push(entity);
-							});
+						var public = [];
+						json.entities.forEach(function(json) {
+							var entity = new Entity(json, middleware.url);
+							public.push(entity);
+						});
 
-							public.sort(Entity.compare);
-							vz.middleware[idx].public = public;
+						public.sort(Entity.compare);
+						vz.middleware[idx].public = public;
 
-							if (idx === 0) {
-								populateEntities(vz.middleware[idx]);
-							}
+						if (idx === 0) {
+							populateEntities(vz.middleware[idx]);
+						}
 					});
 				});
 			}
@@ -938,9 +938,11 @@ vz.wui.dialogs.error = function(error, description, code) {
 		dialogClass: 'ui-error',
 		resizable: false,
 		modal: true,
+		close: function() {
+			vz.wui.errorDialog = false;
+		},
 		buttons: {
 			Ok: function() {
-				vz.wui.errorDialog = false;
 				$(this).dialog('close');
 			}
 		}
