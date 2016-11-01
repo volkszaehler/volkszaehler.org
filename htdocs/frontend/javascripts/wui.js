@@ -938,9 +938,11 @@ vz.wui.dialogs.error = function(error, description, code) {
 		dialogClass: 'ui-error',
 		resizable: false,
 		modal: true,
+		close: function() {
+			vz.wui.errorDialog = false;
+		},
 		buttons: {
 			Ok: function() {
-				vz.wui.errorDialog = false;
 				$(this).dialog('close');
 			}
 		}
