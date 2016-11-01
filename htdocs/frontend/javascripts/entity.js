@@ -617,7 +617,7 @@ Entity.prototype.getDOMRow = function(parent) {
 				)
 			)
 		)
-		.append($('<td>').text(type)) // channel type
+		.append($('<td>').addClass('type').text(type)) // channel type
 		.append($('<td>').addClass('min'))		// min
 		.append($('<td>').addClass('max'))		// max
 		.append($('<td>').addClass('average'))		// avg
