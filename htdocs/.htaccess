@@ -12,3 +12,7 @@
 	RewriteEngine On
 	RewriteRule ^middleware/(.*) middleware.php/$1 [L]
 </IfModule>
+
+<IfModule mod_headers.c>
+    Header set Content-Security-Policy "default-src 'self'; connect-src * ws: wss: http: https:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';"
+</IfModule>
