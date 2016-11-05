@@ -310,6 +310,22 @@ vz.wui.dialogs.init = function() {
 			}
 			finally {
 				$('#entity-add').dialog('close');
+				
+				// show the channel UUID to the user
+				$('<div>').append(
+					$('<p>').html(entity.uuid)
+				).dialog({
+					title: 'Kanal UUID',
+					width: 450,
+					resizable: false,
+					modal: true,
+					buttons: {
+						Ok: function() {
+							$(this).dialog('close');
+							$(this).remove();
+						}
+					}
+				});
 			}
 		});
 
