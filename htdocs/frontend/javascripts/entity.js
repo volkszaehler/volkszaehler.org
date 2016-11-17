@@ -102,7 +102,7 @@ Entity.prototype.parseJSON = function(json) {
  * Get entity unit
  */
 Entity.prototype.getUnit = function() {
-	return this.definition.unit || this.unit;
+	return this.definition.unit || this.unit || "";
 };
 
 /**
