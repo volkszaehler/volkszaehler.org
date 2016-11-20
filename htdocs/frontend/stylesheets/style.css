@@ -98,9 +98,6 @@ tr.property td, tr.entity td {
 #controls {
 	background-color: grey;
 	margin-right: 0px; /* override jquery ui */
-}
-
-#controls {
 	padding: 2px!important;
 }
 
@@ -109,6 +106,7 @@ tr.property td, tr.entity td {
 	height: 30px;
 	margin-right: 0px; /* override jquery ui */
 	font-size: 1em;
+	padding: 0;
 }
 
 #controls button img {
