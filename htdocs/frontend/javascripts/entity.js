@@ -538,7 +538,7 @@ Entity.prototype.getDOMDetails = function(edit) {
 						break;
 
 					case 'resolution':
-						prefix = (this.definition.scale == 1000) ? 'k' : ''; // per Wh or kWh
+						prefix = (this.getUnit() && this.definition.scale == 1000) ? 'k' : ''; // per Wh or kWh
 						value += '/' + prefix + vz.wui.formatConsumptionUnit(this.getUnit());
 						break;
 
