@@ -177,8 +177,7 @@
 	},
 	{
 		"name"			: "heatsensor",
-		"required"		: ["resolution"],
-		"optional"		: ["tolerance", "cost", "local", "gap", "initialconsumption"],
+		"optional"		: ["resolution", "tolerance", "cost", "local", "gap", "initialconsumption"],
 		"icon"			: "flame.png",
 		"unit"			: "W",
 		"scale"			: 1000,
@@ -264,8 +263,7 @@
 	},
 	{
 		"name"			: "workinghourssensor",
-		"required"		: ["resolution"],
-		"optional"		: ["tolerance", "local", "gap", "initialconsumption"],
+		"optional"		: ["resolution", "tolerance", "local", "gap", "initialconsumption"],
 		"icon"			: "clock.png",
 		"unit"			: "",
 		"scale"			: 1000,
