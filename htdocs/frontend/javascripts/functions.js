@@ -41,7 +41,7 @@ vz.getLink = function(format) {
 	var entities = [];
 	var middleware = '';
 	vz.entities.each(function(entity, parent) {
-		if (entity.active) {
+		if (entity.active && entity.definition.model != 'Volkszaehler\\Model\\Aggregator') {
 			if (entities.length === 0) {
 				middleware = entity.middleware;
 			}
