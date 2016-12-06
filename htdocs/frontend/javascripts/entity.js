@@ -750,13 +750,16 @@ Entity.prototype.updateDOMRow = function() {
  * Update totals column after async refresh
  */
 Entity.prototype.updateDOMRowTotal = function() {
+	var row = $('#entity-' + this.uuid);
 	if (this.totalconsumption) {
-		var row = $('#entity-' + this.uuid);
 		var unit = vz.wui.formatConsumptionUnit(this.definition.unit);
 
 		$('.total', row)
 			.data('total', this.totalconsumption)
 			.text(vz.wui.formatNumber(this.totalconsumption, unit, 'k'));
+	}
+	else {
+		$('.total', row).data('total', 0).text('');		
 	}
 };
 
