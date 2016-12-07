@@ -142,7 +142,7 @@ vz.entities.speedupFactor = function() {
 };
 
 /**
- * Overwritten each iterator to iterate recursively throug all entities
+ * Overwritten each iterator to iterate recursively through all entities
  */
 vz.entities.each = function(cb, recursive) {
 	for (var i = 0; i < this.length; i++) {
@@ -151,6 +151,55 @@ vz.entities.each = function(cb, recursive) {
 		if (recursive && this[i] !== undefined) {
 			this[i].eachChild(cb, true);
 		}
+	}
+};
+
+/**
+ * Handle mouse drop operations for moving/cloning entities between groups
+ */
+vz.entities.dropTableHandler = function(from, to, child, clone) {
+	if (clone) {
+		child = $.extend(true, {}, child);
+	}
+
+	var queue = [];
+	try {
+		if (to) {
+			queue.push(to.addChild(child)); // add to new aggregator
+		}
+		else { // add to root
+			if ($.inArray(child, vz.entities) < 0)
+				vz.entities.push(child);
+			child.cookie = true;
+			vz.entities.saveCookie();
+		}
+
+		if (!clone) {
+			if (from) { // remove from an aggregator
+				queue.push(from.removeChild(child));
+			}
+			else { // remove from root
+				child.cookie = false;
+				vz.entities.saveCookie();
+				var idx = $.inArray(child, vz.entities);
+				if (idx >= 0)
+					vz.entities.splice(idx, 1);
+			}
+		}
+	}
+	catch (e) {
+		vz.wui.dialogs.exception(e);
+	}
+	finally {
+		$.when.apply($, queue).done(function() { // wait for middleware
+			var q = [];
+			if (from)
+				q.push(from.loadDetails());
+			if (to)
+				q.push(to.loadDetails());
+
+			$.when.apply($, q).done(vz.entities.showTable);
+		});
 	}
 };
 
@@ -213,40 +262,12 @@ vz.entities.showTable = function() {
 					width: 400,
 					buttons: {
 						'Verschieben': function() {
-							var queue = [];
-							try {
-								if (to) {
-									queue.push(to.addChild(child)); // add to new aggregator
-								} else { // add to root
-									if ($.inArray(child, vz.entities) < 0)
-										vz.entities.push(child);
-									child.cookie = true;
-									vz.entities.saveCookie();
-								}
-
-								if (from) { // remove from an aggregator
-									queue.push(from.removeChild(child));
-								} else { // remove from root
-									child.cookie = false;
-									vz.entities.saveCookie();
-									var idx = $.inArray(child, vz.entities);
-									if (idx >= 0)
-										vz.entities.splice(idx, 1);
-								}
-							} catch (e) {
-								vz.wui.dialogs.exception(e);
-							} finally {
-								$.when.apply($, queue).done(function() { // wait for middleware
-									var q = [];
-									if (from)
-										q.push(from.loadDetails());
-									if (to)
-										q.push(to.loadDetails());
-
-									$.when.apply($, q).done(vz.entities.showTable);
-								});
-								$(this).dialog('close');
-							}
+							vz.entities.dropTableHandler(from, to, child, false);
+							$(this).dialog('close');
+						},
+						'Kopieren': function() {
+							vz.entities.dropTableHandler(from, to, child, true);
+							$(this).dialog('close');
 						},
 						'Abbrechen': function() {
 							$(this).dialog('close');
