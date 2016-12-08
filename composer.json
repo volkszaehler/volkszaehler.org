@@ -45,6 +45,6 @@
         }
     ],
     "scripts": {
-        "post-install-cmd": "php -r \"@copy('vendor/andig/dbcopy/dbcopy.php', 'misc/tools/dbcopy.php');\""
+        "post-update-cmd": "php -r \"@copy('vendor/andig/dbcopy/dbcopy.php', 'misc/tools/dbcopy.php');\""
     }
 }
