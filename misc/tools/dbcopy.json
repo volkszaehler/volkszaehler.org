@@ -2,16 +2,16 @@
 	"source": {
 		"driver": "pdo_mysql",
 		"host": "localhost",
-		"user": "travis",
-		"password": "",
+		"user": "vz",
+		"password": "demo",
 		"dbname": "volkszaehler"
 	},
 	"target": {
-		"driver": "pdo_mysql",
+		"driver": "pdo_sqlite",
 		"host": "localhost",
-		"user": "travis",
-		"password": "",
-		"dbname": "volkszaehler_backup",
+		"user": "root",		// user is not used if driver = pdo_sqlite
+		"password": "raspberry", //password is not used if driver = pdo_sqlite
+		"dbname": "volkszaehler_backup", // dbname is not used if driver = pdo_sqlite
 		"path": "sqlite.db3"		// path is only used if driver = pdo_sqlite
 	},
 	"tables": [
