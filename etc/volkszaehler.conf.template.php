@@ -92,7 +92,7 @@ $config['db']['charset']			= 'UTF8';
  *
  * See misc/tools/aggregation.php for details
  */
-$config['aggregation'] = false;
+$config['aggregation'] = true;
 
 /**
  * Path of the SQLite database

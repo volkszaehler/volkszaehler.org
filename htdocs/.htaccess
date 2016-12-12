@@ -8,6 +8,12 @@
 	Require all granted
 </IfModule>
 
+# enable this rule if using ppm middleware
+<IfModule mod_proxy.c>
+	# RewriteEngine On
+	# RewriteRule ^middleware(.php)?/(.*) http://localhost:8080/$2 [P]
+</IfModule>
+
 <IfModule mod_rewrite.c>
 	RewriteEngine On
 	RewriteRule ^middleware/(.*) middleware.php/$1 [L]

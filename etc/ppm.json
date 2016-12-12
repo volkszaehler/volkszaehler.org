@@ -1,0 +1,8 @@
+{
+	"host": "0.0.0.0",
+	"port": 8080,
+	"workers": 8,
+	"static": false,
+	"bridge": "HttpKernel",
+	"bootstrap": "Volkszaehler\\Server\\PPMBootstrapAdapter"
+}
