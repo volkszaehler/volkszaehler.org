@@ -1,5 +1,29 @@
 # volkszaehler tools
 
+**Table of Contents**
+
+- [dbcopy](#dbcopy)
+- [aggregate](#aggregate)
+- [vzcompress2](#vzcompress2)
+- [push-server](#push-server)
+  - [Protocols](#protocols)
+    - [Additional protocols](#additional-protocols)
+  - [Architecture](#architecture)
+  - [Data Formats](#data-formats)
+  - [Configuration](#configuration)
+    - [Basic Configuration](#basic-configuration)
+    - [Advanced Configuration](#advanced-configuration)
+    - [Client Configuration](#client-configuration)
+    - [Routing](#routing)
+  - [Security](#security)
+    - [WAMP](#wamp)
+    - [Plain Web Sockets](#plain-web-sockets)
+  - [Installation](#installation)
+- [ppm](#ppm)
+- [install.sh](#install.sh)
+- [doctrine](#doctrine)
+- [model-helper](#helper)
+
 
 ## dbcopy
 
