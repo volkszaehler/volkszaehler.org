@@ -43,8 +43,5 @@
             "type": "vcs",
             "url": "https://github.com/volkszaehler/httpd"
         }
-    ],
-    "scripts": {
-        "post-update-cmd": "php -r \"@copy('vendor/andig/dbcopy/dbcopy.php', 'misc/tools/dbcopy.php');\""
-    }
+    ]
 }
