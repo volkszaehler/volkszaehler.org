@@ -1,11 +1,34 @@
-# push-server
+# volkszaehler tools
+
+
+## dbcopy
+
+Database backup.
+Configuration see `etc/dbcopy.json`.
+
+To execute use
+
+        vendor/bin/dbcopy -c etc/dbcopy.json
+
+
+## aggregate
+
+Database optimization tool. Works by creating an aggregated database view persisted as table. Aggregation levels can be freely chosen between minute, hour, day, week, month and year. Used to speedup middleware requests.
+
+
+## vzcompress2
+
+Database compression tool. Works by thinning out old records. Can be used to limit database size and improve performance.
+
+
+## push-server
 
 The `push-server` is a volkszaehler component that provides realtime updates of measurements to connected clients.
 
 While the classic volkszaehler web frontend originally used polling to update its charts, by enabling `push-server` it will update whenever a new measurement is available.
 
 
-## Protocols
+### Protocols
 
 `push-server` allows vzlogger and volkszaehler middleware to push data to clients whenever it changes, instead of relying on clients to poll for updates.
 
@@ -15,14 +38,14 @@ Two main protocols are implemented:
   - Plain web sockets: while WAMP is highly usable for browser communication the protocol incurrs some overhead and implementations are not available for every single platform. Plain web sockets close this gap and can be used to connect additional, non-frontend clients.
 
 
-### Additional protocols
+#### Additional protocols
 
 Some users have expressed need for additional protocols, especially MQTT. Those can be implemented with the flexibilit given be `push-server`.
 
 The suggested approach is to deploy a (small) integration component like e.g. NodeJS-based `node-red` and use plain web sockets to communicate with `push-server`. Any additional protocol can be implemented on top of `node-red`.
 
 
-## Architecture
+### Architecture
 
 Intent of the `push-server` is to provide realtime updates for clients using an easily consumable protocol.
 
@@ -63,7 +86,7 @@ As a consequence `push-server` must be considered part of the middleware:
 The `push-server` can however be on a separate machine from the actual vzlogger(s) or potentially any other clients that may generate raw meter readings.
 
 
-## Data Formats
+### Data Formats
 
 Push messages use a similar JSON data format to the regular middleware API less any parameters that are only required for more than one reading.
 
@@ -88,9 +111,9 @@ Sample JSON message:
 ````
 
 
-## Configuration
+### Configuration
 
-### Basic Configuration
+#### Basic Configuration
 
 The `push-server` uses two ports for communication:
 
@@ -98,7 +121,7 @@ The `push-server` uses two ports for communication:
   - `$config['push']['broadcast']` is the server side "broadcast" port that clients can connect to using WAMP or plain web sockets. Default is 8082. This port needs to be accessible for any client that wants to receive push updates.
 
 
-### Advanced Configuration
+#### Advanced Configuration
 
 In order to limit the number of externally accessible ports, the web server can be configured to perform forwarding of client access to the HTTP port to the broadcast port based on certain criteria.
 
@@ -116,14 +139,14 @@ The `cboden/ratchet` web socket library that this implementation is based on doe
 If vhosts are used the `ProxyPass` directive needs be added to both http and https section.
 
 
-### Client Configuration
+#### Client Configuration
 
 The single port approach described above is the preferred setup for `push-server` deployments.
 
 Volkszaehler frontend will automatically try to connect to `ws/wss:<middleware uri>/ws` for webservers that are configured accordingly. As fallback the `middleware.live` parameter in `options.js` is still available if a dedicated, separate port is required. In this case the `/ws` postfox is not appended to the URI.
 
 
-### Routing
+#### Routing
 
 In order to support both WAMP and plain web sockets over the same external port, `push-server` has an integrated routing capability. For backwards compatibility with existing frontends the following routes are configured by default as part of `volkszaehler.conf.php`:
 
@@ -133,22 +156,22 @@ In order to support both WAMP and plain web sockets over the same external port,
 To disable a protocol it is sufficient to declare an empty array of routes.
 
 
-## Security
+### Security
 
 
-### WAMP
+#### WAMP
 
 When exposing the `push-server` to internet (hostile) clients via WAMP clients gain the same level of read-only access as when using the frontend. That means that a client is only able to read data if he is in possession of a valid channel UUID that the client must subscribe to.
 
 
-### Plain Web Sockets
+#### Plain Web Sockets
 
 Plain web sockets will currently forward **all** push notifications to connected clients. That implies that a client- once connected- obtains read access to all data updates and is also able to collect valid UUIDs for all updated channels, including UUIDs for non-public channels.
 
 **NOTE** make sure you read and understand the above. If your volkszaehler installation allows frontend users to update or delete channels (or even to add/remove data) exposing plain web sockets will give away even private channel's UUIDs which can be misused.
 
 
-## Installation
+### Installation
 
 To install `push-server` as a service create the service using `sudo nano /etc/systemd/system/push-server.service` and paste the following template:
 
@@ -165,3 +188,28 @@ To install `push-server` as a service create the service using `sudo nano /etc/s
 
     [Install]
     WantedBy=multi-user.target
+
+
+## ppm
+
+PHP process manager. Allows running volkszaehler middleware as standalone application for high performance scenarios.
+Configuration see `etc/ppm.json`.
+
+To execute use
+
+        vendor/bin/ppm -c etc/ppm.json
+
+
+## install.sh
+
+Installation script.
+
+
+## doctrine
+
+Database ORM maintenenance tool used for updating database structure when database model changes.
+
+
+## model-helper
+
+Helper tool for verifying consistency of entity definitions.
