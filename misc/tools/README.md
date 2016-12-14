@@ -217,7 +217,6 @@ To install `push-server` as a service create the service using `sudo nano /etc/s
 ## ppm
 
 PPM is the php process manager. Allows running volkszaehler middleware as standalone application for high performance scenarios.
-Configuration see `etc/ppm.json`.
 
 ### Installation
 
@@ -225,7 +224,7 @@ As ppm requires `ext-pcntl` which is not available on Windows platforms ppm does
 
     composer require php-pm/php-pm:dev-master php-pm/httpkernel-adapter:dev-master
 
-This will start a middleware on port 8080 and spawn 8 worker processes. To use the high performance middleware update the Apache configuration to proxy middleware requests. Edit `htdocs/.htaccess` like this:
+To use the high performance middleware update the Apache configuration to proxy middleware requests. Edit `htdocs/.htaccess` like this:
 
     <IfModule mod_proxy.c>
       RewriteEngine On
@@ -258,11 +257,11 @@ To execute use:
 
     vendor/bin/ppm start --port=8080 --workers=8 --static=false --bridge=HttpKernel --bootstrap=Volkszaehler\\Server\\PPMBootstrapAdapter --php-cgi=/usr/bin/php &
 
-If the middleware should accept connections from other hosts instead of using Apache mod_proxy, use `--host=0.0.0.0` in addition.
+This will start a middleware on port 8080 and spawn 8 worker processes. If the middleware should accept connections from other hosts instead of using Apache mod_proxy, use `--host=0.0.0.0` in addition.
 
 To monitor status use:
 
-    vendor/bin/ppm -c etc/ppm.json status
+    vendor/bin/ppm status
 
 
 ## install.sh
