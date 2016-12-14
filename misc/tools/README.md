@@ -20,6 +20,8 @@
     - [Plain Web Sockets](#plain-web-sockets)
   - [Installation](#installation)
 - [ppm](#ppm)
+  - [Installation](#installation)
+  - [Usage](#usage)
 - [install.sh](#install.sh)
 - [doctrine](#doctrine)
 - [model-helper](#helper)
