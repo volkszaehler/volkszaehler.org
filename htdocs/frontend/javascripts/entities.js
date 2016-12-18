@@ -235,7 +235,7 @@ vz.entities.showTable = function() {
 	});
 
 	// configure thead and aggregators as droppable
-	$('#entity-list tr.aggregator span.indicator,#entity-list thead tr th:first').each(function() {
+	$('#entity-list tr.aggregator span.indicator, #entity-list thead tr th:first').each(function() {
 		$(this).parents('tr').droppable({
 			accept: '#entity-list tr.channel span.indicator, #entity-list tr.aggregator span.indicator',
 			drop: function(event, ui) {
@@ -300,11 +300,6 @@ vz.entities.showTable = function() {
 		vz.wui.drawPlot();
 	});
 
-	// make sure row is selected when span is clicked
-	$('#entity-list table tbody tr span').mousedown(function() {
-		$($(this).parents('tr')[0]).trigger('mousedown');
-	});
-
 	$('#entity-list table').treeTable({
 		treeColumn: 2,
 		clickableNodeNames: true,
@@ -320,8 +315,7 @@ vz.entities.showTable = function() {
 };
 
 /**
- * Apply active state to child entities and
- * collapse root aggregator
+ * Apply active state to child entities and collapse root aggregator
  * @todo move to Entity class
  */
 vz.entities.inheritVisibility = function() {
