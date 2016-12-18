@@ -68,6 +68,11 @@ vz.options.plot = {
 		shadowSize: 0,
 		points: {
 			radius: 3
+		},
+		bars: {
+			fill:      0.8,
+			lineWidth: 0,
+			usedSpace: 0.8 // percent of available space that bars should occupy
 		}
 	},
  	legend: {
@@ -94,10 +99,16 @@ vz.options.plot = {
 		}
 	],
 	selection: { mode: 'x' },
-	crosshair: { mode: 'x' },
+	crosshair: {
+		mode: 'x',
+		leaveCallback: vz.wui.plotLeave
+	},
 	grid: {
 		hoverable: true,
-		autoHighlight: false
+		autoHighlight: true,
+		borderWidth:  1,
+		borderColor: '#bbb',
+		margin: 0
 	}
 };
 
