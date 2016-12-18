@@ -168,12 +168,12 @@
 <div id="entity-add" class="dialog">
 	<div class="tabs">
 		<ul>
-			<li><a href="#entity-subscribe">Kanal abonnieren</a></li>
-			<li><a href="#entity-public">&Ouml;ffentliche Kan&auml;le</a></li>
+			<li><a href="#entity-public">Öffentliche Kanäle</a></li>
+			<li><a href="#entity-subscribe">Private Kanäle</a></li>
 			<li><a href="#entity-create">Kanal erstellen</a></li>
 		</ul>
 		<div id="entity-subscribe">
-			<p>Hier k&ouml;nnen Sie einen existierenden Kanal über seine UUID hinzuf&uuml;gen</p>
+			<p>Private Kanäle und Kanäle anderer Middlewares mittels UUID hinzufügen:</p>
 			<table>
 				<tr><td><label for="entity-subscribe-middleware">Middleware:</label></td><td><input id="entity-subscribe-middleware" type="text" size="36" /></td></tr>
 				<tr><td><label for="entity-subscribe-uuid">UUID:</label></td><td><input id="entity-subscribe-uuid" type="text" size="36" maxlength="36" /></td></tr>
@@ -181,7 +181,7 @@
 			<p><input type="button" value="Abonnieren" /> <label for="entity-subscribe-cookie">Cookie:</label> <input id="entity-subscribe-cookie" type="checkbox" checked="checked" /></p>
 		</div>
 		<div id="entity-public">
-			<p>Hier k&ouml;nnen Sie &ouml;ffentliche Kan&auml;le abonnieren.</p>
+			<p>Öffentliche Kanäle abonnieren:</p>
 			<table>
 				<tr><td><label for="entity-public-middleware">Middleware:</label></td><td><select id="entity-public-middleware"></select></td></tr>
 				<tr><td><label for="entity-public-entity">Kanal:</label></td><td><select id="entity-public-entity" size="1"></select></td></tr>
