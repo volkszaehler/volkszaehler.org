@@ -156,6 +156,11 @@ vz.wui.addEntity = function(entity) {
  * Initialize dialogs
  */
 vz.wui.dialogs.init = function() {
+	// add middlewares
+	vz.middleware.forEach(function(middleware, idx) {
+		$('#entity-public-middleware').append($('<option>').val(middleware.url).text(middleware.title));
+	});
+
 	// initialize dialogs
 	$('#entity-add.dialog').dialog({
 		title: unescape('Kanal hinzuf%FCgen'),
@@ -202,10 +207,6 @@ vz.wui.dialogs.init = function() {
 
 	// set defaults
 	$('#entity-subscribe-middleware').val(vz.options.middleware[0].url);
-	// add middlewares
-	vz.middleware.forEach(function(middleware, idx) {
-		$('#entity-public-middleware').append($('<option>').val(middleware.url).text(middleware.title));
-	});
 	$('#entity-create-middleware').val(vz.options.middleware[0].url);
 	$('#entity-subscribe-cookie').attr('checked', 'checked');
 	$('#entity-public-cookie').attr('checked', 'checked');
