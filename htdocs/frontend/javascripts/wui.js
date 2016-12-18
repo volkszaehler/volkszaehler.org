@@ -160,34 +160,33 @@ vz.wui.dialogs.init = function() {
 	$('#entity-add.dialog').dialog({
 		title: unescape('Kanal hinzuf%FCgen'),
 		width: 650,
-		resizable: false
-	});
-	$('#entity-add.dialog > div').tabs({
-		activate: function(event, ui) { // lazy loading public entities
-			if (ui.newTab.attr('aria-controls') == 'entity-public') {
-				// populate MW entities (vz.middleware[0] is the default local)
-				vz.middleware.forEach(function(middleware, idx) {
-					vz.load({
-						controller: 'entity',
-						url: middleware.url
-					}).done(function(json) {
-						var public = [];
-						json.entities.forEach(function(json) {
-							var entity = new Entity(json, middleware.url);
-							public.push(entity);
-						});
+		resizable: false,
+		open: function() {
+			// lazy load public entities
+			var title = $('#entity-public-middleware option:selected').text();
 
-						public.sort(Entity.compare);
-						vz.middleware[idx].public = public;
-
-						if (idx === 0) {
-							populateEntities(vz.middleware[idx]);
-						}
+			vz.middleware.forEach(function(middleware, idx) {
+				vz.load({
+					controller: 'entity',
+					url: middleware.url
+				}).done(function(json) {
+					var public = [];
+					json.entities.forEach(function(json) {
+						var entity = new Entity(json, middleware.url);
+						public.push(entity);
 					});
+
+					public.sort(Entity.compare);
+					vz.middleware[idx].public = public;
+
+					if (middleware.title == title) {
+						populateEntities(vz.middleware[idx]);
+					}
 				});
-			}
+			});
 		}
 	});
+	$('#entity-add.dialog > div').tabs();
 
 	// show available entity types
 	vz.capabilities.definitions.entities.forEach(function(def) {
