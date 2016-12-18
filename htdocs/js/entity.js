@@ -24,6 +24,8 @@
  * volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* jshint -W014 */
+
 /**
  * Entity constructor
  * @var data object properties etc.
@@ -94,6 +96,13 @@ Entity.prototype.parseJSON = function(json) {
 };
 
 /**
+ * Consumption mode is valid for entity
+ */
+Entity.prototype.isConsumptionMode = function() {
+	return this.definition && this.definition.hasConsumption && vz.wui.isConsumptionMode();
+};
+
+/**
  * Get entity unit
  */
 Entity.prototype.getUnit = function() {
@@ -101,21 +110,41 @@ Entity.prototype.getUnit = function() {
 };
 
 /**
+ * Get entity unit
+ */
+Entity.prototype.getUnitForMode = function() {
+	return this.isConsumptionMode()
+		? vz.wui.formatConsumptionUnit(this.getUnit())
+		: this.getUnit();
+};
+
+/**
+ * Helper function to manage yaxes array (last entry contains template)
+ */
+function ensureAavailableAxis()  {
+	return vz.options.plot.yaxes.push($.extend({}, vz.options.plot.yaxes[vz.options.plot.yaxes.length-1])) - 1;
+}
+
+/**
  * Assign entity an axis with matching unit
  */
 Entity.prototype.assignMatchingAxis = function() {
 	if (this.definition) {
+		var unit = this.getUnitForMode();
+
 		// find axis with matching unit
 		if (vz.options.plot.yaxes.some(function(yaxis, idx) {
-			if (yaxis.axisLabel === undefined || (this.getUnit() == yaxis.axisLabel)) { // unoccupied or matching unit
+			if (yaxis.axisLabel === undefined || (unit == yaxis.axisLabel)) { // unoccupied or matching unit
+				// make sure we're not consuming the last yaxis
+				ensureAavailableAxis();
 				this.assignedYaxis = idx + 1;
 				return true;
 			}
 		}, this) === false) { // no more axes available
-			this.assignedYaxis = vz.options.plot.yaxes.push($.extend({}, vz.options.plot.yaxes[1]));
+			this.assignedYaxis = ensureAavailableAxis();
 		}
 
-		vz.options.plot.yaxes[this.assignedYaxis-1].axisLabel = this.getUnit();
+		vz.options.plot.yaxes[this.assignedYaxis-1].axisLabel = unit;
 	}
 };
 
@@ -132,13 +161,15 @@ Entity.prototype.assignAxis = function() {
 
 		while (vz.options.plot.yaxes.length < this.assignedYaxis) { // no more axes available
 			// create new right-hand axis
-			vz.options.plot.yaxes.push($.extend({}, vz.options.plot.yaxes[1]));
+			ensureAavailableAxis();
 		}
 
 		// check if axis already has auto-allocated entities
-		var yaxis = vz.options.plot.yaxes[this.assignedYaxis-1];
+		var yaxis = vz.options.plot.yaxes[this.assignedYaxis-1],
+			unit = this.getUnitForMode();
+
 		if (yaxis.forcedGroup === undefined) { // axis auto-assigned
-			if (yaxis.axisLabel !== undefined && this.getUnit() !== yaxis.axisLabel) { // unit mismatch
+			if (yaxis.axisLabel !== undefined && unit !== yaxis.axisLabel) { // unit mismatch
 				// move previously auto-assigned entities to different axis
 				yaxis.axisLabel = '*'; // force unit mismatch
 				vz.entities.each((function(entity) {
@@ -149,7 +180,7 @@ Entity.prototype.assignAxis = function() {
 			}
 		}
 
-		yaxis.axisLabel = this.getUnit();
+		yaxis.axisLabel = unit;
 		yaxis.forcedGroup = this.yaxis;
 	}
 
@@ -311,8 +342,15 @@ Entity.prototype.loadData = function() {
 		data: {
 			from: Math.floor(vz.options.plot.xaxis.min),
 			to: Math.ceil(vz.options.plot.xaxis.max),
-			tuples: vz.options.group === undefined ? vz.options.tuples : Number.MAX_SAFE_INTEGER,
-			group: vz.entities.speedupFactor()
+			tuples: this.isConsumptionMode()
+				? '' // avoid requesting max tuples if grouping
+				: vz.options.tuples,
+			group: this.isConsumptionMode()
+				? vz.options.mode // mode contains the desired grouping
+				: vz.entities.speedupFactor(),
+			options: this.isConsumptionMode()
+				? 'consumption'
+				: vz.options.options
 		}
 	}).done(function(json) {
 		this.data = json.data;
@@ -726,7 +764,7 @@ Entity.prototype.updateDOMRow = function() {
 
 	if (this.data && this.data.rows > 0) { // update statistics if data available
 		var yearMultiplier = 365*24*60*60*1000 / (this.data.to - this.data.from); // ms
-		var unit = this.getUnit();
+		var unit = this.getUnitForMode();
 
 		// indicate stale data
 		if (this.data.to)
