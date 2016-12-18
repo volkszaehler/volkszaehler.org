@@ -94,8 +94,6 @@ vz.entities.loadDetails = function() {
  * Load JSON data from the middleware
  */
 vz.entities.loadData = function() {
-	$('#overlay').html('<img src="img/loading.gif" alt="loading..." /><p>loading...</p>');
-
 	var queue = [];
 	vz.entities.each(function(entity) {
 		queue.push(entity.loadData());
@@ -153,6 +151,17 @@ vz.entities.each = function(cb, recursive) {
 			this[i].eachChild(cb, true);
 		}
 	}
+};
+
+/**
+ * Iterate each active channel containing data
+ */
+vz.entities.eachActiveChannel = function(cb) {
+	this.each(function(entity) {
+		if (entity.hasData() && entity.data && entity.data.tuples && entity.data.tuples.length > 0) {
+			cb(entity);
+		}
+	}, true);
 };
 
 /**
@@ -287,17 +296,34 @@ vz.entities.showTable = function() {
 	});
 
 	// make visible that a row is clicked
-	$('#entity-list table tbody tr').mousedown(function() {
-		var entity = $(this).data('entity');
-		var selected = $('tr.selected');
+	$('#entity-list table tbody tr').click(function(ev) {
+		var selected = $(this).data('entity').selected;
 
-		selected.removeClass('selected'); // deselect currently selected rows
-		vz.wui.selectedChannel = null;
-
-		if (entity !== selected.data('entity') && entity.active) {
-			$(this).addClass('selected');
-			vz.wui.selectedChannel = entity.uuid;
+		if (ev.ctrlKey) {
+			// partially remove previous selection
+			if (selected) {
+				$(this).removeClass('selected');
+				$(this).data('entity').selected = false;
+			}
 		}
+		else {
+			// remove previous selection
+			$('tr.selected').each(function(idx, el) {
+				$(el).removeClass('selected');
+				$(el).data('entity').selected = false;
+			});
+		}
+
+		// add new selection
+		if (!selected) {
+			$(this).addClass('selected');
+			$(this).data('entity').eachChild(function(child) {
+				$('#entity-' + child.uuid).addClass('selected');
+				// $('#entity-' + child.uuid + '.child-of-entity-' + child.parent.uuid).addClass('selected');
+				child.selected = true;
+			}, true).selected = true;
+		}
+
 		vz.wui.drawPlot();
 	});
 
@@ -342,16 +368,12 @@ vz.entities.inheritVisibility = function() {
  * @todo move to Entity class
  */
 vz.entities.updateTableColumnVisibility = function() {
-	// hide costs if empty for all rows
-	$('.cost').css({
-		display: ($('tbody .cost').filter(function() {
-								return (+$(this).data('cost') || 0) > 0;
-						 }).get().length === 0) ? 'none' : ''
-	});
-	// hide total consumption if empty for all rows
-	$('.total').css({
-		display: ($('tbody .total').filter(function() {
-								return (+$(this).data('total') || 0) > 0;
-						 }).get().length === 0) ? 'none' : ''
+	// show/hide empty columns
+	['consumption', 'cost', 'total'].forEach(function(column) {
+		$('.' + column).css({
+			display: ($('tbody .' + column).filter(function() {
+									return (+$(this).data(column) || 0) > 0;
+							 }).get().length === 0) ? 'none' : ''
+		});
 	});
 };

@@ -54,13 +54,15 @@ vz.getLink = function(format) {
 		}
 	}, true); // recursive!
 
-	return entities[0].middleware + '/data.' + format + '?' + $.param({
+	var params = $.extend($.getUrlParams(), {
 		from: Math.floor(vz.options.plot.xaxis.min),
 		to: Math.ceil(vz.options.plot.xaxis.max),
 		uuid: entities.map(function(entity) {
 			return entity.uuid;
 		})
 	});
+
+	return entities[0].middleware + '/data.' + format + '?' + $.param(params);
 };
 
 /**
@@ -79,13 +81,42 @@ vz.getPermalink = function() {
 		}
 	});
 
-	var params = {
+	var params = $.extend($.getUrlParams(), {
 		from: Math.floor(vz.options.plot.xaxis.min),
 		to: Math.ceil(vz.options.plot.xaxis.max),
-		uuid: uuids
-	};
+		uuid: uuids,
+		mode: vz.options.mode
+	});
 
 	return window.location.protocol + '//' + window.location.host + window.location.pathname + '?' + $.param(params);
+};
+
+/**
+ * Get auth cookie for middleware url
+ */
+vz.getMiddlewareAuth = function(middleware) {
+	var mw = vz.getMiddleware(middleware);
+	return (mw || {}).authtoken;
+};
+
+/**
+ * Update middleware auth token and store cookie
+ */
+vz.setMiddlewareAuth = function(middleware, authtoken) {
+	var mw = vz.getMiddleware(middleware);
+
+	if (mw) {
+		mw.authtoken = authtoken;
+
+		var tokens = vz.options.middleware.filter(function(mw) {
+			return !!mw.authtoken;
+		}).map(function(mw) {
+			return mw.authtoken + "@" + mw.url;
+		});
+
+		var expires = new Date(2038, 0, 1); // some days before y2k38 problem
+		$.setCookie('vz_authtoken', tokens.join("|", {expires: expires}));
+	}
 };
 
 /**
@@ -94,17 +125,33 @@ vz.getPermalink = function() {
  * @param skipDefaultErrorHandling according to http://stackoverflow.com/questions/19101670/provide-a-default-fail-method-for-a-jquery-deferred-object
  */
 vz.load = function(args, skipDefaultErrorHandling) {
+	if (vz.wui.requests.issued++ === 0) {
+		NProgress.start();
+	}
+
 	$.extend(args, {
-		accepts: 'application/json',
+		accepts: {
+			'json': 'application/json'
+		},
 		beforeSend: function (xhr, settings) {
 			// remember URL for potential error messages
 			xhr.requestUrl = settings.url;
+			xhr.middleware = args.middleware;
+
+			// add authorization header
+			var auth = vz.getMiddlewareAuth(args.middleware);
+			if (auth) {
+				xhr.setRequestHeader('Authorization', 'Bearer ' + auth);
+			}
 		}
 	});
 
 	if (args.url === undefined) { // local middleware by default
 		args.url = vz.options.middleware[0].url;
 	}
+
+	// store for later authentication
+	args.middleware = args.url;
 
 	if (args.controller !== undefined) {
 		args.url += '/' + args.controller;
@@ -120,7 +167,12 @@ vz.load = function(args, skipDefaultErrorHandling) {
 		args.data = { };
 	}
 
-	return $.ajax(args).then(
+	return $.ajax(args).always(function(res) {
+		NProgress.set(++vz.wui.requests.completed / vz.wui.requests.issued);
+		if (vz.wui.requests.completed == vz.wui.requests.issued) {
+			vz.wui.requests.issued = vz.wui.requests.completed = 0;
+		}
+	}).then(
 		// success
 		function(json, error, xhr) {
 			// ensure json response - might still be server error
@@ -172,12 +224,15 @@ vz.parseUrlParams = function() {
 					vz.options.refresh = false;
 					// ms or speaking timestamp
 					var ts = (/^-?[0-9]+$/.test(vars[key])) ? parseInt(vars[key]) : new Date(vars[key]).getTime();
-					if (key == 'from')
-						vz.options.plot.xaxis.min = ts;
-					else
-						vz.options.plot.xaxis.max = ts;
+					if (!isNaN(ts)) {
+						if (key == 'from')
+							vz.options.plot.xaxis.min = ts;
+						else
+							vz.options.plot.xaxis.max = ts;
+					}
 					break;
 
+				case 'mode': // explicitly set display mode
 				case 'style': // explicitly set display style
 				case 'fillstyle': // explicitly set fill style
 				case 'linewidth': // explicitly set line width
@@ -226,29 +281,11 @@ vz.parseUrlParams = function() {
  * Load capabilities from middleware
  */
 vz.capabilities.load = function() {
-	// execute query asynchronously to refresh from middleware
-	var deferred = vz.load({
-		controller: 'capabilities'
+	return vz.load({
+		controller: 'capabilities/definitions'
 	}).done(function(json) {
-		$.extend(true, vz.capabilities, json.capabilities);
-		try {
-			localStorage.setItem('vz.capabilities', JSON.stringify(json)); // cache it
-		}
-		catch (e) { }
+		$.extend(vz.capabilities.definitions, json.capabilities.definitions);
 	});
-
-	// get cached value to avoid blocking frontend startup
-	try {
-		var json = localStorage.getItem('vz.capabilities');
-		if (json !== false) {
-			// use cached value and return immediately
-			$.extend(true, vz.capabilities, JSON.parse(json).capabilities);
-			return $.Deferred().resolve();
-		}
-	}
-	catch (e) {	}
-
-	return deferred;
 };
 
 /**
