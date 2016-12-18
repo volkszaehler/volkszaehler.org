@@ -54,6 +54,18 @@ vz.wui.init = function() {
 		$(this).val('default');
 	});
 
+    // bind display mode change
+	$('#display select').change(function(event) {
+		var val = $(this).val().split('-');
+		vz.wui.changeDisplayMode(val.pop());
+		if (val.length) {
+			vz.wui.handleControls('zoom-' + val.pop());
+		}
+		else {
+			vz.wui.zoom(vz.options.plot.xaxis.min, vz.options.plot.xaxis.max);
+		}
+	});
+
 	// bind plot actions
 	$('#controls button').click(this.handleControls);
 	$('#controls').controlgroup();
@@ -687,6 +699,21 @@ vz.wui.zoom = function(from, to) {
 };
 
 /**
+ * Handle display mode control
+ */
+vz.wui.changeDisplayMode = function(mode) {
+	$("#display option[value=" + mode + "]").prop('selected', 'selected');
+	vz.options.mode = mode;
+};
+
+/**
+ * Get consumption mode
+ */
+vz.wui.isConsumptionMode = function() {
+	return (vz.options.mode && vz.options.mode != 'current');
+};
+
+/**
  * Refresh plot with new data
  */
 vz.wui.refresh = function() {
@@ -725,13 +752,7 @@ vz.wui.clearTimeout = function(text) {
 };
 
 /**
- * Rounding precision
- *
- * Math.round rounds to whole numbers
- * to round to one decimal (e.g. 15.2) we multiply by 10,
- * round and reverse the multiplication again
- * therefore "vz.options.precision" needs
- * to be set to 1 (for 1 decimal) in that case
+ * Determine matching SI unit prefix
  */
 vz.wui.formatNumber = function(number, unit, prefix) {
 	prefix = prefix || true; // default on
@@ -740,7 +761,7 @@ vz.wui.formatNumber = function(number, unit, prefix) {
 			maxIndex = (typeof prefix == 'string') ? siPrefixes.indexOf(prefix)+1 : siPrefixes.length;
 
 	// flow unit or air pressure?
-	if (['l', 'm3', 'm^3', 'm³', 'l/h', 'm3/h', 'm/h^3', 'm³/h', 'hPa'].indexOf(unit) >= 0) {
+	if (['h', 'l', 'm3', 'm^3', 'm³', 'l/h', 'm3/h', 'm/h^3', 'm³/h', '°C', 'K', 'hPa', 'cd', 'km/h', 'u/min', 'rpm'].indexOf(unit) >= 0) {
 		// don't scale...
 		maxIndex = -1;
 
