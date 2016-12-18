@@ -127,7 +127,7 @@ vz.entities.loadTotalConsumption = function() {
  */
 vz.entities.speedupFactor = function() {
 	var	group = vz.options.group,
-			delta = (vz.options.plot.xaxis.max - vz.options.plot.xaxis.min) / 3.6e6;
+		delta = (vz.options.plot.xaxis.max - vz.options.plot.xaxis.min) / 3.6e6;
 
 	// explicit group set via url?
 	if (group !== undefined)
