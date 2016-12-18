@@ -205,7 +205,10 @@
 
         if(options.expandable) {
           cell.prepend('<span style="margin-left: -' + options.indent + 'px; padding-left: ' + options.indent + 'px" class="expander"></span>');
-          $(cell[0].firstChild).click(function() { node.toggleBranch(); });
+          $(cell[0].firstChild).click(function(e) { 
+            node.toggleBranch(); 
+            e.stopPropagation();
+          });
 
           if(options.clickableNodeNames) {
             cell[0].style.cursor = "pointer";
@@ -214,6 +217,7 @@
               if (e.target.className != 'expander') {
                 node.toggleBranch();
               }
+              e.stopPropagation();
             });
           }
 
