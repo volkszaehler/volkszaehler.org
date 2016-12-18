@@ -272,7 +272,8 @@
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
-			"de" : "Betriebsstundensensor"
+			"de" : "Betriebsstundensensor",
+			"en" : "Operating Hours Sensor"
 		}
 	},
 	{
@@ -329,6 +330,18 @@
 		}
 	},
 	{
+		"name"			: "fanspeed",
+		"optional"		: ["resolution", "tolerance", "local", "gap"],
+		"icon"			: "propeller.png",
+		"unit"			: "u/min",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"		: {
+			"de" : "Drehzahl",
+			"en" : "Fan speed"
+		}
+	},
+	{
 		"name"			: "luminosity",
 		"optional"		: ["resolution", "tolerance", "local", "gap"],
 		"icon"			: "sun.png",
@@ -363,6 +376,19 @@
 		"translation"		: {
 			"de" : "Sensor",
 			"en" : "Sensor"
+		}
+	},
+	{
+		"name"			: "consumptionsensor",
+		"required"		: ["unit"],
+		"optional"		: ["resolution", "tolerance", "cost", "local", "gap", "initialconsumption"],
+		"icon"			: "gauge.png",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
+		"translation"		: {
+			"de" : "Verbrauchssensor",
+			"en" : "Consumption Sensor"
 		}
 	},
 	{

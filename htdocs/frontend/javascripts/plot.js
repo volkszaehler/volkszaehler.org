@@ -226,7 +226,6 @@ vz.wui.drawPlot = function () {
 
 		vz.options.plot.axesAssigned = true;
 	}
-console.log(vz.options.plot.yaxes);
 
 	// consumption mode does some Xaxis manupulation- preserve original options
 	var plotOptions = $.extend(true, {}, vz.options.plot);
@@ -363,6 +362,7 @@ console.log(vz.options.plot.yaxes);
 	if (plotOptions.xaxis.reserveSpace === undefined && yaxesAtRightSide === 0) {
 		plotOptions.xaxis.reserveSpace = false;
 	}
+
 	if (series.length === 0) {
 		$('#overlay').html('<img src="images/empty.png" alt="no data..." /><p>nothing to plot...</p>');
 		series.push({}); // add empty dataset to show axes
@@ -370,7 +370,6 @@ console.log(vz.options.plot.yaxes);
 	else {
 		$('#overlay').empty();
 	}
-console.log(series);
 
 	// call flot
 	vz.plot = $.plot($('#flot'), series, plotOptions);

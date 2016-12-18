@@ -66,7 +66,9 @@ Entity.prototype.parseJSON = function(json) {
 
 	// setting defaults
 	if (this.type !== undefined) {
-		this.definition = vz.capabilities.definitions.get('entities', this.type);
+		if (this.definition === undefined) {
+			this.definition = vz.capabilities.definitions.get('entities', this.type);
+		}
 
 		if (this.style === undefined) {
 			if (this.definition.style) {
@@ -194,6 +196,7 @@ Entity.prototype.assignAxis = function() {
  *         - undefined: not initialized yet, will only happen during assignment of first entity to axis
  *         - null:      min value intentionally set to 'auto' to allow negative values
  *         - 0:         min value assumed to be '0' as long as no entity with negative values is encountered
+ * @todo ensure this does not override user-defined min setting with multiple axes
  */
 Entity.prototype.updateAxisScale = function() {
 	if (this.assignedYaxis !== undefined && vz.options.plot.yaxes.length >= this.assignedYaxis) {
@@ -203,7 +206,7 @@ Entity.prototype.updateAxisScale = function() {
 		}
 		if (this.data && this.data.tuples && this.data.tuples.length > 0) {
 			// allow negative values, e.g. for temperature sensors
-			if (this.data.min && this.data.min[1] < 0) { // set axis min to 'auto'
+			if (this.data.min && this.data.min[1] < 0 && vz.options.plot.yaxes[this.assignedYaxis-1].min === 0) { // set axis min to 'auto'
 				vz.options.plot.yaxes[this.assignedYaxis-1].min = null;
 			}
 		}
@@ -648,10 +651,11 @@ Entity.prototype.getDOMRow = function(parent) {
 			.append($('<input>')
 				.attr('type', 'checkbox')
 				.attr('checked', this.active)
-				.bind('change', this, function(event) {
+				.bind('click', this, function(event) {
 					var entity = event.data;
 					entity.activate($(this).prop('checked'), null, true).done(vz.wui.drawPlot);
 					vz.entities.saveCookie();
+					event.stopPropagation();
 				})
 			)
 		)
@@ -687,6 +691,7 @@ Entity.prototype.getDOMRow = function(parent) {
 				.attr('alt', 'details')
 				.bind('click', this, function(event) {
 					event.data.showDetails();
+					event.stopPropagation();
 				})
 			)
 		)
@@ -703,6 +708,7 @@ Entity.prototype.getDOMRow = function(parent) {
 				vz.entities.saveCookie();
 				vz.entities.showTable();
 				vz.wui.drawPlot();
+				event.stopPropagation();
 			})
 		);
 	}
@@ -743,12 +749,8 @@ Entity.prototype.updateDOMRow = function() {
 	var row = $('#entity-' + this.uuid);
 
 	// clear table first
-	$('.min', row).text('').attr('title', '');
-	$('.max', row).text('').attr('title', '');
-	$('.average', row).text('');
-	$('.last', row).text('');
-	$('.consumption', row).text('');
-	$('.cost', row).text('');
+	$('.min, .max', row).text('').attr('title', '');
+	$('.average, .last, .consumption, .cost', row).text('');
 	// $('.total', row).text('').data('total', null);
 
 	if (this.data && this.data.rows > 0) { // update statistics if data available
@@ -775,8 +777,9 @@ Entity.prototype.updateDOMRow = function() {
 			.text(vz.wui.formatNumber(this.data.tuples[this.data.tuples.length-1][1], unit));
 
 		if (this.data.consumption) {
-			var consumptionUnit = vz.wui.formatConsumptionUnit(unit);
+			var consumptionUnit = vz.wui.formatConsumptionUnit(this.getUnit());
 			$('.consumption', row)
+				.data('consumption', this.data.consumption)
 				.text(vz.wui.formatNumber(this.data.consumption, consumptionUnit))
 				.attr('title', vz.wui.formatNumber(this.data.consumption * yearMultiplier, consumptionUnit) + '/Jahr');
 		}
@@ -804,7 +807,7 @@ Entity.prototype.updateDOMRow = function() {
  */
 Entity.prototype.updateDOMRowTotal = function() {
 	var row = $('#entity-' + this.uuid);
-	if (this.totalconsumption) {
+	if (this.active && this.totalconsumption) {
 		var unit = vz.wui.formatConsumptionUnit(this.definition.unit);
 
 		$('.total', row)
@@ -884,6 +887,7 @@ Entity.prototype.eachChild = function(cb, recursive) {
 			}
 		}
 	}
+	return this;
 };
 
 /**

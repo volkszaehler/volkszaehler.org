@@ -394,6 +394,16 @@
 		}
 	},
 	{
+		"name"			: "linewidth",
+		"type"			: "integer",
+		"min"			: 0,
+		"max"			: 10,
+		"translation"		: {
+			"de" : "Linienstärke",
+			"en" : "Line width"
+		}
+	},
+	{
 		"name"			: "fillstyle",
 		"type"			: "float",
 		"min"			: 0,

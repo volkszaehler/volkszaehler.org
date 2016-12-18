@@ -25,10 +25,9 @@
 	<meta name="msapplication-config" content="ico/browserconfig.xml">
 	<meta name="theme-color" content="#ffffff">
 
-	<meta name="apple-mobile-web-app-capable" content="yes" />
-	<meta name="apple-mobile-web-app-status-bar-style" content="black" />
-	<!-- to support IE 9+ in intranet environments -->
-	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<!-- <meta name="viewport" content="width=device-width, initial-scale=1"> -->
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
 
 	<!-- CSS before JS -->
 	<link rel="stylesheet" type="text/css" href="vendor/jquery-ui/jquery-ui.min.css" />
@@ -36,7 +35,7 @@
 	<link rel="stylesheet" type="text/css" href="css/sprites.css" />
 
 	<!-- jQuery -->
-	<script type="text/javascript" src="vendor/jquery/jquery-2.1.3.min.js"></script>
+	<script type="text/javascript" src="vendor/jquery/jquery-2.2.2.min.js"></script>
 	<script type="text/javascript" src="vendor/jquery-ui/jquery-ui.min.js"></script>
 
 	<script type="text/javascript" src="js/jquery/jquery-ext.min.js"></script>
@@ -46,6 +45,7 @@
 	-->
 
 	<script type="text/javascript" src="vendor/moment.min.js"></script>
+	<script type="text/javascript" src="vendor/nprogress.min.js"></script>
 	<script type="text/javascript" src="vendor/flot/flot.min.js"></script>
 	<!-- debug: uncomment scripts below -->	<!--
 	<script type="text/javascript" src="vendor/flot/jquery.flot.js"></script>
@@ -54,6 +54,7 @@
 	<script type="text/javascript" src="vendor/flot/jquery.flot.time.js"></script>
 	<script type="text/javascript" src="vendor/flot/jquery.flot.canvas.js"></script>
 	<script type="text/javascript" src="vendor/flot/jquery.flot.axislabels.js"></script>
+	<script type="text/javascript" src="vendor/flot/jquery.flot.orderBars.js"></script>
 	<script type="text/javascript" src="vendor/flot/jquery.flot.xgap.js"></script>
 	<script type="text/javascript" src="vendor/flot/date.js"></script>
 	-->
@@ -81,12 +82,12 @@
 <!--[if lt IE 8]>
 <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
 <![endif]-->
+<div id="time"></div>
 <div id="content">
 	<div id="header">
 		<h2 id="title"></h2>
 
 		<div id="export">
-			<img alt="export" src="img/blank.png" class="icon-export" />
 			<select class="icons">
 				<option value="default" selected="selected" class="icon-export">Export...</option>
 				<option value="permalink" class="icon-link">Permalink</option>
@@ -115,7 +116,6 @@
 	</div>
 	<div id="plot">
 		<div id="flot"></div>
-		<div id="overlay"></div>
 	</div>
 
 	<div id="controls">
@@ -196,8 +196,8 @@
 		<div id="entity-subscribe">
 			<p>Private Kanäle und Kanäle anderer Middlewares mittels UUID hinzufügen:</p>
 			<table>
-				<tr><td><label for="entity-subscribe-middleware">Middleware:</label></td><td><input id="entity-subscribe-middleware" type="text" size="36" /></td></tr>
-				<tr><td><label for="entity-subscribe-uuid">UUID:</label></td><td><input id="entity-subscribe-uuid" type="text" size="36" maxlength="36" /></td></tr>
+				<tr><td><label for="entity-subscribe-middleware">Middleware:</label></td><td><input id="entity-subscribe-middleware" type="text" /></td></tr>
+				<tr><td><label for="entity-subscribe-uuid">UUID:</label></td><td><input id="entity-subscribe-uuid" type="text" maxlength="36" /></td></tr>
 			</table>
 			<p><input type="button" value="Abonnieren" /> <label for="entity-subscribe-cookie">Cookie:</label> <input id="entity-subscribe-cookie" type="checkbox" checked="checked" /></p>
 		</div>
@@ -205,7 +205,7 @@
 			<p>Öffentliche Kanäle abonnieren:</p>
 			<table>
 				<tr><td><label for="entity-public-middleware">Middleware:</label></td><td><select id="entity-public-middleware"></select></td></tr>
-				<tr><td><label for="entity-public-entity">Kanal:</label></td><td><select id="entity-public-entity" size="1"></select></td></tr>
+				<tr><td><label for="entity-public-entity">Kanal:</label></td><td><select id="entity-public-entity"></select></td></tr>
 			</table>
 			<p><input type="button" value="Abonnieren" /> <label for="entity-public-cookie">Cookie:</label> <input id="entity-public-cookie" type="checkbox" checked="checked" /></p>
 		</div>
@@ -228,6 +228,18 @@
 			<tr class="property"><th>Eigenschaft</th><th>Wert</th></tr>
 		</table>
 	</form>
+</div>
+
+<div id="authorization" class="dialog">
+	<form>
+		<table>
+			<tr><td>Middleware:</td><td><span class="middleware"></span></td></tr>
+			<tr><td colspan="2"><hr /></td></tr>
+			<tr><td><label for="username">Username:</label></td><td><input name="username" type="text" maxlength="128" /></td></tr>
+			<tr><td><label for="password">Passwort:</label></td><td><input name="password" type="password" maxlength="128" /></td></tr>
+		</table>
+		<p><input type="submit" value="Login" /></p>
+	<form>
 </div>
 
 <div id="chart-export" class="dialog">
