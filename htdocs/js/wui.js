@@ -108,6 +108,10 @@ vz.wui.resizePlot = function(evt, windowHeight) {
 		vz.plot.setupGrid();
 		vz.plot.draw();
 	}
+	else {
+		// draw empty plot startup
+		vz.wui.drawPlot();
+	}
 };
 
 /**
