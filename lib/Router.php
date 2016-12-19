@@ -117,6 +117,9 @@ class Router implements HttpKernelInterface {
    	 */
 	public function handle(Request $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true) {
 		try {
+			// initialize view to ensure StreamedResponse->streamed is false
+			$this->view = null;
+
 			// initialize entity manager
 			if (null == $this->em || !$this->em->isOpen()) {
 				$this->em = self::createEntityManager();
