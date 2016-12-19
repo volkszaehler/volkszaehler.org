@@ -201,14 +201,30 @@ vz.entities.dropTableHandler = function(from, to, child, clone) {
 		vz.wui.dialogs.exception(e);
 	}
 	finally {
-		$.when.apply($, queue).done(function() { // wait for middleware
-			var q = [];
-			if (from)
-				q.push(from.loadDetails());
-			if (to)
-				q.push(to.loadDetails());
+		// ...after updating entities
+		$.when.apply($, queue).done(function() {
+			var q = [], p = [];
+			if (from) {
+				// ...load new entity details
+				q.push(from.loadDetails().done(function() {
+					// ...and finally refresh data
+					p.push(from.eachChild(function(child) {
+						p.push(child.loadData());
+					}, true).loadData());
+				}));
+			}
+			if (to) {
+				q.push(to.loadDetails().done(function() {
+					p.push(to.eachChild(function(child) {
+						p.push(child.loadData());
+					}, true).loadData());
+				}));
+			}
 
-			$.when.apply($, q).done(vz.entities.showTable);
+			$.when.apply($, q).done(function() {
+				vz.entities.showTable();
+				$.when.apply($, p).done(vz.wui.drawPlot);
+			});
 		});
 	}
 };
