@@ -655,6 +655,7 @@ Entity.prototype.getDOMRow = function(parent) {
 		.addClass((parent) ? 'child-of-entity-' + parent.uuid : '')
 		.addClass((this.definition.model == 'Volkszaehler\\Model\\Aggregator') ? 'aggregator' : 'channel')
 		.addClass('entity')
+		.addClass('entity-' + this.uuid)
 		.attr('id', 'entity-' + this.uuid)
 		.append($('<td>')
 			.addClass('visibility')
@@ -757,12 +758,11 @@ Entity.prototype.activate = function(state, parent, recursive) {
  * Update UI with current entity values
  */
 Entity.prototype.updateDOMRow = function() {
-	var row = $('#entity-' + this.uuid);
+	var row = $('.entity-' + this.uuid);
 
 	// clear table first
 	$('.min, .max', row).text('').attr('title', '');
 	$('.average, .last, .consumption, .cost', row).text('');
-	// $('.total', row).text('').data('total', null);
 
 	if (this.data && this.data.rows > 0) { // update statistics if data available
 		var yearMultiplier = 365*24*60*60*1000 / (this.data.to - this.data.from); // ms
@@ -808,16 +808,17 @@ Entity.prototype.updateDOMRow = function() {
 	}
 
 	// show total value if populated
-	this.updateDOMRowTotal();
+	this.updateDOMRowTotal(row);
 
 	vz.entities.updateTableColumnVisibility();
 };
 
 /**
  * Update totals column after async refresh
+ * @param row optional dom row
  */
-Entity.prototype.updateDOMRowTotal = function() {
-	var row = $('#entity-' + this.uuid);
+Entity.prototype.updateDOMRowTotal = function(row) {
+	row = row || $('.entity-' + this.uuid);
 	if (this.active && this.totalconsumption) {
 		var unit = vz.wui.formatConsumptionUnit(this.definition.unit);
 
