@@ -569,12 +569,12 @@ vz.wui.initEvents = function() {
  *
  * @param ev either click event or literal button event value
  */
-vz.wui.handleControls = function (ev) {
+vz.wui.handleControls = function(action) {
 	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min,
 			middle = vz.options.plot.xaxis.min + delta/2,
 			startOfPeriodLocale;
 
-	var control = ev.target ? $(ev.target).val() : ev;
+	var control = typeof action == 'string' ? action : $(this).val();
 
 	switch (control) {
 		case 'move-last':
