@@ -93,6 +93,10 @@ vz.options.plot = {
 			tickFormatter: vz.wui.tickFormatter		// show axis label
 		},
 		{
+			axisLabel: '°C', // assign el. energy to first axis- remove if not used
+			tickFormatter: vz.wui.tickFormatter		// show axis label
+		},
+		{
 			// alignTicksWithAxis: 1,
 			position: 'right',
 			tickFormatter: vz.wui.tickFormatter		// show axis label

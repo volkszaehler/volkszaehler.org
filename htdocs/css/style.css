@@ -11,14 +11,14 @@ table {
 	width: 100%;
 }
 
-tr th {
+thead tr {
 	border-bottom: 2px solid grey;
 
 	text-align: left;
 	font-size: 0.9em;
 }
 
-tr td {
+tr {
 	font-size: 1em;
 }
 
@@ -28,8 +28,8 @@ tr.stale td.consumption, tr.stale td.cost, tr.stale td.total {
   color: grey;
 }
 
-tr.property td, tr.entity td {
-	border-top: 1px solid #A7A7A7;
+table.properties tr:not(:first-child) {
+	border-top: 1px solid #ddd;
 }
 
 td input:not([type=image]):not([type=checkbox]) {

@@ -265,11 +265,10 @@ vz.wui.dialogs.init = function() {
 		});
 	}
 
-	$('#entity-create select[name=type]').change(function() {
-		$('#entity-create form table .required').remove();
-		$('#entity-create form table .optional').remove();
+	$('#entity-create select').change(function() {
+		$('#entity-create .required, #entity-create .optional').remove();
 
-		var container = $('#entity-create form table');
+		var container = $('#entity-create table');
 		var entityDefinition = vz.capabilities.definitions.entities[$(this)[0].selectedIndex];
 		vz.wui.dialogs.addProperties(container, entityDefinition.required, "required");
 		vz.wui.dialogs.addProperties(container, entityDefinition.optional, "optional");
@@ -393,7 +392,6 @@ vz.wui.initAuth = function() {
  */
 vz.wui.dialogs.addProperties = function(container, proplist, className, entity) {
 	proplist.forEach(function(def) {
-
 		// hide properties from blacklist
 		var val = (entity && typeof entity[def] !== undefined) ? entity[def] : null;
 		if ((typeof val === 'undefined' || val === null) && vz.options.hiddenProperties.indexOf(def) >= 0) {
@@ -403,17 +401,15 @@ vz.wui.dialogs.addProperties = function(container, proplist, className, entity) 
 		vz.capabilities.definitions.properties.forEach(function(propdef, propindex) {
 			if (def == propdef.name) {
 				var cntrl = null;
-				var row = $('<tr>')
-					.addClass("property")
-					.append(
-						$('<td>').text(propdef.translation[vz.options.language])
-					);
+				var row = $('<tr>').append(
+					$('<td>').text(propdef.translation[vz.options.language])
+				);
 
 				switch (propdef.type) {
 					case 'float':
 					case 'integer':
 					case 'string':
-						cntrl = $('<input size="36">').attr("type", "text");
+						cntrl = $('<input>').attr("type", "text");
 						break;
 
 					case 'text':
@@ -425,7 +421,7 @@ vz.wui.dialogs.addProperties = function(container, proplist, className, entity) 
 						break;
 
 					case 'multiple':
-						cntrl = $('<select>').attr("Size", "1");
+						cntrl = $('<select>');
 						propdef.options.forEach(function(optdef, optindex) {
 							cntrl.append(
 								$('<option>').html(optdef).val(optdef)
@@ -493,10 +489,13 @@ vz.wui.dialogs.addProperties = function(container, proplist, className, entity) 
 				}
 
 				if (cntrl !== null) {
-					row.addClass(className);
-					cntrl.attr("name", propdef.name);
-					row.append($('<td>').append(cntrl));
-					container.append(row);
+					container.append(
+						row
+							.addClass(className)
+							.append($('<td>').append(
+								cntrl.attr("name", propdef.name)
+							))
+					);
 				}
 
 				return false;
