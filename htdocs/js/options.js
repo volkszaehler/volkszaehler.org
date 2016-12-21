@@ -46,9 +46,9 @@ vz.options = {
 														//    - either apache proxy forwarding configured according to
 														//			https://github.com/volkszaehler/volkszaehler.org/issues/382
 														// 		- or push-server live update port configured and accessible
-		}, {
-			title: 'Volkszaehler Demo',
-			url: '//demo.volkszaehler.org/middleware.php'
+		// }, {
+		// 	title: 'Volkszaehler Demo',
+		// 	url: '//demo.volkszaehler.org/middleware.php'
 		}
 	],
 	monthNames: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
@@ -90,6 +90,10 @@ vz.options.plot = {
 	yaxes: [
 		{
 			axisLabel: 'W', // assign el. energy to first axis- remove if not used
+			tickFormatter: vz.wui.tickFormatter		// show axis label
+		},
+		{
+			axisLabel: '°C', // assign el. energy to first axis- remove if not used
 			tickFormatter: vz.wui.tickFormatter		// show axis label
 		},
 		{

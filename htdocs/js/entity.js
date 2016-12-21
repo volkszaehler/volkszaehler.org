@@ -380,12 +380,10 @@ Entity.prototype.loadTotalConsumption = function() {
  * Show and edit entity details
  */
 Entity.prototype.showDetails = function() {
-	var entity = this;
-	var dialog = $('<div>');
+	var entity = this,
+			general = ['title', 'type', 'uuid', /*'middleware', 'color', 'style', 'active',*/ 'cookie'];
 
-	dialog.addClass('details')
-	.append(this.getDOMDetails())
-	.dialog({
+	$('#entity-info').dialog({
 		title: 'Details für ' + this.title,
 		width: 480,
 		resizable: false,
@@ -430,8 +428,7 @@ Entity.prototype.showDetails = function() {
 				});
 			},
 			'Bearbeiten': function() {
-				$('#entity-edit form table .required').remove();
-				$('#entity-edit form table .optional').remove();
+				$('#entity-edit tbody tr').remove();
 
 				// add properties for entity
 				vz.capabilities.definitions.entities.some(function(definition) {
@@ -496,24 +493,23 @@ Entity.prototype.showDetails = function() {
 		open: function() {
 			$(this).siblings('.ui-dialog-buttonpane').find('button:eq(0)').focus();
 		}
-	});
-};
+	}).select();
 
-/**
- * Show channel details for info dialog
- */
-Entity.prototype.getDOMDetails = function(edit) {
-	var table = $('<table><thead><tr><th>Eigenschaft</th><th>Wert</th></tr></thead></table>');
-	var data = $('<tbody>');
+	$('#entity-info tr').remove();
+
+	addRow = function(key, value) {
+		$('#entity-info table').append(
+			$('<tr>').addClass('general')
+			.append($('<td>').addClass('key').text(key))
+			.append($('<td>').addClass('value').append(value))
+		);
+	};
 
 	// general properties
-	var general = ['uuid', 'middleware', 'type', /*'title', 'color', 'style', 'active',*/ 'cookie'];
-	var sections = ['required', 'optional'];
-
 	general.forEach(function(property) {
-		var definition = vz.capabilities.definitions.get('properties', property);
-		var title = (definition) ? definition.translation[vz.options.language] : property;
-		var value = this[property];
+		var definition = vz.capabilities.definitions.get('properties', property),
+				title = definition ? definition.translation[vz.options.language] : property,
+				value = this[property];
 
 		switch (property) {
 			case 'type':
@@ -524,9 +520,6 @@ Entity.prototype.getDOMDetails = function(edit) {
 						.addClass('icon-' + this.definition.icon.replace('.png', ''))
 						.css('margin-right', 4)
 					: null;
-				value = $('<span>')
-					.text(this.definition.translation[vz.options.language])
-					.prepend(icon ? icon : null);
 				break;
 
 			case 'middleware':
@@ -541,50 +534,22 @@ Entity.prototype.getDOMDetails = function(edit) {
 
 			case 'cookie':
 				title = 'Cookie';
-				// value = '<img src="img/' + ((this.cookie) ? 'tick' : 'cross') + '.png" alt="' + ((value) ? 'ja' : 'nein') + '" />';
-				value = '<img src="img/blank.png" class="icon-' + ((this.cookie) ? 'tick' : 'cross') + '" alt="' + ((value) ? 'ja' : 'nein') + '" />';
-				break;
-
+				/* falls through */
 			case 'active':
-				// value = '<img src="img/' + ((this.active) ? 'tick' : 'cross') + '.png" alt="' + ((this.active) ? 'ja' : 'nein') + '" />';
-				value = '<img src="img/blank.png" class="icon-' + ((this.active) ? 'tick' : 'cross') + '" alt="' + ((this.active) ? 'ja' : 'nein') + '" />';
-				break;
-
-			case 'style':
-				switch (this.style) {
-					case 'lines': value = 'Linien'; break;
-					case 'steps': value = 'Stufen'; break;
-					case 'points': value = 'Punkte'; break;
-				}
+				value = '<img src="img/blank.png" class="icon-' + (value ? 'tick' : 'cross') + '" alt="' + (value ? 'ja' : 'nein') + '" />';
 				break;
 		}
 
-		data.append($('<tr>')
-			.addClass('property')
-			.addClass('general')
-			.append($('<td>')
-				.addClass('key')
-				.text(title)
-			)
-			.append($('<td>')
-				.addClass('value')
-				.append(value)
-			)
-		);
+		addRow(title, value);
 	}, this);
 
-	sections.forEach(function(section) {
+	['required', 'optional'].forEach(function(section) {
 		this.definition[section].forEach(function(property) {
 			if (this.hasOwnProperty(property) && general.indexOf(property) < 0) {
-				var definition = vz.capabilities.definitions.get('properties', property);
-				var title = definition.translation[vz.options.language];
-				var value = this[property];
-				var prefix; // unit prefix
-
-				if (definition.type == 'boolean') {
-					// value = '<img src="img/' + ((value) ? 'tick' : 'cross') + '.png" alt="' + ((value) ? 'ja' : 'nein') + '" />';
-					value = '<img src="img/blank.png" class="icon-' + ((this.active) ? 'tick' : 'cross') + '" alt="' + ((value) ? 'ja' : 'nein') + '" />';
-				}
+				var definition = vz.capabilities.definitions.get('properties', property),
+						title = definition.translation[vz.options.language],
+						value = this[property],
+						prefix; // unit prefix
 
 				switch (property) {
 					case 'cost':
@@ -612,24 +577,16 @@ Entity.prototype.getDOMDetails = function(edit) {
 							case 'points': value = 'Punkte'; break;
 						}
 						break;
+
+					default:
+						if (definition.type == 'boolean')
+							value = '<img src="images/blank.png" class="icon-' + (value ? 'tick' : 'cross') + '" alt="' + (value ? 'ja' : 'nein') + '" />';
 				}
 
-				data.append($('<tr>')
-					.addClass('property')
-					.addClass(section)
-					.append($('<td>')
-						.addClass('key')
-						.text(title)
-					)
-					.append($('<td>')
-						.addClass('value')
-						.append(value)
-					)
-				);
+				addRow(title, value);
 			}
 		}, this);
 	}, this);
-	return table.append(data);
 };
 
 /**
@@ -643,7 +600,6 @@ Entity.prototype.getDOMRow = function(parent) {
 	var row = $('<tr>')
 		.addClass((parent) ? 'child-of-entity-' + parent.uuid : '')
 		.addClass((this.definition.model == 'Volkszaehler\\Model\\Aggregator') ? 'aggregator' : 'channel')
-		.addClass('entity')
 		.addClass('entity-' + this.uuid)
 		.attr('id', 'entity-' + this.uuid)
 		.append($('<td>')
