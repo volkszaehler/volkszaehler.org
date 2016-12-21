@@ -125,7 +125,7 @@
 	<div id="accordion">
 		<h3><img src="img/blank.png" class="icon-table" alt="" /> Kanäle</h3>
 		<div id="entity-list">
-			<table>
+			<table class="properties">
 				<thead>
 					<tr>
 						<th><img src="img/blank.png" class="icon-eye" alt="Anzeige" id="entity-toggle" title="Toggle entitites" /></th>
@@ -210,22 +210,38 @@
 			<p><input type="button" value="Abonnieren" /> <label for="entity-public-cookie">Cookie:</label> <input id="entity-public-cookie" type="checkbox" checked="checked" /></p>
 		</div>
 		<div id="entity-create">
-			<form method="get" target="_blank">
-				<table>
-					<tr class="property"><th>Eigenschaft</th><th>Wert</th></tr>
-					<tr class="property"><td>Middleware:</td><td><select id="entity-create-middleware"></select></td></tr>
-					<tr class="property"><td>Typ:</td><td><select class="icons" name="type" size="1"></select></td></tr>
+			<form>
+				<table class="properties">
+					<thead>
+						<tr><th>Eigenschaft</th><th>Wert</th></tr>
+					</thead>
+					<tbody>
+						<tr><td>Middleware:</td><td><input type="text" id="entity-create-middleware" /></td></tr>
+						<tr><td>Typ:</td><td><select class="icons" name="type"></select></td></tr>
+					</tbody>
 				</table>
-				<p><input type="submit" value="Erstellen" />  <label for="entity-create-cookie">Cookie:</label> <input id="entity-create-cookie" type="checkbox" checked="checked" /></p>
+				<p><input type="submit" value="Erstellen" /> <label for="entity-create-cookie">Cookie:</label> <input id="entity-create-cookie" type="checkbox" checked="checked" /></p>
 			</form>
 		</div>
 	</div>
 </div>
 
 <div id="entity-edit" class="dialog">
-	<form method="get" target="_blank">
-		<table>
-			<tr class="property"><th>Eigenschaft</th><th>Wert</th></tr>
+	<form>
+		<table class="properties">
+			<thead>
+				<tr><th>Eigenschaft</th><th>Wert</th></tr>
+			</thead>
+		</table>
+	</form>
+</div>
+
+<div id="entity-info" class="dialog">
+	<form>
+		<table class="properties">
+			<thead>
+				<tr><th>Eigenschaft</th><th>Wert</th></tr>
+			</thead>
 		</table>
 	</form>
 </div>
@@ -239,7 +255,7 @@
 			<tr><td><label for="password">Passwort:</label></td><td><input name="password" type="password" maxlength="128" /></td></tr>
 		</table>
 		<p><input type="submit" value="Login" /></p>
-	<form>
+	</form>
 </div>
 
 <div id="chart-export" class="dialog">
