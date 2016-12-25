@@ -383,7 +383,7 @@ Entity.prototype.showDetails = function() {
 	var entity = this,
 			general = ['title', 'type', 'uuid', /*'middleware', 'color', 'style', 'active',*/ 'cookie'];
 
-	$('#entity-info').dialog({
+	var dialog = $('#entity-info').dialog({
 		title: 'Details für ' + this.title,
 		width: 480,
 		resizable: false,
