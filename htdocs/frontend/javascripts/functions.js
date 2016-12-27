@@ -125,23 +125,10 @@ vz.load = function(args, skipDefaultErrorHandling) {
 		null,
 		// error
 		function(xhr) {
-			if (xhr.responseJSON && xhr.responseJSON.exception) {
-				// middleware error
-				if (!skipDefaultErrorHandling) {
-					vz.wui.dialogs.middlewareException(xhr.responseJSON.exception, xhr.requestUrl);
-				}
-				return $.Deferred().rejectWith(this, [xhr]);
+			if (!skipDefaultErrorHandling) {
+				vz.wui.dialogs.middlewareException(xhr);
 			}
-			else {
-				// network error
-				if (!skipDefaultErrorHandling) {
-					vz.wui.dialogs.middlewareException({
-						type: "Network Error",
-						message: xhr.statusText
-					}, xhr.requestUrl);
-				}
-				return $.Deferred().rejectWith(this, [xhr]);
-			}
+			return $.Deferred().rejectWith(this, [xhr]);
 		}
 	);
 };
