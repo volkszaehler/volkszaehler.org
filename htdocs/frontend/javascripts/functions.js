@@ -130,7 +130,7 @@ vz.load = function(args, skipDefaultErrorHandling) {
 				if (!skipDefaultErrorHandling) {
 					vz.wui.dialogs.middlewareException(xhr.responseJSON.exception, xhr.requestUrl);
 				}
-				return $.Deferred().rejectWith(this, [xhr.responseJSON]);
+				return $.Deferred().rejectWith(this, [xhr]);
 			}
 			else {
 				// network error
