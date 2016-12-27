@@ -67,7 +67,10 @@
 	<script type="text/javascript" src="javascripts/options.js"></script>
 
 	<script type="text/javascript">
-		if(navigator.userAgent.match(/(iPhone|iPod|iPad)/i)) {
+		if (vz.options.title) {
+			document.title = vz.options.title;
+		}
+		else if (navigator.userAgent.match(/(iPhone|iPod|iPad)/i)) {
 			document.title = "Volkszaehler";
 		}
 	</script>
