@@ -942,7 +942,7 @@ vz.wui.drawPlot = function () {
  */
 
 vz.wui.dialogs.error = function(error, description, code) {
-	if (code !== undefined) {
+	if (code) {
 		error = code + ': ' + error;
 	}
 
@@ -973,10 +973,11 @@ vz.wui.dialogs.exception = function(exception) {
 	this.error(exception.type, exception.message, exception.code);
 };
 
-vz.wui.dialogs.middlewareException = function(exception, url) {
-	var msg = exception.message;
-	if (url) {
-		msg = "<a href='" + url + "' style='text-decoration:none'>" + url + "</a>:<br/><br/>" + msg;
-	}
-	this.exception(new Exception("Middleware Error (" + exception.type + ")", msg));
+vz.wui.dialogs.middlewareException = function(xhr) {
+	if (xhr.responseJSON && xhr.responseJSON.exception)
+		// middleware exception
+		this.exception(new Exception(xhr.responseJSON.exception.type, "<a href='" + xhr.requestUrl + "' style='text-decoration:none'>" + xhr.requestUrl + "</a>:<br/><br/>" + xhr.responseJSON.exception.message));
+	else
+		// network exception
+		this.exception(new Exception("Network Error", xhr.statusText));
 };
