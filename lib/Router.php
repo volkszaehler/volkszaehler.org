@@ -121,7 +121,7 @@ class Router implements HttpKernelInterface {
 			$this->view = null;
 
 			// initialize entity manager
-			if (null == $this->em || !$this->em->isOpen()) {
+			if (null == $this->em || !$this->em->isOpen() || $this->em->getConnection()->ping() === false) {
 				$this->em = self::createEntityManager();
 			}
 
