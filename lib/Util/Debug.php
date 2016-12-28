@@ -232,7 +232,7 @@ class Debug {
 			if (preg_match("/up (?:(?P<days>\d+) days?,? )?(?P<hours>\d+):(?P<minutes>\d{2})/", $res, $matches)) {
 				$uptime = 60*$matches['hours'] + $matches['minutes'];
 
-				if (isset($matches['days'])) {
+				if (isset($matches['days']) && $matches['days'] > 0) {
 					$uptime += $matches['days']*60*24;
 				}
 
