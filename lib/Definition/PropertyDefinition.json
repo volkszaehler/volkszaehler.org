@@ -374,7 +374,7 @@
 		"pattern"		: "#^aqua|black|blue|fuchsia|gray|grey|green|lime|maroon|navy|olive|purple|red|silver|teal|white|yellow|[0-9a-f]{6}|[0-9a-f]{3}$#i",
 		"translation"		: {
 			"de" : "Farbe",
-			"en" : "color"
+			"en" : "Color"
 		}
 	},
 	{
@@ -387,8 +387,8 @@
 			"points"
 		],
 		"translation"		: {
-			"de" : "Style",
-			"en" : "Plotting style"
+			"de" : "Stil",
+			"en" : "Style"
 		}
 	},
 	{
@@ -422,7 +422,7 @@
 		"pattern"		: "#^(https?|ftp):\/\/[a-z0-9-.]+\\.[a-z]{2,6}(\/\\S*)?$#i", // url
 		"translation"		: {
 			"de" : "Lokale Adresse",
-			"en" : "Local Address"
+			"en" : "Local address"
 		}
 	},
 	{
@@ -446,7 +446,7 @@
 	{
 		"name"			: "unit",
 		"type"			: "string",
-		"pattern"		: "\/^\\w+$\/u",
+		"pattern"		: "\/^[\\w°µ€\\$]+$\/u",
 		"max"			: 5,
 		"translation"		: {
 			"de" : "Einheit",
