@@ -122,8 +122,14 @@ class VirtualInterpreter extends Interpreter {
 			$this->ctx->def($key, $key, 'string'); // as key constant
 			$this->ctx->def($key, function() use ($key) { return $this->_val($key); }); // as value function
 
-			// get entity and create interpreter
-			$entity = Controller\EntityController::factory($this->em, $value, true); // chached entity
+			// get chached entity
+			$entity = Controller\EntityController::factory($this->em, $value, true);
+
+			// define named parameters
+			$title = preg_replace('/\s*/', '', $entity->getProperty('title'));
+			$this->ctx->def($title, $key, 'string'); // as key constant
+			$this->ctx->def($title, function() use ($key) { return $this->_val($key); }); // as value function
+
 			$class = $entity->getDefinition()->getInterpreter();
 			$interpreter = new $class($entity, $this->em, $this->from, $this->to, $this->tupleCount, $this->groupBy, $this->options);
 
@@ -213,7 +219,6 @@ class VirtualInterpreter extends Interpreter {
 	public function convertRawTuple($row) {
 		return $this->current = $row;
 	}
-
 
 	/**
 	 * From/to timestamps delegated to leading interpreter
