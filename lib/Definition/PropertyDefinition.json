@@ -384,13 +384,24 @@
 			"lines",
 			"steps",
 			"states",
-			"dashes",
-			"dots",
 			"points"
 		],
 		"translation"		: {
 			"de" : "Stil",
 			"en" : "Style"
+		}
+	},
+	{
+		"name"			: "linestyle",
+		"type"			: "multiple",
+		"options"		: [
+			"solid",
+			"dashed",
+			"dotted"
+		],
+		"translation"		: {
+			"de" : "Linienstil",
+			"en" : "Line style"
 		}
 	},
 	{
