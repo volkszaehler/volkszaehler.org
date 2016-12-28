@@ -238,6 +238,7 @@ vz.wui.drawPlot = function () {
 		var tuples = entity.data.tuples.slice(0);
 
 		var style = vz.options.style || (entity.isConsumptionMode() ? 'bars' : entity.style);
+		var linestyle = vz.options.linestyle || entity.linestyle;
 		var fillstyle = parseFloat(vz.options.fillstyle || entity.fillstyle);
 		var linewidth = parseFloat(vz.options.linewidth ||
 			entity.selected ? vz.options.lineWidthSelected : entity.linewidth || vz.options.lineWidthDefault
@@ -278,7 +279,7 @@ vz.wui.drawPlot = function () {
 			yaxis: entity.assignedYaxis
 		};
 
-		if (['lines', 'steps', 'states', 'dashes', 'dots'].indexOf(style) >= 0) {
+		if (['lines', 'steps', 'states'].indexOf(style) >= 0) {
 			$.extend(serie, {
 				lines: {
 					show:       true,
@@ -288,12 +289,12 @@ vz.wui.drawPlot = function () {
 				}
 			});
 
-			if (style == 'dashes' || style == 'dots') {
+			if (linestyle == 'dashed' || linestyle == 'dotted') {
 				// dashes are an extension of lines
 				$.extend(serie, {
 					dashes: {
 						show: true,
-						dashLength: style == 'dashes' ? 5 : [1, 2]
+						dashLength: linestyle == 'dashed' ? 5 : [1, 2]
 					}
 				});
 			}

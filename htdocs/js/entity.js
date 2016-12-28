@@ -578,6 +578,14 @@ Entity.prototype.showDetails = function() {
 						}
 						break;
 
+					case 'linestyle':
+						switch (this.linestyle) {
+							case 'solid': value = 'Solide'; break;
+							case 'dashed': value = 'Gestrichelt'; break;
+							case 'dotted': value = 'Gepunkted'; break;
+						}
+						break;
+
 					default:
 						if (definition.type == 'boolean')
 							value = '<img src="images/blank.png" class="icon-' + (value ? 'tick' : 'cross') + '" alt="' + (value ? 'ja' : 'nein') + '" />';
