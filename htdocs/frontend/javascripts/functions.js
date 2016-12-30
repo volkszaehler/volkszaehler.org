@@ -99,6 +99,7 @@ vz.load = function(args, skipDefaultErrorHandling) {
 		beforeSend: function (xhr, settings) {
 			// remember URL for potential error messages
 			xhr.requestUrl = settings.url;
+			xhr.middleware = args.middleware;
 		}
 	});
 
@@ -125,12 +126,19 @@ vz.load = function(args, skipDefaultErrorHandling) {
 		null,
 		// error
 		function(xhr) {
-			if (!skipDefaultErrorHandling) {
-				vz.wui.dialogs.middlewareException(xhr);
-			}
-			return $.Deferred().rejectWith(this, [xhr]);
+			return vz.load.errorHandler(xhr, skipDefaultErrorHandling);
 		}
 	);
+};
+
+/**
+ * Reusable authorization-aware error handler
+ */
+vz.load.errorHandler = function(xhr, skipDefaultErrorHandling) {
+	if (!skipDefaultErrorHandling) {
+		vz.wui.dialogs.middlewareException(xhr);
+	}
+	return xhr;
 };
 
 /**
@@ -206,23 +214,6 @@ vz.parseUrlParams = function() {
 	if (save) {
 		vz.entities.saveCookie();
 	}
-};
-
-/**
- * Get middleware by URL param
- */
-vz.getMiddleware = function(url) {
-	var mw = $.grep(vz.middleware, function(middleware) {
-		if (url == middleware.url) {
-			return true;
-		}
-	});
-
-	if (mw.length) {
-		return mw[0];
-	}
-
-	return null;
 };
 
 /**

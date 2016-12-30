@@ -63,11 +63,7 @@ $(document).ready(function() {
 
 	// middleware(s)
 	vz.options.middleware.forEach(function(middleware) {
-		vz.middleware.push($.extend(middleware, {
-			public: [ ], // public entities
-			session: null // WAMP session
-			/* capabilities: { } */
-		}));
+		vz.middleware.push(new Middleware(middleware));
 	});
 
 	// TODO make language/translation dependent (vz.options.language)
@@ -115,8 +111,10 @@ $(document).ready(function() {
 				vz.entities.loadTotalConsumption();
 			});
 
-			// create WAMP sessions for each middleware
+			// create WAMP session and load pupblic entities for each middleware
 			vz.middleware.forEach(function(middleware) {
+				middleware.loadEntities();
+
 				var parser = document.createElement('a');
 				parser.href = middleware.url;
 				var host = parser.hostname || location.host; // location object for IE

@@ -188,7 +188,7 @@ Entity.prototype.updateAxisScale = function() {
  * WAMP session subscription and handler
  */
 Entity.prototype.subscribe = function(session) {
-	var mw = vz.getMiddleware(this.middleware);
+	var mw = vz.middleware.find(this.middleware);
 	if (mw && mw.session) {
 		session = session || mw.session;
 	}
@@ -247,7 +247,7 @@ Entity.prototype.subscribe = function(session) {
  * Cancel live update subscription from WAMP server
  */
 Entity.prototype.unsubscribe = function() {
-	var mw = vz.getMiddleware(this.middleware);
+	var mw = vz.middleware.find(this.middleware);
 	if (mw.session) {
 		mw.session.unsubscribe(this.uuid);
 	}
@@ -340,11 +340,100 @@ Entity.prototype.loadTotalConsumption = function() {
  */
 Entity.prototype.showDetails = function() {
 	var entity = this;
-	var dialog = $('<div>');
+	addRow = function(key, value) {
+		$('#entity-info table').append(
+			$('<tr>').addClass('general')
+			.append($('<td>').addClass('key').text(key))
+			.append($('<td>').addClass('value').append(value))
+		);
+	};
 
-	dialog.addClass('details')
-	.append(this.getDOMDetails())
-	.dialog({
+	$('#entity-info tr').remove();
+
+	// general properties
+	general.forEach(function(property) {
+		var definition = vz.capabilities.definitions.get('properties', property),
+				title = definition ? definition.translation[vz.options.language] : property,
+				value = this[property];
+
+		switch (property) {
+			case 'type':
+				title = 'Typ';
+				value = $('<span>').text(this.definition.translation[vz.options.language]);
+				if (this.definition.icon)
+					value.prepend(
+						$('<img>')
+						.attr('src', 'images/blank.png')
+						.addClass('icon-' + this.definition.icon.replace('.png', ''))
+						.css('margin-right', 4)
+					);
+				break;
+
+			case 'middleware':
+				title = 'Middleware';
+				value = '<a href="' + this.middleware + '/capabilities.json">' + this.middleware + '</a>';
+				break;
+
+			case 'uuid':
+				title = 'UUID';
+				value = '<a href="' + this.middleware + '/entity/' + this.uuid + '.json">' + this.uuid + '</a>';
+				break;
+
+			case 'cookie':
+				title = 'Cookie';
+				/* falls through */
+			case 'active':
+				value = '<img src="images/blank.png" class="icon-' + (value ? 'tick' : 'cross') + '" alt="' + (value ? 'ja' : 'nein') + '" />';
+				break;
+		}
+
+		addRow(title, value);
+	}, this);
+
+	['required', 'optional'].forEach(function(section) {
+		this.definition[section].forEach(function(property) {
+			if (this.hasOwnProperty(property) && general.indexOf(property) < 0) {
+				var definition = vz.capabilities.definitions.get('properties', property),
+						title = definition.translation[vz.options.language],
+						value = this[property],
+						prefix; // unit prefix
+
+				switch (property) {
+					case 'cost':
+						prefix = (this.definition.scale == 1000) ? ' ct/k' : ' ct/'; // ct per Wh or kWh
+						value = Number(value * 100).toFixed(2) + prefix + vz.wui.formatConsumptionUnit(this.getUnit());
+						break;
+
+					case 'resolution':
+						prefix = (this.getUnit() && this.definition.scale == 1000) ? 'k' : ''; // per Wh or kWh
+						value += '/' + prefix + vz.wui.formatConsumptionUnit(this.getUnit());
+						break;
+
+					case 'color':
+						value = $('<span>')
+							.text(this.color)
+							.css('background-color', this.color)
+							.css('padding-left', 5)
+							.css('padding-right', 5);
+						break;
+
+					case 'style':
+						/* falls through */
+					case 'linestyle':
+						value = value.charAt(0).toUpperCase() + value.substring(1);
+						break;
+
+					default:
+						if (definition.type == 'boolean')
+							value = '<img src="images/blank.png" class="icon-' + (value ? 'tick' : 'cross') + '" alt="' + (value ? 'ja' : 'nein') + '" />';
+				}
+
+				addRow(title, value);
+			}
+		}, this);
+	}, this);
+
+	$('#entity-info').dialog({
 		title: 'Details für ' + this.title,
 		width: 480,
 		resizable: false,
@@ -370,7 +459,7 @@ Entity.prototype.showDetails = function() {
 
 								vz.entities.showTable();
 								vz.wui.drawPlot();
-								dialog.dialog('close');
+								$('#entity-info').dialog('close');
 							});
 
 							$(this).dialog('close');
@@ -427,7 +516,7 @@ Entity.prototype.showDetails = function() {
 								}
 								finally {
 									$('#entity-edit').dialog('close');
-									dialog.dialog('close'); // close parent dialog
+									$('#entity-info').dialog('close'); // close parent dialog
 								}
 							});
 						},
