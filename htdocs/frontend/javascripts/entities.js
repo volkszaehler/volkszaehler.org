@@ -79,7 +79,7 @@ vz.entities.loadDetails = function() {
 					return $.Deferred().resolveWith(this, [xhr.responseJSON]);
 				}
 				vz.wui.dialogs.middlewareException(xhr);
-				return $.Deferred().rejectWith(this, [xhr]);
+				return vz.load.errorHandler(xhr);
 			}
 		));
 	}, true); // recursive

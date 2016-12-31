@@ -60,6 +60,7 @@
 	<script type="text/javascript" src="vendor/autobahn.min.js"></script>
 
 	<script type="text/javascript" src="javascripts/init.js"></script>
+	<script type="text/javascript" src="javascripts/middleware.js"></script>
 	<script type="text/javascript" src="javascripts/functions.js"></script>
 	<script type="text/javascript" src="javascripts/entities.js"></script>
 	<script type="text/javascript" src="javascripts/wui.js"></script>
@@ -195,7 +196,7 @@
 			<form method="get" target="_blank">
 				<table>
 					<tr class="property"><th>Eigenschaft</th><th>Wert</th></tr>
-					<tr class="property"><td>Middleware:</td><td><input type="text" id="entity-create-middleware" /></td></tr>
+					<tr class="property"><td>Middleware:</td><td><select id="entity-create-middleware"></select></td></tr>
 					<tr class="property"><td>Typ:</td><td><select class="icons" name="type" size="1"></select></td></tr>
 				</table>
 				<p><input type="submit" value="Erstellen" />  <label for="entity-create-cookie">Cookie:</label> <input id="entity-create-cookie" type="checkbox" checked="checked" /></p>

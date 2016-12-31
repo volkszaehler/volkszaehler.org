@@ -158,36 +158,20 @@ vz.wui.addEntity = function(entity) {
 vz.wui.dialogs.init = function() {
 	// add middlewares
 	vz.middleware.forEach(function(middleware, idx) {
-		$('#entity-public-middleware').append($('<option>').val(middleware.url).text(middleware.title));
+		$('#entity-public-middleware, #entity-create-middleware').append($('<option>').val(middleware.url).text(middleware.title));
 	});
 
 	// initialize dialogs
 	$('#entity-add.dialog').dialog({
-		title: unescape('Kanal hinzuf%FCgen'),
+		title: unescape('Kanal hinzufügen'),
 		width: 650,
 		resizable: false,
 		open: function() {
-			// lazy load public entities
-			var title = $('#entity-public-middleware option:selected').text();
-
-			vz.middleware.forEach(function(middleware, idx) {
-				vz.load({
-					controller: 'entity',
-					url: middleware.url
-				}).done(function(json) {
-					var public = [];
-					json.entities.forEach(function(json) {
-						var entity = new Entity(json, middleware.url);
-						public.push(entity);
-					});
-
-					public.sort(Entity.compare);
-					vz.middleware[idx].public = public;
-
-					if (middleware.title == title) {
-						populateEntities(vz.middleware[idx]);
-					}
-				});
+			// populate and refresh public entities
+			var middleware = vz.middleware.find($('#entity-public-middleware option:selected').val());
+			populateEntities(middleware);
+			middleware.loadEntities().done(function(middleware) {
+				populateEntities(middleware);
 			});
 		}
 	});
@@ -207,19 +191,12 @@ vz.wui.dialogs.init = function() {
 
 	// set defaults
 	$('#entity-subscribe-middleware').val(vz.options.middleware[0].url);
-	$('#entity-create-middleware').val(vz.options.middleware[0].url);
 	$('#entity-subscribe-cookie').attr('checked', 'checked');
 	$('#entity-public-cookie').attr('checked', 'checked');
 
 	// actions
 	$('#entity-public-middleware').change(function() {
-		var title = $('#entity-public-middleware option:selected').text();
-		vz.middleware.forEach(function(middleware) {
-			// populate entities for selected middleware
-			if (middleware.title == title) {
-				populateEntities(middleware);
-			}
-		});
+		populateEntities(vz.middleware.find($('#entity-public-middleware option:selected').val()));
 	});
 
 	$('#entity-subscribe input[type=button]').click(function() {
@@ -266,7 +243,7 @@ vz.wui.dialogs.init = function() {
 		});
 	}
 
-	$('#entity-create select').change(function() {
+	$('#entity-create select[name=type]').change(function() {
 		$('#entity-create form table .required').remove();
 		$('#entity-create form table .optional').remove();
 
