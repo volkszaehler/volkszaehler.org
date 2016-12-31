@@ -158,20 +158,36 @@ vz.wui.addEntity = function(entity) {
 vz.wui.dialogs.init = function() {
 	// add middlewares
 	vz.middleware.forEach(function(middleware, idx) {
-		$('#entity-public-middleware, #entity-create-middleware').append($('<option>').val(middleware.url).text(middleware.title));
+		$('#entity-public-middleware').append($('<option>').val(middleware.url).text(middleware.title));
 	});
 
 	// initialize dialogs
 	$('#entity-add.dialog').dialog({
-		title: unescape('Kanal hinzufügen'),
+		title: unescape('Kanal hinzuf%FCgen'),
 		width: 650,
 		resizable: false,
 		open: function() {
-			// populate and refresh public entities
-			var middleware = vz.middleware.find($('#entity-public-middleware option:selected').val());
-			populateEntities(middleware);
-			middleware.loadEntities().done(function(middleware) {
-				populateEntities(middleware);
+			// lazy load public entities
+			var title = $('#entity-public-middleware option:selected').text();
+
+			vz.middleware.forEach(function(middleware, idx) {
+				vz.load({
+					controller: 'entity',
+					url: middleware.url
+				}).done(function(json) {
+					var public = [];
+					json.entities.forEach(function(json) {
+						var entity = new Entity(json, middleware.url);
+						public.push(entity);
+					});
+
+					public.sort(Entity.compare);
+					vz.middleware[idx].public = public;
+
+					if (middleware.title == title) {
+						populateEntities(vz.middleware[idx]);
+					}
+				});
 			});
 		}
 	});
@@ -197,7 +213,13 @@ vz.wui.dialogs.init = function() {
 
 	// actions
 	$('#entity-public-middleware').change(function() {
-		populateEntities(vz.middleware.find($('#entity-public-middleware option:selected').val()));
+		var title = $('#entity-public-middleware option:selected').text();
+		vz.middleware.forEach(function(middleware) {
+			// populate entities for selected middleware
+			if (middleware.title == title) {
+				populateEntities(middleware);
+			}
+		});
 	});
 
 	$('#entity-subscribe input[type=button]').click(function() {

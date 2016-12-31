@@ -60,7 +60,6 @@
 	<script type="text/javascript" src="vendor/autobahn.min.js"></script>
 
 	<script type="text/javascript" src="javascripts/init.js"></script>
-	<script type="text/javascript" src="javascripts/middleware.js"></script>
 	<script type="text/javascript" src="javascripts/functions.js"></script>
 	<script type="text/javascript" src="javascripts/entities.js"></script>
 	<script type="text/javascript" src="javascripts/wui.js"></script>
@@ -193,15 +192,11 @@
 			<p><input type="button" value="Abonnieren" /> <label for="entity-public-cookie">Cookie:</label> <input id="entity-public-cookie" type="checkbox" checked="checked" /></p>
 		</div>
 		<div id="entity-create">
-			<form>
+			<form method="get" target="_blank">
 				<table>
-					<thead>
-						<tr><th>Eigenschaft</th><th>Wert</th></tr>
-					</thead>
-					<tbody>
-						<tr class="property"><td>Middleware:</td><td><select id="entity-create-middleware"></select></td></tr >
-						<tr class="property"><td>Typ:</td><td><select class="icons" name="type"></select></td></tr>
-					</tbody>
+					<tr class="property"><th>Eigenschaft</th><th>Wert</th></tr>
+					<tr class="property"><td>Middleware:</td><td><input type="text" id="entity-create-middleware" /></td></tr>
+					<tr class="property"><td>Typ:</td><td><select class="icons" name="type" size="1"></select></td></tr>
 				</table>
 				<p><input type="submit" value="Erstellen" />  <label for="entity-create-cookie">Cookie:</label> <input id="entity-create-cookie" type="checkbox" checked="checked" /></p>
 			</form>
