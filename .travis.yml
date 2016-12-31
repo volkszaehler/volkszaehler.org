@@ -3,8 +3,7 @@ language: php
 php:
     - 5.6
     - 7.0
-    - nightly
-    - hhvm
+    - 7.1
 
 services:
     - mysql
@@ -43,15 +42,7 @@ matrix:
     # security
     - php: 5.6
       env: DB= DEPENDENCIES= SECURITY=true
-  # remove hhvm/pgsql
-  exclude:
-    - php: hhvm
-      env: DB=pgsql
-    - php: hhvm
-      env: APC=true
   allow_failures:
-    - php: nightly
-    - php: hhvm
     - php: 5.6
       env: DB=mysql TEST_COMPONENT=HTTPD
 
@@ -79,7 +70,7 @@ install:
     - if [ "$DEPENDENCIES" = "highest" ]; then composer update -n; fi
     - if [ "$JSLINT" = true ]; then npm install; fi
     - if [ "$SECURITY" = true ]; then wget http://get.sensiolabs.org/security-checker.phar; fi
-    - if [ "$TEST_COMPONENT" = "HTTPD" ]; then composer require volkszaehler/httpd:dev-master jenssegers/proxy:~2.2; fi
+    - if [ "$TEST_COMPONENT" = "HTTPD" ]; then composer require php-pm/php-pm:dev-master php-pm/httpkernel-adapter:dev-master symfony/http-foundation:~2.6 jenssegers/proxy:~2.2; fi
 
     # add apc cache
     - |
@@ -116,8 +107,8 @@ before_script:
     # setup local middleware
     - |
       if [ "$TEST_COMPONENT" = "HTTPD" ]; then
-        sed -i "s/testAdapter\" value=\".*\"/testAdapter\" value=\"$TEST_COMPONENT\"/" phpunit.xml
-        vendor/bin/httpd.php start &
+        sed -i "s/testAdapter\" value=\".*\"/testAdapter\" value=\"HTTP\"/" phpunit.xml
+        vendor/bin/ppm start -c etc/ppm.json &
         HTTPD_PID=$!
         echo "Started httpd with pid $HTTPD_PID"
       fi
@@ -141,7 +132,7 @@ script:
       if [ "$DB" = "mysql" -a "$TEST_COMPONENT" = "HTTPD" ]; then
         kill -9 $HTTPD_PID
         sleep 10
-        vendor/bin/httpd.php start &
+        vendor/bin/ppm start -c etc/ppm.json &
         HTTPD_PID=$!
         echo "Started httpd with pid $HTTPD_PID"
       fi
