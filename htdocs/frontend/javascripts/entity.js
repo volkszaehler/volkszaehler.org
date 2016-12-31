@@ -188,7 +188,7 @@ Entity.prototype.updateAxisScale = function() {
  * WAMP session subscription and handler
  */
 Entity.prototype.subscribe = function(session) {
-	var mw = vz.getMiddleware(this.middleware);
+	var mw = vz.middleware.find(this.middleware);
 	if (mw && mw.session) {
 		session = session || mw.session;
 	}
@@ -247,7 +247,7 @@ Entity.prototype.subscribe = function(session) {
  * Cancel live update subscription from WAMP server
  */
 Entity.prototype.unsubscribe = function() {
-	var mw = vz.getMiddleware(this.middleware);
+	var mw = vz.middleware.find(this.middleware);
 	if (mw.session) {
 		mw.session.unsubscribe(this.uuid);
 	}
@@ -759,7 +759,7 @@ Entity.prototype.updateDOMRowTotal = function() {
 			.text(vz.wui.formatNumber(this.totalconsumption, unit, 'k'));
 	}
 	else {
-		$('.total', row).data('total', 0).text('');		
+		$('.total', row).data('total', 0).text('');
 	}
 };
 
