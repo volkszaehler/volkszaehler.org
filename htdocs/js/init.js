@@ -82,9 +82,6 @@ $(document).ready(function() {
 		$.setCookie('vz_entities', null);
 	}
 
-	// setup auth handling before any network operation
-	vz.wui.initAuth();
-
 	// start loading cookies/url params
 	vz.entities.loadCookie(); // load uuids from cookie
 	vz.options.loadCookies(); // load options from cookie

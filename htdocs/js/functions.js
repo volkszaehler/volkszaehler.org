@@ -92,34 +92,6 @@ vz.getPermalink = function() {
 };
 
 /**
- * Get auth cookie for middleware url
- */
-vz.getMiddlewareAuth = function(middleware) {
-	var mw = vz.getMiddleware(middleware);
-	return (mw || {}).authtoken;
-};
-
-/**
- * Update middleware auth token and store cookie
- */
-vz.setMiddlewareAuth = function(middleware, authtoken) {
-	var mw = vz.getMiddleware(middleware);
-
-	if (mw) {
-		mw.authtoken = authtoken;
-
-		var tokens = vz.options.middleware.filter(function(mw) {
-			return !!mw.authtoken;
-		}).map(function(mw) {
-			return mw.authtoken + "@" + mw.url;
-		});
-
-		var expires = new Date(2038, 0, 1); // some days before y2k38 problem
-		$.setCookie('vz_authtoken', tokens.join("|", {expires: expires}));
-	}
-};
-
-/**
  * Universal helper for middleware ajax requests with error handling
  *
  * @param skipDefaultErrorHandling according to http://stackoverflow.com/questions/19101670/provide-a-default-fail-method-for-a-jquery-deferred-object
@@ -136,22 +108,12 @@ vz.load = function(args, skipDefaultErrorHandling) {
 		beforeSend: function (xhr, settings) {
 			// remember URL for potential error messages
 			xhr.requestUrl = settings.url;
-			xhr.middleware = args.middleware;
-
-			// add authorization header
-			var auth = vz.getMiddlewareAuth(args.middleware);
-			if (auth) {
-				xhr.setRequestHeader('Authorization', 'Bearer ' + auth);
-			}
 		}
 	});
 
 	if (args.url === undefined) { // local middleware by default
 		args.url = vz.options.middleware[0].url;
 	}
-
-	// store for later authentication
-	args.middleware = args.url;
 
 	if (args.controller !== undefined) {
 		args.url += '/' + args.controller;
