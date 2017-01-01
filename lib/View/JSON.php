@@ -366,7 +366,11 @@ class JSON extends View {
 			$debugInfo = array(
 				'file' => $exception->getFile(),
 				'line' => $exception->getLine(),
-				'backtrace' => $exception->getTrace()
+				'backtrace' => array_map(function($trace) {
+					unset($trace['type']);
+					unset($trace['args']);
+					return $trace;
+				}, $exception->getTrace())
 			);
 
 			$this->json['exception'] = array_merge($exceptionInfo, $debugInfo);
