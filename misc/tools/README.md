@@ -257,7 +257,7 @@ On Raspbian (Debian Jessie), which uses systemd to control services, create a ne
 
 To execute use:
 
-    vendor/bin/ppm start --port=8080 --workers=8 --static=false --bridge=HttpKernel --bootstrap=Volkszaehler\\Server\\PPMBootstrapAdapter --cgi-path=/usr/bin/php &
+    vendor/bin/ppm start -vv -c etc/ppm.json &
 
 This will start a middleware on port 8080 and spawn 8 worker processes. If the middleware should accept connections from other hosts instead of using Apache mod_proxy, use `--host=0.0.0.0` in addition.
 
