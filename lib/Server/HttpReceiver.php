@@ -46,47 +46,29 @@ class HttpReceiver extends ReactHttpServer {
 	}
 
 	/**
-	 * main push request/ websocket response loop
+	 * Main push request/ websocket response loop
 	 */
 	function onRequest(Request $request, Response $response) {
-		$content = '';
-		$headers = $request->getHeaders();
-		$contentLength = isset($headers['Content-Length']) ? (int) $headers['Content-Length'] : null;
-
-		// length required, chunked encoding not supported
-		if (null === $contentLength) {
-			$response->writeHead(411);
-			$response->end();
-			return;
-		}
-
-		$request->on('data', function($data) use ($request, $response, &$content, $contentLength) {
-			// read data (may be empty for GET request)
-			$content .= $data;
-
-			// handle request after receive
-			if (strlen($content) >= $contentLength) {
-				$headers = array('Content-Type' => 'application/json');
-				try {
-					$data = $this->hub->handlePushMessage($content);
-					$headers['Content-Length'] = strlen($data);
-					if (null === $data) {
-						$response->writeHead(400, $headers);
-						$response->end();
-					}
-					else {
-						$response->writeHead(200, $headers);
-						$response->end($data);
-					}
-				}
-				catch (\Exception $exception) {
-					$data = $this->getExceptionAsJson($exception, true);
-					$headers['Content-Length'] = strlen($data);
-					$response->writeHead(500, $headers); // internal server error
-					$response->end($data);
-				}
+		$headers = array('Content-Type' => 'application/json');
+		try {
+			$content = $request->getBody();
+			$data = $this->hub->handlePushMessage($content);
+			$headers['Content-Length'] = strlen($data);
+			if (null === $data) {
+				$response->writeHead(400, $headers);
+				$response->end();
 			}
-		});
+			else {
+				$response->writeHead(200, $headers);
+				$response->end($data);
+			}
+		}
+		catch (\Exception $exception) {
+			$data = $this->getExceptionAsJson($exception, true);
+			$headers['Content-Length'] = strlen($data);
+			$response->writeHead(500, $headers); // internal server error
+			$response->end($data);
+		}
 	}
 
 	/**
