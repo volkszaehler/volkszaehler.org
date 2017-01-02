@@ -15,6 +15,9 @@ class PushServerTest extends Data
 	// channel properties
 	static $resolution = 100;
 
+	// curl output
+	protected $curl;
+
 	/**
 	 * Create channel
 	 */
@@ -23,27 +26,68 @@ class PushServerTest extends Data
 		self::$uuid = self::createChannel('Counter', 'electric meter', self::$resolution);
 	}
 
+	function safeCurl($data) {
+		$port = Util\Configuration::read('push.server');
+		$json = json_encode($data);
+
+		$exitCode = null;
+		$output = [];
+
+		$curl = "curl %s -s -m 3 -X POST -d '%s' -H 'Content-Type: application/json' localhost:%d 2>&1";
+
+		// run and test for failure
+		$cmd = sprintf($curl, '-f', $json, $port);
+		exec($cmd, $output, $exitCode);
+
+		$this->curl = join($output);
+
+		// run to get output
+		if ($exitCode !== 0) {
+			$cmd = sprintf($curl, '-i', $json, $port);
+			passthru($cmd);
+		}
+
+		return $exitCode;
+	}
+
 	/**
 	 * @group pushserver
 	 */
 	function testPushMessage() {
 		$this->assertTrue(Util\Configuration::read('push.enabled'), 'Push server disabled');
 
-		$exitCode = null;
-		$port = Util\Configuration::read('push.server');
-		$curl = "curl %s -s -m 3 -X POST -d '{\"data\":[{\"uuid\":\"%s\",\"tuples\":[[1,1,1]]}]}' localhost:%d 2>&1";
+		// first message - no result tuples
+		$exitCode = $this->safeCurl([
+			'data' => [
+				[
+					'uuid' => self::$uuid,
+					'tuples' => [[1,1,1]]
+				]
+			]
+		]);
 
-		// run and test for failure
-		$cmd = sprintf($curl, '-f', self::$uuid, $port);
-		passthru($cmd, $exitCode);
+		$this->assertEquals(0, $exitCode, sprintf('Curl failed with exit code %d', $exitCode));
 
-		// run to get output
-		if ($exitCode !== 0) {
-			$cmd = sprintf($curl, '-i', self::$uuid, $port);
-			passthru($cmd);
-		}
+		$json = json_decode($this->curl);
+		$this->assertTrue(isset($json->data) && is_array($json->data) && isset($json->data[0]->tuples), 'Invalid json response');
+		$this->assertEquals(0, count($json->data[0]->tuples), 'Unexpected json response tuples');
 
-		$this->assertTrue($exitCode === 0, sprintf('Curl failed with exit code %d', $exitCode));
+		// second message
+		$exitCode = $this->safeCurl([
+			'data' => [
+				[
+					'uuid' => self::$uuid,
+					'tuples' => [[2,2,1]]
+				]
+			]
+		]);
+
+		$this->assertEquals(0, $exitCode, sprintf('Curl failed with exit code %d', $exitCode));
+
+		$json = json_decode($this->curl);		
+		$this->assertTrue(isset($json->data) && is_array($json->data) && isset($json->data[0]->tuples), 'Invalid json response');
+		$this->assertEquals(1, count($json->data[0]->tuples), 'Unexpected json response tuples');
+		$this->assertEquals([2,36000000,1], $json->data[0]->tuples[0], 'Unexpected json response tuples');
 	}
 }
 
