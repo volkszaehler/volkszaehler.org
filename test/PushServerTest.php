@@ -31,7 +31,7 @@ class PushServerTest extends Data
 
 		$exitCode = null;
 		$port = Util\Configuration::read('push.server');
-		$curl = "curl %s -s -m 3 -X POST -d '{\"data\":[{\"uuid\":\"%s\",\"tuples\":[[1,1,1]]}]}' localhost:%d 2>&1";
+		$curl = "curl %s -s -m 3 -X POST -d '{\"data\":[{\"uuid\":\"%s\",\"tuples\":[[1,1,1]]}]}' -H 'Content-Type: application/json' localhost:%d 2>&1";
 
 		// run and test for failure
 		$cmd = sprintf($curl, '-f', self::$uuid, $port);
