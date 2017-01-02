@@ -63,7 +63,7 @@ class MiddlewareAdapter {
 	}
 
 	protected function openController($force = false) {
-		if ($force || $this->em == null || !$this->em->isOpen()) {
+		if ($force || $this->em == null || !$this->em->isOpen() || $this->em->getConnection()->ping() === false) {
 			$this->em = Router::createEntityManager(false);
 		}
 	}
@@ -79,7 +79,7 @@ class MiddlewareAdapter {
 			return $interpreter;
 		}
 		catch (\Exception $e) {
-			echo("Trying to subcribe to invalid topic " . $uuid . "\n");
+			echo("Invalid channel " . $uuid . "\n");
 			throw $e;
 		}
 	}
