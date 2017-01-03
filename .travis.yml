@@ -14,6 +14,7 @@ sudo: false
 env:
   # run composer by default
   global:
+    - DB=mysql
     - DEPENDENCIES=standard
     - TRAVIS_TEST_EXCLUDES="--exclude-group slow,jpgraph,pushserver"
   matrix:
