@@ -14,15 +14,18 @@ sudo: false
 env:
   # run composer by default
   global:
+    - DB=mysql
     - DEPENDENCIES=standard
     - TRAVIS_TEST_EXCLUDES="--exclude-group slow,jpgraph,pushserver"
-  matrix:
-    - DB=mysql
-    - DB=pgsql
-    - DB=sqlite
 
 matrix:
   include:
+    # pgsql
+    - php: 5.6
+      env: DB=pgsql
+    # pgsql
+    - php: 5.6
+      env: DB=sqlite
     # httpd-based
     - php: 7.0
       env: DB=mysql TEST_COMPONENT=HTTPD
