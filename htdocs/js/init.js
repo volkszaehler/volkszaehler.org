@@ -74,10 +74,6 @@ $(document).ready(function() {
 	var params = $.getUrlParams();
 	if (params.hasOwnProperty('reset') && params.reset) {
 		$.setCookie('vz_entities', null);
-		try {
-			localStorage.removeItem('vz.capabilities');
-		}
-		catch (e) { }
 	}
 
 	// start loading cookies/url params

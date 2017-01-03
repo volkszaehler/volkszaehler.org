@@ -125,7 +125,7 @@ class EntityController extends Controller {
 			$entity = $q->getSingleResult();
 
 			if ($allowCache && self::$cache) {
-				self::$cache->save($uuid, $entity, Util\Configuration::read('cache.ttl'));
+				self::$cache->save($uuid, $entity, Util\Configuration::read('cache.ttl', 3600));
 			}
 
 			return $entity;
