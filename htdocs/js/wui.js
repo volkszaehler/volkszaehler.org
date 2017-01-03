@@ -996,3 +996,61 @@ vz.wui.dialogs.middlewareException = function(xhr) {
 		// network exception
 		this.exception(new Exception("Network Error", xhr.statusText));
 };
+
+vz.wui.dialogs.authorizationException = function(xhr) {
+	var middleware = xhr.middleware;
+	$('#authorization').dialog({
+		title: unescape('Login'),
+		width: 600,
+		modal: true,
+		autoOpen: false,
+		resizable: false,
+		open: function() {
+			$('#authorization .middleware').text(vz.middleware.find(middleware).title);
+			$('#authorization input[name=username]').select();
+		},
+		buttons: {
+			'Login': function() {
+				var args = {
+					url: middleware + '/auth.json',
+					method: 'POST',
+					contentType: 'application/json',
+					data: JSON.stringify({
+						username: $('#authorization input[name=username]').val(),
+						password: $('#authorization input[name=password]').val()
+					}),
+					accepts: {
+						'json': 'application/json'
+					},
+					beforeSend: function (xhr, settings) {
+						// remember URL for potential error messages
+						xhr.requestUrl = middleware + '/auth.json';
+					}
+				};
+
+				$.ajax(args).then(
+					function(json) {
+						$('#authorization').dialog('close');
+						if (json.authtoken) {
+							var mw = vz.middleware.find(middleware);
+							if (mw) {
+								mw.setAuthorization(json.authtoken);
+								window.location.reload(false);	// reload
+							}
+						}
+					},
+					function(xhr) {
+						vz.wui.dialogs.middlewareException(xhr);
+					}
+				);
+			}
+		}
+	})
+	.keypress(function(ev) {
+		// submit form on enter
+		if (ev.keyCode == $.ui.keyCode.ENTER) {
+			$('#authorization').next().find('button').click();
+		}
+	})
+	.dialog('open');
+};

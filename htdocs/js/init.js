@@ -74,10 +74,6 @@ $(document).ready(function() {
 	var params = $.getUrlParams();
 	if (params.hasOwnProperty('reset') && params.reset) {
 		$.setCookie('vz_entities', null);
-		try {
-			localStorage.removeItem('vz.capabilities');
-		}
-		catch (e) { }
 	}
 
 	// start loading cookies/url params
@@ -138,7 +134,6 @@ $(document).ready(function() {
 
 				// connect and store session
 				new ab.connect(uri, function(session) {
-					console.log("Autobahn connected to " + uri + " (" + session.sessionid() + ")");
 					middleware.session = session;
 
 					// subscribe entities for middleware
@@ -148,7 +143,6 @@ $(document).ready(function() {
 						}
 					}, true); // recursive
 				}, function(code, reason) {
-					console.log("Autobahn disconnected (" + code + ", " + reason + ")");
 					delete middleware.session;
 				});
 			});
