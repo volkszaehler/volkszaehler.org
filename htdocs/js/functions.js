@@ -95,16 +95,28 @@ vz.getPermalink = function() {
  */
 vz.load = function(args, skipDefaultErrorHandling) {
 	$.extend(args, {
-		accepts: 'application/json',
+		accepts: {
+			'json': 'application/json'
+		},
 		beforeSend: function (xhr, settings) {
 			// remember URL for potential error messages
 			xhr.requestUrl = settings.url;
+			xhr.middleware = args.middleware;
+
+			// add authorization header
+			var mw = vz.middleware.find(args.middleware);
+			if (mw && mw.authToken) {
+				xhr.setRequestHeader('Authorization', 'Bearer ' + mw.authToken);
+			}
 		}
 	});
 
 	if (args.url === undefined) { // local middleware by default
 		args.url = vz.options.middleware[0].url;
 	}
+
+	// store for later authentication
+	args.middleware = args.url;
 
 	if (args.controller !== undefined) {
 		args.url += '/' + args.controller;
@@ -144,7 +156,10 @@ vz.load = function(args, skipDefaultErrorHandling) {
  * Reusable authorization-aware error handler
  */
 vz.load.errorHandler = function(xhr, skipDefaultErrorHandling) {
-	if (!skipDefaultErrorHandling) {
+	if (xhr.status == 401) { // HTTP_UNAUTHORIZED
+		vz.wui.dialogs.authorizationException(xhr);
+	}
+	else if (!skipDefaultErrorHandling) {
 		vz.wui.dialogs.middlewareException(xhr);
 	}
 	return xhr;
@@ -229,29 +244,11 @@ vz.parseUrlParams = function() {
  * Load capabilities from middleware
  */
 vz.capabilities.load = function() {
-	// execute query asynchronously to refresh from middleware
-	var deferred = vz.load({
-		controller: 'capabilities'
+	return vz.load({
+		controller: 'capabilities/definitions'
 	}).done(function(json) {
-		$.extend(true, vz.capabilities, json.capabilities);
-		try {
-			localStorage.setItem('vz.capabilities', JSON.stringify(json)); // cache it
-		}
-		catch (e) { }
+		$.extend(vz.capabilities.definitions, json.capabilities.definitions);
 	});
-
-	// get cached value to avoid blocking frontend startup
-	try {
-		var json = localStorage.getItem('vz.capabilities');
-		if (json !== false) {
-			// use cached value and return immediately
-			$.extend(true, vz.capabilities, JSON.parse(json).capabilities);
-			return $.Deferred().resolve();
-		}
-	}
-	catch (e) {	}
-
-	return deferred;
 };
 
 /**
