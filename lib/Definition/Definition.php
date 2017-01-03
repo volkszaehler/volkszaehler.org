@@ -106,7 +106,7 @@ abstract class Definition {
 		$cache_id = static::CACHE_KEY . static::FILE;
 
 		if (Util\Configuration::read('devmode') == FALSE && extension_loaded('apc') && apc_exists($cache_id) &&
-			(time() - filemtime(__DIR__ . '/' . static::FILE) > Util\Configuration::read('cache.ttl')))
+			(time() - filemtime(__DIR__ . '/' . static::FILE) > Util\Configuration::read('cache.ttl', 3600)))
 		{
 			static::$definitions = apc_fetch($cache_id);
 		}
@@ -119,7 +119,7 @@ abstract class Definition {
 			}
 
 			if (extension_loaded('apc')) {
-				apc_store($cache_id, static::$definitions, Util\Configuration::read('cache.ttl'));
+				apc_store($cache_id, static::$definitions, Util\Configuration::read('cache.ttl', 3600));
 			}
 		}
 	}
