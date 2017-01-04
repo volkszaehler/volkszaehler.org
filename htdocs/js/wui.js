@@ -998,13 +998,17 @@ vz.wui.dialogs.middlewareException = function(xhr) {
 };
 
 vz.wui.dialogs.authorizationException = function(xhr) {
+	// suppress further errors
+	vz.wui.errorDialog = true;
 	var middleware = xhr.middleware;
+
 	$('#authorization').dialog({
 		title: unescape('Login'),
 		width: 600,
 		modal: true,
 		autoOpen: false,
 		resizable: false,
+		closeOnEscape: false,
 		open: function() {
 			$('#authorization .middleware').text(vz.middleware.find(middleware).title);
 			$('#authorization input[name=username]').select();
