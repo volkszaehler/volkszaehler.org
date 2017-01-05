@@ -88,7 +88,6 @@ class CSV extends View {
 	 * @param Util\Debug $debug
 	 */
 	protected function addDebug(Util\Debug $debug) {
-		echo '# level:' . CSV::DELIMITER . $debug->getLevel() . PHP_EOL;
 		echo '# database:' . CSV::DELIMITER . Util\Configuration::read('db.driver') . PHP_EOL;
 		echo '# time:' . CSV::DELIMITER . $debug->getExecutionTime() . PHP_EOL;
 

@@ -287,7 +287,6 @@ class JSON extends View {
 	 * @param Util\Debug $debug
 	 */
 	protected function convertDebug(Util\Debug $debug) {
-		$jsonDebug['level'] = $debug->getLevel();
 		if ($dbDriver = Util\Configuration::read('db.driver')) $jsonDebug['database'] = $dbDriver;
 		$jsonDebug['time'] = $debug->getExecutionTime();
 

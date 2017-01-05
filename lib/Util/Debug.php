@@ -31,69 +31,57 @@ use Doctrine\DBAL\Logging;
  *
  * @package util
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @author Andreas Goetz <cpuidle@gmx.de>
  */
 class Debug {
 	protected static $instance = NULL;
 
-	protected $messages = array();
+	/**
+	 * @var array Array of logged messages
+	 */
+	protected $messages;
+
+	/**
+	 * @var Logging\SQLLogger
+	 */
 	protected $sqlLogger;
 
-	/** @var float holds timestamp of initialization, used later to return time of execution */
-	protected $started;
-
-	/** * @var integer the debug level */
-	protected $level;
+	/**
+	 * @var float timestamp of initialization, used to calculate execution time
+	 */
+	protected $created;
 
 	/**
 	 * Constructor
 	 *
 	 * @param integer $level the debug level
 	 */
-	public function __construct($level, ORM\EntityManager $em) {
-		// taking timestamp to stop execution time
-		$this->created = microtime(TRUE);
+	protected function __construct(ORM\EntityManager $em) {
+		$this->messages = array();
 
-		// saving debug level
-		$this->level = $level;
+		// take timestamp to stop execution time
+		$this->created = microtime(TRUE);
 
 		// starting logging of sql queries
 		$this->em = $em;
 		$this->attachSqlLogger(new Logging\DebugStack());
-
-		if (self::isActivated()) {
-			throw new \Exception('Debugging has already been started. Please use the static functions!');
-		}
-		self::$instance = $this;
 	}
 
 	/**
 	 * Log messages to the debug stack including file, lineno, args and a stacktrace
 	 *
 	 * @param string $message
-	 * @param more parameters could be passed
 	 */
 	static public function log($message) {
 		if (isset(self::$instance)) {
 			$trace = debug_backtrace(FALSE);
 			$info = $trace[0];
-			$level = self::$instance->level;
 
-			$message = array('message' => $message);
-
-			if ($level > 2) {
-				$message['file'] = $info['file'];
-				$message['line'] = $info['line'];
-			}
-
-			if ($level > 4) {
-				$message['args'] = array_slice($info['args'], 1);
-			}
-
-			if ($level > 5) {
-				$message['trace'] = array_slice($trace, 1);
-			}
-
-			self::$instance->messages[] = $message;
+			self::$instance->messages[] = array(
+				'message' => $message,
+				'file' => $info['file'],
+				'line' => $info['line']
+			);
 		}
 	}
 
@@ -106,8 +94,18 @@ class Debug {
 	}
 
 	/**
-	 * Deactivate debugging (for http server)
-	 * @return boolean
+	 * Activate debugging
+	 */
+	public static function activate(ORM\EntityManager $em) {
+		if (self::$instance) {
+			// always cleanup
+			self::deactivate();
+		}
+		self::$instance = new Debug($em);
+	}
+
+	/**
+	 * Deactivate debugging
 	 */
 	public static function deactivate() {
 		if (self::$instance) {
@@ -119,7 +117,7 @@ class Debug {
 	/**
 	 * Set SQL logger on entity manager
 	 */
-	protected function attachSqlLogger($sqlLogger) {
+	protected function attachSqlLogger(Logging\SQLLogger $sqlLogger) {
 		$this->sqlLogger = $sqlLogger;
 		$this->em->getConnection()->getConfiguration()->setSQLLogger($sqlLogger);
 	}
@@ -127,14 +125,14 @@ class Debug {
 	/**
 	 * @return float execution time
 	 */
-	public function getExecutionTime() { 
-		return round((microtime(TRUE) - $this->created), 5); 
+	public function getExecutionTime() {
+		return round((microtime(TRUE) - $this->created), 5);
 	}
 
 	/**
 	 * @return 2 dimensional array with sql queries and parameters
 	 */
-	public function getQueries() { 
+	public function getQueries() {
 		return ($this->sqlLogger) ? $this->sqlLogger->queries : array();
 	}
 
@@ -169,13 +167,6 @@ class Debug {
 	 * @todo encapsulate in state class? or inherit from singleton class?
 	 */
 	public static function getInstance() { return self::$instance; }
-
-	/**
-	 * @return integer current debug level
-	 */
-	public function getLevel() {
-		return $this->level;
-	}
 
 	/**
 	 * Fail-safe, non-warning, portable shell_exec
