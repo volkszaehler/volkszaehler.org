@@ -165,10 +165,8 @@ class Router implements HttpKernelInterface {
 		}
 
 		// initialize debugging
-		if (($debugLevel = $request->query->get('debug')) || $debugLevel = Util\Configuration::read('debug')) {
-			if ($debugLevel > 0 && !Util\Debug::isActivated()) {
-				new Util\Debug($debugLevel, $this->em);
-			}
+		if ($request->query->get('debug') || Util\Configuration::read('debug')) {
+			Util\Debug::activate($this->em);
 		}
 		else {
 			// make sure static debug instance is removed

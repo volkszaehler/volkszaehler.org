@@ -11,8 +11,12 @@ namespace Tests;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 use Proxy\Adapter\Guzzle\GuzzleAdapter;
+use Symfony\Bridge\PsrHttpMessage\Factory;
+use Zend\Diactoros\Uri;
 
 use Volkszaehler\Router;
 
@@ -22,6 +26,9 @@ abstract class Middleware extends \PHPUnit_Framework_TestCase
 	 * @var Volkszaehler\Router
 	 */
 	static $app;
+
+	static $httpFoundationFactory;
+	static $psrFoundationFactory;
 
 	/**
 	 * @var Proxy\Adapter\Guzzle\GuzzleAdapter
@@ -52,6 +59,8 @@ abstract class Middleware extends \PHPUnit_Framework_TestCase
 		if (testAdapter == 'HTTP') {
 			// echo("Test using HTTP adapter\n");
 			static::$adapter = new GuzzleAdapter(new Client());
+			static::$httpFoundationFactory = new Factory\HttpFoundationFactory();
+			static::$psrFoundationFactory = new Factory\DiactorosFactory();
 		}
 		// cache entity manager
 		else if (null == self::$app) {
@@ -68,12 +77,38 @@ abstract class Middleware extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
+	 * Send request via Guzzle
+	 * @param Request
+	 * @return Response
+	 */
+	protected static function send(Request $request) {
+		$psrRequest = static::$psrFoundationFactory->createRequest($request);
+
+		// map uri to httpd
+		$uri = str_replace('http://localhost', testHttpUri, $request->getUri());
+		$psrRequest = $psrRequest->withUri(new Uri($uri));
+
+		try {
+			$psrResponse = static::$adapter->send($psrRequest);
+		}
+		catch (RequestException $e) {
+			$psrResponse = $e->getResponse();
+		}
+		finally {
+			$response = static::$httpFoundationFactory->createResponse($psrResponse);
+		}
+
+		return $response;
+	}
+
+	/**
 	 * Execute barebones JSON middleware request
+	 * @param Request
+	 * @return Response
 	 */
 	protected static function executeRequest(Request $request) {
 		if (testAdapter == 'HTTP') {
-			$uri = str_replace('http://localhost', testHttpUri, $request->getUri());
-			$response = static::$adapter->send($request, $uri);
+			$response = self::send($request);
 			self::$mem = 0;
 		}
 		else {
@@ -108,6 +143,8 @@ abstract class Middleware extends \PHPUnit_Framework_TestCase
 
 	/**
 	 * Execute and parse barebones JSON middleware request
+	 * @param Request
+	 * @return array
 	 */
 	protected static function executeJsonRequest(Request $request) {
 		$response = self::executeRequest($request);

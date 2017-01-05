@@ -22,6 +22,7 @@
 - [ppm](#ppm)
   - [Installation](#installation)
   - [Usage](#usage)
+  - [Production Setup](#production-setup)
 - [install.sh](#install.sh)
 - [doctrine](#doctrine)
 - [model-helper](#helper)
@@ -66,7 +67,7 @@ Two main protocols are implemented:
 
 #### Additional protocols
 
-Some users have expressed need for additional protocols, especially MQTT. Those can be implemented with the flexibilit given be `push-server`.
+Some users have expressed need for additional protocols, especially MQTT. Those can be implemented with the flexibility given be `push-server`.
 
 The suggested approach is to deploy a (small) integration component like e.g. NodeJS-based `node-red` and use plain web sockets to communicate with `push-server`. Any additional protocol can be implemented on top of `node-red`.
 
@@ -226,16 +227,43 @@ As ppm requires `ext-pcntl` which is not available on Windows platforms ppm does
 
     composer require php-pm/php-pm:dev-master php-pm/httpkernel-adapter:dev-master
 
-To use the high performance middleware update the Apache configuration to proxy middleware requests. Edit `htdocs/.htaccess` like this:
+In case of error messages make sure installation is up to date before installing required components:
+
+    composer update
+
+Then make sure the prerequistes are available (php-cgi and Apache modules):
+
+    sudo apt-get install libapache2-mod-proxy-html libxml2-dev php5-cgi
+
+Also make sure that `mod_proxy` and `mod_proxy_http` are enabled:
+
+    sudo a2enmod mod_proxy mod_proxy_http
+
+To use the high performance middleware either modify the middleware address in `options.js` or update the Apache configuration to proxy middleware requests transparently.
+The second approach is recommended. Edit `htdocs/.htaccess` like this:
 
     <IfModule mod_proxy.c>
       RewriteEngine On
       RewriteRule ^middleware(.php)?/(.*) http://localhost:8080/$2 [P]
     </IfModule>
 
-Also make sure that `mod_proxy` and `mod_proxy_http` are enabled:
+### Usage
 
-    sudo a2enmod mod_proxy mod_proxy_http
+To execute from the volkszaehler folder use:
+
+    vendor/bin/ppm start -c etc/ppm.json &
+
+This will start a middleware on port 8080 and spawn 8 worker processes. If the middleware should accept connections from other hosts instead of using Apache mod_proxy, use `--host=0.0.0.0` in addition.
+
+To monitor status use:
+
+    vendor/bin/ppm status
+
+For a quick test retrieve the list of public entities from the middleware by opening this url in the browser:
+
+    http://<ip>:8080/entity.json
+
+### Production Setup
 
 On Raspbian (Debian Jessie), which uses systemd to control services, create a new service for httpd: `sudo nano /etc/systemd/system/vzhttpd.service` and add the following contents:
 
@@ -245,25 +273,13 @@ On Raspbian (Debian Jessie), which uses systemd to control services, create a ne
     Requires=
 
     [Service]
-    ExecStart=/usr/bin/php vendor/bin/ppm start -c etc/ppm.json
+    ExecStart=/usr/bin/php /var/www/volkszaehler.org/vendor/bin/ppm start -c /var/www/volkszaehler.org/etc/ppm.json
     ExecReload=/bin/kill -HUP $MAINPID
     StandardOutput=null
     Restart=always
 
     [Install]
     WantedBy=multi-user.target
-
-### Usage
-
-To execute use:
-
-    vendor/bin/ppm start -c etc/ppm.json &
-
-This will start a middleware on port 8080 and spawn 8 worker processes. If the middleware should accept connections from other hosts instead of using Apache mod_proxy, use `--host=0.0.0.0` in addition.
-
-To monitor status use:
-
-    vendor/bin/ppm status
 
 
 ## install.sh

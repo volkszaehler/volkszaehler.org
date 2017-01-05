@@ -69,7 +69,6 @@ class Text extends CSV {
 	 * @param Util\Debug $debug
 	 */
 	protected function addDebug(Util\Debug $debug) {
-		echo "level:\t" . $debug->getLevel() . PHP_EOL;
 		echo "database:\t" . Util\Configuration::read('db.driver') . PHP_EOL;
 		echo "time:\t" . $debug->getExecutionTime() . PHP_EOL;
 
