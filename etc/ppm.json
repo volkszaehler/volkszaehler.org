@@ -3,6 +3,8 @@
 	"port": 8080,
 	"workers": 8,
 	"static": false,
+	"logging": 0,
+	"max-requests": 1000,
 	"bridge": "HttpKernel",
 	"bootstrap": "Volkszaehler\\Server\\PPMBootstrapAdapter"
 }

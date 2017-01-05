@@ -67,7 +67,7 @@ install:
     - if [ "$DEPENDENCIES" = "highest" ]; then composer update -n; fi
     - if [ "$JSLINT" = true ]; then npm install; fi
     - if [ "$SECURITY" = true ]; then wget http://get.sensiolabs.org/security-checker.phar; fi
-    - if [ "$TEST_COMPONENT" = "HTTPD" ]; then composer require php-pm/php-pm:dev-master php-pm/httpkernel-adapter:dev-master symfony/http-foundation:~2.6 jenssegers/proxy:~2.2; fi
+    - if [ "$TEST_COMPONENT" = "HTTPD" ]; then composer require php-pm/php-pm:dev-master php-pm/httpkernel-adapter:dev-master; fi
 
     # add apc cache
     - |
