@@ -733,6 +733,10 @@ vz.wui.formatNumber = function(number, unit, prefix) {
 	// avoid infinities/NaN
 	if (number < 0 || number > 0) {
 		var precision = Math.max(0, vz.options.precision - Math.floor(Math.log(Math.abs(number))/Math.LN10));
+		// apply maximum precision e.g. for °C values
+		if (vz.options.maxPrecision[unit] !== undefined) {
+			precision = Math.min(vz.options.maxPrecision[unit], precision);
+		}
 		number = Math.round(number * Math.pow(10, precision)) / Math.pow(10, precision); // rounding
 	}
 

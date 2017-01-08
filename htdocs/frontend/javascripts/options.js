@@ -27,6 +27,9 @@
 vz.options = {
 	language: 'de',
 	precision: 2,							// TODO update from middleware capabilities?
+	maxPrecision: {						// override precision for certain units
+		'°C': 1
+	},
 	tuples: null,							// automatically determined by plot size
 	refresh: true,						// update chart if zoomed to current timestamp
 	interval: 24*60*60*1000,	// 1 day default time interval to show
@@ -48,7 +51,7 @@ vz.options = {
 			url: '//demo.volkszaehler.org/middleware.php'
 		}
 	],
-	monthNames: ['Jan', 'Feb', unescape('M%E4r'), 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
+	monthNames: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
 	dayNames: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
 	lineWidthDefault: 2,
 	lineWidthSelected: 4,
