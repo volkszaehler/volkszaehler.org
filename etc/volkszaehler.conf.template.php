@@ -140,6 +140,10 @@ $config['firewall'] = array(
 		'methods'	=> 'POST',
 		'action'	=> 'allow'
 	],
+	[	// always allow GET - makes read access public
+		'methods'	=> 'GET',
+		'action'	=> 'allow'
+	],
 	[	// authorize all other requests
 		'action'	=> 'auth'
 	]
