@@ -13,6 +13,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class FirewallTest extends Middleware
 {
+	const LOCALHOST = '127.0.0.1';
+	const LOCALNET	= '192.168.0.1';
 	const REMOTE_IP = '8.8.8.8';
 
 	public static function createRemoteRequest($url, $method = 'GET', $ip = self::REMOTE_IP, $content = null, $headers = null) {
@@ -39,40 +41,64 @@ class FirewallTest extends Middleware
 		);
 	}
 
-	public function testLocalhostAllowed() {
+	protected function assertRequestResult($result, $url, $method = 'GET', $ip = self::REMOTE_IP, $content = null, $headers = null) {
 		$response = self::executeRequest(self::createRemoteRequest(
+			$url,
+			$method,
+			$ip,
+			$content,
+			$headers
+		));
+		$this->assertEquals($result, $response->getStatusCode());
+		return $response;
+	}
+
+	public function testLocalhostAllowed() {
+		$this->assertRequestResult(Response::HTTP_OK,
 			'/capabilities.json',
 			'GET',
-			'127.0.0.1'
-		));
-		$this->assertEquals(Response::HTTP_OK, $response->getStatusCode());
+			self::LOCALHOST
+		);
 	}
 
 	public function testLocalIpAllowed() {
-		$response = self::executeRequest(self::createRemoteRequest(
+		$this->assertRequestResult(Response::HTTP_OK,
 			'/capabilities.json',
 			'GET',
-			'192.168.0.1'
-		));
-		$this->assertEquals(Response::HTTP_OK, $response->getStatusCode());
+			self::LOCALNET
+		);
 	}
 
-	public function testRemoteIpDenied() {
-		$response = self::executeRequest(self::createRemoteRequest('/capabilities.json'));
-		$this->assertEquals(Response::HTTP_UNAUTHORIZED, $response->getStatusCode());
+	public function testRemoteIpGetAllowed() {
+		$this->assertRequestResult(Response::HTTP_OK,
+			'/capabilities.json',
+			'GET'
+		);
+	}
+
+	public function testRemoteIpPostPatchDeleteDenied() {
+		$this->assertRequestResult(Response::HTTP_UNAUTHORIZED,
+			'/capabilities.json',
+			'POST'
+		);
+
+		$this->assertRequestResult(Response::HTTP_UNAUTHORIZED,
+			'/capabilities.json',
+			'PATCH'
+		);
+
+		$this->assertRequestResult(Response::HTTP_UNAUTHORIZED,
+			'/capabilities.json',
+			'DELETE'
+		);
 	}
 
 	public function testRemoteIpAuthAllowed() {
-		// GET not authorized - 401 UNAUTHORIZED
-		$response = self::executeRequest(self::createRemoteRequest('/auth.json'));
-		$this->assertEquals(Response::HTTP_UNAUTHORIZED, $response->getStatusCode());
-
 		// POST allowed but fails without token - therefore 403 FORBIDDEN
-		$response = self::executeRequest(self::createRemoteRequest(
+		$response = $this->assertRequestResult(Response::HTTP_FORBIDDEN,
 			'/auth.json',
 			'POST'
-		));
-		$this->assertEquals(Response::HTTP_FORBIDDEN, $response->getStatusCode());
+		);
 		$this->assertRegExp("/Invalid token request/", $response->getContent());
 	}
 }
