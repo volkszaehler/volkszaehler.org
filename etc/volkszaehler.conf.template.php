@@ -170,7 +170,7 @@ $config['authorization'] = array(
 
 // add users below as 'user' => 'pass'
 $config['users']['plain'] = array(
-	'user' => 'pass'
+	// 'user' => 'pass'
 );
 
 /**
