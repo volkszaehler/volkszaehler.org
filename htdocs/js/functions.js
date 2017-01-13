@@ -89,6 +89,13 @@ vz.getPermalink = function() {
 };
 
 /**
+ * Ajax prefilter for repeatable requests
+ */
+$.ajaxPrefilter(function(options, originalOptions, xhr) {
+	xhr.originalOptions = originalOptions;
+});
+
+/**
  * Universal helper for middleware ajax requests with error handling
  *
  * @param skipDefaultErrorHandling according to http://stackoverflow.com/questions/19101670/provide-a-default-fail-method-for-a-jquery-deferred-object
@@ -135,6 +142,13 @@ vz.load = function(args, skipDefaultErrorHandling) {
 		args.data = { };
 	}
 
+	return vz.load.loadHandler(args, skipDefaultErrorHandling);
+};
+
+/**
+ * Reusable ajax request sender with error handling
+ */
+vz.load.loadHandler = function(args, skipDefaultErrorHandling) {
 	return $.ajax(args).then(
 		// success
 		function(json, error, xhr) {
@@ -156,8 +170,11 @@ vz.load = function(args, skipDefaultErrorHandling) {
  * Reusable authorization-aware error handler
  */
 vz.load.errorHandler = function(xhr, skipDefaultErrorHandling) {
-	if (xhr.status == 401) { // HTTP_UNAUTHORIZED
-		vz.wui.dialogs.authorizationException(xhr);
+	// HTTP_UNAUTHORIZED
+	if (xhr.status == 401 && xhr.getResponseHeader('WWW-Authenticate') == 'Bearer') {
+		return vz.wui.dialogs.authorizationException(xhr).then(function(token) {
+			return vz.load.loadHandler(xhr.originalOptions, skipDefaultErrorHandling);
+		});
 	}
 	else if (!skipDefaultErrorHandling) {
 		vz.wui.dialogs.middlewareException(xhr);
