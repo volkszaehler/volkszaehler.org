@@ -1000,7 +1000,8 @@ vz.wui.dialogs.middlewareException = function(xhr) {
 vz.wui.dialogs.authorizationException = function(xhr) {
 	// suppress further errors
 	vz.wui.errorDialog = true;
-	var middleware = xhr.middleware;
+	var middleware = xhr.middleware,
+			deferred = $.Deferred();
 
 	$('#authorization').dialog({
 		title: unescape('Login'),
@@ -1039,7 +1040,7 @@ vz.wui.dialogs.authorizationException = function(xhr) {
 							var mw = vz.middleware.find(middleware);
 							if (mw) {
 								mw.setAuthorization(json.authtoken);
-								window.location.reload(false);	// reload
+								deferred.resolve(json.authtoken);
 							}
 						}
 					},
@@ -1057,4 +1058,6 @@ vz.wui.dialogs.authorizationException = function(xhr) {
 		}
 	})
 	.dialog('open');
+
+	return deferred;
 };
