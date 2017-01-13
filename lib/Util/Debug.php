@@ -58,13 +58,20 @@ class Debug {
 	 */
 	protected function __construct(ORM\EntityManager $em) {
 		$this->messages = array();
-
-		// take timestamp to stop execution time
-		$this->created = microtime(TRUE);
+		$this->startTimer();
 
 		// starting logging of sql queries
 		$this->em = $em;
 		$this->attachSqlLogger(new Logging\DebugStack());
+	}
+
+	/**
+	 * Start execution timer
+	 *
+	 * @param float $ts timestamp
+	 */
+	public function startTimer($ts = null) {
+		$this->created = $ts ?: microtime(true);
 	}
 
 	/**
@@ -102,6 +109,7 @@ class Debug {
 			self::deactivate();
 		}
 		self::$instance = new Debug($em);
+		return self::$instance;
 	}
 
 	/**
