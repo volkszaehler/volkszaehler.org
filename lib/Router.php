@@ -65,6 +65,11 @@ class Router implements HttpKernelInterface {
 	public $view;
 
 	/**
+	 * @var float timestamp
+	 */
+	public $requestReceived;
+
+	/**
 	 * @var array HTTP-method => operation mapping
 	 */
 	public static $operationMapping = array(
@@ -126,6 +131,7 @@ class Router implements HttpKernelInterface {
 		try {
 			// initialize view to ensure StreamedResponse->streamed is false
 			$this->view = null;
+			$this->requestReceived = microtime(true);
 
 			// initialize entity manager
 			if (null == $this->em || !$this->em->isOpen() || $this->em->getConnection()->ping() === false) {
@@ -173,7 +179,7 @@ class Router implements HttpKernelInterface {
 
 		// initialize debugging
 		if ($request->query->get('debug') || Util\Configuration::read('debug')) {
-			Util\Debug::activate($this->em);
+			Util\Debug::activate($this->em)->startTimer($this->requestReceived);
 		}
 		else {
 			// make sure static debug instance is removed
