@@ -222,6 +222,7 @@ class Router implements HttpKernelInterface {
 		// authorize requests
 		if ($firewallAction == self::ACTION_AUTHORIZE) {
 			if (null == Util\Configuration::read('authorization')) {
+				$this->view->getResponse()->setStatusCode(Response::HTTP_INTERNAL_SERVER_ERROR);
 				throw new \Exception('No authorization ruleset');
 			}
 
