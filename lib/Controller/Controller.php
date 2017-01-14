@@ -34,8 +34,6 @@ use Volkszaehler\View\View;
  * @author Steffen Vogel <info@steffenvogel.de>
  * @author Andreas Goetz <cpuidle@gmx.de>
  * @package default
- *
- * @todo Check how controllers can modify the response/headers
  */
 abstract class Controller {
 
@@ -89,7 +87,10 @@ abstract class Controller {
 	/**
 	 * Run operation
 	 *
-	 * @param string $operation runs the operation if class method is available
+	 * @param $op Operation to run
+	 * @param null $uuid Uuid to operate on
+	 * @return operation result
+	 * @throws \Exception
 	 */
 	public function run($op, $uuid = null) {
 		if (!method_exists($this, $op)) {
@@ -107,6 +108,8 @@ abstract class Controller {
 
 	/**
 	 * Helper function to convert single/multiple parameters to array format
+	 * @param $data
+	 * @return array
 	 */
 	protected static function makeArray($data) {
 		if (!is_array($data)) {
