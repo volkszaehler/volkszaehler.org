@@ -231,13 +231,19 @@ In case of error messages make sure installation is up to date before installing
 
     composer update
 
-Then make sure the prerequistes are available (php-cgi and Apache modules):
+Then make sure the prerequistes are available (php-cgi and Apache modules). Debian Jessie:
 
     sudo apt-get install libapache2-mod-proxy-html libxml2-dev php5-cgi
 
+Debian Stretch:
+
+    sudo apt-get install php-cgi
+
 Also make sure that `mod_proxy` and `mod_proxy_http` are enabled:
 
-    sudo a2enmod mod_proxy mod_proxy_http
+    sudo a2enmod proxy proxy_http
+
+In `php.ini` make sure that the `disable_functions` are commented out and the `pcntl*` functions therefore usable by ppm.
 
 To use the high performance middleware either modify the middleware address in `options.js` or update the Apache configuration to proxy middleware requests transparently.
 The second approach is recommended. Edit `htdocs/.htaccess` like this:
