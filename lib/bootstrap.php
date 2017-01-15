@@ -28,7 +28,7 @@ use Volkszaehler\Util;
 error_reporting(E_ALL | E_STRICT);
 
 // api version
-define('VZ_VERSION', '0.3');
+define('VZ_VERSION', '0.4');
 
 // Note: users of bootstrap.php can set VZ_DIR before calling bootstrap
 if (!defined('VZ_DIR')) {
