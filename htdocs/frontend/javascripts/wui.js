@@ -829,7 +829,7 @@ vz.wui.drawPlot = function () {
 		vz.options.plot.axesAssigned = true;
 	}
 
-	var series = [], index = 0;
+	var series = [];
 	vz.entities.each(function(entity) {
 		if (entity.active && entity.definition && entity.definition.model == 'Volkszaehler\\Model\\Channel' &&
 				entity.data && entity.data.tuples && entity.data.tuples.length > 0) {
@@ -843,7 +843,7 @@ vz.wui.drawPlot = function () {
 
 			var style = vz.options.style || entity.style;
 			var fillstyle = parseFloat(vz.options.fillstyle || entity.fillstyle);
-			var linewidth = parseFloat(vz.options.linewidth || vz.options[index == vz.wui.selectedChannel ? 'lineWidthSelected' : 'lineWidthDefault']);
+			var linewidth = parseFloat(vz.options.linewidth || vz.options[entity.uuid == vz.wui.selectedChannel ? 'lineWidthSelected' : 'lineWidthDefault']);
 
 			// mangle data for "steps" curves by shifting one ts left ("step-before")
 			if (style == "steps") {
@@ -885,9 +885,6 @@ vz.wui.drawPlot = function () {
 				serie.xGapThresh = Math.max(entity.gap * 1000 * maxTuples, minGapWidth);
 				vz.options.plot.xaxis.insertGaps = true;
 			}
-
-			// use this index for setting vz.wui.selectedChannel
-			entity.index = index++;
 
 			series.push(serie);
 		}
