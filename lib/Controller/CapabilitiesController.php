@@ -23,8 +23,9 @@
 
 namespace Volkszaehler\Controller;
 
+use Doctrine\DBAL\Connection;
+
 use Volkszaehler\Router;
-use Volkszaehler\Model;
 use Volkszaehler\Util;
 use Volkszaehler\View;
 use Volkszaehler\Definition;
@@ -40,8 +41,11 @@ class CapabilitiesController extends Controller {
 
 	/**
 	 * Fast MyISAM/ InnoDB table count
+	 * @param Connection $conn
+	 * @param string $table
+	 * @return int Number of database rows
 	 */
-	private function sqlCount($conn, $table) {
+	private function sqlCount(Connection $conn, $table) {
 		$explain = $conn->fetchAssoc('EXPLAIN SELECT COUNT(id) FROM ' . $table . ' USE INDEX (PRIMARY)');
 		if (isset($explain['rows']))
 			// estimated for InnoDB
@@ -58,8 +62,11 @@ class CapabilitiesController extends Controller {
 
 	/**
 	 * Estimated table disk space
+	 * @param Connection $conn
+	 * @param string $table
+	 * @return mixed
 	 */
-	private function dbSize($conn, $table = null) {
+	private function dbSize(Connection $conn, $table = null) {
 		$sql = 'SELECT SUM(data_length + index_length) FROM information_schema.tables WHERE LOWER(table_schema) = LOWER(?)';
 		$params = array(Util\Configuration::read('db.dbname'));
 
@@ -73,6 +80,7 @@ class CapabilitiesController extends Controller {
 
 	/**
 	 * @param string $section select specific sub section for output
+	 * @return array
 	 */
 	public function get($section = NULL) {
 		$capabilities = array();

@@ -24,8 +24,6 @@
 namespace Volkszaehler\Controller;
 
 use Volkszaehler\Model;
-use Volkszaehler\Util;
-use Volkszaehler\Definition;
 
 /**
  * Channel controller
@@ -37,6 +35,9 @@ class ChannelController extends EntityController {
 
 	/**
 	 * Get channel
+	 * @param null $identifier
+	 * @return array
+	 * @throws \Exception
 	 */
 	public function get($identifier = NULL) {
 		$channel = parent::get($identifier);

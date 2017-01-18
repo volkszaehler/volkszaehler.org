@@ -53,6 +53,7 @@ class DataController extends Controller {
 	 * Query for data by given channel or group or multiple channels
 	 *
 	 * @param string|array uuid
+	 * @return array
 	 */
 	public function get($uuid) {
 		$from = $this->getParameters()->get('from');
@@ -78,6 +79,8 @@ class DataController extends Controller {
 	 *
 	 * @todo deduplicate Model\Channel code
 	 * @param string|array uuid
+	 * @return array
+	 * @throws \Exception
 	 */
 	public function add($uuid) {
 		$channel = EntityController::factory($this->em, $uuid, true);
@@ -138,7 +141,9 @@ class DataController extends Controller {
 	 * Delete tuples from single or multiple channels
 	 *
 	 * @todo deduplicate Model\Channel code
-	 * @param string|array uuid
+	 * @param string|array $uuids
+	 * @return array
+	 * @throws \Exception
 	 */
 	public function delete($uuids) {
 		$from = null;

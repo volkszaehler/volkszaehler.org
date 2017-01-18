@@ -24,7 +24,6 @@
 namespace Volkszaehler\Controller;
 
 use Volkszaehler\Model;
-use Volkszaehler\Definition;
 
 /**
  * Aggregator controller
@@ -35,6 +34,9 @@ use Volkszaehler\Definition;
 class AggregatorController extends EntityController {
 	/**
 	 * Get aggregator
+	 * @param null $identifier
+	 * @return array
+	 * @throws \Exception
 	 */
 	public function get($identifier = NULL) {
 		$aggregator = parent::get($identifier);
@@ -54,6 +56,9 @@ class AggregatorController extends EntityController {
 
 	/**
 	 * Create new aggregator or add entity to aggregator
+	 * @param null $identifier
+	 * @return array|Model\Aggregator
+	 * @throws \Exception
 	 */
 	public function add($identifier = NULL) {
 		if (isset($identifier)) {	// add entity to aggregator
@@ -88,6 +93,8 @@ class AggregatorController extends EntityController {
 
 	/**
 	 * Delete Aggregator or remove entity from aggregator
+	 * @param $identifier
+	 * @return array|null
 	 */
 	public function delete($identifier) {
 		if (!isset($identifier))
