@@ -1544,8 +1544,8 @@ Licensed under the MIT license.
             if (minMargin == null) {
                 minMargin = 0;
                 for (i = 0; i < series.length; ++i) {
-				// cpuidle@gmx.de
-				// flot core modification - only adjust minMargin if points actually visible
+                    // cpuidle@gmx.de
+                    // flot core modification - only adjust minMargin if points actually visible
                     if (series[i].points.show)
                         minMargin = Math.max(minMargin, 2 * (series[i].points.radius + series[i].points.lineWidth/2));
                 }
@@ -1565,7 +1565,7 @@ Licensed under the MIT license.
                 if (axis.reserveSpace && axis.ticks && axis.ticks.length) {
                     if (axis.direction === "x") {
                         margins.left = Math.max(margins.left, axis.labelWidth / 2);
-			margins.right = Math.max(margins.right, axis.labelWidth / 2);
+                        margins.right = Math.max(margins.right, axis.labelWidth / 2);
                     } else {
                         margins.bottom = Math.max(margins.bottom, axis.labelHeight / 2);
                         margins.top = Math.max(margins.top, axis.labelHeight / 2);
@@ -2620,9 +2620,9 @@ Licensed under the MIT license.
             // cpuidle@gmx.de
             function plotProxy(datapoints, xoffset, yoffset, axisx, axisy, series) {
                 if (series.dashes.show)
-			plotDashes(datapoints, xoffset, yoffset, axisx, axisy, series)
+                    plotDashes(datapoints, xoffset, yoffset, axisx, axisy, series)
                 else
-			plotLine(datapoints, xoffset, yoffset, axisx, axisy, series);
+                    plotLine(datapoints, xoffset, yoffset, axisx, axisy, series);
             }
 
             ctx.save();
