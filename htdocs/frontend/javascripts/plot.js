@@ -235,7 +235,9 @@ vz.wui.drawPlot = function () {
 		var i, maxTuples = 0;
 
 		// work on copy here to be able to redraw
-		var tuples = entity.data.tuples.slice(0);
+		var tuples = entity.data.tuples.map(function(t) {
+			return t.slice(0);
+		});
 
 		var style = vz.options.style || (entity.isConsumptionMode() ? 'bars' : entity.style);
 		var linestyle = vz.options.linestyle || entity.linestyle;
