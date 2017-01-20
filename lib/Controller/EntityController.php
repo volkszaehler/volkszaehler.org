@@ -23,7 +23,6 @@
 
 namespace Volkszaehler\Controller;
 
-use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityManager;
 
 use Volkszaehler\Model;
@@ -47,7 +46,9 @@ class EntityController extends Controller {
 	/**
 	 * Get entity
 	 *
-	 * @param string $identifier
+	 * @param $uuids
+	 * @return array
+	 * @throws \Exception
 	 */
 	public function get($uuids) {
 		if (is_string($uuids)) { // single entity
@@ -79,10 +80,25 @@ class EntityController extends Controller {
 		}
 	}
 
+	/**
+	 * Return a single entity, potentially from cache
+	 * @param $uuid
+	 * @param bool $allowCache
+	 * @return mixed
+	 */
 	public function getSingleEntity($uuid, $allowCache = false) {
 		return self::factory($this->em, $uuid, $allowCache);
 	}
 
+	/**
+	 * Static entity factory- usable for scripting
+	 *
+	 * @param EntityManager $em
+	 * @param $uuid
+	 * @param bool $allowCache
+	 * @return mixed
+	 * @throws \Exception
+	 */
 	static function factory(EntityManager $em, $uuid, $allowCache = false) {
 		if (!Util\UUID::validate($uuid)) {
 			throw new \Exception('Invalid UUID: \'' . $uuid . '\'');
@@ -120,6 +136,8 @@ class EntityController extends Controller {
 
 	/**
 	 * Delete entity by uuid
+	 * @param $identifier
+	 * @throws \Exception
 	 */
 	public function delete($identifier) {
 		if (!($entity = $this->get($identifier)) instanceof Model\Entity) {
@@ -140,6 +158,9 @@ class EntityController extends Controller {
 
 	/**
 	 * Edit entity properties
+	 * @param $identifier
+	 * @return array
+	 * @throws \Exception
 	 */
 	public function edit($identifier) {
 		if (!($entity = $this->get($identifier)) instanceof Model\Entity) {
@@ -161,6 +182,9 @@ class EntityController extends Controller {
 
 	/**
 	 * Update/set/delete properties of entities
+	 * @param Model\Entity $entity
+	 * @param $parameters
+	 * @throws \Exception
 	 */
 	protected function setProperties(Model\Entity $entity, $parameters) {
 		foreach ($parameters as $key => $value) {
@@ -183,9 +207,8 @@ class EntityController extends Controller {
 	}
 
 	/**
-	 * Filter entites by properties
+	 * Filter entities by properties
 	 *
-	 * @todo improve performance
 	 * @param array of property => value filters
 	 * @return array of entities
 	 */

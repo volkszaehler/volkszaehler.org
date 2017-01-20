@@ -40,6 +40,13 @@ class IotController extends Controller {
 	 */
 	protected $ec;
 
+	/**
+	 * IotController constructor
+	 *
+	 * @param Request $request
+	 * @param EntityManager $em
+	 * @param View $view
+	 */
 	public function __construct(Request $request, EntityManager $em, View $view) {
 		parent::__construct($request, $em, $view);
 		$this->ec = new EntityController($request, $em);
@@ -48,7 +55,9 @@ class IotController extends Controller {
 	/**
 	 * Run operation
 	 *
-	 * @param string $operation runs the operation if class method is available
+	 * @param null $uuid
+	 * @return array
+	 * @throws \Exception
 	 */
 	public function get($uuid = null) {
 		if ($uuid === null || is_array($uuid) || strlen($uuid) < 32) {

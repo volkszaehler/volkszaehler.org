@@ -145,7 +145,7 @@ vz.wui.addEntity = function(entity) {
 
 	$.when.apply($, queue).then(function() {
 		vz.wui.drawPlot();
-		entity.loadTotalConsumption();
+		entity.loadTotalConsumption().done(vz.entities.updateTableColumnVisibility);
 		entity.eachChild(function(child) {
 			child.loadTotalConsumption();
 		}, true); // recursive
@@ -287,7 +287,7 @@ vz.wui.dialogs.init = function() {
 			}
 			finally {
 				$('#entity-add').dialog('close');
-				
+
 				// show the channel UUID to the user
 				$('<div>').append(
 					$('<p>').html(entity.uuid)
