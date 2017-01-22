@@ -280,6 +280,8 @@ Entity.prototype.loadDetails = function(skipDefaultErrorHandling) {
 		identifier: this.uuid,
 		context: this
 	}, skipDefaultErrorHandling).done(function(json) {
+		// fix https://github.com/volkszaehler/volkszaehler.org/pull/560
+		delete json.active;
 		this.parseJSON(json.entity);
 	});
 };
@@ -386,11 +388,15 @@ Entity.prototype.showDetails = function() {
 				$('#entity-edit form table .optional').remove();
 
 				// add properties for entity
-				vz.capabilities.definitions.entities.some(function(entities) {
-					if (entities.name == entity.type) {
-						var container = $('#entity-edit form table');
-						vz.wui.dialogs.addProperties(container, entities.required, "required", entity);
-						vz.wui.dialogs.addProperties(container, entities.optional, "optional", entity);
+				vz.capabilities.definitions.entities.some(function(definition) {
+					if (definition.name == entity.type) {
+						// fix https://github.com/volkszaehler/volkszaehler.org/pull/560
+						if (definition.optional.indexOf('active') >= 0) {
+							definition.optional.splice(definition.optional.indexOf('active'), 1);
+						}
+						var container = $('#entity-edit table');
+						vz.wui.dialogs.addProperties(container, definition.required, "required", entity);
+						vz.wui.dialogs.addProperties(container, definition.optional, "optional", entity);
 						return true;
 					}
 				});
