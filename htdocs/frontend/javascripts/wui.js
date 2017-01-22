@@ -559,10 +559,10 @@ vz.wui.updateLegend = function() {
 vz.wui.handleControls = function () {
 	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
 	var middle = vz.options.plot.xaxis.min + delta/2;
-	var d = new Date(middle);
 	var now = new Date().getTime();
 
-	switch($(this).val()) {
+	var control = $(this).val();
+	switch (control) {
 		case 'move-last':
 			vz.wui.zoom(now-delta, now);
 			break;
@@ -597,43 +597,28 @@ vz.wui.handleControls = function () {
 			);
 			break;
 		case 'zoom-hour':
-			if (vz.wui.tmaxnow)
-				vz.wui.zoom(now - 3600*1000, now);
-			else
-				vz.wui.zoom(
-					new Date(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours()).getTime(),
-					new Date(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours()+1).getTime()
-				);
-			break;
 		case 'zoom-day':
-			if (vz.wui.tmaxnow)
-				vz.wui.zoom(now - 24*3600*1000, now);
-			else
-				vz.wui.zoom(
-					new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(),
-					new Date(d.getFullYear(), d.getMonth(), d.getDate()+1).getTime()
-				);
-			break;
 		case 'zoom-week':
-			if (vz.wui.tmaxnow)
-				vz.wui.zoom(now - 7*24*3600*1000, now);
-			else
-				vz.wui.zoom(
-					new Date(d.getFullYear(), d.getMonth(), d.getDate()-d.getDay()+1).getTime(), // start from monday
-					new Date(d.getFullYear(), d.getMonth(), d.getDate()-d.getDay()+8).getTime()
-				);
-			break;
 		case 'zoom-month':
-			vz.wui.zoom(
-				new Date(d.getFullYear(), d.getMonth(), 1).getTime(),
-				new Date(d.getFullYear(), d.getMonth()+1, 1).getTime()
-			);
-			break;
 		case 'zoom-year':
-			vz.wui.zoom(
-				new Date(d.getFullYear(), 0, 1).getTime(),
-				new Date(d.getFullYear()+1, 0, 1).getTime()
-			);
+			var period = control.split('-')[1],
+					startPeriod = period == 'week' ? 'isoweek' : period;
+			if (vz.wui.tmaxnow) {
+				vz.wui.zoom(
+					/* jshint laxbreak: true */
+					period === vz.wui.period
+						? moment().subtract(1, period).valueOf()
+						: moment().startOf(startPeriod).valueOf(),
+					moment().valueOf()
+				);
+			}
+			else {
+				vz.wui.zoom(
+					moment(middle).startOf(startPeriod).valueOf(),
+					moment(middle).startOf(startPeriod).add(1, period).valueOf()
+				);
+			}
+			vz.wui.period = period;
 			break;
 	}
 };
