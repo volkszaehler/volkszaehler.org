@@ -285,14 +285,14 @@ vz.entities.showTable = function() {
 	// make visible that a row is clicked
 	$('#entity-list table tbody tr').mousedown(function() {
 		var entity = $(this).data('entity');
-		var selected = $('tr.selected').data('entity');
+		var selected = $('tr.selected');
 
-		$('tr.selected').removeClass('selected'); // deselect currently selected rows
+		selected.removeClass('selected'); // deselect currently selected rows
 		vz.wui.selectedChannel = null;
 
-		if (entity !== selected) {
+		if (entity !== selected.data('entity') && entity.active) {
 			$(this).addClass('selected');
-			vz.wui.selectedChannel = entity.index;
+			vz.wui.selectedChannel = entity.uuid;
 		}
 		vz.wui.drawPlot();
 	});
