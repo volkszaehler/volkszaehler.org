@@ -567,30 +567,56 @@ vz.wui.handleControls = function () {
 			vz.wui.zoom(now-delta, now);
 			break;
 		case 'move-back':
-			vz.wui.zoom(
-				vz.options.plot.xaxis.min - delta,
-				vz.options.plot.xaxis.max - delta
-			);
+			if (vz.wui.period) {
+				vz.wui.zoom(
+					moment(vz.options.plot.xaxis.min).subtract(1, vz.wui.period).valueOf(),
+					vz.options.plot.xaxis.min
+				);
+			}
+			else {
+				vz.wui.zoom(
+					vz.options.plot.xaxis.min - delta,
+					vz.options.plot.xaxis.max - delta
+				);
+			}
 			break;
 		case 'move-forward':
-			vz.wui.zoom(
-				vz.options.plot.xaxis.min + delta,
-				vz.options.plot.xaxis.max + delta
-			);
+			// don't move into the future
+			if (vz.wui.tmaxnow)
+				break;
+			if (vz.wui.period) {
+				vz.wui.zoom(
+					vz.options.plot.xaxis.max,
+					Math.min(
+						// prevent adjusting left boundary in zoom function
+						moment(vz.options.plot.xaxis.max).add(1, vz.wui.period).valueOf(),
+						moment().valueOf()
+					)
+				);
+			}
+			else {
+				vz.wui.zoom(
+					vz.options.plot.xaxis.min + delta,
+					vz.options.plot.xaxis.max + delta
+				);
+			}
 			break;
 		case 'zoom-reset':
+			vz.wui.period = null;
 			vz.wui.zoom(
 				middle - vz.options.defaultInterval/2,
 				middle + vz.options.defaultInterval/2
 			);
 			break;
 		case 'zoom-in':
+			vz.wui.period = null;
 			if (vz.wui.tmaxnow)
 				vz.wui.zoom(now - delta/2, now);
 			else
 				vz.wui.zoom(middle - delta/4, middle + delta/4);
 			break;
 		case 'zoom-out':
+			vz.wui.period = null;
 			vz.wui.zoom(
 				middle - delta,
 				middle + delta
