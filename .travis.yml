@@ -121,7 +121,7 @@ after_script:
 
 script:
     # run core tests
-    - if [ -n "$DB" ]; then phpunit $TRAVIS_TEST_EXCLUDES,aggregation; fi
+    - if [ -n "$DB" ]; then vendor/bin/phpunit $TRAVIS_TEST_EXCLUDES,aggregation; fi
 
     # run aggregation tests (mysql only)
     - if [ "$DB" = "mysql" ]; then sed -i "s/\?>/\$config['aggregation']\ =\ true;\n?>/" etc/volkszaehler.conf.php; fi
@@ -133,13 +133,13 @@ script:
         HTTPD_PID=$!
         echo "Started httpd with pid $HTTPD_PID"
       fi
-    - if [ "$DB" = "mysql" ]; then phpunit $TRAVIS_TEST_EXCLUDES; fi
+    - if [ "$DB" = "mysql" ]; then vendor/bin/phpunit $TRAVIS_TEST_EXCLUDES; fi
 
     # run aggregation tool itself (mysql only)
     - if [ "$DB" = "mysql" ]; then php misc/tools/aggregate.php run -m delta -l hour; fi
 
     # push server tests
-    - if [ "$TEST_COMPONENT" = "PUSH_SERVER" ]; then phpunit --group pushserver; fi
+    - if [ "$TEST_COMPONENT" = "PUSH_SERVER" ]; then vendor/bin/phpunit --group pushserver; fi
 
     # jslint javascript sources
     - if [ "$JSLINT" = true ]; then gulp jshint; fi
