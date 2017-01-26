@@ -220,8 +220,9 @@ vz.wui.dialogs.init = function() {
 	});
 
 	$('#entity-public input[type=button]').click(function() {
-		// get entity from data attribute
-		var entity = $('#entity-public-entity option:selected').data('entity');
+		// clone entity from data attribute and activate it
+		var entity = $.extend({}, $('#entity-public-entity option:selected').data('entity'));
+		entity.active = true;
 		try {
 			entity.cookie = Boolean($('#entity-public-cookie').prop('checked'));
 			vz.wui.addEntity(entity);
