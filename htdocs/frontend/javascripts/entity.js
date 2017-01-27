@@ -281,7 +281,7 @@ Entity.prototype.loadDetails = function(skipDefaultErrorHandling) {
 		context: this
 	}, skipDefaultErrorHandling).done(function(json) {
 		// fix https://github.com/volkszaehler/volkszaehler.org/pull/560
-		delete json.active;
+		delete json.entity.active;
 		this.parseJSON(json.entity);
 	});
 };
