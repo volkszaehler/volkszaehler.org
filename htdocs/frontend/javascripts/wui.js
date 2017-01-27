@@ -462,6 +462,7 @@ vz.wui.zoomToPartialUpdate = function(to) {
 vz.wui.initEvents = function() {
 	$('#plot')
 		.bind("plotselected", function (event, ranges) {
+			vz.wui.period = null;
 			vz.wui.zoom(ranges.xaxis.from, ranges.xaxis.to);
 		})
 		/*.bind('plotpan', function (event, plot) {
@@ -557,14 +558,21 @@ vz.wui.updateLegend = function() {
  * Move & zoom in the plotting area
  */
 vz.wui.handleControls = function () {
-	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
-	var middle = vz.options.plot.xaxis.min + delta/2;
-	var now = new Date().getTime();
+	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min,
+			middle = vz.options.plot.xaxis.min + delta/2,
+			startOfPeriodLocale;
 
 	var control = $(this).val();
 	switch (control) {
 		case 'move-last':
-			vz.wui.zoom(now-delta, now);
+			startOfPeriodLocale = vz.wui.period == 'week' ? 'isoweek' : vz.wui.period;
+			vz.wui.zoom(
+				/* jshint laxbreak: true */
+				vz.wui.period
+					? moment().startOf(startOfPeriodLocale).valueOf()
+					: moment().valueOf() - delta,
+				moment().valueOf()
+			);
 			break;
 		case 'move-back':
 			if (vz.wui.period) {
@@ -611,7 +619,7 @@ vz.wui.handleControls = function () {
 		case 'zoom-in':
 			vz.wui.period = null;
 			if (vz.wui.tmaxnow)
-				vz.wui.zoom(now - delta/2, now);
+				vz.wui.zoom(moment().valueOf() - delta/2, moment().valueOf());
 			else
 				vz.wui.zoom(middle - delta/4, middle + delta/4);
 			break;
@@ -627,23 +635,18 @@ vz.wui.handleControls = function () {
 		case 'zoom-week':
 		case 'zoom-month':
 		case 'zoom-year':
-			var period = control.split('-')[1],
-					startPeriod = period == 'week' ? 'isoweek' : period;
-			if (vz.wui.tmaxnow) {
-				vz.wui.zoom(
-					/* jshint laxbreak: true */
-					period === vz.wui.period
-						? moment().subtract(1, period).valueOf()
-						: moment().startOf(startPeriod).valueOf(),
-					moment().valueOf()
-				);
-			}
-			else {
-				vz.wui.zoom(
-					moment(middle).startOf(startPeriod).valueOf(),
-					moment(middle).startOf(startPeriod).add(1, period).valueOf()
-				);
-			}
+			var period = control.split('-')[1];
+			startOfPeriodLocale = period == 'week' ? 'isoweek' : period;
+			vz.wui.zoom(
+				/* jshint laxbreak: true */
+				period === vz.wui.period
+					? moment(vz.options.plot.xaxis.max).subtract(1, period).valueOf()
+					: moment(middle).startOf(startOfPeriodLocale).valueOf(),
+				Math.min(
+					moment().valueOf(),
+					moment(middle).startOf(startOfPeriodLocale).add(1, period).valueOf()
+				)
+			);
 			vz.wui.period = period;
 			break;
 	}
