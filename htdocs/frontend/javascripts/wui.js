@@ -635,19 +635,23 @@ vz.wui.handleControls = function () {
 		case 'zoom-week':
 		case 'zoom-month':
 		case 'zoom-year':
-			var period = control.split('-')[1];
+			var period = control.split('-')[1], min, max;
 			startOfPeriodLocale = period == 'week' ? 'isoweek' : period;
-			vz.wui.zoom(
+
+			if (vz.wui.tmaxnow) {
 				/* jshint laxbreak: true */
-				period === vz.wui.period
-					? moment(vz.options.plot.xaxis.max).subtract(1, period).valueOf()
-					: moment(middle).startOf(startOfPeriodLocale).valueOf(),
-				Math.min(
-					moment().valueOf(),
-					moment(middle).startOf(startOfPeriodLocale).add(1, period).valueOf()
-				)
-			);
+				min = period === vz.wui.period
+					? moment().subtract(1, period).valueOf()
+					: moment().startOf(startOfPeriodLocale).valueOf();
+				max = moment().valueOf();
+			}
+			else {
+				min = moment(middle).startOf(startOfPeriodLocale).valueOf();
+				max = moment(middle).startOf(startOfPeriodLocale).add(1, period).valueOf();
+			}
+
 			vz.wui.period = period;
+			vz.wui.zoom(min, Math.min(max, moment().valueOf()));
 			break;
 	}
 };
