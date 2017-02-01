@@ -568,7 +568,9 @@ vz.wui.handleControls = function () {
 			startOfPeriodLocale = vz.wui.period == 'week' ? 'isoweek' : vz.wui.period;
 			vz.wui.zoom(
 				/* jshint laxbreak: true */
-				vz.wui.period
+				vz.wui.period && moment(vz.options.plot.xaxis.min)
+					.startOf(startOfPeriodLocale)
+					.isSame(moment(vz.options.plot.xaxis.min))
 					? moment().startOf(startOfPeriodLocale).valueOf()
 					: moment().valueOf() - delta,
 				moment().valueOf()
