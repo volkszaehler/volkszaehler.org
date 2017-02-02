@@ -34,7 +34,7 @@ vz.entities.saveCookie = function() {
 
 	this.each(function(entity) {
 		if (entity.cookie === true) {
-			arr.push(entity.uuid + '@' + entity.middleware);
+			arr.push(entity.uuid + '@' + entity.middleware + '@' + (entity.active ? '1' : '0'));
 		}
 	}, false); // non-recursive, i.e. only save root entities
 
@@ -49,11 +49,15 @@ vz.entities.loadCookie = function() {
 	if (cookie) {
 		var arr = cookie.split('|');
 		arr.forEach(function(entry) {
-			var entity = entry.split('@');
+			var entity = entry.split('@'),
+					active = null;
+			if (entity.length > 2)
+				active = entity[2] == '1';
 			vz.entities.push(new Entity({
 				middleware: entity[1],
 				uuid: entity[0],
-				cookie: true
+				cookie: true,
+				active: active
 			}));
 		});
 	}
