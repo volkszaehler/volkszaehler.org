@@ -195,12 +195,16 @@ class VirtualInterpreter extends Interpreter {
 				throw new \Exception("Virtual channel rule must yield numeric value.");
 			}
 
-			if ($this->output == self::CONSUMPTION_VALUES) {
-				$this->consumption += $value * 3.6e6;
-			}
-			else {
-				$this->consumption += $value * ($tuple[0] - $ts_last);
-			}
+			// implement consumption calculation
+			//
+			// if ($this->output == self::CONSUMPTION_VALUES) {
+			// 	$this->consumption += $value * 3.6e6;
+			// }
+			// else {
+			// 	$this->consumption += $value * ($tuple[0] - $ts_last);
+			// }
+
+			$this->consumption += $value * ($tuple[0] - $ts_last);
 
 			$ts_last = $tuple[0];
 
