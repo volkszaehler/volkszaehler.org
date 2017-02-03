@@ -108,9 +108,9 @@ vz.wui.exportData = function(value) {
 			break;
 		case 'png':
 			$.when(
-				$.cachedScript('javascripts/canvas/Blob.js'),
-				$.cachedScript('javascripts/canvas/canvas-toBlob.js'),
-				$.cachedScript('javascripts/canvas/FileSaver.js'))
+				$.cachedScript('js/canvas/Blob.js'),
+				$.cachedScript('js/canvas/canvas-toBlob.js'),
+				$.cachedScript('js/canvas/FileSaver.js'))
 			.done(function() {
 				// will prompt the user to save the image as PNG
 				vz.plot.getCanvas().toBlob(function(blob) {
@@ -184,7 +184,7 @@ vz.wui.dialogs.init = function() {
 				.html(def.translation[vz.options.language])
 				.data('definition', def)
 				.val(def.name)
-				.css('background-image', def.icon ? 'url(images/types/' + def.icon : null)
+				.css('background-image', def.icon ? 'url(img/types/' + def.icon : null)
 		);
 	});
 	$('#entity-create option[value=power]').attr('selected', 'selected');
@@ -405,7 +405,7 @@ vz.wui.dialogs.addProperties = function(container, proplist, className, entity) 
 						cntrl = $('<input>')
 							.attr('type', 'hidden').attr("name", propdef.name)
 							.val((entity) ? entity[def] : 'aqua');
-						$.cachedScript('javascripts/jquery/jquery.simple-color.min.js').done(function() {
+						$.cachedScript('js/jquery/jquery.simple-color.min.js').done(function() {
 							// cntrl.attr('id', 'colorValue');
 							cntrl.simpleColor({
 								cellWidth: 18,
@@ -894,7 +894,7 @@ vz.wui.drawPlot = function () {
 	}, true);
 
 	if (series.length === 0) {
-		$('#overlay').html('<img src="images/empty.png" alt="no data..." /><p>nothing to plot...</p>');
+		$('#overlay').html('<img src="img/empty.png" alt="no data..." /><p>nothing to plot...</p>');
 		series.push({}); // add empty dataset to show axes
 	}
 	else {

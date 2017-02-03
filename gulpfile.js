@@ -5,25 +5,25 @@ var $ = require('gulp-load-plugins')({
 });
 
 // settings
-var base = './htdocs/frontend/';
+var base = './htdocs/';
 var build = base + 'build/';
 
 // styles
-var styles = base + 'stylesheets/';
+var styles = base + 'css/';
 
 // images
-var images = base + 'images/';
+var images = base + 'img/';
 
 // js
 var vendor = base + 'vendor/';
-var javascripts = base + 'javascripts/';
+var javascripts = base + 'js/';
 var flot = base + 'vendor/flot/';
-var extensions = base + 'javascripts/jquery/';
+var extensions = base + 'js/jquery/';
 var jsfiles = [
 	'gulpfile.js',
-	base + 'javascripts/**/*.js',
-	'!' + base + 'javascripts/canvas/**/*.js',
-	'!' + base + 'javascripts/jquery/**/*.js',
+	base + 'js/**/*.js',
+	'!' + base + 'js/canvas/**/*.js',
+	'!' + base + 'js/jquery/**/*.js',
 	'!**/*.min.js'
 ];
 
@@ -137,7 +137,7 @@ gulp.task('sprites', function () {
 		images + 'types/*!(32).png'
 	])
 		.pipe($.spritesmith({
-			imgName: '../images/sprites.png',	// link to images folder
+			imgName: '../img/sprites.png',	// link to images folder
 			cssName: 'sprites.css',
 			algorithm: 'top-down',
 			padding: 2
