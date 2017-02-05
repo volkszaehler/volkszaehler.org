@@ -94,7 +94,7 @@ vz.entities.loadDetails = function() {
  * Load JSON data from the middleware
  */
 vz.entities.loadData = function() {
-	$('#overlay').html('<img src="images/loading.gif" alt="loading..." /><p>loading...</p>');
+	$('#overlay').html('<img src="img/loading.gif" alt="loading..." /><p>loading...</p>');
 
 	var queue = [];
 	vz.entities.each(function(entity) {

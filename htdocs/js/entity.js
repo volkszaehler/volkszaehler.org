@@ -470,8 +470,8 @@ Entity.prototype.getDOMDetails = function(edit) {
 			case 'type':
 				title = 'Typ';
 				var icon = this.definition.icon ? $('<img>')
-						// attr('src', 'images/types/' + this.definition.icon)
-						.attr('src', 'images/blank.png')
+						// attr('src', 'img/types/' + this.definition.icon)
+						.attr('src', 'img/blank.png')
 						.addClass('icon-' + this.definition.icon.replace('.png', ''))
 						.css('margin-right', 4)
 					: null;
@@ -492,13 +492,13 @@ Entity.prototype.getDOMDetails = function(edit) {
 
 			case 'cookie':
 				title = 'Cookie';
-				// value = '<img src="images/' + ((this.cookie) ? 'tick' : 'cross') + '.png" alt="' + ((value) ? 'ja' : 'nein') + '" />';
-				value = '<img src="images/blank.png" class="icon-' + ((this.cookie) ? 'tick' : 'cross') + '" alt="' + ((value) ? 'ja' : 'nein') + '" />';
+				// value = '<img src="img/' + ((this.cookie) ? 'tick' : 'cross') + '.png" alt="' + ((value) ? 'ja' : 'nein') + '" />';
+				value = '<img src="img/blank.png" class="icon-' + ((this.cookie) ? 'tick' : 'cross') + '" alt="' + ((value) ? 'ja' : 'nein') + '" />';
 				break;
 
 			case 'active':
-				// value = '<img src="images/' + ((this.active) ? 'tick' : 'cross') + '.png" alt="' + ((this.active) ? 'ja' : 'nein') + '" />';
-				value = '<img src="images/blank.png" class="icon-' + ((this.active) ? 'tick' : 'cross') + '" alt="' + ((this.active) ? 'ja' : 'nein') + '" />';
+				// value = '<img src="img/' + ((this.active) ? 'tick' : 'cross') + '.png" alt="' + ((this.active) ? 'ja' : 'nein') + '" />';
+				value = '<img src="img/blank.png" class="icon-' + ((this.active) ? 'tick' : 'cross') + '" alt="' + ((this.active) ? 'ja' : 'nein') + '" />';
 				break;
 
 			case 'style':
@@ -533,8 +533,8 @@ Entity.prototype.getDOMDetails = function(edit) {
 				var prefix; // unit prefix
 
 				if (definition.type == 'boolean') {
-					// value = '<img src="images/' + ((value) ? 'tick' : 'cross') + '.png" alt="' + ((value) ? 'ja' : 'nein') + '" />';
-					value = '<img src="images/blank.png" class="icon-' + ((this.active) ? 'tick' : 'cross') + '" alt="' + ((value) ? 'ja' : 'nein') + '" />';
+					// value = '<img src="img/' + ((value) ? 'tick' : 'cross') + '.png" alt="' + ((value) ? 'ja' : 'nein') + '" />';
+					value = '<img src="img/blank.png" class="icon-' + ((this.active) ? 'tick' : 'cross') + '" alt="' + ((value) ? 'ja' : 'nein') + '" />';
 				}
 
 				switch (property) {
@@ -614,13 +614,13 @@ Entity.prototype.getDOMRow = function(parent) {
 			.append($('<span>')
 				.addClass('indicator')
 				.append($('<img>')
-					.attr('src', 'images/blank.png')
+					.attr('src', 'img/blank.png')
 					.addClass('icon-' + this.definition.icon.replace('.png', ''))
 				)
 				.append($('<span>')
 					.text(this.title)
 					// .addClass('indicator')
-					// .css('background-image', this.definition.icon ? 'url(images/types/' + this.definition.icon + ')' : null)
+					// .css('background-image', this.definition.icon ? 'url(img/types/' + this.definition.icon + ')' : null)
 				)
 			)
 		)
@@ -636,7 +636,7 @@ Entity.prototype.getDOMRow = function(parent) {
 			.addClass('ops')
 			.append($('<input>')
 				.attr('type', 'image')
-				.attr('src', 'images/blank.png')
+				.attr('src', 'img/blank.png')
 				.addClass('icon-information')
 				.attr('alt', 'details')
 				.bind('click', this, function(event) {
@@ -649,7 +649,7 @@ Entity.prototype.getDOMRow = function(parent) {
 	if (this.cookie) {
 		$('td.ops', row).prepend($('<input>')
 			.attr('type', 'image')
-			.attr('src', 'images/blank.png')
+			.attr('src', 'img/blank.png')
 			.addClass('icon-delete')
 			.attr('alt', 'delete')
 			.bind('click', this, function(event) {

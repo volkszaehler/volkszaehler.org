@@ -237,7 +237,7 @@ input.ui-button {
 }
 
 .ui-error .ui-widget-header { /* red header */
-	background-image: url("../images/ui-bg_gloss-wave_35_red_500x100.png");
+	background-image: url("../img/ui-bg_gloss-wave_35_red_500x100.png");
 }
 
 
@@ -258,11 +258,11 @@ input.ui-button {
 }
 
 .treeTable tr.collapsed td .expander {
-  background-image: url(../images/toggle-expand-dark.png);
+  background-image: url(../img/toggle-expand-dark.png);
 }
 
 .treeTable tr.expanded td .expander {
-  background-image: url(../images/toggle-collapse-dark.png);
+  background-image: url(../img/toggle-collapse-dark.png);
 }
 
 /* jquery.treeTable.sortable
@@ -273,11 +273,11 @@ input.ui-button {
 }
 
 .treeTable tr.collapsed.selected td .expander, .treeTable tr.collapsed.accept td .expander {
-  background-image: url(../images/toggle-expand-light.png);
+  background-image: url(../img/toggle-expand-light.png);
 }
 
 .treeTable tr.expanded.selected td .expander, .treeTable tr.expanded.accept td .expander {
-  background-image: url(../images/toggle-collapse-light.png);
+  background-image: url(../img/toggle-collapse-light.png);
 }
 
 .treeTable .ui-draggable-dragging {
