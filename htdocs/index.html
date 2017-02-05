@@ -32,17 +32,17 @@
 
 	<!-- CSS before JS -->
 	<link rel="stylesheet" type="text/css" href="vendor/jquery-ui/jquery-ui.min.css" />
-	<link rel="stylesheet" type="text/css" href="stylesheets/style.css" />
-	<link rel="stylesheet" type="text/css" href="stylesheets/sprites.css" />
+	<link rel="stylesheet" type="text/css" href="css/style.css" />
+	<link rel="stylesheet" type="text/css" href="css/sprites.css" />
 
 	<!-- jQuery -->
 	<script type="text/javascript" src="vendor/jquery/jquery-2.1.3.min.js"></script>
 	<script type="text/javascript" src="vendor/jquery-ui/jquery-ui.min.js"></script>
 
-	<script type="text/javascript" src="javascripts/jquery/jquery-ext.min.js"></script>
+	<script type="text/javascript" src="js/jquery/jquery-ext.min.js"></script>
 	<!-- debug: uncomment scripts below -->	<!--
-	<script type="text/javascript" src="javascripts/jquery/jquery.treeTable.js"></script>
-	<script type="text/javascript" src="javascripts/jquery/jquery-extensions.js"></script>
+	<script type="text/javascript" src="js/jquery/jquery.treeTable.js"></script>
+	<script type="text/javascript" src="js/jquery/jquery-extensions.js"></script>
 	-->
 
 	<script type="text/javascript" src="vendor/moment.min.js"></script>
@@ -60,13 +60,13 @@
 	<!-- for timezone support ensure timezone data from ftp://ftp.iana.org/tz/tzdata-latest.tar.gz is in frontend/tz -->
 	<script type="text/javascript" src="vendor/autobahn.min.js"></script>
 
-	<script type="text/javascript" src="javascripts/init.js"></script>
-	<script type="text/javascript" src="javascripts/middleware.js"></script>
-	<script type="text/javascript" src="javascripts/functions.js"></script>
-	<script type="text/javascript" src="javascripts/entities.js"></script>
-	<script type="text/javascript" src="javascripts/wui.js"></script>
-	<script type="text/javascript" src="javascripts/entity.js"></script>
-	<script type="text/javascript" src="javascripts/options.js"></script>
+	<script type="text/javascript" src="js/init.js"></script>
+	<script type="text/javascript" src="js/middleware.js"></script>
+	<script type="text/javascript" src="js/functions.js"></script>
+	<script type="text/javascript" src="js/entities.js"></script>
+	<script type="text/javascript" src="js/wui.js"></script>
+	<script type="text/javascript" src="js/entity.js"></script>
+	<script type="text/javascript" src="js/options.js"></script>
 
 	<script type="text/javascript">
 		if (vz.options.title) {
@@ -86,7 +86,7 @@
 		<h2 id="title"></h2>
 
 		<div id="export">
-			<img alt="export" src="images/blank.png" class="icon-export" />
+			<img alt="export" src="img/blank.png" class="icon-export" />
 			<select class="icons">
 				<option value="default" selected="selected" class="icon-export">Export...</option>
 				<option value="permalink" class="icon-link">Permalink</option>
@@ -103,16 +103,16 @@
 	</div>
 
 	<div id="controls">
-		<button value="move-back" title="scroll backward"><img src="images/blank.png" class="icon-control_rewind_blue" alt="" /></button><button value="move-forward" title="scroll forward"><img src="images/blank.png" class="icon-control_fastforward_blue" alt="" /></button><button value="move-last" title="scroll to present"><img src="images/blank.png" class="icon-control_end_blue" alt="" /></button><button value="zoom-in" title="zoom in"><img src="images/blank.png" class="icon-zoom_in" alt="" /></button><button value="zoom-out" title="zoom out"><img src="images/blank.png" class="icon-zoom_out" alt="" /></button><button value="zoom-hour">Stunde</button><button value="zoom-day">Tag</button><button value="zoom-week">Woche</button><button value="zoom-month">Monat</button><button value="zoom-year">Jahr</button>
+		<button value="move-back" title="scroll backward"><img src="img/blank.png" class="icon-control_rewind_blue" alt="" /></button><button value="move-forward" title="scroll forward"><img src="img/blank.png" class="icon-control_fastforward_blue" alt="" /></button><button value="move-last" title="scroll to present"><img src="img/blank.png" class="icon-control_end_blue" alt="" /></button><button value="zoom-in" title="zoom in"><img src="img/blank.png" class="icon-zoom_in" alt="" /></button><button value="zoom-out" title="zoom out"><img src="img/blank.png" class="icon-zoom_out" alt="" /></button><button value="zoom-hour">Stunde</button><button value="zoom-day">Tag</button><button value="zoom-week">Woche</button><button value="zoom-month">Monat</button><button value="zoom-year">Jahr</button>
 	</div>
 
 	<div id="accordion">
-		<h3><img src="images/blank.png" class="icon-table" alt="" /> Kanäle</h3>
+		<h3><img src="img/blank.png" class="icon-table" alt="" /> Kanäle</h3>
 		<div id="entity-list">
 			<table>
 				<thead>
 					<tr>
-						<th><img src="images/blank.png" class="icon-eye" alt="Anzeige" id="entity-toggle" title="Toggle entitites" /></th>
+						<th><img src="img/blank.png" class="icon-eye" alt="Anzeige" id="entity-toggle" title="Toggle entitites" /></th>
 						<th></th>
 						<th>Titel</th>
 						<th class="type">Typ</th>
@@ -128,9 +128,9 @@
 				</thead>
 				<tbody></tbody>
 			</table>
-			<div><button name="entity-add"><img src="images/blank.png" class="icon-add" alt="add" /> Kanal hinzuf&uuml;gen</button></div>
+			<div><button name="entity-add"><img src="img/blank.png" class="icon-add" alt="add" /> Kanal hinzuf&uuml;gen</button></div>
 		</div>
-		<h3><img src="images/blank.png" class="icon-wrench" alt="" /> Optionen</h3>
+		<h3><img src="img/blank.png" class="icon-wrench" alt="" /> Optionen</h3>
 		<div id="options">
 			<table>
 				<thead>
@@ -141,12 +141,12 @@
 				</thead>
 				<tbody>
 					<tr>
-						<td><label for="refresh"><img src="images/blank.png" class="icon-arrow_refresh" alt="" /> Automatisch aktualisieren</label></td>
+						<td><label for="refresh"><img src="img/blank.png" class="icon-arrow_refresh" alt="" /> Automatisch aktualisieren</label></td>
 						<td><input type="checkbox" id="refresh" /> <span id="refresh-time"></span></td>
 					</tr>
 				</tbody>
 			</table>
-			<div><button name="options-save"><img src="images/blank.png" class="icon-save" alt="save" /> Einstellungen speichern</button></div>
+			<div><button name="options-save"><img src="img/blank.png" class="icon-save" alt="save" /> Einstellungen speichern</button></div>
 		</div>
 	</div>
 </div>
