@@ -32,40 +32,6 @@
 		var pixelInXWidthEquivalent = 1;
 		var isHorizontal = false;
 
-		/**
-		 * Added to make xaxis boundaries match offset bars
-		 * @author cpuidle@gmx.de
-		 */
-		function adjustXaxisMinMax(plot, serie, data, datapoints) {
-			var shiftedPoints = null;
-			var decallage = 0;
-
-			// calculate axis adjustment for first series only
-			if (serieNeedToBeReordered(serie) && serie.bars.order === 0) {
-				checkIfGraphIsHorizontal(serie);
-				calculPixel2XWidthConvert(plot);
-				retrieveBarSeries(plot);
-				calculBorderAndBarWidth(serie);
-
-				if (nbOfBarsToOrder >= 2) {
-					var position = findPosition(serie);
-					var centerBarShift = calculCenterBarShift();
-
-					decallage = sumWidth(orderedBarSeries, position - 1, Math.floor(nbOfBarsToOrder / 2) - 1) - centerBarShift;
-				}
-				else if (nbOfBarsToOrder == 1) {
-					// To be consistent with the barshift at other uneven numbers of bars, where
-					// the center bar is centered around the point, we also need to shift a single bar
-					// left by half its width
-					decallage = calculCenterBarShift();
-				}
-
-				decallage = 1.5 * Math.abs(decallage);
-				serie.xaxis.options.min -= decallage;
-				serie.xaxis.options.max += decallage;
-			}
-		}
-
 		/*
 		 * This method add shift to x values
 		 */
@@ -291,7 +257,6 @@
 			return points;
 		}
 
-		plot.hooks.processRawData.push(adjustXaxisMinMax);
 		plot.hooks.processDatapoints.push(reOrderBars);
 	}
 
