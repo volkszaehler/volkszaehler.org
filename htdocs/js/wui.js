@@ -820,18 +820,30 @@ vz.wui.tickFormatter = function (value, axis, tickIndex, ticks) {
  * Update headline on zoom
  */
 vz.wui.updateHeadline = function() {
-	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
-	var format = '%a %e. %b %Y';
+	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min,
+			format = '%a %e. %b %Y',
+			from = vz.options.plot.xaxis.min,
+			to = vz.options.plot.xaxis.max;
 
-	if (delta < 3*24*3600*1000) format += ' %H:%M'; // under 3 days
-	if (delta < 5*60*1000) format += ':%S'; // under 5 minutes
+	if (delta < 3*24*3600*1000) {
+		format += ' %H:%M'; // under 3 days
+		if (delta < 5*60*1000) format += ':%S'; // under 5 minutes
+	}
+	else {
+		// formatting days only- remove 1ms to display previous day as "to"
+		to--;
+	}
 
-	// timezone-aware dates if timezon-js is inlcuded
-	var from = $.plot.dateGenerator(vz.options.plot.xaxis.min, vz.options.plot.xaxis);
-	var to = $.plot.dateGenerator(vz.options.plot.xaxis.max, vz.options.plot.xaxis);
+	// timezone-aware dates if timezone-js is included
+	from = $.plot.formatDate(
+		$.plot.dateGenerator(from, vz.options.plot.xaxis),
+		format, vz.options.monthNames, vz.options.dayNames, true
+	);
+	to = $.plot.formatDate(
+		$.plot.dateGenerator(to, vz.options.plot.xaxis),
+		format, vz.options.monthNames, vz.options.dayNames, true
+	);
 
-	from = $.plot.formatDate(from, format, vz.options.monthNames, vz.options.dayNames, true);
-	to = $.plot.formatDate(to, format, vz.options.monthNames, vz.options.dayNames, true);
 	$('#title').html(from + ' - ' + to);
 };
 
