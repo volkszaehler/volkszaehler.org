@@ -375,5 +375,17 @@
 			"en" : "User",
 			"fr" : "Usager"
 		}
-	}
+	},
+	{
+     	"name"                  : "filllevel",
+        "optional"              : ["resolution","tolerance", "cost", "local"],
+        "icon"                  : "waterdrop.png",
+        "unit"                  : "l",
+        "interpreter"           : "Volkszaehler\\Interpreter\\SensorInterpreter",
+        "model"                 : "Volkszaehler\\Model\\Channel",
+        "translation"           : {
+        	"de" : "Füllstand",
+            "en" : "Fill Level",
+            "fr" : "Niveau de remplissage"
+     }
 ]
