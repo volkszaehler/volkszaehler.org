@@ -38,6 +38,12 @@
             "Tests\\": "test/"
         }
     },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/andig/http"
+        }
+    ],
     "suggest": {
         "jpgraph/jpgraph": "Server-side chart generation for volkszaehler"
     }
