@@ -1022,10 +1022,17 @@ vz.wui.dialogs.middlewareException = function(xhr) {
 };
 
 vz.wui.dialogs.authorizationException = function(xhr) {
-	// suppress further errors
-	vz.wui.errorDialog = true;
 	var middleware = xhr.middleware,
-			deferred = $.Deferred();
+			mw = vz.middleware.find(middleware);
+
+	if (mw) {
+		// already authorizing against middleware?
+		if (mw.authDeferred && mw.authDeferred.state() == "pending") {
+			return mw.authDeferred;
+		}
+
+		mw.authDeferred = $.Deferred();
+	}
 
 	$('#authorization').dialog({
 		title: unescape('Login'),
@@ -1035,7 +1042,7 @@ vz.wui.dialogs.authorizationException = function(xhr) {
 		resizable: false,
 		closeOnEscape: false,
 		open: function() {
-			$('#authorization .middleware').text(vz.middleware.find(middleware).title);
+			$('#authorization .middleware').text(mw.title);
 			$('#authorization input[name=username]').select();
 		},
 		buttons: {
@@ -1060,12 +1067,9 @@ vz.wui.dialogs.authorizationException = function(xhr) {
 				$.ajax(args).then(
 					function(json) {
 						$('#authorization').dialog('close');
-						if (json.authtoken) {
-							var mw = vz.middleware.find(middleware);
-							if (mw) {
-								mw.setAuthorization(json.authtoken);
-								deferred.resolve(json.authtoken);
-							}
+						if (json.authtoken && mw) {
+							mw.setAuthorization(json.authtoken);
+							mw.authDeferred.resolve(json.authtoken);
 						}
 					},
 					function(xhr) {
@@ -1083,5 +1087,5 @@ vz.wui.dialogs.authorizationException = function(xhr) {
 	})
 	.dialog('open');
 
-	return deferred;
+	return mw.authDeferred;
 };
