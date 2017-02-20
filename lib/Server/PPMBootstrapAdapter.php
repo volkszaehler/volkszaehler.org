@@ -37,19 +37,6 @@ require_once(VZ_DIR . '/lib/bootstrap.php');
 class PPMBootstrapAdapter implements BootstrapInterface
 {
     /**
-     * @var string|null The application environment
-     */
-    protected $appenv;
-
-    /**
-     * Instantiate the bootstrap, storing the $appenv
-     */
-    public function __construct($appenv, $debug)
-    {
-        $this->appenv = $appenv;
-    }
-
-    /**
      * Create middleware router
      */
     public function getApplication()
