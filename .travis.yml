@@ -34,8 +34,6 @@ matrix:
     # from..to
     - php: 5.6
       env: DB=mysql DEPENDENCIES=lowest
-    - php: 5.6
-      env: DB=mysql DEPENDENCIES=highest
     # jslint-only
     - php: 5.6
       env: DB= DEPENDENCIES= JSLINT=true
