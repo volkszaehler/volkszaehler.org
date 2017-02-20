@@ -378,7 +378,7 @@
 	},
 	{
 		"name"                  : "filllevel",
-		"optional"              : ["resolution","tolerance", "cost", "local"],
+		"optional"              : ["resolution", "tolerance", "cost", "local"],
 		"icon"                  : "waterdrop.png",
 		"unit"                  : "l",
 		"interpreter"           : "Volkszaehler\\Interpreter\\SensorInterpreter",
