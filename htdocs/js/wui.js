@@ -278,7 +278,9 @@ vz.wui.dialogs.init = function() {
 			data: properties,
 			method: 'POST'
 		}).done(function(json) {
-			var entity = new Entity(json.entity, $('#entity-create-middleware').val());
+			var entity = new Entity($.extend({
+				middleware: $('#entity-create-middleware').val()
+			}, json.entity));
 
 			try {
 				entity.cookie = Boolean($('#entity-create-cookie').prop('checked'));
