@@ -51,7 +51,7 @@ Middleware.prototype.loadEntities = function() {
 			json.active = false;
 			this.public.push(new Entity($.extend({
 				middleware: this.url
-			}, json));
+			}, json)));
 		}, this);
 		this.public.sort(Entity.compare);
 
