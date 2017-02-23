@@ -55,7 +55,7 @@ Entity.prototype.parseJSON = function(json) {
 			// ensure middleware gets inherited
 			this.children[i] = new Entity($.extend({
 				middleware: this.middleware
-			}, this.children[i]);
+			}, this.children[i]));
 			this.children[i].parent = this;
 		}
 
