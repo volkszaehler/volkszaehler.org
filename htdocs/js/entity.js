@@ -57,6 +57,7 @@ Entity.prototype.parseJSON = function(json) {
 			// ensure middleware gets inherited
 			this.children[i] = new Entity(this.children[i], this.middleware);
 			this.children[i].parent = this;
+			this.children[i].active = true;
 		}
 
 		this.children.sort(Entity.compare);
