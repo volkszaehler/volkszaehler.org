@@ -75,8 +75,10 @@ Entity.prototype.parseJSON = function(json) {
 			}
 		}
 	}
-
-	this.active = true; // activate by default
+	
+	if (this.active === undefined || this.active === null) {
+		this.active = true; // activate by default
+	}	
 
 	if (this.color === undefined) {
 		this.color = vz.options.plot.colors[Entity.colors++ % vz.options.plot.colors.length];
