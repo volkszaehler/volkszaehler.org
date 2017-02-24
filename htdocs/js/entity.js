@@ -75,10 +75,10 @@ Entity.prototype.parseJSON = function(json) {
 			}
 		}
 	}
-
+	
 	if (this.active === undefined || this.active === null) {
 		this.active = true; // activate by default
-	}
+	}	
 
 	if (this.color === undefined) {
 		this.color = vz.options.plot.colors[Entity.colors++ % vz.options.plot.colors.length];
@@ -91,11 +91,7 @@ Entity.prototype.parseJSON = function(json) {
 			// min, max remain undefined
 		};
 	}
-
-	// subscribe to updates
-	if (this.active) {
-		this.subscribe();
-	}
+	
 };
 
 /**
