@@ -149,6 +149,13 @@ vz.wui.addEntity = function(entity) {
 		entity.eachChild(function(child) {
 			child.loadTotalConsumption();
 		}, true); // recursive
+	
+	// create push subscriptions
+	entity.subscribe();	
+	entity.eachChild(function(child) {
+		child.subscribe();
+	}, true); // recursive
+	
 	});
 };
 
@@ -225,7 +232,6 @@ vz.wui.dialogs.init = function() {
 		try {
 			entity.cookie = Boolean($('#entity-public-cookie').prop('checked'));
 			entity.active = true;
-			entity.subscribe();
 			vz.wui.addEntity(entity);
 		}
 		catch (e) {
