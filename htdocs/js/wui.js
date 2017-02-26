@@ -136,11 +136,15 @@ vz.wui.addEntity = function(entity) {
 	vz.entities.showTable();
 	vz.options.plot.axesAssigned = false; // force axis assignment
 
+	// push updates
+	entity.subscribe();
+
 	// load data including children
-	var queue = [];
-	queue.push(entity.loadData());
+	var queue = [entity.loadData()];
+
 	entity.eachChild(function(child) {
 		queue.push(child.loadData());
+		child.subscribe();
 	}, true); // recursive
 
 	$.when.apply($, queue).then(function() {
@@ -225,7 +229,6 @@ vz.wui.dialogs.init = function() {
 		try {
 			entity.cookie = Boolean($('#entity-public-cookie').prop('checked'));
 			entity.active = true;
-			entity.subscribe();
 			vz.wui.addEntity(entity);
 		}
 		catch (e) {

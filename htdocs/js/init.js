@@ -141,12 +141,12 @@ $(document).ready(function() {
 					console.log("Autobahn connected to " + uri + " (" + session.sessionid() + ")");
 					middleware.session = session;
 
-					// subscribe entities
+					// subscribe entities for middleware
 					vz.entities.each(function(entity) {
 						if (entity.active && entity.middleware.indexOf(middleware.url) >= 0) {
 							entity.subscribe(session);
 						}
-					}, true);
+					}, true); // recursive
 				}, function(code, reason) {
 					console.log("Autobahn disconnected (" + code + ", " + reason + ")");
 					delete middleware.session;
