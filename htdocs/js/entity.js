@@ -197,7 +197,7 @@ Entity.prototype.subscribe = function(session) {
 
 		// don't collect data if not subscribed
 		if (!this.active || this.data === undefined) {
-		  return;
+			return;
 		}
 
 		var delta = push.data;
@@ -346,6 +346,13 @@ Entity.prototype.showDetails = function() {
 		width: 480,
 		resizable: false,
 		buttons : {
+			'Daten': function() {
+				var params = $.extend($.getUrlParams(), {
+					from: Math.floor(vz.options.plot.xaxis.min),
+					to: Math.ceil(vz.options.plot.xaxis.max)
+				});
+				window.open(entity.middleware + '/data/' + entity.uuid + '.json?' + $.param(params), '_blank');
+			},
 			'Löschen' : function() {
 				$('#entity-delete').dialog({ // confirm prompt
 					resizable: false,
@@ -441,6 +448,9 @@ Entity.prototype.showDetails = function() {
 			'Schließen': function() {
 				$(this).dialog('close');
 			}
+		},
+		open: function() {
+			$(this).siblings('.ui-dialog-buttonpane').find('button:eq(0)').focus();
 		}
 	});
 };
