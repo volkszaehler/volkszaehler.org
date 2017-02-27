@@ -228,7 +228,6 @@ vz.wui.dialogs.init = function() {
 		var entity = $.extend({}, $('#entity-public-entity option:selected').data('entity'));
 		try {
 			entity.cookie = Boolean($('#entity-public-cookie').prop('checked'));
-			entity.active = true;
 			vz.wui.addEntity(entity);
 		}
 		catch (e) {
