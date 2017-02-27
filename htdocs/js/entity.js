@@ -688,7 +688,7 @@ Entity.prototype.activate = function(state, parent, recursive) {
 
 	if (recursive) {
 		this.eachChild(function(child, parent) {
-			queue.push(child.activate(state, parent, true));
+			queue.push(child.activate(state, parent, false));
 		}, true); // recursive!
 	}
 
