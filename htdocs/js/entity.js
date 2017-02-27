@@ -29,10 +29,8 @@
  * @var data object properties etc.
  * @var middleware url (if not passed as data attribute)
  */
-var Entity = function(data, middleware) {
-	this.parseJSON($.extend({
-		middleware: middleware
-	}, data));
+var Entity = function(data) {
+	this.parseJSON(data);
 };
 
 /**
@@ -55,7 +53,9 @@ Entity.prototype.parseJSON = function(json) {
 	if (this.children) {
 		for (var i = 0; i < this.children.length; i++) {
 			// ensure middleware gets inherited
-			this.children[i] = new Entity(this.children[i], this.middleware);
+			this.children[i] = new Entity($.extend({
+				middleware: this.middleware
+			}, this.children[i]));
 			this.children[i].parent = this;
 		}
 
@@ -277,7 +277,7 @@ Entity.prototype.loadDetails = function(skipDefaultErrorHandling) {
 	}, skipDefaultErrorHandling).done(function(json) {
 		// fix https://github.com/volkszaehler/volkszaehler.org/pull/560
 		delete json.entity.active;
-		this.parseJSON(json.entity);
+		this.parseJSON(json.entity); // update entity
 	});
 };
 
