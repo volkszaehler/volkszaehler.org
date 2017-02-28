@@ -322,14 +322,14 @@ vz.entities.showTable = function() {
 vz.entities.inheritVisibility = function() {
 	vz.entities.each(function(entity, parent) {
 		// inherit active state if parent
-		if (entity.type !== "group" && entity.parent !== undefined) {
+		if (entity.definition.model !== 'Volkszaehler\\Model\\Aggregator' && entity.parent !== undefined) {
 			if (entity.active !== entity.parent.active) {
 				entity.activate(entity.parent.active);
 			}
 		}
 
-		// collapse groups if inactive
-		if (entity.type == "group" && entity.active === false) {
+		// collapse aggregators if inactive
+		if (entity.definition.model == 'Volkszaehler\\Model\\Aggregator' && entity.active === false) {
 			entity.activate(false, entity.parent, true);
 			$('#entity-' + entity.uuid + '.aggregator').removeClass('expanded').collapse();
 		}
