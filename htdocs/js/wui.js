@@ -650,18 +650,18 @@ vz.wui.handleControls = function(action) {
 		case 'zoom-month':
 		case 'zoom-year':
 			var period = control.split('-')[1], min, max;
-			startOfPeriodLocale = period == 'week' ? 'isoweek' : period;
+			periodLocale = period == 'week' ? 'isoweek' : period;
 
 			if (vz.wui.tmaxnow) {
 				/* jshint laxbreak: true */
 				min = period === vz.wui.period
 					? moment().subtract(1, period).valueOf()
-					: moment().startOf(startOfPeriodLocale).valueOf();
+					: moment().startOf(periodLocale).valueOf();
 				max = moment().valueOf();
 			}
 			else {
-				min = moment(middle).startOf(startOfPeriodLocale).valueOf();
-				max = moment(middle).startOf(startOfPeriodLocale).add(1, period).valueOf();
+				min = moment(middle).startOf(periodLocale).valueOf();
+				max = moment(middle).startOf(periodLocale).add(1, period).valueOf();
 			}
 
 			vz.wui.period = period;
@@ -673,21 +673,34 @@ vz.wui.handleControls = function(action) {
 /**
  * Timestamp rounding for group mode
  */
-vz.wui.adjustTimestamp = function(ts, mode) {
-	var date = new Date(ts);
-	switch (mode || ['hour', 'day', 'month', 'year'].indexOf(vz.options.mode)) {
-		case 3:	date.setMonth(0); // year
+vz.wui.adjustTimestamp = function(ts, middle) {
+	ts = moment(ts);
+
+	switch (vz.options.mode) {
+		case 'year':
+			ts.startOf('year');
+			if (middle) ts.add(Math.round(ts.daysInYear() / 2), 'day');
+			break;
+		case 'month':
+			ts.startOf('month');
+			if (middle) ts.add(Math.round(ts.daysInMonth() / 2), 'day');
+			break;
+		case 'week':
+			ts.startOf('isoweek');
+			if (middle) ts.add(Math.round(7*24/2), 'hour');
+			break;
+		case 'day':
+			ts.startOf('day');
+			if (middle) ts.add(12, 'hour');
+			break;
+		case 'hour':
 		/* falls through */
-		case 2:	date.setMonth(date.getMonth(), 1); // month
-		/* falls through */
-		case 1:	date.setHours(0); // day
-		/* falls through */
-		case 0:	date.setMinutes(0); // hour
-		/* falls through */
-	default:
-		date.setSeconds(0, 0); // minutes
+		default:
+			ts.startOf(vz.options.mode);
+			if (middle) ts.add(0.5, vz.options.mode);
 	}
-	return date.getTime();
+
+	return ts.valueOf();
 };
 
 /**
@@ -708,6 +721,11 @@ vz.wui.zoom = function(from, to) {
 	if (vz.wui.isConsumptionMode()) {
 		vz.options.plot.xaxis.min = vz.wui.adjustTimestamp(vz.options.plot.xaxis.min);
 		vz.options.plot.xaxis.max = vz.wui.adjustTimestamp(vz.options.plot.xaxis.max);
+
+		var periodLocale = vz.options.mode == 'week' ? 'isoweek' : vz.options.mode;
+		if (moment(vz.options.plot.xaxis.max).endOf(periodLocale).isAfter(moment())) {
+			vz.options.plot.xaxis.max = moment(vz.options.plot.xaxis.max).add(1, periodLocale).valueOf();
+		}
 	}
 
 	vz.wui.tmaxnow = (vz.options.plot.xaxis.max >= (now - 1000));
@@ -725,6 +743,7 @@ vz.wui.zoom = function(from, to) {
 vz.wui.changeDisplayMode = function(mode) {
 	$("#display option[value=" + mode + "]").prop('selected', 'selected');
 	vz.options.mode = mode;
+	vz.options.plot.axesAssigned = false; // force axis assignment
 };
 
 /**
