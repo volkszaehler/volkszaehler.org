@@ -245,10 +245,6 @@ class Router implements HttpKernelInterface {
 				$config->setQueryCacheImpl($cache);
 			}
 		}
-		else if (extension_loaded('apcu')) {
-			// clear cache
-			apcu_clear_cache();
-		}
 
 		$driverImpl = $config->newDefaultAnnotationDriver(VZ_DIR . '/lib/Model');
 		$config->setMetadataDriverImpl($driverImpl);
