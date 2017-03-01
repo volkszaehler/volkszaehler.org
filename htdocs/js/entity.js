@@ -841,7 +841,7 @@ Entity.prototype.eachChild = function(cb, recursive) {
 		for (var i = 0; i < this.children.length; i++) {
 			cb(this.children[i], this);
 
-			if (recursive && this.children[i] !== undefined) {
+			if (recursive && this.children[i].children) {
 				this.children[i].eachChild(cb, true); // call recursive
 			}
 		}
