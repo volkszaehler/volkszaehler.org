@@ -715,6 +715,9 @@ Entity.prototype.activate = function(state, parent, recursive) {
 		}, true); // recursive!
 	}
 
+	// force axis assignment
+	vz.options.plot.axesAssigned = false;
+
 	return $.when.apply($, queue);
 };
 
