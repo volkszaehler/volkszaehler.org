@@ -89,22 +89,41 @@ vz.getPermalink = function() {
 };
 
 /**
+ * Ajax prefilter for repeatable requests
+ */
+$.ajaxPrefilter(function(options, originalOptions, xhr) {
+	xhr.originalOptions = originalOptions;
+});
+
+/**
  * Universal helper for middleware ajax requests with error handling
  *
  * @param skipDefaultErrorHandling according to http://stackoverflow.com/questions/19101670/provide-a-default-fail-method-for-a-jquery-deferred-object
  */
 vz.load = function(args, skipDefaultErrorHandling) {
 	$.extend(args, {
-		accepts: 'application/json',
+		accepts: {
+			'json': 'application/json'
+		},
 		beforeSend: function (xhr, settings) {
 			// remember URL for potential error messages
 			xhr.requestUrl = settings.url;
+			xhr.middleware = args.middleware;
+
+			// add authorization header
+			var mw = vz.middleware.find(args.middleware);
+			if (mw && mw.authToken) {
+				xhr.setRequestHeader('Authorization', 'Bearer ' + mw.authToken);
+			}
 		}
 	});
 
 	if (args.url === undefined) { // local middleware by default
 		args.url = vz.options.middleware[0].url;
 	}
+
+	// store for later authentication
+	args.middleware = args.url;
 
 	if (args.controller !== undefined) {
 		args.url += '/' + args.controller;
@@ -120,6 +139,13 @@ vz.load = function(args, skipDefaultErrorHandling) {
 		args.data = { };
 	}
 
+	return vz.load.loadHandler(args, skipDefaultErrorHandling);
+};
+
+/**
+ * Reusable ajax request sender with error handling
+ */
+vz.load.loadHandler = function(args, skipDefaultErrorHandling) {
 	return $.ajax(args).then(
 		// success - no changes needed
 		null,
@@ -134,7 +160,13 @@ vz.load = function(args, skipDefaultErrorHandling) {
  * Reusable authorization-aware error handler
  */
 vz.load.errorHandler = function(xhr, skipDefaultErrorHandling) {
-	if (!skipDefaultErrorHandling) {
+	// HTTP_UNAUTHORIZED
+	if (xhr.status == 401 && xhr.getResponseHeader('WWW-Authenticate') == 'Bearer') {
+		return vz.wui.dialogs.authorizationException(xhr).then(function(token) {
+			return vz.load.loadHandler(xhr.originalOptions, skipDefaultErrorHandling);
+		});
+	}
+	else if (!skipDefaultErrorHandling) {
 		vz.wui.dialogs.middlewareException(xhr);
 	}
 	return xhr;
@@ -219,29 +251,11 @@ vz.parseUrlParams = function() {
  * Load capabilities from middleware
  */
 vz.capabilities.load = function() {
-	// execute query asynchronously to refresh from middleware
-	var deferred = vz.load({
-		controller: 'capabilities'
+	return vz.load({
+		controller: 'capabilities/definitions'
 	}).done(function(json) {
-		$.extend(true, vz.capabilities, json.capabilities);
-		try {
-			localStorage.setItem('vz.capabilities', JSON.stringify(json)); // cache it
-		}
-		catch (e) { }
+		$.extend(vz.capabilities.definitions, json.capabilities.definitions);
 	});
-
-	// get cached value to avoid blocking frontend startup
-	try {
-		var json = localStorage.getItem('vz.capabilities');
-		if (json !== false) {
-			// use cached value and return immediately
-			$.extend(true, vz.capabilities, JSON.parse(json).capabilities);
-			return $.Deferred().resolve();
-		}
-	}
-	catch (e) {	}
-
-	return deferred;
 };
 
 /**

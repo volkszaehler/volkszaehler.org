@@ -15,16 +15,19 @@ sudo: false
 env:
   # run composer by default
   global:
+    - DB=mysql
     - DEPENDENCIES=standard
     - APC=true
     - TRAVIS_TEST_EXCLUDES="--exclude-group slow,jpgraph,pushserver"
-  matrix:
-    - DB=mysql
-    - DB=pgsql
-    - DB=sqlite
 
 matrix:
   include:
+    # pgsql
+    - php: 5.6
+      env: DB=pgsql
+    # pgsql
+    - php: 5.6
+      env: DB=sqlite
     # httpd-based
     - php: 5.6
       env: DB=mysql TEST_COMPONENT=HTTPD
@@ -89,6 +92,8 @@ before_script:
     - sed -i "s/'vz'/'$USER'/" etc/volkszaehler.conf.php
     - sed -i "s/'demo'/'$PASSWORD'/" etc/volkszaehler.conf.php
     - sed -i "s/'volkszaehler'/'$DATABASE'/" etc/volkszaehler.conf.php
+    - sed -i "s/'secretkey'/'secretkey' =\> '08154711', \/\//" etc/volkszaehler.conf.php
+    - sed -i "s/\/\/ 'user'/'user'/" etc/volkszaehler.conf.php
     - if [ "$DB" = "sqlite" ]; then sed -i "s/\?>/\$config['db']['path']\ =\ VZ_DIR.'\/sqlite.db3'\;\n?>/" etc/volkszaehler.conf.php; fi
     - cat etc/volkszaehler.conf.php
 
