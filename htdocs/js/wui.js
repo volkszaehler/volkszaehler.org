@@ -674,31 +674,13 @@ vz.wui.handleControls = function(action) {
  * Timestamp rounding for group mode
  */
 vz.wui.adjustTimestamp = function(ts, middle) {
+	var periodLocale = vz.options.mode == 'week' ? 'isoweek' : vz.options.mode;
 	ts = moment(ts);
 
-	switch (vz.options.mode) {
-		case 'year':
-			ts.startOf('year');
-			if (middle) ts.add(Math.round(ts.daysInYear() / 2), 'day');
-			break;
-		case 'month':
-			ts.startOf('month');
-			if (middle) ts.add(Math.round(ts.daysInMonth() / 2), 'day');
-			break;
-		case 'week':
-			ts.startOf('isoweek');
-			if (middle) ts.add(Math.round(7*24/2), 'hour');
-			break;
-		case 'day':
-			ts.startOf('day');
-			if (middle) ts.add(12, 'hour');
-			break;
-		case 'hour':
-		/* falls through */
-		default:
-			ts.startOf(vz.options.mode);
-			if (middle) ts.add(0.5, vz.options.mode);
-	}
+	/* jshint laxbreak: true */
+	ts = middle
+		? moment((ts.startOf(periodLocale).valueOf() + ts.endOf(periodLocale).valueOf()) / 2)
+		: ts.startOf(periodLocale);
 
 	return ts.valueOf();
 };
