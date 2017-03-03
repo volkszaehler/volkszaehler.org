@@ -29,7 +29,7 @@ namespace Volkszaehler\Server;
 
 use Volkszaehler\Util;
 
-use React\Socket\Server as SocketServer;
+use React\Socket\Server as ReactSocketServer;
 use Ratchet\Server\IoServer;
 use Ratchet\Http\HttpServer;
 use Ratchet\Http\HttpServerInterface;
@@ -76,9 +76,8 @@ $loop = \React\EventLoop\Factory::create();
 $middleware = new MiddlewareAdapter();
 
 // configure local httpd interface
-$localSocket = new SocketServer($loop);
+$localSocket = new ReactSocketServer('0.0.0.0:' . $localPort, $loop); // remote loggers can push updates
 $localServer = new HttpReceiver($localSocket, $middleware);
-$localSocket->listen($localPort, '0.0.0.0'); // remote loggers can push updates
 
 // configure routes
 $routes = new RouteCollection;
@@ -117,13 +116,12 @@ else {
 }
 
 // configure remote interface
-$remoteSocket = new SocketServer($loop);
+$remoteSocket = new ReactSocketServer('0.0.0.0:' . $remotePort, $loop); // remote clients can connect
 $remoteServer = new IoServer(
 	new HttpServer(
 		$router
 	),
 	$remoteSocket
 );
-$remoteSocket->listen($remotePort, '0.0.0.0'); // remote clients can connect
 
 $loop->run();
