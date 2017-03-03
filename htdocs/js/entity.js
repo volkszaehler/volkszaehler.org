@@ -588,7 +588,7 @@ Entity.prototype.showDetails = function() {
 
 					default:
 						if (definition.type == 'boolean')
-							value = '<img src="images/blank.png" class="icon-' + (value ? 'tick' : 'cross') + '" alt="' + (value ? 'ja' : 'nein') + '" />';
+							value = '<img src="img/blank.png" class="icon-' + (value ? 'tick' : 'cross') + '" alt="' + (value ? 'ja' : 'nein') + '" />';
 				}
 
 				addRow(title, value);
