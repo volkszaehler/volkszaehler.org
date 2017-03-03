@@ -50,6 +50,8 @@ define('VZ_DIR', realpath(__DIR__ . '/../..'));
 require_once VZ_DIR . '/lib/bootstrap.php';
 
 
+const REMOTE_IP_PORT = '0.0.0.0:';
+
 function addRoute($path, HttpServerInterface $controller) {
 	global $routes;
 	$routes->add('r' . $routes->count(), new Route($path, array('_controller' => $controller)));
@@ -76,7 +78,7 @@ $loop = \React\EventLoop\Factory::create();
 $middleware = new MiddlewareAdapter();
 
 // configure local httpd interface
-$localSocket = new ReactSocketServer('0.0.0.0:' . $localPort, $loop); // remote loggers can push updates
+$localSocket = new ReactSocketServer(REMOTE_IP_PORT . $localPort, $loop); // remote loggers can push updates
 $localServer = new HttpReceiver($localSocket, $middleware);
 
 // configure routes
@@ -116,7 +118,7 @@ else {
 }
 
 // configure remote interface
-$remoteSocket = new ReactSocketServer('0.0.0.0:' . $remotePort, $loop); // remote clients can connect
+$remoteSocket = new ReactSocketServer(REMOTE_IP_PORT . $remotePort, $loop); // remote clients can connect
 $remoteServer = new IoServer(
 	new HttpServer(
 		$router
