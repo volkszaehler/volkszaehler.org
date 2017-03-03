@@ -20,7 +20,6 @@
         "symfony/http-foundation": "^2.6|^3.0",
         "symfony/routing": "^2.6|^3.0",
         "cboden/ratchet": "0.3.*",
-        "react/socket": "0.4.*",
         "react/http": "dev-master#cd15204bd15d106d7832c680e4fb0ca0ce2f5e30"
     },
     "require-dev": {
@@ -42,6 +41,10 @@
         {
             "type": "vcs",
             "url": "https://github.com/andig/http"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/andig/Ratchet"
         }
     ],
     "suggest": {
