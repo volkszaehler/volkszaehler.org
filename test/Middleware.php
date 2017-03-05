@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\GuzzleException;
 use Proxy\Adapter\Guzzle\GuzzleAdapter;
 use Symfony\Bridge\PsrHttpMessage\Factory;
 use Zend\Diactoros\Uri;
@@ -91,8 +91,11 @@ abstract class Middleware extends \PHPUnit_Framework_TestCase
 		try {
 			$psrResponse = static::$adapter->send($psrRequest);
 		}
-		catch (RequestException $e) {
+		catch (GuzzleException $e) {
 			$psrResponse = $e->getResponse();
+			if (null === $psrResponse) {
+				var_dump($e);
+			}
 		}
 		finally {
 			$response = static::$httpFoundationFactory->createResponse($psrResponse);
