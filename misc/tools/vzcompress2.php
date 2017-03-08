@@ -1,4 +1,4 @@
-#!php -f
+#!/usr/bin/env php
 <?php
 /**
  * Data compression tool
