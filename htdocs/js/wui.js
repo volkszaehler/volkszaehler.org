@@ -226,6 +226,8 @@ vz.wui.dialogs.init = function() {
 	$('#entity-public input[type=button]').click(function() {
 		// clone entity from data attribute and activate it
 		var entity = $.extend({}, $('#entity-public-entity option:selected').data('entity'));
+		if ($.isEmptyObject(entity)) return;
+
 		try {
 			entity.cookie = Boolean($('#entity-public-cookie').prop('checked'));
 			vz.wui.addEntity(entity);
