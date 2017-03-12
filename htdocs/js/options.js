@@ -48,7 +48,7 @@ vz.options = {
 														// 		- or push-server live update port configured and accessible
 		}, {
 			title: 'Volkszaehler Demo',
-			url: '//demo.volkszaehler.org/middleware.php'
+			url: 'https://demo.volkszaehler.org/middleware.php'
 		}
 	],
 	monthNames: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],

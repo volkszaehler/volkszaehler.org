@@ -1,3 +1,4 @@
+#!/usr/bin/env php
 <?php
 /**
  * Data aggregation command line tool
