@@ -103,7 +103,7 @@ before_script:
     - |
       if [ "$TEST_COMPONENT" = "HTTPD" ]; then
         sed -i "s/testAdapter\" value=\".*\"/testAdapter\" value=\"HTTP\"/" phpunit.xml
-        vendor/bin/ppm start -c etc/ppm.json &
+        vendor/bin/ppm start -c etc/middleware.json &
         HTTPD_PID=$!
         echo "Started httpd with pid $HTTPD_PID"
       fi
@@ -127,7 +127,7 @@ script:
       if [ "$DB" = "mysql" -a "$TEST_COMPONENT" = "HTTPD" ]; then
         kill -9 $HTTPD_PID
         sleep 10
-        vendor/bin/ppm start -c etc/ppm.json &
+        vendor/bin/ppm start -c etc/middleware.json &
         HTTPD_PID=$!
         echo "Started httpd with pid $HTTPD_PID"
       fi
