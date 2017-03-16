@@ -21,6 +21,9 @@ abstract class BaseInterpreter extends Interpreter
 	}
 }
 
+/**
+ * Add defined skew to timestamps of base iterator
+ */
 class SkewInterpreter extends BaseInterpreter
 {
 	public function __construct($skew) {
@@ -34,7 +37,28 @@ class SkewInterpreter extends BaseInterpreter
 	}
 }
 
-class ComplexInterpreter extends BaseInterpreter
+/**
+ * Skip defined timestamps of base iterator
+ */
+class SkipInterpreter extends BaseInterpreter
+{
+	public function __construct($skip) {
+		$this->skip = $skip;
+	}
+
+	public function getIterator() {
+		$idx = 0;
+		foreach (InterpreterProxyTest::iterator() as $ts) {
+			if (!in_array($idx, $this->skip)) {
+				// static::debug("g\t%d\n", $ts);
+				yield array($ts, 0, 0);
+			}
+			$idx++;
+		}
+	}
+}
+
+class SeriesInterpreter extends BaseInterpreter
 {
 	public function getIterator() {
 		$timestamps = [
@@ -56,7 +80,7 @@ class InterpreterProxyTest extends \PHPUnit_Framework_TestCase
 	public static function iterator() {
 		$timestamps = [1, 2, 3, 4, 5];
 		foreach ($timestamps as $ts) {
-			yield 1000 * $ts;
+			yield 1000 * $ts * $ts;
 		}
 	}
 
@@ -72,6 +96,61 @@ class InterpreterProxyTest extends \PHPUnit_Framework_TestCase
 		);
 	}
 
+	static function debug() {
+		return;
+
+		$args = func_get_args();
+	call_user_func_array('printf', $args);
+	}
+
+	function testSkipMissingTimestampMatch() {
+		$skip = [1, 2];
+		$interpreter = new InterpreterProxy(new SkipInterpreter($skip));
+
+		$idx = 0;
+		$validList = [];
+
+		// build list of valid non-skipped timestamps
+		foreach ($this->iterator() as $ts) {
+			if (!in_array($idx++, $skip)) {
+				$validList[] = $ts;
+			}
+		}
+
+		$idx = 0;
+		$its = null;
+		$last_val = null;
+
+		foreach ($this->iterator() as $ts) {
+			// static::debug("%d.\n", $idx);
+			// static::debug(">\t%d\n", $ts);
+
+			// move all interpreters
+			$interpreter->advanceIteratorToTimestamp($ts);
+
+			// find lowest difference
+			$expectation = array_reduce($validList, function($carry, $item) use ($ts) {
+				$delta = abs($ts - $item);
+
+				if ($delta < $carry[1])
+					return [$item, $delta];
+				else
+					return $carry;
+			}, [null, PHP_INT_MAX]);
+
+			$expectation = $expectation[0];
+			// static::debug("e\t%d\n", $expectation);
+
+			$its = $interpreter->current()[0];
+			// static::debug("<\t%d\n", $its);
+
+			$this->assertEquals($expectation, $its);
+			// static::debug("\n");
+
+			$idx++;
+		}
+	}
+
 	/**
 	 * @dataProvider skewDataProvider
 	 */
@@ -79,16 +158,17 @@ class InterpreterProxyTest extends \PHPUnit_Framework_TestCase
 		$interpreter = new InterpreterProxy(new SkewInterpreter($skew));
 
 		foreach ($this->iterator() as $ts) {
-			// printf(">\t%d\n", $ts);
+			// static::debug(">\t%d\n", $ts);
 
 			// move all interpreters
 			$interpreter->advanceIteratorToTimestamp($ts);
 
 			$its = $interpreter->current()[0];
-			// printf("<\t%d\n", $its);
+			// static::debug("e\t%d\n", $ts + $skew);
+			// static::debug("<\t%d\n", $its);
 
 			$this->assertEquals($ts + $skew, $its);
-			// printf("\n");
+			// static::debug("\n");
 		}
 	}
 
@@ -102,18 +182,19 @@ class InterpreterProxyTest extends \PHPUnit_Framework_TestCase
 		$last = 0;
 
 		foreach ($this->iterator() as $ts) {
-			// printf(">\t%d\n", $ts);
+			// static::debug(">\t%d\n", $ts);
 
 			// move all interpreters
 			$interpreter->advanceIteratorToTimestamp($ts);
 
 			$its = $interpreter->current()[0];
-			// printf("<\t%d\n", $its);
 
 			$expectation = $its <= $ts ? $its : $last;
+			// static::debug("e\t%d\n", $expectation);
+			// static::debug("<\t%d\n", $its);
 
 			$this->assertEquals($expectation, $its);
-			// printf("\n");
+			// static::debug("\n");
 
 			$last = $its;
 		}
@@ -131,18 +212,18 @@ class InterpreterProxyTest extends \PHPUnit_Framework_TestCase
 		$last = 0;
 
 		foreach ($this->iterator() as $ts) {
-			// printf(">\t%d\n", $ts);
+			// static::debug(">\t%d\n", $ts);
 
 			// move all interpreters
 			$interpreter->advanceIteratorToTimestamp($ts);
 
 			$its = $interpreter->current()[0];
-			// printf("<\t%d\n", $its);
+			// static::debug("<\t%d\n", $its);
 
 			$expectation = $its <= $ts + $delta ? $its : $last;
 
 			$this->assertEquals($expectation, $its);
-			// printf("\n");
+			// static::debug("\n");
 
 			$last = $its;
 		}
@@ -152,24 +233,24 @@ class InterpreterProxyTest extends \PHPUnit_Framework_TestCase
 	 * @dataProvider skewBeforeDataProvider
 	 */
 	function testMatchComplexTimestampBefore($delta) {
-		$interpreter = new InterpreterProxy(new ComplexInterpreter());
+		$interpreter = new InterpreterProxy(new SeriesInterpreter());
 		$interpreter->setMatchMode($delta); // InterpreterProxy::MODE_BEFORE or better
 
 		$last = 0;
 
 		foreach ($this->iterator() as $ts) {
-			// printf(">\t%d\n", $ts);
+			// static::debug(">\t%d\n", $ts);
 
 			// move all interpreters
 			$interpreter->advanceIteratorToTimestamp($ts);
 
 			$its = $interpreter->current()[0];
-			// printf("<\t%d\n", $its);
+			// static::debug("<\t%d\n", $its);
 
 			$expectation = $its <= $ts + $delta ? $its : $last;
 
 			$this->assertEquals($expectation, $its);
-			// printf("\n");
+			// static::debug("\n");
 
 			$last = $its;
 		}
