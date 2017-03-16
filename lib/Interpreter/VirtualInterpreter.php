@@ -133,7 +133,32 @@ class VirtualInterpreter extends Interpreter {
 			$class = $entity->getDefinition()->getInterpreter();
 			$interpreter = new $class($entity, $this->em, $this->from, $this->to, $this->tupleCount, $this->groupBy, $this->options);
 
-			$this->interpreters[$key] = new Virtual\InterpreterProxy($interpreter, $key == self::PRIMARY);
+			$proxy = new Virtual\InterpreterProxy($interpreter, $key == self::PRIMARY);
+
+			if ($key !== self::PRIMARY) {
+				$this->setProxyMatchStrategy($entity, $proxy);
+			}
+
+			$this->interpreters[$key] = $proxy;
+		}
+	}
+
+	/**
+	 * Take entity line style into consideration for how timestamps need be interpreted
+	 */
+	private function setProxyMatchStrategy(Model\Entity $entity, Virtual\InterpreterProxy $proxy) {
+		if ($interpretationStyle = $entity->getProperty("style")) {
+			switch ($interpretationStyle) {
+				case 'states':
+					// only use values of timestamps < current
+					// @TODO check if < is enforced or <=
+					$proxy->setMatchMode(Virtual\InterpreterProxy::MODE_BEFORE);
+					break;
+				case 'steps':
+					// only use values of timestamps >= current
+					$proxy->setMatchMode(Virtual\InterpreterProxy::MODE_AFTER);
+					break;
+			}
 		}
 	}
 

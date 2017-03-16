@@ -36,14 +36,17 @@ class InterpreterProxy implements \IteratorAggregate {
 	protected $interpreter;			// wrapped Interpreter instance
 	protected $iterator;			// interpreter's tuple iterator
 
-	const MODE_BEST = -1;			// best match
-	const MODE_BEFORE = 0;			// match up to timestamp
+	const MODE_AFTER = -2;			// match starting at timestamp
+	const MODE_BEST  = -1;			// best match
+	const MODE_BEFORE = 0;			// match up to timestamp (must be highest value)
 
 	protected $matchMode;
 
 	protected $passthrough;			// true indicates timestamps will be used as they are
 	protected $current;				// tuple for matching iterator timestamp
+	protected $lastCurrent;			// tuple for last matching iterator timestamp
 	protected $delta;				// timestamp delta for current tuple
+	protected $lastDelta;			// timestamp delta for last tuple
 
 	const STATE_INITIAL = 0;		// no valid tuple
 	const STATE_VALID = 10;			// valid tuple
@@ -75,6 +78,7 @@ class InterpreterProxy implements \IteratorAggregate {
 	 */
 	public function getIterator() {
 		if (null === $this->iterator) {
+			$this->state = self::STATE_INITIAL;
 			$this->iterator = $this->interpreter->getIterator();
 		}
 
@@ -86,24 +90,45 @@ class InterpreterProxy implements \IteratorAggregate {
 	 */
 	public function advanceIteratorToTimestamp($ts) {
 		$iterator = $this->getIterator();
-
-		$this->state = self::STATE_INITIAL;
+// Util\Logger::debug(sprintf("ts  %d", $ts));
 
 		while ($iterator->valid()) {
-			$this->lastCurrent = $this->current;
+// printf("* last > curr %d > %d\n", $this->lastCurrent[0], $this->current[0]);
+			if ($this->state == self::STATE_USE_CURRENT) {
+				$this->lastCurrent = $this->current;
+			}
 			$this->current = $iterator->current();
+// if ($this->lastCurrent) Util\Logger::debug("lst", $this->lastCurrent);
+// Util\Logger::debug("cur", $this->current);
 
-			$this->lastDelta = $this->delta;
+			$this->lastDelta = abs($this->lastCurrent[0] - $ts);
 			$this->delta = abs($this->current[0] - $ts);
+
+// Util\Logger::debug(sprintf("    %d %s %d",
+// 	$this->lastDelta,
+// 	($this->lastDelta < $this->delta) ? '<' : '>',
+// 	$this->delta)
+// );
+
+// printf("* loop %d: %d > %d (%d > %d)\n", $this->state, $this->lastCurrent[0], $this->current[0], $this->lastDelta, $this->delta);
 
 			// printf("* %d %d (%s)\n", $this->current[0], $this->delta, $this->lastDelta);
 
 			if ($this->delta === 0) {
+// printf("* use curr %d + next\n", $this->current[0]);
+				$iterator->next();
 				$this->state = self::STATE_USE_CURRENT;
 				return;
 			}
 
-			// MODE_BEFORE or before delta: timestamp > target + delta
+			// MODE_AFTER: timestamp > target
+			if ($this->matchMode == self::MODE_AFTER && ($this->current[0] >= $ts)) {
+				$iterator->next();
+				$this->state = self::STATE_USE_CURRENT;
+				return;
+			}
+
+			// MODE_BEFORE or before delta: use previous if timestamp > target + delta
 			if ($this->matchMode >= self::MODE_BEFORE && ($this->current[0] > $ts + $this->matchMode)) {
 				// printf("b >>\n");
 				$this->state = self::STATE_USE_PREVIOUS;
@@ -113,15 +138,21 @@ class InterpreterProxy implements \IteratorAggregate {
 			// MODE_BEST: delta getting larger
 			if ($this->state !== self::STATE_INITIAL && ($this->delta > $this->lastDelta)) {
 				// printf("* >>\n");
+// printf("* use prev %d\n", $this->lastCurrent[0]);
 				$this->state = self::STATE_USE_PREVIOUS;
 				return;
 			}
 
+// printf("* next\n");
+
 			$iterator->next();
 			$this->state = self::STATE_VALID;
+			$this->lastCurrent = $this->current;
+			// $this->lastDelta = $this->delta;
 		}
 
 		// printf("* <<\n");
+		// printf("* use curr %d\n", $this->current[0]);
 		$this->state = self::STATE_USE_CURRENT;
 	}
 
