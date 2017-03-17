@@ -147,7 +147,11 @@ class VirtualInterpreter extends Interpreter {
 	 * Take entity line style into consideration for how timestamps need be interpreted
 	 */
 	private function setProxyMatchStrategy(Model\Entity $entity, Virtual\InterpreterProxy $proxy) {
-		if ($interpretationStyle = $entity->getProperty("style")) {
+		if (!$entity->hasProperty('style')) {
+			// assume MODE_BEST which is the default
+			return;
+		}
+		if ($interpretationStyle = $entity->getProperty('style')) {
 			switch ($interpretationStyle) {
 				case 'states':
 					// only use values of timestamps < current
