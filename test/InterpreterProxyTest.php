@@ -97,14 +97,14 @@ class InterpreterProxyTest extends \PHPUnit_Framework_TestCase
 	}
 
 	static function debug() {
-		return;
+		// return;
 
 		$args = func_get_args();
 	call_user_func_array('printf', $args);
 	}
 
 	function testSkipMissingTimestampMatch() {
-		$skip = [1, 2];
+		$skip = [1, 2]; // skip 2nd and 3rd timestamps
 		$interpreter = new InterpreterProxy(new SkipInterpreter($skip));
 
 		$idx = 0;
@@ -179,7 +179,12 @@ class InterpreterProxyTest extends \PHPUnit_Framework_TestCase
 		$interpreter = new InterpreterProxy(new SkewInterpreter($skew));
 		$interpreter->setMatchMode(InterpreterProxy::MODE_BEFORE);
 
-		$last = 0;
+		// array of primary timestamps
+		$primary_ts = array_map(function($ts) use ($skew) {
+				return $ts + $skew;
+			},
+			iterator_to_array(static::iterator(), false)
+		);
 
 		foreach ($this->iterator() as $ts) {
 			// static::debug(">\t%d\n", $ts);
@@ -187,16 +192,59 @@ class InterpreterProxyTest extends \PHPUnit_Framework_TestCase
 			// move all interpreters
 			$interpreter->advanceIteratorToTimestamp($ts);
 
-			$its = $interpreter->current()[0];
-
-			$expectation = $its <= $ts ? $its : $last;
+			$expectation = array_reduce($primary_ts, function($carry, $item) use ($ts) {
+				if ($item <= $ts) {
+					return $item;
+				}
+				return $carry;
+			});
 			// static::debug("e\t%d\n", $expectation);
+
+			$its = $interpreter->current()[0];
 			// static::debug("<\t%d\n", $its);
 
 			$this->assertEquals($expectation, $its);
 			// static::debug("\n");
+		}
+	}
 
-			$last = $its;
+	/**
+	 * @dataProvider skewDataProvider
+	 */
+	function testMatchTimestampAfter($skew) {
+		$interpreter = new InterpreterProxy(new SkewInterpreter($skew));
+		$interpreter->setMatchMode(InterpreterProxy::MODE_AFTER);
+
+		// array of primary timestamps
+		$primary_ts = array_map(function($ts) use ($skew) {
+				return $ts + $skew;
+			},
+			iterator_to_array(static::iterator(), false)
+		);
+
+		foreach ($this->iterator() as $ts) {
+			// static::debug(">\t%d\n", $ts);
+
+			// move all interpreters
+			$interpreter->advanceIteratorToTimestamp($ts);
+
+			$expectation = array_reduce($primary_ts, function($carry, $item) use ($ts) {
+				if ($carry == null && $item >= $ts) {
+					return $item;
+				}
+				return $carry;
+			});
+			if ($expectation === null) {
+				// last ts still valid if no other found
+				$expectation = array_slice($primary_ts, -1)[0];
+			}
+			// static::debug("e\t%d\n", $expectation);
+
+			$its = $interpreter->current()[0];
+			// static::debug("<\t%d\n", $its);
+
+			$this->assertEquals($expectation, $its);
+			// static::debug("\n");
 		}
 	}
 

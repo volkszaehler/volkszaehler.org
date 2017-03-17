@@ -49,9 +49,8 @@ class InterpreterProxy implements \IteratorAggregate {
 	protected $lastDelta;			// timestamp delta for last tuple
 
 	const STATE_INITIAL = 0;		// no valid tuple
-	const STATE_VALID = 10;			// valid tuple
-	const STATE_USE_CURRENT = 20;	// current tuple matches
-	const STATE_USE_PREVIOUS = 30;	// previous tuple matches
+	const STATE_USE_CURRENT = 10;	// current tuple matches
+	const STATE_USE_PREVIOUS = 20;	// previous tuple matches
 
 	protected $state;
 
@@ -116,26 +115,27 @@ class InterpreterProxy implements \IteratorAggregate {
 
 			if ($this->delta === 0) {
 // printf("* use curr %d + next\n", $this->current[0]);
-				$iterator->next();
+				// $iterator->next();
 				$this->state = self::STATE_USE_CURRENT;
 				return;
 			}
 
-			// MODE_AFTER: timestamp > target
+			// MODE_AFTER: use current if timestamp > target
 			if ($this->matchMode == self::MODE_AFTER && ($this->current[0] >= $ts)) {
-				$iterator->next();
+// printf("* use curr %d + next\n", $this->current[0]);
+				// $iterator->next();
 				$this->state = self::STATE_USE_CURRENT;
 				return;
 			}
 
-			// MODE_BEFORE or before delta: use previous if timestamp > target + delta
+			// MODE_BEFORE or before delta: use previous if current timestamp > target + delta
 			if ($this->matchMode >= self::MODE_BEFORE && ($this->current[0] > $ts + $this->matchMode)) {
 				// printf("b >>\n");
 				$this->state = self::STATE_USE_PREVIOUS;
 				return;
 			}
 
-			// MODE_BEST: delta getting larger
+			// MODE_BEST: use previous if current delta > previous delta
 			if ($this->state !== self::STATE_INITIAL && ($this->delta > $this->lastDelta)) {
 				// printf("* >>\n");
 // printf("* use prev %d\n", $this->lastCurrent[0]);
@@ -144,16 +144,9 @@ class InterpreterProxy implements \IteratorAggregate {
 			}
 
 // printf("* next\n");
-
 			$iterator->next();
-			$this->state = self::STATE_VALID;
-			$this->lastCurrent = $this->current;
-			// $this->lastDelta = $this->delta;
+			$this->state = self::STATE_USE_CURRENT;
 		}
-
-		// printf("* <<\n");
-		// printf("* use curr %d\n", $this->current[0]);
-		$this->state = self::STATE_USE_CURRENT;
 	}
 
 	/**
