@@ -1,6 +1,6 @@
 <?php
 /**
- * @copyright Copyright (c) 2016, The volkszaehler.org project
+ * @copyright Copyright (c) 2017, The volkszaehler.org project
  * @author Andreas Goetz <cpuidle@gmx.de>
  * @package default
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
@@ -25,7 +25,7 @@
 namespace Volkszaehler\Interpreter\Virtual;
 
 use Volkszaehler\Interpreter\Interpreter;
-use Volkszaehler\Util;
+use Volkszaehler\Model;
 
 /**
  * InterpreterProxy wraps an interpreter to give direct access to
@@ -33,140 +33,74 @@ use Volkszaehler\Util;
  */
 class InterpreterProxy implements \IteratorAggregate {
 
-	protected $interpreter;			// wrapped Interpreter instance
-	protected $iterator;			// interpreter's tuple iterator
+	const MODE_TS_BEFORE = 1;	// states
+	const MODE_TS_AFTER = 2;	// steps
+	const MODE_TS_BEST = 3;		// lines
 
-	const MODE_AFTER = -2;			// match starting at timestamp
-	const MODE_BEST  = -1;			// best match
-	const MODE_BEFORE = 0;			// match up to timestamp (must be highest value)
+	private $strategy = self::MODE_TS_BEFORE;
 
-	protected $matchMode;
+	private $iterator;
 
-	protected $passthrough;			// true indicates timestamps will be used as they are
-	protected $current;				// tuple for matching iterator timestamp
-	protected $lastCurrent;			// tuple for last matching iterator timestamp
-	protected $delta;				// timestamp delta for current tuple
-	protected $lastDelta;			// timestamp delta for last tuple
-
-	const STATE_INITIAL = 0;		// no valid tuple
-	const STATE_USE_CURRENT = 10;	// current tuple matches
-	const STATE_USE_PREVIOUS = 20;	// previous tuple matches
-
-	protected $state;
+	function __construct(Interpreter $interpreter) {
+		$this->interpreter = $interpreter;
+	}
 
 	/**
-	 * Constructor
-	 *
-	 * @param Interpreter $interpreter
-	 */
-	public function __construct(Interpreter $interpreter, $passthrough = false) {
-		$this->interpreter = $interpreter;
-		$this->passthrough = $passthrough;
-		$this->matchMode = self::MODE_BEST;
-
-		// first result if no matching tuple exists
-		$this->current = array(0, 0, 0);
-	}
-
-	public function setMatchMode($matchMode) {
-		return $this->matchMode = $matchMode;
-	}
-
-	/*
-	 * IteratorAggregate
+	 * Wrap underlying iterator to give access to previous tuple
 	 */
 	public function getIterator() {
-		if (null === $this->iterator) {
-			$this->state = self::STATE_INITIAL;
-			$this->iterator = $this->interpreter->getIterator();
+		if ($this->iterator == null) {
+			$this->iterator = new LookbackIterator($this->interpreter->getIterator());
 		}
-
 		return $this->iterator;
 	}
 
 	/**
-	 * Select matching tuple by moving iterator n tuples ahead
+	 * Take entity line style into consideration for
+	 * how timestamps need be interpreted
 	 */
-	public function advanceIteratorToTimestamp($ts) {
-		$iterator = $this->getIterator();
-// Util\Logger::debug(sprintf("ts  %d", $ts));
+	public function setEntityType(Model\Entity $entity) {
+		if (!$entity->hasProperty('style')) {
+			// assume MODE_BEST which is the default
+			return;
+		}
 
-		while ($iterator->valid()) {
-// printf("* last > curr %d > %d\n", $this->lastCurrent[0], $this->current[0]);
-			if ($this->state == self::STATE_USE_CURRENT) {
-				$this->lastCurrent = $this->current;
+		if ($lineStyle = $entity->getProperty('style')) {
+			switch ($lineStyle) {
+				case 'states':
+					// only use values of timestamps < current
+					// @TODO check if < is enforced or <=
+					$this->strategy = self::MODE_TS_BEFORE;
+					break;
+				case 'steps':
+					// only use values of timestamps >= current
+					$this->strategy = self::MODE_TS_AFTER;
+					break;
 			}
-			$this->current = $iterator->current();
-// if ($this->lastCurrent) Util\Logger::debug("lst", $this->lastCurrent);
-// Util\Logger::debug("cur", $this->current);
-
-			$this->lastDelta = abs($this->lastCurrent[0] - $ts);
-			$this->delta = abs($this->current[0] - $ts);
-
-// Util\Logger::debug(sprintf("    %d %s %d",
-// 	$this->lastDelta,
-// 	($this->lastDelta < $this->delta) ? '<' : '>',
-// 	$this->delta)
-// );
-
-// printf("* loop %d: %d > %d (%d > %d)\n", $this->state, $this->lastCurrent[0], $this->current[0], $this->lastDelta, $this->delta);
-
-			// printf("* %d %d (%s)\n", $this->current[0], $this->delta, $this->lastDelta);
-
-			if ($this->delta === 0) {
-// printf("* use curr %d + next\n", $this->current[0]);
-				// $iterator->next();
-				$this->state = self::STATE_USE_CURRENT;
-				return;
-			}
-
-			// MODE_AFTER: use current if timestamp > target
-			if ($this->matchMode == self::MODE_AFTER && ($this->current[0] >= $ts)) {
-// printf("* use curr %d + next\n", $this->current[0]);
-				// $iterator->next();
-				$this->state = self::STATE_USE_CURRENT;
-				return;
-			}
-
-			// MODE_BEFORE or before delta: use previous if current timestamp > target + delta
-			if ($this->matchMode >= self::MODE_BEFORE && ($this->current[0] > $ts + $this->matchMode)) {
-				// printf("b >>\n");
-				$this->state = self::STATE_USE_PREVIOUS;
-				return;
-			}
-
-			// MODE_BEST: use previous if current delta > previous delta
-			if ($this->state !== self::STATE_INITIAL && ($this->delta > $this->lastDelta)) {
-				// printf("* >>\n");
-// printf("* use prev %d\n", $this->lastCurrent[0]);
-				$this->state = self::STATE_USE_PREVIOUS;
-				return;
-			}
-
-// printf("* next\n");
-			$iterator->next();
-			$this->state = self::STATE_USE_CURRENT;
 		}
 	}
 
-	/**
-	 * Get current tuple from iterator
+	/*
+	 * Proxied results
 	 */
-	public function current() {
-		if ($this->passthrough) {
-			return $this->getIterator()->current();
-		}
 
-		if ($this->state == self::STATE_USE_CURRENT) {
-			// printf("o >>\n");
-			return $this->current;
-		}
-		elseif ($this->state == self::STATE_USE_PREVIOUS) {
-			// printf("o <<\n");
-			return $this->lastCurrent;
-		}
-		else {
-			throw new \LogicException('Invalid InterpreterProxy state');
+	public function getTimestamp() {
+		throw new \Exception("Not implemented");
+	}
+
+	public function getValueForTimestamp($ts) {
+		$previous = $this->iterator->previous();
+		$current = $this->iterator->current();
+
+		switch ($this->strategy) {
+			case self::MODE_TS_BEFORE:
+				return $previous[1];
+				break;
+			case self::MODE_TS_AFTER:
+				return $current[1];
+				break;
+			default:
+				return $current[1];
 		}
 	}
 
