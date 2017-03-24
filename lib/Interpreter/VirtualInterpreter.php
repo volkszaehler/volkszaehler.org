@@ -34,7 +34,8 @@ use RR\Shunt;
 /**
  * Interpreter for channels of type 'virtual'
  *
- * VirtualInterpreter is able to calculate data on the fly using the provided `rule` and `in1`..`in9` inputs.
+ * VirtualInterpreter is able to calculate data on the fly
+ * using the provided `rule` and `in1`..`in9` inputs.
  */
 class VirtualInterpreter extends Interpreter {
 
@@ -46,6 +47,7 @@ class VirtualInterpreter extends Interpreter {
 	protected $em;
 
 	protected $interpreters;	// array of input interpreters
+	protected $ic;				// collection of iterators
 
 	protected $ctx;
 	protected $parser;
@@ -64,7 +66,9 @@ class VirtualInterpreter extends Interpreter {
 		parent::__construct($channel, $em, $from, $to, $tupleCount, $groupBy, $options);
 
 		$this->em = $em;
+
 		$this->interpreters = array();
+		$this->ic = new Virtual\IteratorCollection();
 
 		// create parser for rule
 		$rule = $channel->getProperty('rule');
@@ -133,36 +137,11 @@ class VirtualInterpreter extends Interpreter {
 			$class = $entity->getDefinition()->getInterpreter();
 			$interpreter = new $class($entity, $this->em, $this->from, $this->to, $this->tupleCount, $this->groupBy, $this->options);
 
-			$proxy = new Virtual\InterpreterProxy($interpreter, $key == self::PRIMARY);
-
-			if ($key !== self::PRIMARY) {
-				$this->setProxyMatchStrategy($entity, $proxy);
-			}
-
+			$proxy = new Virtual\InterpreterProxy($interpreter);
+			$proxy->setEntityType($entity);
 			$this->interpreters[$key] = $proxy;
-		}
-	}
 
-	/**
-	 * Take entity line style into consideration for how timestamps need be interpreted
-	 */
-	private function setProxyMatchStrategy(Model\Entity $entity, Virtual\InterpreterProxy $proxy) {
-		if (!$entity->hasProperty('style')) {
-			// assume MODE_BEST which is the default
-			return;
-		}
-		if ($interpretationStyle = $entity->getProperty('style')) {
-			switch ($interpretationStyle) {
-				case 'states':
-					// only use values of timestamps < current
-					// @TODO check if < is enforced or <=
-					$proxy->setMatchMode(Virtual\InterpreterProxy::MODE_BEFORE);
-					break;
-				case 'steps':
-					// only use values of timestamps >= current
-					$proxy->setMatchMode(Virtual\InterpreterProxy::MODE_AFTER);
-					break;
-			}
+			$this->ic->add($key, new TimestampIterator($proxy->getIterator()));
 		}
 	}
 
@@ -170,14 +149,15 @@ class VirtualInterpreter extends Interpreter {
 	 * Context function: get channel timestamp
 	 */
 	public function _ts($key = self::PRIMARY) {
-		return $this->interpreters[$key]->current()[0] / 1e3;
+		throw new \Exception("Not tested");
+		return $this->interpreters[$key]->getTimestamp();
 	}
 
 	/**
 	 * Context function: get channel value
 	 */
 	public function _val($key = self::PRIMARY) {
-		return $this->interpreters[$key]->current()[1];
+		return $this->interpreters[$key]->getValueForTimestamp($this->ts);
 	}
 
 	/**
@@ -202,19 +182,9 @@ class VirtualInterpreter extends Interpreter {
 	public function getIterator() {
 		$this->rowCount = 0;
 
-		// loop primary channel for timestamps
-		foreach ($this->interpreters[self::PRIMARY] as $tuple) {
-			// move interpreter to match primary timestamp
-			foreach ($this->interpreters as $key => $interpreter) {
-				if ($key == self::PRIMARY) {
-					// get initial timestamp after iterator is initialized
-					if (!isset($ts_last)) {
-						$ts_last = $this->getFrom();
-					}
-				}
-				else {
-					$interpreter->advanceIteratorToTimestamp($tuple[0]);
-				}
+		foreach ($this->ic->timestamps() as $this->ts) {
+			if (!isset($ts_last)) {
+				$ts_last = $this->ts;
 			}
 
 			// calculate
@@ -224,6 +194,7 @@ class VirtualInterpreter extends Interpreter {
 				throw new \Exception("Virtual channel rule must yield numeric value.");
 			}
 
+<<<<<<< Updated upstream
 			// implement consumption calculation
 			//
 			// if ($this->output == self::CONSUMPTION_VALUES) {
@@ -234,6 +205,16 @@ class VirtualInterpreter extends Interpreter {
 			// }
 
 			$this->consumption += $value * ($tuple[0] - $ts_last);
+=======
+			$tuple = array($this->ts, $value, 1);
+
+			if ($this->output == self::CONSUMPTION_VALUES) {
+				$this->consumption += $value * 3.6e6;
+			}
+			else {
+				$this->consumption += $value * ($tuple[0] - $ts_last);
+			}
+>>>>>>> Stashed changes
 
 			$ts_last = $tuple[0];
 
@@ -253,9 +234,10 @@ class VirtualInterpreter extends Interpreter {
 		return $this->current = $row;
 	}
 
-	/**
+	/*
 	 * From/to timestamps delegated to leading interpreter
 	 */
+
 	public function getFrom() {
 		return $this->interpreters[self::PRIMARY]->getFrom();
 	}
@@ -303,6 +285,15 @@ class VirtualInterpreter extends Interpreter {
 	 */
 	public static function groupExprSQL($expression) {
 		return 'AVG(' . $expression . ')';
+	}
+}
+
+/**
+ * Helper class that extracts timestamp from tuple
+ */
+class TimestampIterator extends \IteratorIterator {
+	function current() {
+		return parent::current()[0];
 	}
 }
 
