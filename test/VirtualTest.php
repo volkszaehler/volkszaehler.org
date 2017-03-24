@@ -8,6 +8,9 @@
 
 namespace Tests;
 
+use Volkszaehler\Router;
+use Volkszaehler\Controller\EntityController;
+
 class VirtualTest extends Middleware
 {
 	protected $uuid;
@@ -24,6 +27,16 @@ class VirtualTest extends Middleware
 		$this->getJson($url, $params);
 
 		return($this->uuid = (isset($this->json->entity->uuid)) ? $this->json->entity->uuid : null);
+	}
+
+	function getValueBefore($array, $ts) {
+		$idx = array_reduce(array_keys($array), function($carry, $el) use ($ts) {
+			if ($el < $ts) {
+				return $el;
+			}
+			return $carry;
+		});
+		return $array[$idx];
 	}
 
 	function testVirtualChannel() {
@@ -51,26 +64,37 @@ class VirtualTest extends Middleware
 			],
 			$in2 => [
 				 100 => 200,
-			//	1000
-				 900 => 1,	// use
-				1150 => 2,	// skip
-			//	2000
-				1850 => 3,	// skip
-				2100 => 4,	// use
-			//	3000
+				 900 => 1,
+				1150 => 2,
+				1850 => 3,
+				2100 => 4,
 				3000 => 5,
-				3200 => 6,	// skip
-				3400 => 7,	// skip
-				3600 => 8,	// skip
-				3800 => 9,	// skip
-			//	4000
-				4000 => 10,	// use 2x
-			//	5000
+				3200 => 6,
+				3400 => 7,
+				3600 => 8,
+				3800 => 9,
+				4000 => 10,
 			]
 		];
 
-		// rule result
-		$expect = [9, 16, 25, 30, 40];
+		// expected timestamps
+		$timestamps = array();
+		foreach ($data as $channel) {
+			foreach ($channel as $ts => $value) {
+				if (!in_array($ts, $timestamps))
+					$timestamps[] = $ts;
+			}
+		}
+		asort($timestamps);
+		array_shift($timestamps);
+
+		// expected values
+		$values = array();
+		foreach ($timestamps as $ts) {
+			$in1v = $this->getValueBefore($data[$in1], $ts);
+			$in2v = $this->getValueBefore($data[$in2], $ts);
+			$values[] = array($ts, $in1v - $in2v, 1);
+		}
 
 		// add input values
 		foreach ($data as $uuid => $tuples) {
@@ -84,17 +108,23 @@ class VirtualTest extends Middleware
 		}
 
 		// get result
-		$url = '/data/' . $out . '.json?from=1&to=now&debug=1';
-		$output = $this->getJson($url);
-		$tuples = $output->data->tuples;
+		// $url = '/data/' . $out . '.json?from=1&to=now&debug=1';
+		// $output = $this->getJson($url);
+		// $tuples = $output->data->tuples;
 
-		$expectedResult = [];
-		foreach (array_slice($data[$in1], 1, null, true) as $ts => $value) {
-			$expectedValue = array_shift($expect);
-			$expectedResult[] = [$ts, $expectedValue, 1];
+		$em = Router::createEntityManager();
+		$entity = EntityController::factory($em, $out, true); // from cache
+		$class = $entity->getDefinition()->getInterpreter();
+		$vc = new $class($entity, $em, 1, 'now', 9999, null);
+
+		$tuples = array();
+		foreach ($vc as $tuple) {
+			$tuple[0] = (int)$tuple[0];
+			$tuples[] = $tuple;
 		}
+		print_r($tuples);
 
-		$this->assertEquals($expectedResult, $tuples);
+		$this->assertEquals($values, $tuples);
 
 		// delete
 		foreach ([$in1, $in2, $out] as $uuid) {
