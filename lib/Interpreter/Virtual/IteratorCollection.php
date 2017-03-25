@@ -95,7 +95,7 @@ class IteratorCollection {
 		}
 
 		// catch all - iterators empty
-		return new \EmptyIterator();
+		yield new \EmptyIterator();
 	}
 }
 
