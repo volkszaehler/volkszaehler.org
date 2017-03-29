@@ -98,7 +98,7 @@ class MySQLOptimizer extends SQLOptimizer {
 	public function optimizeDataSQL(&$sql, &$sqlParameters) {
 		if ($this->groupBy) {
 			// SensorInterpreter needs weighed average calculation for correctness - MySQL-specific implementation below
-			if (get_class($this->interpreter) !== 'Volkszaehler\\Interpreter\\SensorInterpreter')
+			if (get_class($this->interpreter) !== Interpreter\SensorInterpreter::class)
 				return false;
 
 			$foo = array();
@@ -133,31 +133,33 @@ class MySQLOptimizer extends SQLOptimizer {
 
 		// potential to reduce result set - can't do this for already grouped SQL
 		if ($this->tupleCount && ($this->rowCount > $this->tupleCount)) {
-			$packageSize = floor($this->rowCount / $this->tupleCount);
+			// use power of 2 instead of division for performance
+			$bitShift = (int) floor(log(($this->to - $this->from) / $this->tupleCount, 2));
 
-			if ($packageSize > 1) { // worth doing -> go
+			if ($bitShift > 0) { // worth doing -> go
+				// ensure first tuple consumes only record
+				$packageSize = 1 << $bitShift;
+				$timestampOffset = $this->from - $packageSize + 1;
+
 				// optimize package statement general case: tuple packaging
 				$foo = array();
 				$sqlTimeFilter = $this->interpreter->buildDateTimeFilterSQL($this->from, $this->to, $foo);
-
-				$this->rowCount = floor($this->rowCount / $packageSize);
+				// $this->rowCount = floor($this->rowCount / $packageSize);
 
 				// Speedup - general case
-				if (get_class($this->interpreter) !== 'Volkszaehler\\Interpreter\\SensorInterpreter') {
-					// setting @row to packageSize-2 will make the first package contain 1 tuple only
-					// this pushes as much 'real' data as possible into the first used package and ensures
-					// we get 2 rows even if tuples=1 requested (first row is discarded by DataIterator)
+				if (get_class($this->interpreter) !== Interpreter\SensorInterpreter::class) {
+					// TODO: find solution to ensure we get 2 rows even if
+					// tuples=1 requested (first row is discarded by DataIterator)
 					$sql = 'SELECT MAX(agg.timestamp) AS timestamp, ' .
 								   $this->interpreter->groupExprSQL('agg.value') . ' AS value, ' .
 								  'COUNT(agg.value) AS count ' .
 						   'FROM (' .
-								 'SELECT timestamp, value, @row:=@row+1 AS row ' .
+								 'SELECT timestamp, value ' .
 								 'FROM data ' .
-								 'CROSS JOIN (SELECT @row := ' . ($packageSize-2) . ') AS vars ' . // initialize variables
 								 'WHERE channel_id=?' . $sqlTimeFilter . ' ' .
 						   		 'ORDER BY timestamp ASC' .
 						   ') AS agg ' .
-						   'GROUP BY row DIV ' . $packageSize . ' ' .
+						   'GROUP BY (timestamp - ' . $timestampOffset . ') >> ' . $bitShift . ' ' .
 						   'ORDER BY timestamp ASC';
 				}
 				else {
@@ -169,16 +171,16 @@ class MySQLOptimizer extends SQLOptimizer {
 								  ') AS value, ' .
 								  'COUNT(agg.value) AS count ' .
 						   'FROM ( ' .
-								'SELECT timestamp, value, @row:=@row+1 AS row, ' .
+								'SELECT timestamp, value, ' .
 									'value * (timestamp - @prev_timestamp) AS val_by_time, ' .
 									'GREATEST(0, IF(@prev_timestamp = NULL, NULL, @prev_timestamp)) AS prev_timestamp, ' .
 									'@prev_timestamp := timestamp ' .
 								'FROM data ' .
-								'CROSS JOIN (SELECT @prev_timestamp := NULL, @row := ' . ($packageSize-2) . ') AS vars ' .
+								'CROSS JOIN (SELECT @prev_timestamp := NULL) AS vars ' .
 								'WHERE channel_id=? ' . $sqlTimeFilter . ' ' .
 								'ORDER BY timestamp ASC' .
 						   ') AS agg ' .
-						   'GROUP BY row div ' . $packageSize . ' ' .
+						   'GROUP BY (timestamp - ' . $timestampOffset . ') >> ' . $bitShift . ' ' .
 						   'ORDER BY timestamp ASC';
 				}
 
