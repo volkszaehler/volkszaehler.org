@@ -24,6 +24,8 @@
  * volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* jshint -W014 */
+
 /**
  * Entity constructor
  * @var data object properties etc.
@@ -64,7 +66,9 @@ Entity.prototype.parseJSON = function(json) {
 
 	// setting defaults
 	if (this.type !== undefined) {
-		this.definition = vz.capabilities.definitions.get('entities', this.type);
+		if (this.definition === undefined) {
+			this.definition = vz.capabilities.definitions.get('entities', this.type);
+		}
 
 		if (this.style === undefined) {
 			if (this.definition.style) {
@@ -94,6 +98,13 @@ Entity.prototype.parseJSON = function(json) {
 };
 
 /**
+ * Consumption mode is valid for entity
+ */
+Entity.prototype.isConsumptionMode = function() {
+	return this.definition && this.definition.hasConsumption && vz.wui.isConsumptionMode();
+};
+
+/**
  * Get entity unit
  */
 Entity.prototype.getUnit = function() {
@@ -101,21 +112,41 @@ Entity.prototype.getUnit = function() {
 };
 
 /**
+ * Get entity unit
+ */
+Entity.prototype.getUnitForMode = function() {
+	return this.isConsumptionMode()
+		? vz.wui.formatConsumptionUnit(this.getUnit())
+		: this.getUnit();
+};
+
+/**
+ * Helper function to manage yaxes array (last entry contains template)
+ */
+function ensureAavailableAxis()  {
+	return vz.options.plot.yaxes.push($.extend({}, vz.options.plot.yaxes[vz.options.plot.yaxes.length-1])) - 1;
+}
+
+/**
  * Assign entity an axis with matching unit
  */
 Entity.prototype.assignMatchingAxis = function() {
 	if (this.definition) {
+		var unit = this.getUnitForMode();
+
 		// find axis with matching unit
 		if (vz.options.plot.yaxes.some(function(yaxis, idx) {
-			if (yaxis.axisLabel === undefined || (this.getUnit() == yaxis.axisLabel)) { // unoccupied or matching unit
+			if (yaxis.axisLabel === undefined || (unit == yaxis.axisLabel)) { // unoccupied or matching unit
+				// make sure we're not consuming the last yaxis
+				ensureAavailableAxis();
 				this.assignedYaxis = idx + 1;
 				return true;
 			}
 		}, this) === false) { // no more axes available
-			this.assignedYaxis = vz.options.plot.yaxes.push($.extend({}, vz.options.plot.yaxes[1]));
+			this.assignedYaxis = ensureAavailableAxis();
 		}
 
-		vz.options.plot.yaxes[this.assignedYaxis-1].axisLabel = this.getUnit();
+		vz.options.plot.yaxes[this.assignedYaxis-1].axisLabel = unit;
 	}
 };
 
@@ -132,13 +163,15 @@ Entity.prototype.assignAxis = function() {
 
 		while (vz.options.plot.yaxes.length < this.assignedYaxis) { // no more axes available
 			// create new right-hand axis
-			vz.options.plot.yaxes.push($.extend({}, vz.options.plot.yaxes[1]));
+			ensureAavailableAxis();
 		}
 
 		// check if axis already has auto-allocated entities
-		var yaxis = vz.options.plot.yaxes[this.assignedYaxis-1];
+		var yaxis = vz.options.plot.yaxes[this.assignedYaxis-1],
+			unit = this.getUnitForMode();
+
 		if (yaxis.forcedGroup === undefined) { // axis auto-assigned
-			if (yaxis.axisLabel !== undefined && this.getUnit() !== yaxis.axisLabel) { // unit mismatch
+			if (yaxis.axisLabel !== undefined && unit !== yaxis.axisLabel) { // unit mismatch
 				// move previously auto-assigned entities to different axis
 				yaxis.axisLabel = '*'; // force unit mismatch
 				vz.entities.each((function(entity) {
@@ -149,7 +182,7 @@ Entity.prototype.assignAxis = function() {
 			}
 		}
 
-		yaxis.axisLabel = this.getUnit();
+		yaxis.axisLabel = unit;
 		yaxis.forcedGroup = this.yaxis;
 	}
 
@@ -163,6 +196,7 @@ Entity.prototype.assignAxis = function() {
  *         - undefined: not initialized yet, will only happen during assignment of first entity to axis
  *         - null:      min value intentionally set to 'auto' to allow negative values
  *         - 0:         min value assumed to be '0' as long as no entity with negative values is encountered
+ * @todo ensure this does not override user-defined min setting with multiple axes
  */
 Entity.prototype.updateAxisScale = function() {
 	if (this.assignedYaxis !== undefined && vz.options.plot.yaxes.length >= this.assignedYaxis) {
@@ -172,7 +206,7 @@ Entity.prototype.updateAxisScale = function() {
 		}
 		if (this.data && this.data.tuples && this.data.tuples.length > 0) {
 			// allow negative values, e.g. for temperature sensors
-			if (this.data.min && this.data.min[1] < 0) { // set axis min to 'auto'
+			if (this.data.min && this.data.min[1] < 0 && vz.options.plot.yaxes[this.assignedYaxis-1].min === 0) { // set axis min to 'auto'
 				vz.options.plot.yaxes[this.assignedYaxis-1].min = null;
 			}
 		}
@@ -300,8 +334,15 @@ Entity.prototype.loadData = function() {
 		data: {
 			from: Math.floor(vz.options.plot.xaxis.min),
 			to: Math.ceil(vz.options.plot.xaxis.max),
-			tuples: vz.options.group === undefined ? vz.options.tuples : Number.MAX_SAFE_INTEGER,
-			group: vz.entities.speedupFactor()
+			tuples: this.isConsumptionMode()
+				? '' // avoid requesting max tuples if grouping
+				: vz.options.tuples,
+			group: this.isConsumptionMode()
+				? vz.options.mode // mode contains the desired grouping
+				: vz.entities.speedupFactor(),
+			options: this.isConsumptionMode()
+				? 'consumption'
+				: vz.options.options
 		}
 	}).done(function(json) {
 		this.data = json.data;
@@ -339,12 +380,10 @@ Entity.prototype.loadTotalConsumption = function() {
  * Show and edit entity details
  */
 Entity.prototype.showDetails = function() {
-	var entity = this;
-	var dialog = $('<div>');
+	var entity = this,
+			general = ['title', 'type', 'uuid', /*'middleware', 'color', 'style', 'active',*/ 'cookie'];
 
-	dialog.addClass('details')
-	.append(this.getDOMDetails())
-	.dialog({
+	var dialog = $('#entity-info').dialog({
 		title: 'Details für ' + this.title,
 		width: 480,
 		resizable: false,
@@ -389,8 +428,7 @@ Entity.prototype.showDetails = function() {
 				});
 			},
 			'Bearbeiten': function() {
-				$('#entity-edit form table .required').remove();
-				$('#entity-edit form table .optional').remove();
+				$('#entity-edit tbody tr').remove();
 
 				// add properties for entity
 				vz.capabilities.definitions.entities.some(function(definition) {
@@ -455,24 +493,23 @@ Entity.prototype.showDetails = function() {
 		open: function() {
 			$(this).siblings('.ui-dialog-buttonpane').find('button:eq(0)').focus();
 		}
-	});
-};
+	}).select();
 
-/**
- * Show channel details for info dialog
- */
-Entity.prototype.getDOMDetails = function(edit) {
-	var table = $('<table><thead><tr><th>Eigenschaft</th><th>Wert</th></tr></thead></table>');
-	var data = $('<tbody>');
+	$('#entity-info tr').remove();
+
+	addRow = function(key, value) {
+		$('#entity-info table').append(
+			$('<tr>').addClass('general')
+			.append($('<td>').addClass('key').text(key))
+			.append($('<td>').addClass('value').append(value))
+		);
+	};
 
 	// general properties
-	var general = ['uuid', 'middleware', 'type', /*'title', 'color', 'style', 'active',*/ 'cookie'];
-	var sections = ['required', 'optional'];
-
 	general.forEach(function(property) {
-		var definition = vz.capabilities.definitions.get('properties', property);
-		var title = (definition) ? definition.translation[vz.options.language] : property;
-		var value = this[property];
+		var definition = vz.capabilities.definitions.get('properties', property),
+				title = definition ? definition.translation[vz.options.language] : property,
+				value = this[property];
 
 		switch (property) {
 			case 'type':
@@ -483,9 +520,6 @@ Entity.prototype.getDOMDetails = function(edit) {
 						.addClass('icon-' + this.definition.icon.replace('.png', ''))
 						.css('margin-right', 4)
 					: null;
-				value = $('<span>')
-					.text(this.definition.translation[vz.options.language])
-					.prepend(icon ? icon : null);
 				break;
 
 			case 'middleware':
@@ -500,50 +534,22 @@ Entity.prototype.getDOMDetails = function(edit) {
 
 			case 'cookie':
 				title = 'Cookie';
-				// value = '<img src="img/' + ((this.cookie) ? 'tick' : 'cross') + '.png" alt="' + ((value) ? 'ja' : 'nein') + '" />';
-				value = '<img src="img/blank.png" class="icon-' + ((this.cookie) ? 'tick' : 'cross') + '" alt="' + ((value) ? 'ja' : 'nein') + '" />';
-				break;
-
+				/* falls through */
 			case 'active':
-				// value = '<img src="img/' + ((this.active) ? 'tick' : 'cross') + '.png" alt="' + ((this.active) ? 'ja' : 'nein') + '" />';
-				value = '<img src="img/blank.png" class="icon-' + ((this.active) ? 'tick' : 'cross') + '" alt="' + ((this.active) ? 'ja' : 'nein') + '" />';
-				break;
-
-			case 'style':
-				switch (this.style) {
-					case 'lines': value = 'Linien'; break;
-					case 'steps': value = 'Stufen'; break;
-					case 'points': value = 'Punkte'; break;
-				}
+				value = '<img src="img/blank.png" class="icon-' + (value ? 'tick' : 'cross') + '" alt="' + (value ? 'ja' : 'nein') + '" />';
 				break;
 		}
 
-		data.append($('<tr>')
-			.addClass('property')
-			.addClass('general')
-			.append($('<td>')
-				.addClass('key')
-				.text(title)
-			)
-			.append($('<td>')
-				.addClass('value')
-				.append(value)
-			)
-		);
+		addRow(title, value);
 	}, this);
 
-	sections.forEach(function(section) {
+	['required', 'optional'].forEach(function(section) {
 		this.definition[section].forEach(function(property) {
 			if (this.hasOwnProperty(property) && general.indexOf(property) < 0) {
-				var definition = vz.capabilities.definitions.get('properties', property);
-				var title = definition.translation[vz.options.language];
-				var value = this[property];
-				var prefix; // unit prefix
-
-				if (definition.type == 'boolean') {
-					// value = '<img src="img/' + ((value) ? 'tick' : 'cross') + '.png" alt="' + ((value) ? 'ja' : 'nein') + '" />';
-					value = '<img src="img/blank.png" class="icon-' + ((this.active) ? 'tick' : 'cross') + '" alt="' + ((value) ? 'ja' : 'nein') + '" />';
-				}
+				var definition = vz.capabilities.definitions.get('properties', property),
+						title = definition.translation[vz.options.language],
+						value = this[property],
+						prefix; // unit prefix
 
 				switch (property) {
 					case 'cost':
@@ -571,24 +577,24 @@ Entity.prototype.getDOMDetails = function(edit) {
 							case 'points': value = 'Punkte'; break;
 						}
 						break;
+
+					case 'linestyle':
+						switch (this.linestyle) {
+							case 'solid': value = 'Solide'; break;
+							case 'dashed': value = 'Gestrichelt'; break;
+							case 'dotted': value = 'Gepunkted'; break;
+						}
+						break;
+
+					default:
+						if (definition.type == 'boolean')
+							value = '<img src="img/blank.png" class="icon-' + (value ? 'tick' : 'cross') + '" alt="' + (value ? 'ja' : 'nein') + '" />';
 				}
 
-				data.append($('<tr>')
-					.addClass('property')
-					.addClass(section)
-					.append($('<td>')
-						.addClass('key')
-						.text(title)
-					)
-					.append($('<td>')
-						.addClass('value')
-						.append(value)
-					)
-				);
+				addRow(title, value);
 			}
 		}, this);
 	}, this);
-	return table.append(data);
 };
 
 /**
@@ -602,7 +608,7 @@ Entity.prototype.getDOMRow = function(parent) {
 	var row = $('<tr>')
 		.addClass((parent) ? 'child-of-entity-' + parent.uuid : '')
 		.addClass((this.definition.model == 'Volkszaehler\\Model\\Aggregator') ? 'aggregator' : 'channel')
-		.addClass('entity')
+		.addClass('entity-' + this.uuid)
 		.attr('id', 'entity-' + this.uuid)
 		.append($('<td>')
 			.addClass('visibility')
@@ -610,10 +616,11 @@ Entity.prototype.getDOMRow = function(parent) {
 			.append($('<input>')
 				.attr('type', 'checkbox')
 				.attr('checked', this.active)
-				.bind('change', this, function(event) {
+				.bind('click', this, function(event) {
 					var entity = event.data;
 					entity.activate($(this).prop('checked'), null, true).done(vz.wui.drawPlot);
 					vz.entities.saveCookie();
+					event.stopPropagation();
 				})
 			)
 		)
@@ -649,6 +656,7 @@ Entity.prototype.getDOMRow = function(parent) {
 				.attr('alt', 'details')
 				.bind('click', this, function(event) {
 					event.data.showDetails();
+					event.stopPropagation();
 				})
 			)
 		)
@@ -665,6 +673,7 @@ Entity.prototype.getDOMRow = function(parent) {
 				vz.entities.saveCookie();
 				vz.entities.showTable();
 				vz.wui.drawPlot();
+				event.stopPropagation();
 			})
 		);
 	}
@@ -695,6 +704,9 @@ Entity.prototype.activate = function(state, parent, recursive) {
 		}, true); // recursive!
 	}
 
+	// force axis assignment
+	vz.options.plot.axesAssigned = false;
+
 	return $.when.apply($, queue);
 };
 
@@ -702,20 +714,15 @@ Entity.prototype.activate = function(state, parent, recursive) {
  * Update UI with current entity values
  */
 Entity.prototype.updateDOMRow = function() {
-	var row = $('#entity-' + this.uuid);
+	var row = $('.entity-' + this.uuid);
 
 	// clear table first
-	$('.min', row).text('').attr('title', '');
-	$('.max', row).text('').attr('title', '');
-	$('.average', row).text('');
-	$('.last', row).text('');
-	$('.consumption', row).text('');
-	$('.cost', row).text('');
-	// $('.total', row).text('').data('total', null);
+	$('.min, .max', row).text('').attr('title', '');
+	$('.average, .last, .consumption, .cost', row).text('');
 
 	if (this.data && this.data.rows > 0) { // update statistics if data available
 		var yearMultiplier = 365*24*60*60*1000 / (this.data.to - this.data.from); // ms
-		var unit = this.getUnit();
+		var unit = this.getUnitForMode();
 
 		// indicate stale data
 		if (this.data.to)
@@ -737,8 +744,9 @@ Entity.prototype.updateDOMRow = function() {
 			.text(vz.wui.formatNumber(this.data.tuples[this.data.tuples.length-1][1], unit));
 
 		if (this.data.consumption) {
-			var consumptionUnit = vz.wui.formatConsumptionUnit(unit);
+			var consumptionUnit = vz.wui.formatConsumptionUnit(this.getUnit());
 			$('.consumption', row)
+				.data('consumption', this.data.consumption)
 				.text(vz.wui.formatNumber(this.data.consumption, consumptionUnit))
 				.attr('title', vz.wui.formatNumber(this.data.consumption * yearMultiplier, consumptionUnit) + '/Jahr');
 		}
@@ -756,17 +764,18 @@ Entity.prototype.updateDOMRow = function() {
 	}
 
 	// show total value if populated
-	this.updateDOMRowTotal();
+	this.updateDOMRowTotal(row);
 
 	vz.entities.updateTableColumnVisibility();
 };
 
 /**
  * Update totals column after async refresh
+ * @param row optional dom row
  */
-Entity.prototype.updateDOMRowTotal = function() {
-	var row = $('#entity-' + this.uuid);
-	if (this.totalconsumption) {
+Entity.prototype.updateDOMRowTotal = function(row) {
+	row = row || $('.entity-' + this.uuid);
+	if (this.active && this.totalconsumption) {
 		var unit = vz.wui.formatConsumptionUnit(this.getUnit());
 
 		$('.total', row)
@@ -846,6 +855,7 @@ Entity.prototype.eachChild = function(cb, recursive) {
 			}
 		}
 	}
+	return this;
 };
 
 /**

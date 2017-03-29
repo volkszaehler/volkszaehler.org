@@ -36,6 +36,11 @@ use Doctrine\ORM;
  */
 abstract class Interpreter implements \IteratorAggregate {
 
+	// output types
+	const ACTUAL_VALUES = 0;
+	const RAW_VALUES = 1;
+	const CONSUMPTION_VALUES = 2;
+
 	/**
 	 * @var Database connection
 	 */
@@ -47,9 +52,11 @@ abstract class Interpreter implements \IteratorAggregate {
 	protected $to;			// can be NULL!
 	protected $groupBy;		// user from/to from DataIterator for exact calculations!
 	protected $options;  	// additional non-standard options
-	protected $raw;  		// raw database values requested
+
+	protected $output;		// output type: actual, raw or consumption values
 
 	protected $channel;		// Channel entity
+	protected $definition;	// entity definition for channel
 
 	protected $rowCount;	// number of rows in the database
 	protected $tupleCount;	// number of requested tuples
@@ -79,15 +86,27 @@ abstract class Interpreter implements \IteratorAggregate {
 		$this->tupleCount = $tupleCount;
 		$this->options = $options;
 
-		// client wants raw data?
-		$this->raw = $this->hasOption('raw');
+		// store channel properties locally for performance
+		$this->definition = $this->channel->getDefinition();
+		$this->scale = $this->definition->scale;
+		$this->resolution = ($this->channel->hasProperty('resolution')) ? $this->channel->getProperty('resolution') : 1;
+
+		// output type - default is ACTUAL_VALUES
+		if ($this->hasOption('raw')) {
+			$this->output = self::RAW_VALUES;
+		}
+		if ($this->hasOption('consumption')) {
+			if ($this->output == self::RAW_VALUES) {
+				throw new \Exception('Cannot use `raw` and `consumption` options together');
+			}
+			if (!$this->definition->hasConsumption) {
+				throw new \Exception('Channel does not supply consumption data');
+			}
+			$this->output = self::CONSUMPTION_VALUES;
+		}
 
 		// get dbal connection from EntityManager
 		$this->conn = $em->getConnection();
-
-		// store channel scale and resolution locally for performance
-		$this->scale = $this->channel->getDefinition()->scale;
-		$this->resolution = ($this->channel->hasProperty('resolution')) ? $this->channel->getProperty('resolution') : 1;
 
 		// parse interval
 		if (isset($to))
@@ -125,7 +144,7 @@ abstract class Interpreter implements \IteratorAggregate {
 	 */
 	abstract public function getIterator();
 
-	/**
+	/*
 	 * Convert raw meter readings
 	 *
 	 * This function will have side effects on internal member variables of the interpreter
@@ -197,8 +216,12 @@ abstract class Interpreter implements \IteratorAggregate {
 				if ($from)
 					$this->from = (double)$from; // bigint conversion
 			}
+
 			if (isset($this->to)) {
-				$sql = 'SELECT MIN(timestamp) FROM data WHERE channel_id=? AND timestamp>?';
+				// avoid generating timestamps outside the requested range for consumption
+				$sql = $this->hasOption('consumption')
+					? 'SELECT MAX(timestamp) FROM data WHERE channel_id=? AND timestamp<?'
+					: 'SELECT MIN(timestamp) FROM data WHERE channel_id=? AND timestamp>?';
 				$to = $this->conn->fetchColumn($sql, array($this->channel->getId(), $this->to), 0);
 				if ($to)
 					$this->to = (double)$to; // bigint conversion
@@ -318,6 +341,18 @@ abstract class Interpreter implements \IteratorAggregate {
 		else {
 			throw new \Exception('Invalid time format: \'' . $string . '\'');
 		}
+	}
+
+	/**
+	 * Calculates the average consumption
+	 *
+	 * @return float average consumption in Wh
+	 */
+	public function getAverageConsumption() {
+		if (($consumption = $this->getConsumption()) && ($rows = $this->getRowCount()) > 0) {
+			return $consumption / $rows;
+		}
+		return 0;
 	}
 
 	/*

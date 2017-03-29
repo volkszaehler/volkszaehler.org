@@ -330,6 +330,18 @@
 		}
 	},
 	{
+		"name"			: "fanspeed",
+		"optional"		: ["resolution", "tolerance", "local", "gap"],
+		"icon"			: "propeller.png",
+		"unit"			: "u/min",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"		: {
+			"de" : "Drehzahl",
+			"en" : "Fan speed"
+		}
+	},
+	{
 		"name"			: "luminosity",
 		"optional"		: ["resolution", "tolerance", "local", "gap"],
 		"icon"			: "sun.png",

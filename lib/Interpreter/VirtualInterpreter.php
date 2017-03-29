@@ -195,13 +195,12 @@ class VirtualInterpreter extends Interpreter {
 
 			$tuple = array($this->ts, $value, 1);
 
-			// if ($this->output == self::CONSUMPTION_VALUES) {
-			// 	$this->consumption += $value * 3.6e6;
-			// }
-			// else {
-			// 	$this->consumption += $value * ($this->ts - $ts_last);
-			// }
-			$this->consumption += $value * ($this->ts - $ts_last);
+			if ($this->output == self::CONSUMPTION_VALUES) {
+				$this->consumption += $value * 3.6e6;
+			}
+			else {
+				$this->consumption += $value * ($this->ts - $ts_last);
+			}
 
 			$ts_last = $this->ts;
 

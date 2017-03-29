@@ -46,9 +46,9 @@ vz.options = {
 														//    - either apache proxy forwarding configured according to
 														//			https://github.com/volkszaehler/volkszaehler.org/issues/382
 														// 		- or push-server live update port configured and accessible
-		}, {
-			title: 'Volkszaehler Demo',
-			url: 'https://demo.volkszaehler.org/middleware.php'
+		// }, {
+		// 	title: 'Volkszaehler Demo',
+		// 	url: '//demo.volkszaehler.org/middleware.php'
 		}
 	],
 	monthNames: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
@@ -68,6 +68,11 @@ vz.options.plot = {
 		shadowSize: 0,
 		points: {
 			radius: 3
+		},
+		bars: {
+			fill:      0.8,
+			lineWidth: 0,
+			usedSpace: 0.8 // percent of available space that bars should occupy
 		}
 	},
  	legend: {
@@ -88,16 +93,26 @@ vz.options.plot = {
 			tickFormatter: vz.wui.tickFormatter		// show axis label
 		},
 		{
+			axisLabel: '°C', // assign el. energy to first axis- remove if not used
+			tickFormatter: vz.wui.tickFormatter		// show axis label
+		},
+		{
 			// alignTicksWithAxis: 1,
 			position: 'right',
 			tickFormatter: vz.wui.tickFormatter		// show axis label
 		}
 	],
 	selection: { mode: 'x' },
-	crosshair: { mode: 'x' },
+	crosshair: {
+		mode: 'x',
+		leaveCallback: vz.wui.plotLeave
+	},
 	grid: {
 		hoverable: true,
-		autoHighlight: false
+		autoHighlight: true,
+		borderWidth:  1,
+		borderColor: '#bbb',
+		margin: 0
 	}
 };
 

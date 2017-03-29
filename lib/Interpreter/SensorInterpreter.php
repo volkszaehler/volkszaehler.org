@@ -46,17 +46,16 @@ class SensorInterpreter extends Interpreter {
 		$this->ts_last = $this->getFrom();
 
 		foreach ($this->rows as $row) {
-			if ($this->raw) {
-				// raw database values
+			// raw database values
+			if ($this->output == self::RAW_VALUES) {
 				yield array_slice($row, 0, 3);
 			}
 			else {
 				$delta_ts = $row[0] - $this->ts_last;
 				$tuple = $this->convertRawTuple($row);
-				$this->consumption += $tuple[1] * $delta_ts;
+				$this->consumption += $row[1] / $this->resolution * $delta_ts;
 
 				$this->updateMinMax($tuple);
-
 				yield $tuple;
 			}
 		}
@@ -74,10 +73,17 @@ class SensorInterpreter extends Interpreter {
 
 		// @TODO check if scale is needed here
 		$tuple = array(
-			(float) ($this->ts_last = $row[0]),	// timestamp of interval end
+			(float) $row[0],	// timestamp of interval end
 			(float) $value / $this->resolution,
 			(int) $row[2]
 		);
+
+		// consumption values
+		if ($this->output == self::CONSUMPTION_VALUES) {
+			$tuple[1] *= ($tuple[0] - $this->ts_last) / 3.6e6;
+		}
+
+		$this->ts_last = $row[0];
 
 		return $tuple;
 	}
@@ -90,7 +96,7 @@ class SensorInterpreter extends Interpreter {
 	public function getConsumption() {
 		// convert to Wh
 		// @TODO check if resolution is needed here
-		return $this->channel->getDefinition()->hasConsumption ? $this->consumption / (3.6e3 * $this->scale) : NULL;
+		return $this->definition->hasConsumption ? $this->consumption / (3.6e3 * $this->scale) : NULL;
 	}
 
 	/**
@@ -99,7 +105,10 @@ class SensorInterpreter extends Interpreter {
 	 * @return float average
 	 */
 	public function getAverage() {
-		if ($this->consumption) {
+		if ($this->output == self::CONSUMPTION_VALUES) {
+			return $this->getAverageConsumption();
+		}
+		elseif ($this->consumption) {
 			$delta = $this->getTo() - $this->getFrom();
 			return $this->consumption / $delta;
 		}
