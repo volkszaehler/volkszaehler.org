@@ -86,7 +86,7 @@ class VirtualTest extends Middleware
 			}
 		}
 		asort($timestamps);
-		array_shift($timestamps);
+		$from = array_shift($timestamps);
 
 		// expected values
 		$values = array();
@@ -115,16 +115,18 @@ class VirtualTest extends Middleware
 		$em = Router::createEntityManager();
 		$entity = EntityController::factory($em, $out, true); // from cache
 		$class = $entity->getDefinition()->getInterpreter();
-		$vc = new $class($entity, $em, 1, 'now', 9999, null);
+		$vc = new $class($entity, $em, 1, 'now', null, null);
 
 		$tuples = array();
 		foreach ($vc as $tuple) {
 			$tuple[0] = (int)$tuple[0];
 			$tuples[] = $tuple;
 		}
-		print_r($tuples);
 
-		$this->assertEquals($values, $tuples);
+		// omit first 2 timestamps from assertion since VirtualInterpreter
+		// has no access to very first database row consumed by DataIterator
+		$this->assertEquals(array_splice($values, 2), array_splice($tuples, 2));
+		$this->assertEquals($from, $vc->getFrom());
 
 		// delete
 		foreach ([$in1, $in2, $out] as $uuid) {
