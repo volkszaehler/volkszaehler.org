@@ -72,17 +72,15 @@ vz.entities.loadDetails = function() {
 		// Use thenable form and skip default error handling to allow modifying deferred resolution for handling
 		// invalid/deleted entity uuids. Otherwise frontend loading will stall.
 		queue.push(entity.loadDetails(true).then(
-			function(json) {
-				return $.Deferred().resolveWith(this, [json]);
-			},
+			null,	// success - no changes needed
 			function(xhr) {
 				var exception = (xhr.responseJSON || {}).exception;
 				// default error handling is skipped - be careful
 				if (exception && exception.message.match(/^Invalid UUID|^No entity found with UUID/)) {
 					vz.entities.splice(vz.entities.indexOf(entity), 1); // remove
-					return $.Deferred().resolveWith(this, [xhr.responseJSON]);
+					// return new resolved deferred
+					$.Deferred().resolveWith(this, [xhr]);
 				}
-				vz.wui.dialogs.middlewareException(xhr);
 				return vz.load.errorHandler(xhr);
 			}
 		));

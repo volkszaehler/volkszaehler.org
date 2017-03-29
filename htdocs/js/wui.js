@@ -1058,3 +1058,72 @@ vz.wui.dialogs.middlewareException = function(xhr) {
 		// network exception
 		this.exception(new Exception("Network Error", xhr.statusText));
 };
+
+vz.wui.dialogs.authorizationException = function(xhr) {
+	var middleware = xhr.middleware,
+			mw = vz.middleware.find(middleware);
+
+	if (mw) {
+		// already authorizing against middleware?
+		if (mw.authDeferred && mw.authDeferred.state() == "pending") {
+			return mw.authDeferred;
+		}
+
+		mw.authDeferred = $.Deferred();
+	}
+
+	$('#authorization').dialog({
+		title: unescape('Login'),
+		width: 600,
+		modal: true,
+		autoOpen: false,
+		resizable: false,
+		closeOnEscape: false,
+		open: function() {
+			$('#authorization .middleware').text(mw.title);
+			$('#authorization input[name=username]').select();
+		},
+		buttons: {
+			'Login': function() {
+				var args = {
+					url: middleware + '/auth.json',
+					method: 'POST',
+					contentType: 'application/json',
+					data: JSON.stringify({
+						username: $('#authorization input[name=username]').val(),
+						password: $('#authorization input[name=password]').val()
+					}),
+					accepts: {
+						'json': 'application/json'
+					},
+					beforeSend: function (xhr, settings) {
+						// remember URL for potential error messages
+						xhr.requestUrl = middleware + '/auth.json';
+					}
+				};
+
+				$.ajax(args).then(
+					function(json) {
+						$('#authorization').dialog('close');
+						if (json.authtoken && mw) {
+							mw.setAuthorization(json.authtoken);
+							mw.authDeferred.resolve(json.authtoken);
+						}
+					},
+					function(xhr) {
+						vz.wui.dialogs.middlewareException(xhr);
+					}
+				);
+			}
+		}
+	})
+	.keypress(function(ev) {
+		// submit form on enter
+		if (ev.keyCode == $.ui.keyCode.ENTER) {
+			$('#authorization').next().find('button').click();
+		}
+	})
+	.dialog('open');
+
+	return mw.authDeferred;
+};
