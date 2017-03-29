@@ -65,35 +65,6 @@ abstract class BasicCommand extends Command {
 }
 
 /**
- * (Re)create aggregation table
- */
-class CreateCommand extends BasicCommand {
-
-	protected function configure() {
-		$this->setName('create')
-			->setDescription('Create aggregation table (DESTRUCTIVE)');
-	}
-
-	protected function execute(InputInterface $input, OutputInterface $output) {
-		$conn = $this->em->getConnection();
-
-		echo("Recreating aggregation table.\n");
-		$conn->executeQuery('DROP TABLE IF EXISTS `aggregate`');
-		$conn->executeQuery(
-			'CREATE TABLE `aggregate` (' .
-			'  `id` int(11) NOT NULL AUTO_INCREMENT,' .
-			'  `channel_id` int(11) NOT NULL,' .
-			'  `type` tinyint(1) NOT NULL,' .
-			'  `timestamp` bigint(20) NOT NULL,' .
-			'  `value` double NOT NULL,' .
-			'  `count` int(11) NOT NULL,' .
-			'  PRIMARY KEY (`id`),' .
-			'  UNIQUE KEY `ts_uniq` (`channel_id`,`type`,`timestamp`)' .
-			')');
-	}
-}
-
-/**
  * Optimize data and aggregate tables
  */
 class OptimizeCommand extends BasicCommand {
@@ -179,7 +150,6 @@ class RunCommand extends BasicCommand {
 $app = new Util\ConsoleApplication('Data aggregation tool');
 
 $app->addCommands(array(
-	new CreateCommand,
 	new OptimizeCommand,
 	new ClearCommand,
 	new RunCommand
