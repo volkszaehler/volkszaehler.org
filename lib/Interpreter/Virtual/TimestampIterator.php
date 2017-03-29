@@ -25,33 +25,11 @@
 namespace Volkszaehler\Interpreter\Virtual;
 
 /**
- * Helper iterator that allows accessing previous value
+ * Helper iterator that extracts timestamp from tuple
  */
-class LookbackIterator extends \IteratorIterator {
-
-	protected $previous;
-	protected $current;
-
-	/*
-	 * IteratorIterator
-	 */
-
-	function rewind() {
-		$this->previous = array(0, 0, 0);
-		parent::rewind();
-	}
-
-	function next() {
-		$this->previous = $this->current();
-		parent::next();
-	}
-
-	/*
-	 * Lookback access
-	 */
-
-	function previous() {
-		return $this->previous;
+class TimestampIterator extends \IteratorIterator {
+	function current() {
+		return parent::current()[0];
 	}
 }
 
