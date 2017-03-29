@@ -100,7 +100,8 @@ class InterpreterProxy implements \IteratorAggregate {
 				return $current[1];
 				break;
 			default:
-				return $current[1];
+				// MODE_TS_BEFORE
+				return $previous[1];
 		}
 	}
 
