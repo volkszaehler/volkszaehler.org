@@ -128,7 +128,7 @@ vz.load = function(args, skipDefaultErrorHandling) {
 				vz.load.errorHandler(xhr);
 				$.Deferred().rejectWith(this, [xhr]);
 			}
-			return json;
+			return $.Deferred().resolveWith(this, [json]);
 		},
 		// error
 		function(xhr) {
