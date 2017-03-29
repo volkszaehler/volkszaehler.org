@@ -96,11 +96,13 @@ class MySQLOptimizer extends SQLOptimizer {
 	 * @return boolean               Success
 	 */
 	public function optimizeDataSQL(&$sql, &$sqlParameters) {
-		if ($this->groupBy) {
-			// SensorInterpreter needs weighed average calculation for correctness - MySQL-specific implementation below
-			if (get_class($this->interpreter) !== Interpreter\SensorInterpreter::class)
-				return false;
+		// additional optimizations for SensorInterpreter only
+		if (get_class($this->interpreter) !== Interpreter\SensorInterpreter::class)
+			return parent::optimizeDataSQL($sql, $sqlParameters);
 
+		// SensorInterpreter needs weighed average calculation.
+		// MySQL-specific implementation below
+		if ($this->groupBy) {
 			$foo = array();
 			$sqlTimeFilter = $this->interpreter->buildDateTimeFilterSQL($this->from, $this->to, $foo);
 			$sqlGroupFields = $this->interpreter->buildGroupBySQL($this->groupBy);
@@ -146,43 +148,25 @@ class MySQLOptimizer extends SQLOptimizer {
 				$sqlTimeFilter = $this->interpreter->buildDateTimeFilterSQL($this->from, $this->to, $foo);
 				// $this->rowCount = floor($this->rowCount / $packageSize);
 
-				// Speedup - general case
-				if (get_class($this->interpreter) !== Interpreter\SensorInterpreter::class) {
-					// TODO: find solution to ensure we get 2 rows even if
-					// tuples=1 requested (first row is discarded by DataIterator)
-					$sql = 'SELECT MAX(agg.timestamp) AS timestamp, ' .
-								   $this->interpreter->groupExprSQL('agg.value') . ' AS value, ' .
-								  'COUNT(agg.value) AS count ' .
-						   'FROM (' .
-								 'SELECT timestamp, value ' .
-								 'FROM data ' .
-								 'WHERE channel_id=?' . $sqlTimeFilter . ' ' .
-						   		 'ORDER BY timestamp ASC' .
-						   ') AS agg ' .
-						   'GROUP BY (timestamp - ' . $timestampOffset . ') >> ' . $bitShift . ' ' .
-						   'ORDER BY timestamp ASC';
-				}
-				else {
-					// Speedup - SensorInterpreter case (weighed average calculation)
-					$sql = 'SELECT MAX(agg.timestamp) AS timestamp, ' .
-								  'COALESCE( ' .
-									  'SUM(agg.val_by_time) / (MAX(agg.timestamp) - MIN(agg.prev_timestamp)), ' .
-									  $this->interpreter->groupExprSQL('agg.value') .
-								  ') AS value, ' .
-								  'COUNT(agg.value) AS count ' .
-						   'FROM ( ' .
-								'SELECT timestamp, value, ' .
-									'value * (timestamp - @prev_timestamp) AS val_by_time, ' .
-									'GREATEST(0, IF(@prev_timestamp = NULL, NULL, @prev_timestamp)) AS prev_timestamp, ' .
-									'@prev_timestamp := timestamp ' .
-								'FROM data ' .
-								'CROSS JOIN (SELECT @prev_timestamp := NULL) AS vars ' .
-								'WHERE channel_id=? ' . $sqlTimeFilter . ' ' .
-								'ORDER BY timestamp ASC' .
-						   ') AS agg ' .
-						   'GROUP BY (timestamp - ' . $timestampOffset . ') >> ' . $bitShift . ' ' .
-						   'ORDER BY timestamp ASC';
-				}
+				// Speedup - SensorInterpreter case (weighed average calculation)
+				$sql = 'SELECT MAX(agg.timestamp) AS timestamp, ' .
+							  'COALESCE( ' .
+								  'SUM(agg.val_by_time) / (MAX(agg.timestamp) - MIN(agg.prev_timestamp)), ' .
+								  $this->interpreter->groupExprSQL('agg.value') .
+							  ') AS value, ' .
+							  'COUNT(agg.value) AS count ' .
+					   'FROM ( ' .
+							'SELECT timestamp, value, ' .
+								'value * (timestamp - @prev_timestamp) AS val_by_time, ' .
+								'GREATEST(0, IF(@prev_timestamp = NULL, NULL, @prev_timestamp)) AS prev_timestamp, ' .
+								'@prev_timestamp := timestamp ' .
+							'FROM data ' .
+							'CROSS JOIN (SELECT @prev_timestamp := NULL) AS vars ' .
+							'WHERE channel_id=? ' . $sqlTimeFilter . ' ' .
+							'ORDER BY timestamp ASC' .
+					   ') AS agg ' .
+					   'GROUP BY (timestamp - ' . $timestampOffset . ') >> ' . $bitShift . ' ' .
+					   'ORDER BY timestamp ASC';
 
 				return true;
 			}
