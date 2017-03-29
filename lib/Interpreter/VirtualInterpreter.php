@@ -68,7 +68,7 @@ class VirtualInterpreter extends Interpreter {
 		$this->em = $em;
 
 		$this->interpreters = array();
-		$this->ic = new Virtual\IteratorCollection();
+		$this->timestampGenerator = new Virtual\TimestampGenerator();
 
 		// create parser for rule
 		$rule = $channel->getProperty('rule');
@@ -139,9 +139,8 @@ class VirtualInterpreter extends Interpreter {
 
 			$proxy = new Virtual\InterpreterProxy($interpreter);
 			$proxy->setEntityType($entity);
+			$this->timestampGenerator->addProxy($key, $proxy);
 			$this->interpreters[$key] = $proxy;
-
-			$this->ic->add($key, new TimestampIterator($proxy->getIterator()));
 		}
 	}
 
@@ -182,7 +181,7 @@ class VirtualInterpreter extends Interpreter {
 	public function getIterator() {
 		$this->rowCount = 0;
 
-		foreach ($this->ic->timestamps() as $this->ts) {
+		foreach ($this->timestampGenerator as $this->ts) {
 			if (!isset($ts_last)) {
 				$ts_last = $this->ts;
 			}
@@ -194,36 +193,22 @@ class VirtualInterpreter extends Interpreter {
 				throw new \Exception("Virtual channel rule must yield numeric value.");
 			}
 
-<<<<<<< Updated upstream
-			// implement consumption calculation
-			//
+			$tuple = array($this->ts, $value, 1);
+
 			// if ($this->output == self::CONSUMPTION_VALUES) {
 			// 	$this->consumption += $value * 3.6e6;
 			// }
 			// else {
-			// 	$this->consumption += $value * ($tuple[0] - $ts_last);
+			// 	$this->consumption += $value * ($this->ts - $ts_last);
 			// }
+			$this->consumption += $value * ($this->ts - $ts_last);
 
-			$this->consumption += $value * ($tuple[0] - $ts_last);
-=======
-			$tuple = array($this->ts, $value, 1);
+			$ts_last = $this->ts;
 
-			if ($this->output == self::CONSUMPTION_VALUES) {
-				$this->consumption += $value * 3.6e6;
-			}
-			else {
-				$this->consumption += $value * ($tuple[0] - $ts_last);
-			}
->>>>>>> Stashed changes
-
-			$ts_last = $tuple[0];
-
-			$res = array($tuple[0], $value, 1);
-
-			$this->updateMinMax($res);
+			$this->updateMinMax($tuple);
 			$this->rowCount++;
 
-			yield $res;
+			yield $tuple;
 		}
 	}
 
@@ -285,15 +270,6 @@ class VirtualInterpreter extends Interpreter {
 	 */
 	public static function groupExprSQL($expression) {
 		return 'AVG(' . $expression . ')';
-	}
-}
-
-/**
- * Helper class that extracts timestamp from tuple
- */
-class TimestampIterator extends \IteratorIterator {
-	function current() {
-		return parent::current()[0];
 	}
 }
 

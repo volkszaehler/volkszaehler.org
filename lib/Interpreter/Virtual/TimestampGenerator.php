@@ -24,23 +24,26 @@
 
 namespace Volkszaehler\Interpreter\Virtual;
 
-class IteratorCollection {
+/**
+ * TimestampGenerator yields sequence of timestamps by synchronously
+ * moving a collection of underlying tuple iterators
+ */
+class TimestampGenerator implements \IteratorAggregate {
 
 	private $iterators = array();
-	private $depleted = array();
 
-	public function add($key, \Iterator $iterator) {
+	public function addProxy($key, InterpreterProxy $proxy) {
+		$this->add($key, new TimestampIterator($proxy->getIterator()));
+	}
+
+	private function add($key, \Iterator $iterator) {
 		$this->iterators[$key] = $iterator;
 	}
 
-	public function get($key) {
-		if (null === $iterator = $this->iterators[$key]) {
-			$iterator = $this->depleted[$key];
-		}
-		return $iterator;
-	}
-
-	public function timestamps() {
+	/**
+	 * Yield sequential timestamps from all iterators
+	 */
+	public function getIterator() {
 		foreach ($this->iterators as $iterator) {
 			$iterator->rewind();
 		}
@@ -57,8 +60,6 @@ class IteratorCollection {
 			// remove invalid iterators
 			foreach ($this->iterators as $key => $iterator) {
 				if (!$iterator->valid()) {
-					// remove depleted iterator
-					$this->depleted[$key] = $this->iterators[$key];
 					unset($this->iterators[$key]);
 
 					// stop if no iterators left
