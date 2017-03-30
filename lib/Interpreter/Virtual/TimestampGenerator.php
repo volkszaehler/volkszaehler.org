@@ -32,12 +32,8 @@ class TimestampGenerator implements \IteratorAggregate {
 
 	private $iterators = array();
 
-	public function addProxy($key, InterpreterProxy $proxy) {
-		$this->add($key, new TimestampIterator($proxy->getIterator()));
-	}
-
-	private function add($key, \Iterator $iterator) {
-		$this->iterators[$key] = $iterator;
+	public function add(\Iterator $iterator) {
+		$this->iterators[] = $iterator;
 	}
 
 	/**
@@ -86,7 +82,7 @@ class TimestampGenerator implements \IteratorAggregate {
 			yield $ts;
 
 			// move consumed iterators
-			foreach ($this->iterators as $key => $iterator) {
+			foreach ($this->iterators as $iterator) {
 				if ($iterator->current() <= $ts) {
 					$iterator->next();
 				}
