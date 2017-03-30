@@ -10,6 +10,7 @@ namespace Tests;
 
 use Volkszaehler\Router;
 use Volkszaehler\Controller\EntityController;
+use Volkszaehler\Interpreter\Virtual;
 
 class VirtualTest extends Middleware
 {
@@ -39,6 +40,83 @@ class VirtualTest extends Middleware
 		return $array[$idx];
 	}
 
+	function getSeriesData($series) {
+		$data = [
+			'in1' => [
+				 100 => 100,
+				1000 => 10,
+				2000 => 20,
+				3000 => 30,
+				4000 => 40,
+				5000 => 50,
+			],
+			'in2' => [
+				 100 => 200,
+				 900 => 1,
+				1150 => 2,
+				1850 => 3,
+				2100 => 4,
+				3000 => 5,
+				3200 => 6,
+				3400 => 7,
+				3600 => 8,
+				3800 => 9,
+				4000 => 10,
+			]
+		];
+		return $data[$series];
+	}
+
+	function extractUniqueTimestamps($container) {
+		if (!is_array($container)) {
+			$container = [$container];
+		}
+
+		$result = [];
+		foreach ($container as $ary) {
+			$result = array_merge($result, array_keys($ary));
+		}
+
+		$result = array_unique($result, SORT_NUMERIC);
+		sort($result);
+
+		return $result;
+	}
+
+	function testTimestampGenerator() {
+		$in1 = $this->getSeriesData('in1');
+		$in2 = $this->getSeriesData('in2');
+
+		$tg = new Virtual\TimestampGenerator();
+		$tg->add(new \ArrayIterator(array_keys($in1)));
+		$tg->add(new \ArrayIterator(array_keys($in2)));
+
+		$timestamps = $this->extractUniqueTimestamps([$in1, $in2]);
+
+		$this->assertEquals($timestamps, iterator_to_array($tg));
+	}
+
+	function testGroupedTimestampIterator() {
+		$in1 = $this->getSeriesData('in1');
+		$in2 = $this->getSeriesData('in2');
+
+		$tg = new Virtual\TimestampGenerator();
+		$tg->add(new \ArrayIterator(array_keys($in1)));
+		$tg->add(new \ArrayIterator(array_keys($in2)));
+
+		$timestamps = [];
+		// group by period of 1000ms
+		foreach ($this->extractUniqueTimestamps([$in1, $in2]) as $ts) {
+			if (!isset($period) || (int)($ts / 1000) !== $period) {
+				$timestamps[] = $ts;
+				$period = (int)($ts / 1000);
+			}
+		}
+
+		$gi = new Virtual\GroupedTimestampIterator($tg, 'second');
+		$this->assertEquals($timestamps, array_values(iterator_to_array($gi)));
+	}
+
 	function testVirtualChannel() {
 		// create
 		$in1 = $this->createChannel('Sensor', 'powersensor');
@@ -54,38 +132,12 @@ class VirtualTest extends Middleware
 		$this->assertTrue(isset($this->json->entity->uuid));
 
 		$data = [
-			$in1 => [
-				 100 => 100,
-				1000 => 10,
-				2000 => 20,
-				3000 => 30,
-				4000 => 40,
-				5000 => 50,
-			],
-			$in2 => [
-				 100 => 200,
-				 900 => 1,
-				1150 => 2,
-				1850 => 3,
-				2100 => 4,
-				3000 => 5,
-				3200 => 6,
-				3400 => 7,
-				3600 => 8,
-				3800 => 9,
-				4000 => 10,
-			]
+			$in1 => $this->getSeriesData('in1'),
+			$in2 => $this->getSeriesData('in2')
 		];
 
 		// expected timestamps
-		$timestamps = array();
-		foreach ($data as $channel) {
-			foreach ($channel as $ts => $value) {
-				if (!in_array($ts, $timestamps))
-					$timestamps[] = $ts;
-			}
-		}
-		asort($timestamps);
+		$timestamps = $this->extractUniqueTimestamps($data);
 		$from = array_shift($timestamps);
 
 		// expected values
