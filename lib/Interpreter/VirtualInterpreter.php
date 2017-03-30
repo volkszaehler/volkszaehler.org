@@ -65,6 +65,13 @@ class VirtualInterpreter extends Interpreter {
 	public function __construct(Model\Channel $channel, ORM\EntityManager $em, $from, $to, $tupleCount = null, $groupBy = null, $options = array()) {
 		parent::__construct($channel, $em, $from, $to, $tupleCount, $groupBy, $options);
 
+		// remove consumption to pass options on to child interpreters
+		if ($this->hasOption('consumption')) {
+			if (($key = array_search('consumption', $this->options)) !== false) {
+			    unset($this->options[$key]);
+			}
+		}
+
 		$this->em = $em;
 
 		$this->interpreters = array();
@@ -78,6 +85,11 @@ class VirtualInterpreter extends Interpreter {
 		$this->ctx = new Shunt\Context();
 		$this->createStaticContextFunctions();
 		$this->createDynamicContextFunctions($channel->getPropertiesByRegex('/in\d/'));
+
+		// consolidate timestamps by period is required
+		if ($this->groupBy) {
+			$this->timestampGenerator = new Virtual\GroupedTimestampIterator($this->timestampGenerator, $this->groupBy);
+		}
 	}
 
 	/**
@@ -139,8 +151,11 @@ class VirtualInterpreter extends Interpreter {
 
 			$proxy = new Virtual\InterpreterProxy($interpreter);
 			$proxy->setEntityType($entity);
-			$this->timestampGenerator->addProxy($key, $proxy);
 			$this->interpreters[$key] = $proxy;
+
+			// add timestamp iterator to generator
+			$iterator = new Virtual\TimestampIterator($proxy->getIterator());
+			$this->timestampGenerator->add($iterator);
 		}
 	}
 
