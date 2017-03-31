@@ -53,7 +53,7 @@ class SensorInterpreter extends Interpreter {
 			else {
 				$delta_ts = $row[0] - $this->ts_last;
 				$tuple = $this->convertRawTuple($row);
-				$this->consumption += $row[1] / $this->resolution * $delta_ts;
+				$this->consumption += $tuple[1] * $delta_ts;
 
 				$this->updateMinMax($tuple);
 				yield $tuple;
