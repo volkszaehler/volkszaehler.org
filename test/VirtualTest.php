@@ -96,6 +96,12 @@ class VirtualTest extends Middleware
 		$this->assertEquals($timestamps, iterator_to_array($tg));
 	}
 
+	function testDelayedIterator() {
+		$timestamps = [0,1,2,3];
+		$di = new Virtual\DelayedIterator(new \ArrayIterator($timestamps));
+		$this->assertEquals($timestamps, iterator_to_array($di));
+	}
+
 	function testGroupedTimestampIterator() {
 		$in1 = $this->getSeriesData('in1');
 		$in2 = $this->getSeriesData('in2');
@@ -106,12 +112,13 @@ class VirtualTest extends Middleware
 
 		$timestamps = [];
 		// group by period of 1000ms
-		foreach ($this->extractUniqueTimestamps([$in1, $in2]) as $ts) {
+		foreach (array_reverse($this->extractUniqueTimestamps([$in1, $in2])) as $ts) {
 			if (!isset($period) || (int)($ts / 1000) !== $period) {
 				$timestamps[] = $ts;
 				$period = (int)($ts / 1000);
 			}
 		}
+		$timestamps = array_reverse($timestamps);
 
 		$gi = new Virtual\GroupedTimestampIterator($tg, 'second');
 		$this->assertEquals($timestamps, array_values(iterator_to_array($gi)));

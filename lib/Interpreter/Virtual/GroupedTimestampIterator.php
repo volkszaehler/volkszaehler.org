@@ -26,14 +26,15 @@ namespace Volkszaehler\Interpreter\Virtual;
 
 /**
  * GroupedTimestampIterator filters timestamps of
- * underlying interpreter by grouping period
+ * underlying iterator by grouping period.
+ * Only the last timestamp per period is returned.
  */
 class GroupedTimestampIterator extends \IteratorIterator {
 
 	private $group;
 
 	public function __construct(\Traversable $iterator, $group) {
-		parent::__construct($iterator);
+		parent::__construct(new DelayedIterator($iterator));
 
 		$formats = array(
 			'year' =>	'Y',
@@ -64,13 +65,31 @@ class GroupedTimestampIterator extends \IteratorIterator {
 	 * Iterator
 	 */
 
-	public function next() {
-		$period = $this->timestampToPeriod(parent::current());
+	public function rewind() {
+		parent::rewind();
 
+		if ($this->valid()) {
+			$period = $this->timestampToPeriod($this->current());
+			$peekPeriod = $this->timestampToPeriod($this->getInnerIterator()->peek());
+
+			if ($period == $peekPeriod) {
+				$this->next();
+			}
+		}
+	}
+
+	public function next() {
 		do {
 			parent::next();
-			$continue = parent::valid() &&
-				$period === $this->timestampToPeriod(parent::current());
+
+			$continue = false;
+			if ($this->valid()) {
+				if (!isset($period)) {
+					$period = $this->timestampToPeriod($this->current());
+				}
+				$peekPeriod = $this->timestampToPeriod($this->getInnerIterator()->peek());
+				$continue = $period === $peekPeriod;
+			}
 		}
 		while ($continue);
 	}
