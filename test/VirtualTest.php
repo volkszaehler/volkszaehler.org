@@ -10,6 +10,7 @@ namespace Tests;
 
 use Volkszaehler\Router;
 use Volkszaehler\Controller\EntityController;
+use Volkszaehler\Interpreter\Interpreter;
 use Volkszaehler\Interpreter\Virtual;
 
 class VirtualTest extends Middleware
@@ -67,6 +68,26 @@ class VirtualTest extends Middleware
 		return $data[$series];
 	}
 
+	function getGroupSeriesData($series) {
+		$data = [
+			'in1' => [
+				0 => 0,
+				// 0.5 => 0,
+				1 => 1000,
+				// 1.5 => 1000,
+				2 => 2000,
+				// 2.5 => 2000,
+				3 => 3000,
+				// 3.5 => 3000,
+				4 => 4000,
+				// 4.5 => 4000,
+				5 => 5000,
+				// 5.5 => 5000,
+			]
+		];
+		return $data[$series];
+	}
+
 	function extractUniqueTimestamps($container) {
 		if (!is_array($container)) {
 			$container = [$container];
@@ -81,6 +102,23 @@ class VirtualTest extends Middleware
 		sort($result);
 
 		return $result;
+	}
+
+	function createVirtualInterpreter($uuid, $from, $to, $tuples, $groupBy, $options= array()) {
+		$em = Router::createEntityManager();
+		$entity = EntityController::factory($em, $uuid);
+		$class = $entity->getDefinition()->getInterpreter();
+		$vi = new $class($entity, $em, $from, $to, $tuples, $groupBy, $options);
+		return $vi;
+	}
+
+	function getInterpreterResult(Interpreter $vi) {
+		$tuples = array();
+		foreach ($vi as $tuple) {
+			$tuple[0] = (int)$tuple[0];
+			$tuples[] = $tuple;
+		}
+		return $tuples;
 	}
 
 	function testTimestampGenerator() {
@@ -170,25 +208,78 @@ class VirtualTest extends Middleware
 		// $url = '/data/' . $out . '.json?from=1&to=now&debug=1';
 		// $output = $this->getJson($url);
 		// $tuples = $output->data->tuples;
-
-		$em = Router::createEntityManager();
-		$entity = EntityController::factory($em, $out, true); // from cache
-		$class = $entity->getDefinition()->getInterpreter();
-		$vc = new $class($entity, $em, 1, 'now', null, null);
-
-		$tuples = array();
-		foreach ($vc as $tuple) {
-			$tuple[0] = (int)$tuple[0];
-			$tuples[] = $tuple;
-		}
+		$vi = $this->createVirtualInterpreter($out, 1, 'now', null, null);
+		$tuples = $this->getInterpreterResult($vi);
 
 		// omit first 2 timestamps from assertion since VirtualInterpreter
 		// has no access to very first database row consumed by DataIterator
 		$this->assertEquals(array_splice($values, 2), array_splice($tuples, 2));
-		$this->assertEquals($from, $vc->getFrom());
+		$this->assertEquals($from, $vi->getFrom());
 
 		// delete
 		foreach ([$in1, $in2, $out] as $uuid) {
+			$url = '/channel/' . $uuid . '.json?operation=delete';
+			$this->getJson($url);
+		}
+	}
+
+	function testVirtualChannelConsumption() {
+		// create
+		$in1 = $this->createChannel('Sensor', 'powersensor');
+		$out = $this->createChannel('Virtual', 'virtualconsumption', [
+			'unit' => 'foo',
+			'in1' => $in1,
+			'rule' => 'in1()'
+		]);
+
+		$this->assertTrue(isset($this->json->entity), "Expected <entity> got none.");
+		$this->assertTrue(isset($this->json->entity->uuid));
+
+		// convert hours to milliseconds
+		$series = $this->getGroupSeriesData('in1');
+		$data = [
+			$in1 => array_combine(
+				array_map(function($key) use ($series) {
+					return ($key * 3600) * 1000;
+				}, array_keys($series)),
+				array_values($series)
+			)
+		];
+
+		// add input values
+		foreach ($data as $uuid => $tuples) {
+			foreach ($tuples as $ts => $value) {
+				$this->getJson('/data/' . $uuid . '.json', array(
+					'operation' => 'add',
+					'ts' => $ts,
+					'value' => $value
+				));
+			}
+		}
+
+		// get result
+		// $url = '/data/' . $out . '.json?from=1&to=now&debug=1';
+		// $output = $this->getJson($url);
+		// $tuples = $output->data->tuples;
+		$vi = $this->createVirtualInterpreter($out, 0, 'now', null, 'hour', ['consumption']);
+		$tuples = $this->getInterpreterResult($vi);
+
+		// expected values
+		$values = array_map(function($key) use ($data, $in1) {
+			$tuple = [$key, (float)$data[$in1][$key], 1];
+			return $tuple;
+		}, array_keys($data[$in1]));
+		array_shift($values);
+
+		$consumption = (array_reduce($values, function($carry, $tuple) {
+			return $carry + $tuple[1];
+		}));
+
+		$this->assertEquals(array_splice($values, 0), array_splice($tuples, 0));
+		$this->assertEquals($consumption, $vi->getConsumption());
+
+		// delete
+		foreach ([$in1, $out] as $uuid) {
 			$url = '/channel/' . $uuid . '.json?operation=delete';
 			$this->getJson($url);
 		}
