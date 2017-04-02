@@ -1,5 +1,7 @@
-etc/volkszaehler.conf.php
-htdocs/frontend/tz
-node_modules/
-vendor/
-composer.lock
+/.settings
+/etc/volkszaehler.conf.php
+/htdocs/build
+/htdocs/tz
+/node_modules/
+/vendor/
+/composer.lock

@@ -138,13 +138,22 @@ class JSON extends View {
 	/**
 	 * Process, encode and print output to stdout
 	 *
-	 * For StreamedResponse the renderDeferred happens outside Router->handle() and therefore
-	 * without surrounding try/catch. To enable exception handling via json responses, all output
-	 * must be collected until Exception occured and is handled by View.
+	 * For StreamedResponse the renderDeferred happens outside Router->handle()
+	 * and therefore without surrounding try/catch. To enable exception handling
+	 * via json responses, all output must be collected until an
+	 * Exception occured and is handled by View.
 	 */
 	protected function renderDeferred() {
 		$this->content .= '{';
 		$contentStarted = false;
+
+		// remove debug from array and render it after interpreters
+		// to catch deferred SQL statements
+		$debug = false;
+		if (isset($this->json['debug'])) {
+			$debug = $this->json['debug'];
+			unset($this->json['debug']);
+		}
 
 		foreach ($this->json as $key => $data) {
 			if ($contentStarted) {
@@ -168,11 +177,19 @@ class JSON extends View {
 				$this->content .= ']';
 			}
 			elseif ($data instanceof Util\Debug) {
-				$this->content .= json_encode($this->convertDebug($data));
+				// this cannot happen
+				$this->content .= json_encode($this->convertDebug($this->json['debug']));
 			}
 			else {
 				$this->content .= json_encode($data);
 			}
+		}
+
+		if ($debug) {
+			if ($contentStarted) {
+				$this->content .= ",";
+			}
+			$this->content .= '"debug":' . json_encode($this->convertDebug($debug));
 		}
 
 		$this->content .= '}';
