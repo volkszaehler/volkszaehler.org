@@ -149,8 +149,12 @@ class VirtualInterpreter extends Interpreter {
 			$class = $entity->getDefinition()->getInterpreter();
 			$interpreter = new $class($entity, $this->em, $this->from, $this->to, $this->tupleCount, $this->groupBy, $this->options);
 
+			// timestamp strategy mode
 			$proxy = new Virtual\InterpreterProxy($interpreter);
-			$proxy->setEntityType($entity);
+			if ($this->groupBy)
+				$proxy->setStrategy(Virtual\InterpreterProxy::STRATEGY_TS_BEFORE);
+			else
+				$proxy->setStrategyByEntityType($entity);
 			$this->interpreters[$key] = $proxy;
 
 			// add timestamp iterator to generator
@@ -196,11 +200,13 @@ class VirtualInterpreter extends Interpreter {
 	public function getIterator() {
 		$this->rowCount = 0;
 
-		foreach ($this->timestampGenerator as $this->ts) {
-			if (!isset($ts_last)) {
-				$ts_last = $this->ts;
-			}
+		// create first timestmap as min from interpreters
+		$ts_last = PHP_INT_MAX;
+		foreach ($this->interpreters as $interpreter) {
+			$ts_last = min($ts_last, $interpreter->getFrom());
+		}
 
+		foreach ($this->timestampGenerator as $this->ts) {
 			// calculate
 			$value = $this->parser->reduce($this->ctx);
 
@@ -208,16 +214,16 @@ class VirtualInterpreter extends Interpreter {
 				throw new \Exception("Virtual channel rule must yield numeric value.");
 			}
 
-			$tuple = array($this->ts, $value, 1);
-
 			// if ($this->output == self::CONSUMPTION_VALUES) {
-			// 	$this->consumption += $value * 3.6e6;
+			// 	$value *= ($this->ts - $ts_last) / 3.6e6;
+			// 	$this->consumption += $value;
 			// }
 			// else {
 			// 	$this->consumption += $value * ($this->ts - $ts_last);
 			// }
 			$this->consumption += $value * ($this->ts - $ts_last);
 
+			$tuple = array($this->ts, $value, 1);
 			$ts_last = $this->ts;
 
 			$this->updateMinMax($tuple);

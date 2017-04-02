@@ -33,11 +33,11 @@ use Volkszaehler\Model;
  */
 class InterpreterProxy implements \IteratorAggregate {
 
-	const MODE_TS_BEFORE = 1;	// states
-	const MODE_TS_AFTER = 2;	// steps
-	const MODE_TS_BEST = 3;		// lines
+	const STRATEGY_TS_BEFORE = 1;	// states
+	const STRATEGY_TS_AFTER = 2;	// steps
+	const STRATEGY_TS_BEST = 3;		// lines
 
-	private $strategy = self::MODE_TS_BEFORE;
+	private $strategy = self::STRATEGY_TS_BEFORE;
 
 	private $iterator;
 
@@ -55,13 +55,17 @@ class InterpreterProxy implements \IteratorAggregate {
 		return $this->iterator;
 	}
 
+	public function setStrategy($strategy) {
+		$this->strategy = $strategy;
+	}
+
 	/**
 	 * Take entity line style into consideration for
 	 * how timestamps need be interpreted
 	 */
-	public function setEntityType(Model\Entity $entity) {
+	public function setStrategyByEntityType(Model\Entity $entity) {
 		if (!$entity->hasProperty('style')) {
-			// assume MODE_BEST which is the default
+			// assume STRATEGY_BEST which is the default
 			return;
 		}
 
@@ -70,11 +74,11 @@ class InterpreterProxy implements \IteratorAggregate {
 				case 'states':
 					// only use values of timestamps < current
 					// @TODO check if < is enforced or <=
-					$this->strategy = self::MODE_TS_BEFORE;
+					$this->strategy = self::STRATEGY_TS_BEFORE;
 					break;
 				case 'steps':
 					// only use values of timestamps >= current
-					$this->strategy = self::MODE_TS_AFTER;
+					$this->strategy = self::STRATEGY_TS_AFTER;
 					break;
 			}
 		}
@@ -93,14 +97,11 @@ class InterpreterProxy implements \IteratorAggregate {
 		$current = $this->iterator->current();
 
 		switch ($this->strategy) {
-			case self::MODE_TS_BEFORE:
-				return $previous[1];
-				break;
-			case self::MODE_TS_AFTER:
+			case self::STRATEGY_TS_AFTER:
 				return $current[1];
 				break;
 			default:
-				// MODE_TS_BEFORE
+				// STRATEGY_TS_BEFORE
 				return $previous[1];
 		}
 	}
