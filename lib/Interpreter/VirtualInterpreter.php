@@ -199,14 +199,18 @@ class VirtualInterpreter extends Interpreter {
 	 */
 	public function getIterator() {
 		$this->rowCount = 0;
-
-		// create first timestmap as min from interpreters
-		$ts_last = PHP_INT_MAX;
-		foreach ($this->interpreters as $interpreter) {
-			$ts_last = min($ts_last, $interpreter->getFrom());
-		}
+		$ts_last = null;
 
 		foreach ($this->timestampGenerator as $this->ts) {
+			if (!isset($ts_last)) {
+				// create first timestmap as min from interpreters
+				foreach ($this->interpreters as $interpreter) {
+					$from = $interpreter->getFrom();
+					$ts_last = ($ts_last === null) ? $from : min($ts_last, $from);
+				}
+				$this->from = $ts_last;
+			}
+
 			// calculate
 			$value = $this->parser->reduce($this->ctx);
 
@@ -229,6 +233,8 @@ class VirtualInterpreter extends Interpreter {
 
 			yield $tuple;
 		}
+
+		$this->to = $ts_last;
 	}
 
 	/**
@@ -243,11 +249,11 @@ class VirtualInterpreter extends Interpreter {
 	 */
 
 	public function getFrom() {
-		return $this->interpreters[self::PRIMARY]->getFrom();
+		return $this->from;
 	}
 
 	public function getTo() {
-		return $this->interpreters[self::PRIMARY]->getTo();
+		return $this->to;
 	}
 
 	/**
