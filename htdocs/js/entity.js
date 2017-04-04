@@ -491,7 +491,13 @@ Entity.prototype.showDetails = function() {
 			}
 		},
 		open: function() {
-			$(this).siblings('.ui-dialog-buttonpane').find('button:eq(0)').focus();
+			$(this).siblings('.ui-dialog-buttonpane').find('button:eq(2)').focus();
+			if (entity.definition.model == 'Volkszaehler\\Model\\Aggregator') {
+				// disable data button for groups
+				$(this).siblings('.ui-dialog-buttonpane')
+					.find('button:contains("Daten")')
+					.button("option", "disabled", true);
+			}
 		}
 	}).select();
 
