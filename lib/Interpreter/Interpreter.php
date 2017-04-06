@@ -219,7 +219,7 @@ abstract class Interpreter implements \IteratorAggregate {
 
 			if (isset($this->to)) {
 				// avoid generating timestamps outside the requested range for consumption
-				$sql = $this->hasOption('consumption')
+				$sql = ($this->hasOption('consumption') || $this->hasOption('consumptionto'))
 					? 'SELECT MAX(timestamp) FROM data WHERE channel_id=? AND timestamp<?'
 					: 'SELECT MIN(timestamp) FROM data WHERE channel_id=? AND timestamp>?';
 				$to = $this->conn->fetchColumn($sql, array($this->channel->getId(), $this->to), 0);
