@@ -65,13 +65,6 @@ class VirtualInterpreter extends Interpreter {
 	public function __construct(Model\Channel $channel, ORM\EntityManager $em, $from, $to, $tupleCount = null, $groupBy = null, $options = array()) {
 		parent::__construct($channel, $em, $from, $to, $tupleCount, $groupBy, $options);
 
-		// remove consumption to pass options on to child interpreters
-		if ($this->hasOption('consumption')) {
-			if (($key = array_search('consumption', $this->options)) !== false) {
-			    unset($this->options[$key]);
-			}
-		}
-
 		$this->em = $em;
 
 		$this->interpreters = array();
@@ -133,6 +126,13 @@ class VirtualInterpreter extends Interpreter {
 		$this->ctx->def('from', array($this, '_from')); // from timestamp
 		$this->ctx->def('to', array($this, '_to')); 	// to timestamp
 
+		// child interpreter options for calculation consumption
+		// at virtual interpreter level
+		$options = $this->options;
+		if (false !== $idx = array_search('consumption', $options)) {
+			$options[$idx] = 'consumptionto';
+		}
+
 		// assign input channel functions
 		foreach ($uuids as $key => $value) {
 			$this->ctx->def($key, $key, 'string'); // as key constant
@@ -147,7 +147,7 @@ class VirtualInterpreter extends Interpreter {
 			$this->ctx->def($title, function() use ($key) { return $this->_val($key); }); // as value function
 
 			$class = $entity->getDefinition()->getInterpreter();
-			$interpreter = new $class($entity, $this->em, $this->from, $this->to, $this->tupleCount, $this->groupBy, $this->options);
+			$interpreter = new $class($entity, $this->em, $this->from, $this->to, $this->tupleCount, $this->groupBy, $options);
 
 			// timestamp strategy mode
 			$proxy = new Virtual\InterpreterProxy($interpreter);

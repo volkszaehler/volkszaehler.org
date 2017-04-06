@@ -72,17 +72,11 @@ class VirtualTest extends Middleware
 		$data = [
 			'in1' => [
 				0 => 0,
-				// 0.5 => 0,
 				1 => 1000,
-				// 1.5 => 1000,
 				2 => 2000,
-				// 2.5 => 2000,
 				3 => 3000,
-				// 3.5 => 3000,
 				4 => 4000,
-				// 4.5 => 4000,
 				5 => 5000,
-				// 5.5 => 5000,
 			]
 		];
 		return $data[$series];
@@ -205,9 +199,6 @@ class VirtualTest extends Middleware
 		}
 
 		// get result
-		// $url = '/data/' . $out . '.json?from=1&to=now&debug=1';
-		// $output = $this->getJson($url);
-		// $tuples = $output->data->tuples;
 		$vi = $this->createVirtualInterpreter($out, 1, 'now', null, null);
 		$tuples = $this->getInterpreterResult($vi);
 
@@ -258,9 +249,6 @@ class VirtualTest extends Middleware
 		}
 
 		// get result
-		// $url = '/data/' . $out . '.json?from=1&to=now&debug=1';
-		// $output = $this->getJson($url);
-		// $tuples = $output->data->tuples;
 		$vi = $this->createVirtualInterpreter($out, 0, 'now', null, 'hour', ['consumption']);
 		$tuples = $this->getInterpreterResult($vi);
 
@@ -276,6 +264,58 @@ class VirtualTest extends Middleware
 		}));
 
 		$this->assertEquals(array_splice($values, 0), array_splice($tuples, 0));
+		$this->assertEquals($consumption, $vi->getConsumption());
+
+		// partial consumption
+		$vi = $this->createVirtualInterpreter($out, 0, 2 * 3600 * 1000, null, 'hour', ['consumption']);
+		$tuples = $this->getInterpreterResult($vi);
+
+		// delete
+		foreach ([$in1, $out] as $uuid) {
+			$url = '/channel/' . $uuid . '.json?operation=delete';
+			$this->getJson($url);
+		}
+	}
+
+	function testVirtualChannelConsumptionRanges() {
+		// create
+		$in1 = $this->createChannel('Sensor', 'powersensor');
+		$out = $this->createChannel('Virtual', 'virtualconsumption', [
+			'unit' => 'foo',
+			'in1' => $in1,
+			'rule' => 'in1()'
+		]);
+
+		$this->assertTrue(isset($this->json->entity), "Expected <entity> got none.");
+		$this->assertTrue(isset($this->json->entity->uuid));
+
+		// convert hours to milliseconds
+		$series = $this->getGroupSeriesData('in1');
+		$data = [
+			$in1 => array_combine(
+				array_map(function($key) use ($series) {
+					return ($key * 60) * 1000;
+				}, range(0, 2*60)),
+				array_fill(0, 2*60+1, 1)
+			)
+		];
+
+		// add input values
+		foreach ($data as $uuid => $tuples) {
+			foreach ($tuples as $ts => $value) {
+				$this->getJson('/data/' . $uuid . '.json', array(
+					'operation' => 'add',
+					'ts' => $ts,
+					'value' => $value
+				));
+			}
+		}
+
+		// get result
+		$vi = $this->createVirtualInterpreter($out, 3600 * 1000, 7200 * 1000, null, 'hour', ['consumption']);
+		$tuples = $this->getInterpreterResult($vi);
+		$consumption = 1.0;
+
 		$this->assertEquals($consumption, $vi->getConsumption());
 
 		// delete
