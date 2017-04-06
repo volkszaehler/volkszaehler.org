@@ -129,7 +129,6 @@ $(document).ready(function() {
 					}
 					// if Apache ProxyPass is used, connect with http(s) but always forward to unencrypted port
 					uri += "/ws"; // parser.pathname.replace(/(\.\.\/)?middleware.php$/, "ws")
-					console.info("Live updates not configured. Trying default path at " + uri);
 				}
 				else {
 				 	// use dedicated port
@@ -138,7 +137,6 @@ $(document).ready(function() {
 
 				// connect and store session
 				new ab.connect(uri, function(session) {
-					console.log("Autobahn connected to " + uri + " (" + session.sessionid() + ")");
 					middleware.session = session;
 
 					// subscribe entities for middleware
@@ -148,7 +146,6 @@ $(document).ready(function() {
 						}
 					}, true); // recursive
 				}, function(code, reason) {
-					console.log("Autobahn disconnected (" + code + ", " + reason + ")");
 					delete middleware.session;
 				});
 			});
