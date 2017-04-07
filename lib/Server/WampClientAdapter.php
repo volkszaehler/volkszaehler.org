@@ -37,6 +37,11 @@ class WampClientAdapter implements WampServerInterface, PushTransportInterface {
 	 */
 	protected $subscribedTopics = array();
 
+	/**
+	 * @var count of open connections
+	 */
+	protected $connections = 0;
+
 	/*
 	 * PushTransportInterface
 	 */
@@ -57,9 +62,7 @@ class WampClientAdapter implements WampServerInterface, PushTransportInterface {
 	}
 
 	public function onUnSubscribe(ConnectionInterface $conn, $topic) {
-		if ($topic->count() == 0) {
-			$this->removeTopic($topic->getId());
-		}
+		$this->cleanTopic($conn, $topic);
 	}
 
 	public function onCall(ConnectionInterface $conn, $id, $topic, array $params) {
@@ -77,9 +80,15 @@ class WampClientAdapter implements WampServerInterface, PushTransportInterface {
 	 */
 
 	public function onOpen(ConnectionInterface $conn) {
+		$this->connections++;
 	}
 
 	public function onClose(ConnectionInterface $conn) {
+		$this->connections--;
+
+		foreach ($this->subscribedTopics as $topic) {
+			$this->cleanTopic($conn, $topic);
+		}
 	}
 
 	public function onError(ConnectionInterface $conn, \Exception $e) {
@@ -101,8 +110,11 @@ class WampClientAdapter implements WampServerInterface, PushTransportInterface {
 		$this->subscribedTopics[$uuid] = $topic;
 	}
 
-	protected function removeTopic($uuid) {
-		if (isset($this->subscribedTopics[$uuid])) {
+	protected function cleanTopic(ConnectionInterface $conn, $topic) {
+		$topic->remove($conn);
+
+		$uuid = $topic->getId();
+		if ($topic->count() === 0 && isset($this->subscribedTopics[$uuid])) {
 			unset($this->subscribedTopics[$uuid]);
 		}
 	}
