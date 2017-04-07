@@ -182,21 +182,33 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 					$sqlParameters = $this->buildAggregationTableParameters();
 
 					// 	   table:   --DATA-- -----aggregate----- -DATA-
-					$sql = 'SELECT timestamp, value, 1 AS count, @row:=@row+1 AS row ' .
+					$sql = 'SELECT timestamp, value, 1 AS count ' .
 						   'FROM data ' .
 						   'WHERE channel_id = ? ' .
 						   'AND (' . $this->sqlTimeFilterPre . ' OR' . $this->sqlTimeFilterPost . ') ';
 
 					// 	   table:   --data-- -----AGGREGATE----- -data-
-					$sql.= 'UNION SELECT timestamp, value, count, @row:=@row+1 AS row ' .
+					$sql.= 'UNION SELECT timestamp, value, count ' .
 						   'FROM aggregate ' .
 						   'WHERE channel_id = ? AND type = ?' . $this->sqlTimeFilter;
+
+					// find lowest timestamp for grouping after first record
+					$sqlParameters[] = $this->channel->getId();
+					$leftSql = 'SELECT MIN(timestamp) AS timestamp FROM data ' .
+						   'WHERE channel_id = ? ' . self::buildDateTimeFilterSQL($this->from, null, $sqlParameters) . ' UNION ';
+
+					$sqlParameters[] = $this->channel->getId();
+					$leftSql.= 'SELECT MIN(timestamp) AS timestamp FROM aggregate ' .
+						   'WHERE channel_id = ? ' . self::buildDateTimeFilterSQL($this->aggFrom, null, $sqlParameters);
+
+					$leftSql = 'SELECT MIN(timestamp) AS timestamp FROM (' . $leftSql . ') AS agg';
 
 					// add common aggregation and sorting on UNIONed table
 					$sql = 'SELECT MAX(timestamp) AS timestamp, ' .
 							$this->interpreter->groupExprSQL('value') . ' AS value, SUM(count) AS count ' .
-						   'FROM (SELECT @row:=0) AS init, (' . $sql . ') AS agg ' .
-						   'GROUP BY row > 1 ORDER BY timestamp ASC';
+						   'FROM (' . $sql . ') AS agg ' .
+						   'GROUP BY timestamp > (' . $leftSql . ') ' .
+						   'ORDER BY timestamp ASC';
 				}
 			}
 		}
