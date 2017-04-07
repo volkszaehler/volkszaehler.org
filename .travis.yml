@@ -37,9 +37,6 @@ matrix:
     # jslint-only
     - php: 5.6
       env: DB= DEPENDENCIES= JSLINT=true
-    # security
-    - php: 5.6
-      env: DB= DEPENDENCIES= SECURITY=true
 
 notifications:
     mail: "volkszaehler-dev@lists.volkszaehler.org"
@@ -64,7 +61,6 @@ install:
     - if [ "$DEPENDENCIES" = "lowest" ]; then composer update --prefer-lowest -n; fi
     - if [ "$DEPENDENCIES" = "highest" ]; then composer update -n; fi
     - if [ "$JSLINT" = true ]; then npm install; fi
-    - if [ "$SECURITY" = true ]; then wget http://get.sensiolabs.org/security-checker.phar; fi
     - if [ "$TEST_COMPONENT" = "HTTPD" ]; then composer require php-pm/php-pm:dev-master php-pm/httpkernel-adapter:dev-master; fi
 
     # add apc cache
@@ -141,6 +137,3 @@ script:
 
     # jslint javascript sources
     - if [ "$JSLINT" = true ]; then gulp jshint; fi
-
-    # check package security
-    - if [ "$SECURITY" = true ]; then php security-checker.phar security:check composer.lock; fi
