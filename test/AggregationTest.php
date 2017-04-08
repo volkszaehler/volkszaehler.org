@@ -40,7 +40,9 @@ class AggregationTest extends DataPerformance
 	 * @group aggregation
 	 */
 	function testConfiguration() {
-		$this->assertTrue(Util\Configuration::read('aggregation'), 'data aggregation not enabled in config file, set $config[\'aggregation\'] = true');
+		if (!Util\Configuration::read('aggregation')) {
+			$this->markTestSkipped('data aggregation not enabled');
+		}
 	}
 
 	/**
