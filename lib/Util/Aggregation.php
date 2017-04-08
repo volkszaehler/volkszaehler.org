@@ -223,7 +223,7 @@ class Aggregation {
 		$format = self::getAggregationDateFormat($level);
 		$type = self::getAggregationLevelTypeValue($level);
 
-		$weighed_avg = ($interpreter == 'Volkszaehler\\Interpreter\\SensorInterpreter');
+		$weighed_avg = $interpreter == Interpreter\SensorInterpreter::class;
 
 		$sqlParameters = array($type);
 		$sql = 'REPLACE INTO ' . $this->targetTable . ' (channel_id, type, timestamp, value, count) ';
@@ -265,7 +265,7 @@ class Aggregation {
 				'FROM ( ' .
 					'SELECT channel_id, timestamp, value, ' .
 						'value * (timestamp - @prev_timestamp) AS val_by_time, ' .
-						'GREATEST(0, IF(@prev_timestamp = NULL, NULL, @prev_timestamp)) AS prev_timestamp, ' .
+						'COALESCE(@prev_timestamp, 0) AS prev_timestamp, ' .
 						'@prev_timestamp := timestamp ' .
 					'FROM data ' .
 					'CROSS JOIN (SELECT @prev_timestamp := ' . $intialTimestamp . ') AS vars ' .
