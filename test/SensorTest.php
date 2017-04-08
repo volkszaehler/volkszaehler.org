@@ -244,8 +244,10 @@ class SensorTest extends Data
 	 */
 	function testMultipleGroupByHour2() {
 		// requires weighed average calculation - currently not portable across DBMSes
-		if (($db = \Volkszaehler\Util\Configuration::read('db.driver')) !== 'pdo_mysql')
+		$db = \Volkszaehler\Util\Configuration::read('db.driver');
+		if (!in_array($db, ['pdo_mysql', 'pdo_pgsql'])) {
 			$this->markTestSkipped('not implemented for ' . $db);
+		}
 
 		$this->addTuple($this->ts4, $this->value4);
 		$this->addTuple($this->ts5, $this->value5);

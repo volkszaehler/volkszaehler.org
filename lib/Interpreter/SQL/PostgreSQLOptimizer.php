@@ -23,10 +23,14 @@
 
 namespace Volkszaehler\Interpreter\SQL;
 
+use Volkszaehler\Interpreter\SensorInterpreter;
+
 /**
  * PostgreSQLOptimizer provides basic DB-specific optimizations
  */
 class PostgreSQLOptimizer extends SQLOptimizer {
+
+	use SensorInterpreterAverageTrait;
 
 	/**
 	 * DB-specific data grouping by date functions
@@ -49,6 +53,29 @@ class PostgreSQLOptimizer extends SQLOptimizer {
 			default:
 				return FALSE;
 		}
+	}
+
+	/**
+	 * Provide SQL statement for SensorInterpreterAverageTrait->optimizeDataSQL
+	 * SensorInterpreter special case
+	 */
+	function weighedAverageSQL($sqlTimeFilter) {
+		$sql =
+			'SELECT MAX(agg.timestamp) AS timestamp, ' .
+				  'COALESCE( ' .
+					  'SUM(agg.val_by_time) / (MAX(agg.timestamp) - MIN(agg.prev_timestamp)), ' .
+					  $this->interpreter->groupExprSQL('agg.value') .
+				  ') AS value, ' .
+				  'COUNT(agg.value) AS count ' .
+			'FROM ( ' .
+				'SELECT timestamp, value, ' .
+					'value * (timestamp - LAG(timestamp) OVER (ORDER BY timestamp)) AS val_by_time, ' .
+					'LAG(timestamp) OVER (ORDER BY timestamp) AS prev_timestamp ' .
+				'FROM data ' .
+				'WHERE channel_id=? ' . $sqlTimeFilter . ' ' .
+				'ORDER BY timestamp ' .
+			') AS agg ';
+		return $sql;
 	}
 }
 
