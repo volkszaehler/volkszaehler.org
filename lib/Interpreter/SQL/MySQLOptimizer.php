@@ -24,7 +24,7 @@
 
 namespace Volkszaehler\Interpreter\SQL;
 
-use Volkszaehler\Interpreter;
+use Volkszaehler\Interpreter\SensorInterpreter;
 use Volkszaehler\Util;
 use Volkszaehler\Model;
 use Doctrine\DBAL;
@@ -33,6 +33,8 @@ use Doctrine\DBAL;
  * MySQLOptimizer provides basic DB-specific optimizations
  */
 class MySQLOptimizer extends SQLOptimizer {
+
+	use SensorInterpreterAverageTrait;
 
 	/**
 	 * Disable SQL statement caching
@@ -89,26 +91,16 @@ class MySQLOptimizer extends SQLOptimizer {
 	}
 
 	/**
-	 * SQL statement optimization for perfromance
+	 * Provide SQL statement for SensorInterpreterAverageTrait->optimizeDataSQL
+	 * SensorInterpreter special case
 	 *
-	 * @param  string $sql           SQL statement to modify
-	 * @param  array  $sqlParameters Parameters list
-	 * @return boolean               Success
+	 * Fir MySQL discussion see
+	 * https://bugs.php.net/bug.php?id=67537
+	 * http://stackoverflow.com/questions/24457442/how-to-find-previous-record-n-per-group-maxtimestamp-timestamp
+	 * http://www.xaprb.com/blog/2006/12/15/advanced-mysql-user-variable-techniques/
 	 */
-	public function optimizeDataSQL(&$sql, &$sqlParameters) {
-		// additional optimizations for SensorInterpreter only
-		if (get_class($this->interpreter) !== Interpreter\SensorInterpreter::class)
-			return parent::optimizeDataSQL($sql, $sqlParameters);
-
-		// SensorInterpreter needs weighed average calculation
-		$foo = array();
-		$sqlTimeFilter = $this->interpreter->buildDateTimeFilterSQL($this->from, $this->to, $foo);
-
-		// NOTE		GREATEST() is required to force MySQL to evaluate the variables in the needed order (hacky)
-		// see:		https://bugs.php.net/bug.php?id=67537
-		// 			http://stackoverflow.com/questions/24457442/how-to-find-previous-record-n-per-group-maxtimestamp-timestamp
-		// 			http://www.xaprb.com/blog/2006/12/15/advanced-mysql-user-variable-techniques/
-		$sensorSql =
+	function weighedAverageSQL($sqlTimeFilter) {
+		$sql =
 			'SELECT MAX(agg.timestamp) AS timestamp, ' .
 				  'COALESCE( ' .
 					  'SUM(agg.val_by_time) / (MAX(agg.timestamp) - MIN(agg.prev_timestamp)), ' .
@@ -125,37 +117,7 @@ class MySQLOptimizer extends SQLOptimizer {
 				'WHERE channel_id=? ' . $sqlTimeFilter . ' ' .
 				'ORDER BY timestamp ' .
 		   ') AS agg ';
-
-		// MySQL-specific implementation below
-		if ($this->groupBy) {
-			$sqlGroupFields = $this->interpreter->buildGroupBySQL($this->groupBy);
-
-			$sql = $sensorSql .
-				   'GROUP BY ' . $sqlGroupFields . ' ' .
-				   'ORDER BY timestamp ASC';
-			return true;
-		}
-
-		// potential to reduce result set - can't do this for already grouped SQL
-		if ($this->tupleCount && ($this->rowCount > $this->tupleCount)) {
-			// use power of 2 instead of division for performance
-			$bitShift = (int) floor(log(($this->to - $this->from) / $this->tupleCount, 2));
-
-			if ($bitShift > 0) { // worth doing -> go
-				// ensure first tuple consumes only record
-				$packageSize = 1 << $bitShift;
-				$timestampOffset = $this->from - $packageSize + 1;
-
-				// optimize package statement general case: tuple packaging
-				$sql = $sensorSql .
-					   'GROUP BY (timestamp - ' . $timestampOffset . ') >> ' . $bitShift . ' ' .
-					   'ORDER BY timestamp ASC';
-				return true;
-			}
-		}
-
-		// we know the parent optimizer doesn't habe anything better to offer
-		return false;
+		return $sql;
 	}
 }
 
