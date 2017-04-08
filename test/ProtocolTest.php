@@ -47,8 +47,7 @@ class ProtocolTest extends Data
 
 	function testAddMultipleTuplesPost() {
 		// multiple INSERT syntax not portable
-		if (($db = \Volkszaehler\Util\Configuration::read('db.driver')) === 'pdo_sqlite')
-			$this->markTestSkipped('not implemented for ' . $db);
+		$this->skipForDB(array('pdo_sqlite'));
 
 		$data = array(
 			array(++self::$ts, self::$value),
@@ -69,8 +68,7 @@ class ProtocolTest extends Data
 	 */
 	function testDuplicate() {
 		// INSERT IGNORE syntax not portable
-		if (($db = \Volkszaehler\Util\Configuration::read('db.driver')) !== 'pdo_mysql')
-			$this->markTestSkipped('not implemented for ' . $db);
+		$this->executeForDB(array('pdo_mysql'));
 
 		$url = '/data/' . static::$uuid . '.json';
 

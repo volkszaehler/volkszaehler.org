@@ -160,6 +160,20 @@ abstract class Data extends Middleware
 					self::$precision);
 		}
 	}
+
+	protected function executeForDB($dbs) {
+		$db = \Volkszaehler\Util\Configuration::read('db.driver');
+		if (!in_array($db, $dbs)) {
+			$this->markTestSkipped('not implemented for ' . $db);
+		}
+	}
+
+	protected function skipForDB($dbs) {
+		$db = \Volkszaehler\Util\Configuration::read('db.driver');
+		if (in_array($db, $dbs)) {
+			$this->markTestSkipped('not implemented for ' . $db);
+		}
+	}
 }
 
 ?>
