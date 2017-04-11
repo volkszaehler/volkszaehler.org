@@ -129,12 +129,14 @@ abstract class Data extends Middleware
 	 * Helper assertion to validate header min/max fields
 	 */
 	protected function assertMinMax($min, $max = null) {
-		$this->assertTuple($min, $this->json->data->min, "<min> tuple mismatch");
-		$this->assertTuple($max ?: $min, $this->json->data->max, "<max> tuple mismatch");
+		$this->assertTuple($this->json->data->min, $min, "<min> tuple mismatch");
+		$this->assertTuple($this->json->data->max, $max ?: $min, "<max> tuple mismatch");
 	}
 
 	/**
-	 * Helper assertion to validate correct tuple- either by value only or (sub)tuple as array
+	 * Helper assertion to validate correct tuple- either by value only or
+	 * (sub)tuple as array
+	 * This is the only assertion that has swapped expectation/ actual parameters
 	 */
 	protected function assertTuple($realTuple, $tuple, $msg = "Tuple mismatch") {
 		// got index? retrieve data from tuples
