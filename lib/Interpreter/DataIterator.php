@@ -28,10 +28,11 @@ use Doctrine\DBAL;
 
 /**
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @author Andreas Goetz <cpuidle@gmx.de>
  * @package default
  */
 class DataIterator implements \IteratorAggregate, \Countable {
-	protected $stmt;	// PDO statement
+	protected $stmt;		// PDO statement
 
 	protected $rowCount;	// num of readings in PDOStatement
 	protected $tupleCount;	// num of requested tuples
@@ -40,7 +41,7 @@ class DataIterator implements \IteratorAggregate, \Countable {
 
 	protected $from;		// exact timestamps based on on query results
 	protected $to;			// from/to of Interpreter are based on the request parameters!
-	protected $firstValue; 	// value parameter of first database tuple
+	protected $firstValue;	// value parameter of first database tuple
 
 	/**
 	 * Constructor
@@ -56,9 +57,10 @@ class DataIterator implements \IteratorAggregate, \Countable {
 		$this->stmt = $stmt;
 		$this->stmt->setFetchMode(\PDO::FETCH_NUM);
 
-		if (empty($this->tupleCount) || $this->rowCount < $this->tupleCount) { // get all rows
-			 $this->packageSize = 1;
-			 $this->tupleCount = $this->rowCount;
+		if (empty($this->tupleCount) || $this->rowCount <= $this->tupleCount + 1) {
+			// get all rows
+			$this->packageSize = 1;
+			$this->tupleCount = $this->rowCount;
 		}
 		else { // summarize
 			$this->packageSize = floor($this->rowCount / $this->tupleCount);
