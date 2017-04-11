@@ -167,7 +167,7 @@ class SQLOptimizer {
 		if ($this->groupBy)
 			return false;
 
-		// perform tuple packaing in SQL
+		// perform tuple packaging in SQL
 		if ($this->tupleCount && ($this->rowCount > $this->tupleCount)) {
 			// use power of 2 instead of division for performance
 			$bitShift = (int) floor(log(($this->to - $this->from) / $this->tupleCount, 2));
@@ -177,10 +177,12 @@ class SQLOptimizer {
 				$packageSize = 1 << $bitShift;
 				$timestampOffset = $this->from - $packageSize + 1;
 
+				// prevent DataIterator from further packaging
+				$this->tupleCount = null;
+
 				// optimize packaging statement
 				$foo = array();
 				$sqlTimeFilter = $this->interpreter->buildDateTimeFilterSQL($this->from, $this->to, $foo);
-				// $this->rowCount = floor($this->rowCount / $packageSize);
 
 				$sql = 'SELECT MAX(agg.timestamp) AS timestamp, ' .
 							   $this->interpreter->groupExprSQL('agg.value') . ' AS value, ' .
@@ -193,6 +195,10 @@ class SQLOptimizer {
 					   ') AS agg ' .
 					   'GROUP BY (timestamp - ' . $timestampOffset . ') >> ' . $bitShift . ' ' .
 					   'ORDER BY timestamp ASC';
+
+				// prevent DataIterator from further packaging
+				// unless exactly one tuple is requested
+				if ($this->tupleCount !== 1) $this->tupleCount = null;
 
 				return true;
 			}
