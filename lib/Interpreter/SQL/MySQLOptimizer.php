@@ -23,7 +23,6 @@
 
 namespace Volkszaehler\Interpreter\SQL;
 
-use Volkszaehler\Interpreter\SensorInterpreter;
 use Volkszaehler\Util;
 use Volkszaehler\Model;
 use Doctrine\DBAL;
