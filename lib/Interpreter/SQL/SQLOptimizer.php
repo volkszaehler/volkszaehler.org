@@ -178,7 +178,8 @@ class SQLOptimizer {
 				$timestampOffset = $this->from - $packageSize + 1;
 
 				// prevent DataIterator from further packaging
-				$this->tupleCount = null;
+				// unless exactly one tuple is requested
+				if ($this->tupleCount !== 1) $this->tupleCount = null;
 
 				// optimize packaging statement
 				$foo = array();
