@@ -333,6 +333,8 @@ abstract class Interpreter implements \IteratorAggregate {
 	 */
 	public static function parseDateTimeString($string) {
 		if (ctype_digit((string)$string)) { // handling as ms timestamp
+			if ((int) $string == (float) $string)
+				return (int) $string;
 			return (float) $string;
 		}
 		elseif ($ts = strtotime($string)) {

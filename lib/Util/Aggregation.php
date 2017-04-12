@@ -192,7 +192,7 @@ class Aggregation {
 		$format = self::getAggregationDateFormat($level);
 		$type = self::getAggregationLevelTypeValue($level);
 
-		$weighed_avg = ($interpreter == 'Volkszaehler\\Interpreter\\SensorInterpreter');
+		$weighed_avg = $interpreter == Interpreter\SensorInterpreter::class;
 
 		$sqlParameters = array($type);
 		$sql = 'REPLACE INTO aggregate (channel_id, type, timestamp, value, count) ';
@@ -213,7 +213,7 @@ class Aggregation {
 				'FROM ( ' .
 					'SELECT channel_id, timestamp, value, ' .
 						'value * (timestamp - @prev_timestamp) AS val_by_time, ' .
-						'GREATEST(0, IF(@prev_timestamp = NULL, NULL, @prev_timestamp)) AS prev_timestamp, ' .
+						'COALESCE(@prev_timestamp, 0) AS prev_timestamp, ' .
 						'@prev_timestamp := timestamp ' .
 					'FROM data ' .
 					'CROSS JOIN (SELECT @prev_timestamp := NULL) AS vars ' .
@@ -239,11 +239,13 @@ class Aggregation {
 		if ($mode == 'delta') {
 			if ($channel_id) {
 				// selected channel
-				$sqlTimestamp = 'SELECT UNIX_TIMESTAMP(DATE_ADD(' .
-						   	   		   'FROM_UNIXTIME(MAX(timestamp) / 1000, ' . $format . '), ' .
-						   	   		   'INTERVAL 1 ' . $level . ')) * 1000 ' .
-							   	'FROM aggregate ' .
-							   	'WHERE type = ? AND channel_id = ?';
+				$sqlTimestamp =
+					'SELECT UNIX_TIMESTAMP(DATE_ADD(' .
+						   'FROM_UNIXTIME(MAX(timestamp) / 1000, ' . $format . '), ' .
+						   'INTERVAL 1 ' . $level . ')) * 1000 ' .
+					'FROM aggregate ' .
+					'WHERE type = ? AND channel_id = ?';
+
 				if ($ts = $this->conn->fetchColumn($sqlTimestamp, array($type, $channel_id), 0)) {
 					$sqlParameters[] = $ts;
 					$sql .= 'AND timestamp >= ? ';
@@ -253,20 +255,20 @@ class Aggregation {
 				// all channels
 				$sqlParameters[] = $type;
 				$sql .=
-				   'AND timestamp >= IFNULL((' .
-				   	   'SELECT UNIX_TIMESTAMP(DATE_ADD(' .
-				   	   		  'FROM_UNIXTIME(MAX(timestamp) / 1000, ' . $format . '), ' .
-				   	   		  'INTERVAL 1 ' . $level . ')) * 1000 ' .
-					   'FROM aggregate ' .
-					   'WHERE type = ? AND aggregate.channel_id = data.channel_id ' .
-				   '), 0) ';
+					'AND timestamp >= IFNULL((' .
+						'SELECT UNIX_TIMESTAMP(DATE_ADD(' .
+							   'FROM_UNIXTIME(MAX(timestamp) / 1000, ' . $format . '), ' .
+							   'INTERVAL 1 ' . $level . ')) * 1000 ' .
+						'FROM aggregate ' .
+						'WHERE type = ? AND aggregate.channel_id = data.channel_id ' .
+					'), 0) ';
 			}
 		}
 
 		// selected number of periods only
 		if ($period) {
 			$sql .=
-			   'AND timestamp >= (SELECT UNIX_TIMESTAMP(DATE_SUB(DATE_FORMAT(NOW(), ' . $format . '), INTERVAL ? ' . $level . ')) * 1000) ';
+				'AND timestamp >= (SELECT UNIX_TIMESTAMP(DATE_SUB(DATE_FORMAT(NOW(), ' . $format . '), INTERVAL ? ' . $level . ')) * 1000) ';
 			$sqlParameters[] = $period;
 		}
 

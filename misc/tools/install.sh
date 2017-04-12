@@ -264,7 +264,7 @@ if [ "$REPLY" == "y" ]; then
 	get_db_admin
 	get_db_name
 
-	cat "$vz_dir/misc/sql/demo/entities.sql" "$vz_dir/misc/sql/demo/properties.sql" "$vz_dir/misc/sql/demo/data-demoset1.sql" |
+	cat "$vz_dir/misc/sql/demo.sql" |
 		mysql -h"$db_host" -u"$db_admin_user" -p"$db_admin_pass" "$db_name"
 fi
 
