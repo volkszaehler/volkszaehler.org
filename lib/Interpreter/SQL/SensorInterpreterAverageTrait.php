@@ -50,7 +50,7 @@ trait SensorInterpreterAverageTrait {
 
 		// MySQL-specific implementation below
 		if ($this->groupBy) {
-			$sqlGroupFields = $this->interpreter->buildGroupBySQL($this->groupBy);
+			$sqlGroupFields = self::buildGroupBySQL($this->groupBy);
 
 			$sql = $this->weighedAverageSQL($sqlTimeFilter) .
 				   'GROUP BY ' . $sqlGroupFields . ' ' .
