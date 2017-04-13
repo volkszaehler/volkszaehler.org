@@ -135,12 +135,24 @@ class SQLOptimizer {
 	 * @return string the sql part
 	 */
 	public static function buildGroupBySQL($groupBy) {
-		$class = self::factory();
-		// fall back on default implementation if nothing else declared
-		if ($class == __CLASS__) {
-			$class = __NAMESPACE__ . '\MySQLOptimizer';
-		}
-		return $class::buildGroupBySQL($groupBy);
+		// fall back on default implementation
+		return MySQLOptimizer::buildGroupBySQL($groupBy);
+	}
+
+	/**
+	 * DB-specific cross-database join table delete statements
+	 *
+	 * Except MySQL: DELETE FROM aggregate WHERE id in (SELECT id FROM aggregate)
+	 */
+	public static function buildDeleteFromJoinSQL($table, $join, $id = 'id') {
+		$sql = sprintf("DELETE FROM %s WHERE %s.%s in (SELECT %s FROM %s)", [
+			$table,
+			$table,
+			$id,
+			$id,
+			$join
+		]);
+		return $sql;
 	}
 
 	/**
