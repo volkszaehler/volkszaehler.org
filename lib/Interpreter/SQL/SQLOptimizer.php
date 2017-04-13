@@ -31,7 +31,7 @@ use Doctrine\DBAL;
 /**
  * SQLOptimizer is the base class for DB-specific optimizations
  */
-class SQLOptimizer {
+abstract class SQLOptimizer {
 
 	protected $interpreter;
 	protected $conn;

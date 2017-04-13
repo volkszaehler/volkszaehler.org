@@ -317,7 +317,8 @@ class Aggregation {
 			$sql .= ') AS agg ';
 		}
 
-		$sql .= 'GROUP BY channel_id, ' . Interpreter\Interpreter::buildGroupBySQL($level);
+		$factory = SQLOptimizer::factory();
+		$sql .= 'GROUP BY channel_id, ' . $factory::buildGroupBySQL($level);
 
 		if (Util\Debug::isActivated())
 			echo(Util\Debug::getParametrizedQuery($sql, $sqlParameters)."\n");
