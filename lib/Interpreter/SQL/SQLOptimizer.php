@@ -209,10 +209,6 @@ class SQLOptimizer {
 					   'GROUP BY (timestamp - ' . $timestampOffset . ') >> ' . $bitShift . ' ' .
 					   'ORDER BY timestamp ASC';
 
-				// prevent DataIterator from further packaging
-				// unless exactly one tuple is requested
-				if ($this->tupleCount !== 1) $this->tupleCount = null;
-
 				return true;
 			}
 		}
