@@ -109,7 +109,7 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 
 			if ($this->groupBy) {
 				// optimize grouped count statement by applying aggregation table
-				$sqlGroupFields = $this->interpreter->buildGroupBySQL($this->groupBy);
+				$sqlGroupFields = $this->buildGroupBySQL($this->groupBy);
 
 				// 	   table:   --DATA-- -----aggregate----- -DATA-
 				$sqlRowCount = 'SELECT DISTINCT ' . $sqlGroupFields . ' ' .
@@ -151,7 +151,7 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 
 				// optimize grouped statement
 				$sqlParameters = $this->buildAggregationTableParameters();
-				$sqlGroupFields = $this->interpreter->buildGroupBySQL($this->groupBy);
+				$sqlGroupFields = $this->buildGroupBySQL($this->groupBy);
 
 				// 	   table:   --DATA-- -----aggregate----- -DATA-
 				$sql = 'SELECT timestamp, value, 1 AS count ' .

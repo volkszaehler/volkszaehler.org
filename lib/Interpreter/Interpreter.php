@@ -213,7 +213,7 @@ abstract class Interpreter implements \IteratorAggregate {
 		$sqlTimeFilter = self::buildDateTimeFilterSQL($this->from, $this->to, $sqlParameters);
 
 		if ($this->groupBy) {
-			$sqlGroupFields = self::buildGroupBySQL($this->groupBy);
+			$sqlGroupFields = $this->optimizer->buildGroupBySQL($this->groupBy);
 			if (!$sqlGroupFields)
 				throw new \Exception('Unknown group');
 
@@ -263,17 +263,6 @@ abstract class Interpreter implements \IteratorAggregate {
 	 */
 	public static function groupExprSQL($expression) {
 		throw new \Exception('Derived classes must implement static function groupExprSQL.');
-	}
-
-	/**
-	 * Builds sql query part for grouping data by date functions
-	 *
-	 * @param string $groupBy
-	 * @return string the sql part
-	 */
-	public static function buildGroupBySQL($groupBy) {
-		// call db-specific version
-		return SQL\SQLOptimizer::buildGroupBySQL($groupBy);
 	}
 
 	/**
