@@ -60,7 +60,7 @@ class PostgreSQLOptimizer extends SQLOptimizer {
 	 * Provide SQL statement for SensorInterpreterAverageTrait->optimizeDataSQL
 	 * SensorInterpreter special case
 	 */
-	function weighedAverageSQL($sqlTimeFilter) {
+	public function weighedAverageSQL($sqlTimeFilter) {
 		$sql =
 			'SELECT MAX(agg.timestamp) AS timestamp, ' .
 				  'COALESCE( ' .

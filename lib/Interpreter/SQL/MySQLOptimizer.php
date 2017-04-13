@@ -90,15 +90,27 @@ class MySQLOptimizer extends SQLOptimizer {
 	}
 
 	/**
+	 * DB-specific cross-database join table delete statements
+	 *
+	 * @param string $table
+	 * @param string $join
+	 * @return string the sql part
+	 */
+	public static function buildDeleteFromJoinSQL($table, $join, $id = 'id') {
+		$sql = 'DELETE ' . $table . ' FROM ' . $table . ' ' . $join;
+		return $sql;
+	}
+
+	/**
 	 * Provide SQL statement for SensorInterpreterAverageTrait->optimizeDataSQL
 	 * SensorInterpreter special case
 	 *
-	 * Fir MySQL discussion see
+	 * For MySQL discussion see:
 	 * https://bugs.php.net/bug.php?id=67537
 	 * http://stackoverflow.com/questions/24457442/how-to-find-previous-record-n-per-group-maxtimestamp-timestamp
 	 * http://www.xaprb.com/blog/2006/12/15/advanced-mysql-user-variable-techniques/
 	 */
-	function weighedAverageSQL($sqlTimeFilter) {
+	public function weighedAverageSQL($sqlTimeFilter) {
 		$sql =
 			'SELECT MAX(agg.timestamp) AS timestamp, ' .
 				  'COALESCE( ' .
