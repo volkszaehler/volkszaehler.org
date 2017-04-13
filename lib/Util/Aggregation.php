@@ -28,6 +28,7 @@ namespace Volkszaehler\Util;
 
 use Volkszaehler\Util;
 use Volkszaehler\Interpreter;
+use Volkszaehler\Interpreter\SQL\SQLOptimizer;
 use Volkszaehler\Definition;
 use Doctrine\DBAL;
 
@@ -150,26 +151,28 @@ class Aggregation {
 	public function clear($uuid = null, $level = 'all') {
 		$sqlParameters = array();
 
-		if ($level == 'all') {
-			if ($uuid) {
-				$sql = 'DELETE aggregate FROM aggregate ' .
-					   'INNER JOIN entities ON aggregate.channel_id = entities.id ' .
-					   'WHERE entities.uuid = ?';
-				$sqlParameters[] = $uuid;
-			}
-			else {
-				$sql = 'TRUNCATE TABLE aggregate';
-			}
+		if ($level == 'all' && !$uuid) {
+			$sql = 'TRUNCATE TABLE aggregate';
 		}
 		else {
-			$sqlParameters[] = self::getAggregationLevelTypeValue($level);
-			$sql = 'DELETE aggregate FROM aggregate ' .
-				   'INNER JOIN entities ON aggregate.channel_id = entities.id ' .
-				   'WHERE aggregate.type = ? ';
+			$sql = 'INNER JOIN entities ON aggregate.channel_id = entities.id ' .
+				   'WHERE ';
+
+			if ($level !== 'all') {
+				$sqlParameters[] = self::getAggregationLevelTypeValue($level);
+				$sql .=  'aggregate.type = ? ';
+				if ($uuid) {
+					$sql .= 'AND ';
+				}
+			}
+
 			if ($uuid) {
-				$sql .= 'AND entities.uuid = ?';
+				$sql .= 'entities.uuid = ?';
 				$sqlParameters[] = $uuid;
 			}
+
+			$factory = SQLOptimizer::factory();
+			$sql = $factory::buildDeleteFromJoinSQL('aggregate', $sql);
 		}
 
 		if (Util\Debug::isActivated())
