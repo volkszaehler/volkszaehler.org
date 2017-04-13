@@ -89,6 +89,18 @@ class MySQLOptimizer extends SQLOptimizer {
 	}
 
 	/**
+	 * DB-specific cross-database join table delete statements
+	 *
+	 * @param string $table
+	 * @param string $join
+	 * @return string the sql part
+	 */
+	public static function buildDeleteFromJoinSQL($table, $join, $id = 'id') {
+		$sql = 'DELETE ' . $table . ' FROM ' . $table . ' ' . $join;
+		return $sql;
+	}
+
+	/**
 	 * SQL statement optimization for perfromance
 	 *
 	 * @param  string $sql           SQL statement to modify
