@@ -8,28 +8,13 @@
 
 namespace Tests;
 
-use Volkszaehler\Router;
-use Volkszaehler\Controller\EntityController;
-use Volkszaehler\Interpreter\Interpreter;
 use Volkszaehler\Interpreter\Virtual;
 
 class VirtualTest extends Middleware
 {
+	use InterpreterTrait;
+
 	protected $uuid;
-
-	function createChannel($title, $type, $other = []) {
-		$url = '/channel.json';
-		$params = array(
-			'operation' => 'add',
-			'title' => $title,
-			'type' => $type
-		);
-		$params = array_merge($params, $other);
-
-		$this->getJson($url, $params);
-
-		return($this->uuid = (isset($this->json->entity->uuid)) ? $this->json->entity->uuid : null);
-	}
 
 	function getValueBefore($array, $ts) {
 		$idx = array_reduce(array_keys($array), function($carry, $el) use ($ts) {
@@ -96,23 +81,6 @@ class VirtualTest extends Middleware
 		sort($result);
 
 		return $result;
-	}
-
-	function createVirtualInterpreter($uuid, $from, $to, $tuples, $groupBy, $options= array()) {
-		$em = Router::createEntityManager();
-		$entity = EntityController::factory($em, $uuid);
-		$class = $entity->getDefinition()->getInterpreter();
-		$vi = new $class($entity, $em, $from, $to, $tuples, $groupBy, $options);
-		return $vi;
-	}
-
-	function getInterpreterResult(Interpreter $vi) {
-		$tuples = array();
-		foreach ($vi as $tuple) {
-			$tuple[0] = (int)$tuple[0];
-			$tuples[] = $tuple;
-		}
-		return $tuples;
 	}
 
 	function testTimestampGenerator() {
@@ -199,7 +167,7 @@ class VirtualTest extends Middleware
 		}
 
 		// get result
-		$vi = $this->createVirtualInterpreter($out, 1, 'now', null, null);
+		$vi = $this->createInterpreter($out, 1, 'now', null, null);
 		$tuples = $this->getInterpreterResult($vi);
 
 		// omit first 2 timestamps from assertion since VirtualInterpreter
@@ -249,7 +217,7 @@ class VirtualTest extends Middleware
 		}
 
 		// get result
-		$vi = $this->createVirtualInterpreter($out, 0, 'now', null, 'hour', ['consumption']);
+		$vi = $this->createInterpreter($out, 0, 'now', null, 'hour', ['consumption']);
 		$tuples = $this->getInterpreterResult($vi);
 
 		// expected values
@@ -267,7 +235,7 @@ class VirtualTest extends Middleware
 		$this->assertEquals($consumption, $vi->getConsumption());
 
 		// partial consumption
-		$vi = $this->createVirtualInterpreter($out, 0, 2 * 3600 * 1000, null, 'hour', ['consumption']);
+		$vi = $this->createInterpreter($out, 0, 2 * 3600 * 1000, null, 'hour', ['consumption']);
 		$tuples = $this->getInterpreterResult($vi);
 
 		// delete
@@ -312,7 +280,7 @@ class VirtualTest extends Middleware
 		}
 
 		// get result
-		$vi = $this->createVirtualInterpreter($out, 3600 * 1000, 7200 * 1000, null, 'hour', ['consumption']);
+		$vi = $this->createInterpreter($out, 3600 * 1000, 7200 * 1000, null, 'hour', ['consumption']);
 		$tuples = $this->getInterpreterResult($vi);
 		$consumption = 1.0;
 
