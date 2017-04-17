@@ -162,6 +162,9 @@ class Debug {
 		while (count($sqlParameters)) {
 			$sql = preg_replace('/\?/', self::formatSQLParameter(array_shift($sqlParameters)), $sql, 1);
 		}
+		if (class_exists('\SqlFormatter')) {
+			$sql = \SqlFormatter::format($sql, false);
+		}
 		return $sql;
 	}
 

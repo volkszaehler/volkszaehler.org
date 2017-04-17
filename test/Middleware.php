@@ -94,7 +94,7 @@ abstract class Middleware extends \PHPUnit_Framework_TestCase
 		catch (GuzzleException $e) {
 			$psrResponse = $e->getResponse();
 			if (null === $psrResponse) {
-				var_dump($e);
+				die($e->getMessage());
 			}
 		}
 		finally {

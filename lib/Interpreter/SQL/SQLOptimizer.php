@@ -129,7 +129,6 @@ abstract class SQLOptimizer {
 	/**
 	 * DB-specific data grouping by date functions.
 	 * Static call is delegated to implementing classes.
-	 * Called by Interpreter->buildGroupBySQL
 	 *
 	 * @param string $groupBy
 	 * @return string the sql part
@@ -191,7 +190,7 @@ abstract class SQLOptimizer {
 
 				// prevent DataIterator from further packaging
 				// unless exactly one tuple is requested
-				if ($this->tupleCount !== 1) $this->tupleCount = null;
+				if ($this->tupleCount != 1) $this->tupleCount = null;
 
 				// optimize packaging statement
 				$foo = array();
