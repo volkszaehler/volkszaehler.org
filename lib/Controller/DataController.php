@@ -51,21 +51,25 @@ class DataController extends Controller {
 	}
 
 	/**
-	 * Return a single entity by name
+	 * Return a single public entity by name
 	 * @param $name
 	 * @throws ORMException on empty or multiple results
 	 * @return mixed
 	 */
 	protected function getSingleEntityByName($name) {
-		$dql = 'SELECT a, p
-			FROM Volkszaehler\Model\Entity a
-			LEFT JOIN a.properties p
+		$dql = 'SELECT e, p
+			FROM Volkszaehler\Model\Entity e
+			LEFT JOIN e.properties p
+			JOIN e.properties public
 			WHERE p.key = :key
-			AND p.value = :name';
+			AND p.value = :name
+			AND public.key = :key2
+			AND public.value = 1';
 
 		$q = $this->em->createQuery($dql)
 			->setParameter('key', 'title')
-			->setParameter('name', $name);
+			->setParameter('name', $name)
+			->setParameter('key2', 'public');
 
 		$entity = $q->getSingleResult();
 		return $entity;
@@ -92,7 +96,7 @@ class DataController extends Controller {
 					$uuid = $entity->getUuid();
 				}
 				catch (ORMException $e) {
-					throw new \Exception('Channel \'' . $uuid . '\' does not exist or is not unique.');
+					throw new \Exception('Channel \'' . $uuid . '\' does not exist, is not public or its name is not unique.');
 				}
 			}
 
