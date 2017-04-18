@@ -20,7 +20,7 @@ From the shell:
     wget https://raw.github.com/volkszaehler/volkszaehler.org/master/misc/tools/install.sh
     sudo bash install.sh
 
-Or follow the detailed installation instructions at http://wiki.volkszaehler.org/software/middleware/installation
+Or follow the detailed installation instructions at http://wiki.volkszaehler.org/doku.php/software/middleware/installation
 
 
 ## Documentation

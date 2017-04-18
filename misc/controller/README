@@ -1,7 +1,7 @@
 volkszaehler.org uses 'controllers' to build a gateway between meters (physical) and the middleware (internet).
 
 For for information refer to our wiki:
-http://wiki.volkszaehler.org/software/controller/start
+http://wiki.volkszaehler.org/doku.php/software/controller
 
 This directory contains various components that have been contributed by users and are not actively maintained. Our milage may vary.
 
