@@ -729,14 +729,14 @@ Entity.prototype.updateDOMRow = function() {
 			$('.max', row)
 			.text(vz.wui.formatNumber(this.data.max[1], unit))
 			.attr('title', $.plot.formatDate(new Date(this.data.max[0]), '%d. %b %y %H:%M:%S', vz.options.monthNames, vz.options.dayNames, true));
-		if (this.data.average !== null)
+		if (this.data.average !== undefined)
 			$('.average', row)
 			.text(vz.wui.formatNumber(this.data.average, unit));
 		if (this.data.tuples && this.data.tuples.length > 0)
 			$('.last', row)
 			.text(vz.wui.formatNumber(this.data.tuples[this.data.tuples.length-1][1], unit));
 
-		if (this.data.consumption !== null) {
+		if (this.data.consumption !== undefined) {
 			var consumptionUnit = vz.wui.formatConsumptionUnit(unit);
 			$('.consumption', row)
 				.text(vz.wui.formatNumber(this.data.consumption, consumptionUnit))
