@@ -16,16 +16,6 @@ class VirtualTest extends Middleware
 
 	protected $uuid;
 
-	function getValueBefore($array, $ts) {
-		$idx = array_reduce(array_keys($array), function($carry, $el) use ($ts) {
-			if ($el < $ts) {
-				return $el;
-			}
-			return $carry;
-		});
-		return $array[$idx];
-	}
-
 	function getSeriesData($series) {
 		$data = [
 			'in1' => [
@@ -67,6 +57,9 @@ class VirtualTest extends Middleware
 		return $data[$series];
 	}
 
+	/**
+	 * Extract unique, sorted timestamps from array keys
+	 */
 	function extractUniqueTimestamps($container) {
 		if (!is_array($container)) {
 			$container = [$container];
@@ -81,6 +74,37 @@ class VirtualTest extends Middleware
 		sort($result);
 
 		return $result;
+	}
+
+	/**
+	 * Get array value before timestamp
+	 */
+	function getValueBefore($array, $ts) {
+		$idx = array_reduce(array_keys($array), function($carry, $el) use ($ts) {
+			if ($el < $ts) {
+				return $el;
+			}
+			return $carry;
+		});
+		return $array[$idx];
+	}
+
+	/**
+	 * Get array value after timestamp
+	 */
+	function getValueAfter($array, $ts) {
+		$idx = array_reduce(array_reverse(array_keys($array)), function($carry, $el) use ($ts) {
+			if ($el >= $ts) {
+				return $el;
+			}
+			return $carry;
+		});
+
+		// last element if no further values
+		if ($idx === null)
+			return end($array);
+
+		return $array[$idx];
 	}
 
 	function testTimestampGenerator() {
@@ -124,10 +148,27 @@ class VirtualTest extends Middleware
 		$this->assertEquals($timestamps, array_values(iterator_to_array($gi)));
 	}
 
-	function testVirtualChannel() {
-		// create
-		$in1 = $this->createChannel('Sensor', 'powersensor');
-		$in2 = $this->createChannel('Sensor', 'powersensor');
+	/**
+	 * VirtualChannel test data
+	 */
+	function virtualInputProvider() {
+		return array(
+			// testVirtualChannelIdentity
+			array(['lines', 'lines'], ['in1', 'in1']),
+			// testVirtualChannelStyleStepsAndLines
+			array(['steps', 'steps'], ['in1', 'in2']),
+			// testVirtualChannelStyleStates
+			array(['states', 'states'], ['in1', 'in2'])
+		);
+	}
+
+	/**
+	 * @dataProvider virtualInputProvider
+	 */
+	function testVirtualChannel($styles, $inputs) {
+		// create channel, style=lines forces STRATEGY_TS_AFTER
+		$in1 = $this->createChannel('Sensor', 'powersensor', ['style' => $styles[0]]);
+		$in2 = $this->createChannel('Sensor', 'powersensor', ['style' => $styles[1]]);
 		$out = $this->createChannel('Virtual', 'virtualsensor', [
 			'unit' => 'foo',
 			'in1' => $in1,
@@ -139,8 +180,8 @@ class VirtualTest extends Middleware
 		$this->assertTrue(isset($this->json->entity->uuid));
 
 		$data = [
-			$in1 => $this->getSeriesData('in1'),
-			$in2 => $this->getSeriesData('in2')
+			$in1 => $this->getSeriesData($inputs[0]),
+			$in2 => $this->getSeriesData($inputs[1])
 		];
 
 		// expected timestamps
@@ -150,8 +191,12 @@ class VirtualTest extends Middleware
 		// expected values
 		$values = array();
 		foreach ($timestamps as $ts) {
-			$in1v = $this->getValueBefore($data[$in1], $ts);
-			$in2v = $this->getValueBefore($data[$in2], $ts);
+			$func = array($this, $styles[0] == 'states' ? 'getValueBefore' : 'getValueAfter');
+			$in1v = $func($data[$in1], $ts);
+
+			$func = array($this, $styles[1] == 'states' ? 'getValueBefore' : 'getValueAfter');
+			$in2v = $func($data[$in2], $ts);
+
 			$values[] = array($ts, $in1v - $in2v, 1);
 		}
 
