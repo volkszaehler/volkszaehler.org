@@ -34,10 +34,9 @@ use Volkszaehler\Model;
 class InterpreterProxy implements \IteratorAggregate {
 
 	const STRATEGY_TS_BEFORE = 1;	// states
-	const STRATEGY_TS_AFTER = 2;	// steps
-	const STRATEGY_TS_BEST = 3;		// lines
+	const STRATEGY_TS_AFTER = 2;	// steps & lines
 
-	private $strategy = self::STRATEGY_TS_BEFORE;
+	private $strategy = self::STRATEGY_TS_AFTER;
 
 	private $iterator;
 
@@ -65,13 +64,14 @@ class InterpreterProxy implements \IteratorAggregate {
 	 */
 	public function setStrategyByEntityType(Model\Entity $entity) {
 		if (!$entity->hasProperty('style')) {
-			// assume STRATEGY_BEST which is the default
+			// default strategy
 			return;
 		}
 
 		if ($lineStyle = $entity->getProperty('style')) {
 			switch ($lineStyle) {
 				case 'steps':
+				case 'lines':
 					// only use values of timestamps >= current
 					$this->strategy = self::STRATEGY_TS_AFTER;
 					break;
@@ -97,12 +97,26 @@ class InterpreterProxy implements \IteratorAggregate {
 
 		switch ($this->strategy) {
 			case self::STRATEGY_TS_AFTER:
-				return $current[1];
+				// use previous timestamp if already _after_ $ts
+				if ($previous[0] >= $ts || !$this->iterator->valid())
+					$tuple = &$previous;
+				else
+					$tuple = &$current;
 				break;
+
+			case self::STRATEGY_TS_BEFORE:
+				// use current timestamp if still _before_ $ts
+				if ($this->iterator->valid() && $current[0] < $ts)
+					$tuple = &$current;
+				else
+					$tuple = &$previous;
+				break;
+
 			default:
-				// STRATEGY_TS_BEFORE
-				return $previous[1];
+				throw new \Exception('Not implemented');
 		}
+
+		return $tuple[1];
 	}
 
 	/**
