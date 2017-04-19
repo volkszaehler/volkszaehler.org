@@ -46,6 +46,8 @@ class TimestampGenerator implements \IteratorAggregate {
 
 		// get minimum from timestamp
 		$from = array_reduce($this->iterators, function($carry, $iterator) {
+			if (!$iterator->valid())
+				return $carry;
 			$current = $iterator->current();
 			if ($carry === null || $current < $carry)
 				return $current;
@@ -74,15 +76,12 @@ class TimestampGenerator implements \IteratorAggregate {
 
 			// all timestamps >= $ts
 
-			$timestamps = array_map(function($iterator) {
-				return $iterator->current();
-			}, $this->iterators);
-
 			// yield
 			yield $ts;
 
 			// move consumed iterators
 			foreach ($this->iterators as $iterator) {
+				// advance all iterators that are at current timestamp
 				if ($iterator->current() <= $ts) {
 					$iterator->next();
 				}

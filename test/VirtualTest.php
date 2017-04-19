@@ -8,38 +8,13 @@
 
 namespace Tests;
 
-use Volkszaehler\Router;
-use Volkszaehler\Controller\EntityController;
-use Volkszaehler\Interpreter\Interpreter;
 use Volkszaehler\Interpreter\Virtual;
 
 class VirtualTest extends Middleware
 {
+	use InterpreterTrait;
+
 	protected $uuid;
-
-	function createChannel($title, $type, $other = []) {
-		$url = '/channel.json';
-		$params = array(
-			'operation' => 'add',
-			'title' => $title,
-			'type' => $type
-		);
-		$params = array_merge($params, $other);
-
-		$this->getJson($url, $params);
-
-		return($this->uuid = (isset($this->json->entity->uuid)) ? $this->json->entity->uuid : null);
-	}
-
-	function getValueBefore($array, $ts) {
-		$idx = array_reduce(array_keys($array), function($carry, $el) use ($ts) {
-			if ($el < $ts) {
-				return $el;
-			}
-			return $carry;
-		});
-		return $array[$idx];
-	}
 
 	function getSeriesData($series) {
 		$data = [
@@ -82,6 +57,9 @@ class VirtualTest extends Middleware
 		return $data[$series];
 	}
 
+	/**
+	 * Extract unique, sorted timestamps from array keys
+	 */
 	function extractUniqueTimestamps($container) {
 		if (!is_array($container)) {
 			$container = [$container];
@@ -98,21 +76,35 @@ class VirtualTest extends Middleware
 		return $result;
 	}
 
-	function createVirtualInterpreter($uuid, $from, $to, $tuples, $groupBy, $options= array()) {
-		$em = Router::createEntityManager();
-		$entity = EntityController::factory($em, $uuid);
-		$class = $entity->getDefinition()->getInterpreter();
-		$vi = new $class($entity, $em, $from, $to, $tuples, $groupBy, $options);
-		return $vi;
+	/**
+	 * Get array value before timestamp
+	 */
+	function getValueBefore($array, $ts) {
+		$idx = array_reduce(array_keys($array), function($carry, $el) use ($ts) {
+			if ($el < $ts) {
+				return $el;
+			}
+			return $carry;
+		});
+		return $array[$idx];
 	}
 
-	function getInterpreterResult(Interpreter $vi) {
-		$tuples = array();
-		foreach ($vi as $tuple) {
-			$tuple[0] = (int)$tuple[0];
-			$tuples[] = $tuple;
-		}
-		return $tuples;
+	/**
+	 * Get array value after timestamp
+	 */
+	function getValueAfter($array, $ts) {
+		$idx = array_reduce(array_reverse(array_keys($array)), function($carry, $el) use ($ts) {
+			if ($el >= $ts) {
+				return $el;
+			}
+			return $carry;
+		});
+
+		// last element if no further values
+		if ($idx === null)
+			return end($array);
+
+		return $array[$idx];
 	}
 
 	function testTimestampGenerator() {
@@ -156,10 +148,27 @@ class VirtualTest extends Middleware
 		$this->assertEquals($timestamps, array_values(iterator_to_array($gi)));
 	}
 
-	function testVirtualChannel() {
-		// create
-		$in1 = $this->createChannel('Sensor', 'powersensor');
-		$in2 = $this->createChannel('Sensor', 'powersensor');
+	/**
+	 * VirtualChannel test data
+	 */
+	function virtualInputProvider() {
+		return array(
+			// testVirtualChannelIdentity
+			array(['lines', 'lines'], ['in1', 'in1']),
+			// testVirtualChannelStyleStepsAndLines
+			array(['steps', 'steps'], ['in1', 'in2']),
+			// testVirtualChannelStyleStates
+			array(['states', 'states'], ['in1', 'in2'])
+		);
+	}
+
+	/**
+	 * @dataProvider virtualInputProvider
+	 */
+	function testVirtualChannel($styles, $inputs) {
+		// create channel, style=lines forces STRATEGY_TS_AFTER
+		$in1 = $this->createChannel('Sensor', 'powersensor', ['style' => $styles[0]]);
+		$in2 = $this->createChannel('Sensor', 'powersensor', ['style' => $styles[1]]);
 		$out = $this->createChannel('Virtual', 'virtualsensor', [
 			'unit' => 'foo',
 			'in1' => $in1,
@@ -171,8 +180,8 @@ class VirtualTest extends Middleware
 		$this->assertTrue(isset($this->json->entity->uuid));
 
 		$data = [
-			$in1 => $this->getSeriesData('in1'),
-			$in2 => $this->getSeriesData('in2')
+			$in1 => $this->getSeriesData($inputs[0]),
+			$in2 => $this->getSeriesData($inputs[1])
 		];
 
 		// expected timestamps
@@ -182,8 +191,12 @@ class VirtualTest extends Middleware
 		// expected values
 		$values = array();
 		foreach ($timestamps as $ts) {
-			$in1v = $this->getValueBefore($data[$in1], $ts);
-			$in2v = $this->getValueBefore($data[$in2], $ts);
+			$func = array($this, $styles[0] == 'states' ? 'getValueBefore' : 'getValueAfter');
+			$in1v = $func($data[$in1], $ts);
+
+			$func = array($this, $styles[1] == 'states' ? 'getValueBefore' : 'getValueAfter');
+			$in2v = $func($data[$in2], $ts);
+
 			$values[] = array($ts, $in1v - $in2v, 1);
 		}
 
@@ -199,7 +212,7 @@ class VirtualTest extends Middleware
 		}
 
 		// get result
-		$vi = $this->createVirtualInterpreter($out, 1, 'now', null, null);
+		$vi = $this->createInterpreter($out, 1, 'now', null, null);
 		$tuples = $this->getInterpreterResult($vi);
 
 		// omit first 2 timestamps from assertion since VirtualInterpreter
@@ -249,7 +262,7 @@ class VirtualTest extends Middleware
 		}
 
 		// get result
-		$vi = $this->createVirtualInterpreter($out, 0, 'now', null, 'hour', ['consumption']);
+		$vi = $this->createInterpreter($out, 0, 'now', null, 'hour', ['consumption']);
 		$tuples = $this->getInterpreterResult($vi);
 
 		// expected values
@@ -267,7 +280,7 @@ class VirtualTest extends Middleware
 		$this->assertEquals($consumption, $vi->getConsumption());
 
 		// partial consumption
-		$vi = $this->createVirtualInterpreter($out, 0, 2 * 3600 * 1000, null, 'hour', ['consumption']);
+		$vi = $this->createInterpreter($out, 0, 2 * 3600 * 1000, null, 'hour', ['consumption']);
 		$tuples = $this->getInterpreterResult($vi);
 
 		// delete
@@ -312,7 +325,7 @@ class VirtualTest extends Middleware
 		}
 
 		// get result
-		$vi = $this->createVirtualInterpreter($out, 3600 * 1000, 7200 * 1000, null, 'hour', ['consumption']);
+		$vi = $this->createInterpreter($out, 3600 * 1000, 7200 * 1000, null, 'hour', ['consumption']);
 		$tuples = $this->getInterpreterResult($vi);
 		$consumption = 1.0;
 
