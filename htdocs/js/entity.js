@@ -218,10 +218,12 @@ Entity.prototype.subscribe = function(session) {
 						consumption += el[1] * tsdiff;
 					}).bind(this)); // bind to entity
 
+					// update consumption
+					consumption /= 3.6e6;
+					if (this.data.consumption !== undefined) {
+						this.data.consumption = (this.data.consumption || 0) + consumption;
+					}
 					if (this.initialconsumption !== undefined) {
-						// update consumption
-						consumption /= 3.6e6;
-						this.consumption = (this.consumption || 0) + consumption;
 						this.totalconsumption = (this.totalconsumption || 0) + consumption;
 					}
 
