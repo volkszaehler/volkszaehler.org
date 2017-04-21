@@ -29,7 +29,7 @@ namespace Volkszaehler\Server;
 
 use Volkszaehler\Util;
 
-use React\Socket\Server as SocketServer;
+use React\Socket\Server as ReactSocketServer;
 use Ratchet\Server\IoServer;
 use Ratchet\Http\HttpServer;
 use Ratchet\Http\HttpServerInterface;
@@ -49,6 +49,8 @@ define('VZ_DIR', realpath(__DIR__ . '/../..'));
 
 require_once VZ_DIR . '/lib/bootstrap.php';
 
+
+const REMOTE_IP_PORT = '0.0.0.0:';
 
 function addRoute($path, HttpServerInterface $controller) {
 	global $routes;
@@ -76,9 +78,8 @@ $loop = \React\EventLoop\Factory::create();
 $middleware = new MiddlewareAdapter();
 
 // configure local httpd interface
-$localSocket = new SocketServer($loop);
+$localSocket = new ReactSocketServer(REMOTE_IP_PORT . $localPort, $loop); // remote loggers can push updates
 $localServer = new HttpReceiver($localSocket, $middleware);
-$localSocket->listen($localPort, '0.0.0.0'); // remote loggers can push updates
 
 // configure routes
 $routes = new RouteCollection;
@@ -117,13 +118,12 @@ else {
 }
 
 // configure remote interface
-$remoteSocket = new SocketServer($loop);
+$remoteSocket = new ReactSocketServer(REMOTE_IP_PORT . $remotePort, $loop); // remote clients can connect
 $remoteServer = new IoServer(
 	new HttpServer(
 		$router
 	),
 	$remoteSocket
 );
-$remoteSocket->listen($remotePort, '0.0.0.0'); // remote clients can connect
 
 $loop->run();

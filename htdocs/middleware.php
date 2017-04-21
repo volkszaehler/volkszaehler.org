@@ -30,6 +30,9 @@ use Symfony\Component\HttpFoundation\Request;
 
 define('VZ_DIR', realpath(__DIR__ . '/..'));
 
+// default response if things go wrong
+http_response_code(500);
+
 require VZ_DIR . '/lib/bootstrap.php';
 
 $router = new Router();

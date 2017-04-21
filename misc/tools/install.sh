@@ -242,6 +242,7 @@ if [ "$REPLY" == "y" ]; then
 		GRANT SELECT, UPDATE, INSERT ON $db_name.* TO '$db_user'@'$db_host';
 		GRANT DELETE ON $db_name.entities_in_aggregator TO '$db_user'@'$db_host';
 		GRANT DELETE ON $db_name.properties TO '$db_user'@'$db_host';
+		GRANT DELETE ON $db_name.aggregate TO '$db_user'@'$db_host';
 	EOF
 fi
 
@@ -264,7 +265,7 @@ if [ "$REPLY" == "y" ]; then
 	get_db_admin
 	get_db_name
 
-	cat "$vz_dir/misc/sql/demo/entities.sql" "$vz_dir/misc/sql/demo/properties.sql" "$vz_dir/misc/sql/demo/data-demoset1.sql" |
+	cat "$vz_dir/misc/sql/demo.sql" |
 		mysql -h"$db_host" -u"$db_admin_user" -p"$db_admin_pass" "$db_name"
 fi
 

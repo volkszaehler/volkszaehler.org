@@ -230,13 +230,13 @@ class Debug {
 		elseif ($res = self::safeExec('uptime')) {
 			$matches = array();
 			if (preg_match("/up (?:(?P<days>\d+) days?,? )?(?P<hours>\d+):(?P<minutes>\d{2})/", $res, $matches)) {
-				$uptime = 60*$matches['hours'] + $matches['minutes'];
+				$uptime = 60 * (int)$matches['hours'] + (int)$matches['minutes'];
 
 				if (isset($matches['days'])) {
-					$uptime += $matches['days']*60*24;
+					$uptime += 60 * 24 * (int)$matches['days'];
 				}
 
-				return $uptime*60; // minutes => seconds
+				return 60 * $uptime; // minutes => seconds
 			}
 		}
 		return FALSE;

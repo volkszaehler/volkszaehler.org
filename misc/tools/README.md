@@ -19,7 +19,7 @@
     - [WAMP](#wamp)
     - [Plain Web Sockets](#plain-web-sockets)
   - [Installation](#installation)
-- [ppm](#ppm)
+- [Performance Middleware](#performance-middleware)
   - [Installation](#installation)
   - [Usage](#usage)
   - [Production Setup](#production-setup)
@@ -217,21 +217,17 @@ To install `push-server` as a service create the service using `sudo nano /etc/s
     WantedBy=multi-user.target
 
 
-## ppm
+## Performance Middleware
 
-PPM is the php process manager. Allows running volkszaehler middleware as standalone application for high performance scenarios.
+PPM, or php-pm, is a php process manager. PPM allows running the volkszaehler middleware as standalone application for high performance scenarios. In this setup, the middleware remain persistent in memory and is not loaded at each request like when use with a web server like Apache. Since caches and database connections do not need to be initialized with each request, performance is considerable better and CPU load lower.
 
 ### Installation
 
-As ppm requires `ext-pcntl` which is not available on Windows platforms ppm does not come pre-installed with volkszaehler. To complete installation please add the missing modules:
+PPM is already installed as part of volkszaehler. However, ppm requires `ext-pcntl` which is not available on Windows platforms. To still install volkszaehler without ppm on Windows please run
 
-    composer require php-pm/php-pm:dev-master php-pm/httpkernel-adapter:dev-master
+    composer install --ignore-platform-reqs
 
-In case of error messages make sure installation is up to date before installing required components:
-
-    composer update
-
-Then make sure the prerequistes are available (php-cgi and Apache modules). Debian Jessie:
+To use PPM make sure the prerequistes are available (php-cgi and Apache modules). Debian Jessie:
 
     sudo apt-get install libapache2-mod-proxy-html libxml2-dev php5-cgi
 
@@ -255,9 +251,9 @@ The second approach is recommended. Edit `htdocs/.htaccess` like this:
 
 ### Usage
 
-To execute from the volkszaehler folder use:
+To execute from the volkszaehler folder run ppm with the middleware configuration file:
 
-    vendor/bin/ppm start -c etc/ppm.json &
+    vendor/bin/ppm start -c etc/middleware.json &
 
 This will start a middleware on port 8080 and spawn 8 worker processes. If the middleware should accept connections from other hosts instead of using Apache mod_proxy, use `--host=0.0.0.0` in addition.
 

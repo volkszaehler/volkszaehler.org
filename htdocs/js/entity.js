@@ -91,11 +91,6 @@ Entity.prototype.parseJSON = function(json) {
 			// min, max remain undefined
 		};
 	}
-
-	// subscribe to updates
-	if (this.active) {
-		this.subscribe();
-	}
 };
 
 /**
@@ -202,7 +197,7 @@ Entity.prototype.subscribe = function(session) {
 
 		// don't collect data if not subscribed
 		if (!this.active || this.data === undefined) {
-		  return;
+			return;
 		}
 
 		var delta = push.data;
@@ -283,6 +278,9 @@ Entity.prototype.loadDetails = function(skipDefaultErrorHandling) {
 		// fix https://github.com/volkszaehler/volkszaehler.org/pull/560
 		delete json.entity.active;
 		this.parseJSON(json.entity);
+		this.eachChild(function(child) {
+			child.active = true;
+		}, true); // recursive
 	});
 };
 
@@ -351,6 +349,13 @@ Entity.prototype.showDetails = function() {
 		width: 480,
 		resizable: false,
 		buttons : {
+			'Daten': function() {
+				var params = $.extend($.getUrlParams(), {
+					from: Math.floor(vz.options.plot.xaxis.min),
+					to: Math.ceil(vz.options.plot.xaxis.max)
+				});
+				window.open(entity.middleware + '/data/' + entity.uuid + '.json?' + $.param(params), '_blank');
+			},
 			'Löschen' : function() {
 				$('#entity-delete').dialog({ // confirm prompt
 					resizable: false,
@@ -446,6 +451,9 @@ Entity.prototype.showDetails = function() {
 			'Schließen': function() {
 				$(this).dialog('close');
 			}
+		},
+		open: function() {
+			$(this).siblings('.ui-dialog-buttonpane').find('button:eq(0)').focus();
 		}
 	});
 };
@@ -683,7 +691,7 @@ Entity.prototype.activate = function(state, parent, recursive) {
 
 	if (recursive) {
 		this.eachChild(function(child, parent) {
-			queue.push(child.activate(state, parent, true));
+			queue.push(child.activate(state, parent, false));
 		}, true); // recursive!
 	}
 
@@ -721,14 +729,14 @@ Entity.prototype.updateDOMRow = function() {
 			$('.max', row)
 			.text(vz.wui.formatNumber(this.data.max[1], unit))
 			.attr('title', $.plot.formatDate(new Date(this.data.max[0]), '%d. %b %y %H:%M:%S', vz.options.monthNames, vz.options.dayNames, true));
-		if (this.data.average)
+		if (this.data.average !== undefined)
 			$('.average', row)
 			.text(vz.wui.formatNumber(this.data.average, unit));
 		if (this.data.tuples && this.data.tuples.length > 0)
 			$('.last', row)
 			.text(vz.wui.formatNumber(this.data.tuples[this.data.tuples.length-1][1], unit));
 
-		if (this.data.consumption) {
+		if (this.data.consumption !== undefined) {
 			var consumptionUnit = vz.wui.formatConsumptionUnit(unit);
 			$('.consumption', row)
 				.text(vz.wui.formatNumber(this.data.consumption, consumptionUnit))
@@ -833,7 +841,7 @@ Entity.prototype.eachChild = function(cb, recursive) {
 		for (var i = 0; i < this.children.length; i++) {
 			cb(this.children[i], this);
 
-			if (recursive && this.children[i] !== undefined) {
+			if (recursive && this.children[i].children) {
 				this.children[i].eachChild(cb, true); // call recursive
 			}
 		}

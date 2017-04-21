@@ -121,8 +121,15 @@ vz.load = function(args, skipDefaultErrorHandling) {
 	}
 
 	return $.ajax(args).then(
-		// success - no changes needed
-		null,
+		// success
+		function(json, error, xhr) {
+			// ensure json response - might still be server error
+			if (!xhr.responseJSON) {
+				vz.load.errorHandler(xhr);
+				$.Deferred().rejectWith(this, [xhr]);
+			}
+			return $.Deferred().resolveWith(this, [json]);
+		},
 		// error
 		function(xhr) {
 			return vz.load.errorHandler(xhr, skipDefaultErrorHandling);

@@ -48,8 +48,12 @@ Middleware.prototype.loadEntities = function() {
 
 		json.entities.forEach(function(json) {
 			// fix https://github.com/volkszaehler/volkszaehler.org/pull/560
-			json.active = false;
-			this.public.push(new Entity(json, this.url));
+			json.active = true;
+			var entity = new Entity(json, this.url);
+			entity.eachChild(function(child) {
+				child.active = true;
+			}, true); // recursive
+			this.public.push(entity);
 		}, this);
 		this.public.sort(Entity.compare);
 
