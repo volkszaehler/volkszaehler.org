@@ -125,7 +125,7 @@ class MySQLOptimizer extends SQLOptimizer {
 				'FROM data ' .
 				'CROSS JOIN (SELECT @prev_timestamp := NULL) AS vars ' .
 				'WHERE channel_id=? ' . $sqlTimeFilter . ' ' .
-				'ORDER BY timestamp ' .
+				'ORDER BY timestamp ASC' .
 		   ') AS agg ';
 		return $sql;
 	}

@@ -68,6 +68,10 @@ trait SensorInterpreterAverageTrait {
 				$packageSize = 1 << $bitShift;
 				$timestampOffset = $this->from - $packageSize + 1;
 
+				// prevent DataIterator from further packaging
+				// unless exactly one tuple is requested
+				if ($this->tupleCount != 1) $this->tupleCount = null;
+
 				// optimize package statement general case: tuple packaging
 				$sql = $this->weighedAverageSQL($sqlTimeFilter) .
 					   'GROUP BY (timestamp - ' . $timestampOffset . ') >> ' . $bitShift . ' ' .
