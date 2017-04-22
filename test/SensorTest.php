@@ -274,6 +274,35 @@ class SensorTest extends Data
 		$this->assertTuple(0, $this->makeTuple($this->ts1, $this->ts2, $this->value2));	// hour 2
 		$this->assertTuple(1, $this->makeTuple($this->ts2, $this->ts5, $periodValue * self::$resolution));	// hour 3
 	}
+
+	/**
+	 * @depends testMultiplePackaging
+	 * @depends testMultipleGroupByHour2
+	 */
+	function testMultiplePackagingAlgorithms() {
+		// get data - 5 rows make 4 tuples, 2 or 3 packages
+		// depending on PHP or SQL packaging
+		$this->getTuples($this->ts1, $this->ts5, "");
+		$this->getTuples($this->ts1, $this->ts5, "", 2);
+
+		// tuples
+		$this->assertTrue(count($this->json->data->tuples) >= 2);
+		$this->assertTrue(count($this->json->data->tuples) <= 3);
+
+		// add tuple 6+7 up to exactly power of 2 after tuple 1
+		$bitshift = (int)floor(log($this->ts5 - $this->ts1, 2));
+		$packageSize = 1 << ($bitshift + 1);
+		$ts6 = $this->ts1 + $packageSize;
+		$this->addTuple($ts6-1, 1000);
+		$this->addTuple($ts6, 1000);
+
+		// get data - 7 rows make 7 tuples, 2 packages
+		$this->getTuples($this->ts1, $ts6, "");
+		$this->getTuples($this->ts1, $ts6, "", 2);
+
+		// tuples
+		$this->assertCount(2, $this->json->data->tuples);
+	}
 }
 
 ?>
