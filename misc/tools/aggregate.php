@@ -39,6 +39,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Helper\ProgressBar;
+use Doctrine\DBAL\Logging\EchoSQLLogger;
 
 define('VZ_DIR', realpath(__DIR__ . '/../..'));
 
@@ -63,6 +64,12 @@ abstract class BasicCommand extends Command {
 		$this->em = Volkszaehler\Router::createEntityManager(true); // get admin credentials
 		$this->aggregator = new Util\Aggregation($this->em->getConnection());
 	}
+
+	protected function execute(InputInterface $input, OutputInterface $output) {
+		if ($input->getOption('verbose')) {
+			$this->em->getConnection()->getConfiguration()->setSQLLogger(new EchoSQLLogger());
+		}
+	}
 }
 
 /**
@@ -72,10 +79,13 @@ class OptimizeCommand extends BasicCommand {
 
 	protected function configure() {
 		$this->setName('optimize')
-			->setDescription('Optimize data and aggregate tables');
+			->setDescription('Optimize data and aggregate tables')
+			->addOption('verbose', 'v', InputOption::VALUE_NONE, 'Verbose mode');
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
+		parent::execute();
+
 		$conn = $this->em->getConnection();
 
 		echo("Optimizing aggregate table.\n");
@@ -96,10 +106,13 @@ class ClearCommand extends BasicCommand {
 			->setDescription('Clear aggregation table')
 		->addArgument('uuid', InputArgument::OPTIONAL | InputArgument::IS_ARRAY, 'UUID(s)', array(null))
 			->addOption('level', 'l', InputOption::VALUE_REQUIRED, 'Level (all|hour|day|month|year)', 'all')
-			->addOption('after', 'a', InputOption::VALUE_REQUIRED, 'Clear aggregation data after specified date');
+			->addOption('after', 'a', InputOption::VALUE_REQUIRED, 'Clear aggregation data after specified date')
+			->addOption('verbose', 'v', InputOption::VALUE_NONE, 'Verbose mode');
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
+		parent::execute();
+
 		foreach ($input->getArgument('uuid') as $uuid) {
 			$msg = "Clearing aggregation table";
 			if ($uuid) $msg .= " for UUID " . $uuid;
@@ -124,9 +137,12 @@ class RunCommand extends BasicCommand {
 			->addOption('level', 'l', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Level (hour|day|month|year)', array('day'))
 			->addOption('mode', 'm', InputOption::VALUE_REQUIRED, 'Mode (full|delta)', 'delta')
 			->addOption('periods', 'p', InputOption::VALUE_REQUIRED, 'Previous time periods to run aggregation for (full mode only)');
+			->addOption('verbose', 'v', InputOption::VALUE_NONE, 'Verbose mode');
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
+		parent::execute();
+
 		if (!in_array($mode = $input->getOption('mode'), array('full', 'delta'))) {
 			throw new \Exception('Unsupported aggregation mode ' . $mode);
 		}
