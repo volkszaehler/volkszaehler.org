@@ -159,10 +159,10 @@ class Aggregation {
 	 * @param  string $level aggregation level to remove data for
 	 * @return int 			 number of affected rows
 	 */
-	public function clear($uuid = null, $level = 'all') {
+	public function clear($uuid = null, $level = 'all', $after = null) {
 		$sqlParameters = array();
 
-		if ($level == 'all' && !$uuid) {
+		if ($level == 'all' && !$uuid && !$after) {
 			$sql = 'TRUNCATE TABLE aggregate';
 		}
 		else {
@@ -180,6 +180,14 @@ class Aggregation {
 			if ($uuid) {
 				$sql .= 'entities.uuid = ?';
 				$sqlParameters[] = $uuid;
+			}
+
+			if ($after) {
+				if (false === $timestamp = strtotime($after)) {
+					throw new \Exception('Invalid timestamp ' . $after);
+				}
+				$sql .= 'aggregate.timestamp >= 1000*?';
+				$sqlParameters[] = $timestamp;
 			}
 
 			$factory = SQLOptimizer::factory();
