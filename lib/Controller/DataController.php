@@ -25,6 +25,7 @@ namespace Volkszaehler\Controller;
 
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\ORMException;
 
 use Volkszaehler\Model;
 use Volkszaehler\Util;
@@ -50,6 +51,31 @@ class DataController extends Controller {
 	}
 
 	/**
+	 * Return a single public entity by name
+	 * @param $name
+	 * @throws ORMException on empty or multiple results
+	 * @return mixed
+	 */
+	protected function getSingleEntityByName($name) {
+		$dql = 'SELECT e, p
+			FROM Volkszaehler\Model\Entity e
+			LEFT JOIN e.properties p
+			JOIN e.properties public
+			WHERE p.key = :key
+			AND p.value = :name
+			AND public.key = :key2
+			AND public.value = 1';
+
+		$q = $this->em->createQuery($dql)
+			->setParameter('key', 'title')
+			->setParameter('name', $name)
+			->setParameter('key2', 'public');
+
+		$entity = $q->getSingleResult();
+		return $entity;
+	}
+
+	/**
 	 * Query for data by given channel or group or multiple channels
 	 *
 	 * @param string|array uuid
@@ -63,6 +89,17 @@ class DataController extends Controller {
 
 		// single UUID
 		if (is_string($uuid)) {
+			if (!Util\UUID::validate($uuid)) {
+				// allow retrieving entity by name
+				try {
+					$entity = $this->getSingleEntityByName($uuid);
+					$uuid = $entity->getUuid();
+				}
+				catch (ORMException $e) {
+					throw new \Exception('Channel \'' . $uuid . '\' does not exist, is not public or its name is not unique.');
+				}
+			}
+
 			$entity = EntityController::factory($this->em, $uuid, true); // from cache
 			$class = $entity->getDefinition()->getInterpreter();
 			return new $class($entity, $this->em, $from, $to, $tuples, $groupBy, $this->options);
