@@ -167,18 +167,12 @@ abstract class SQLOptimizer {
 	}
 
 	/**
-	 * Called by interpreter before retrieving result rows
+	 * Calculate if binary tuple packaging can be used
+	 * Updates tupleCount to prevent double packaging
 	 *
-	 * @param  string $sql  		 initial SQL query
-	 * @param  string $sqlParameters initial SQL parameters
-	 * @return boolean               optimization result
+	 * @return bitshift & timestampOffset parameters for binary tuple packaging
 	 */
-	public function optimizeDataSQL(&$sql, &$sqlParameters) {
-		// potential to reduce result set - can't do this for already grouped SQL
-		if ($this->groupBy)
-			return false;
-
-		// perform tuple packaging in SQL
+	protected function applyBinaryTuplePackaging() {
 		if ($this->tupleCount && ($this->rowCount > $this->tupleCount)) {
 			// use power of 2 instead of division for performance
 			$bitShift = (int) floor(log(($this->to - $this->from) / $this->tupleCount, 2));
@@ -192,24 +186,44 @@ abstract class SQLOptimizer {
 				// unless exactly one tuple is requested
 				if ($this->tupleCount != 1) $this->tupleCount = null;
 
-				// optimize packaging statement
-				$foo = array();
-				$sqlTimeFilter = $this->interpreter->buildDateTimeFilterSQL($this->from, $this->to, $foo);
-
-				$sql = 'SELECT MAX(agg.timestamp) AS timestamp, ' .
-							   $this->interpreter->groupExprSQL('agg.value') . ' AS value, ' .
-							  'COUNT(agg.value) AS count ' .
-					   'FROM (' .
-							 'SELECT timestamp, value ' .
-							 'FROM data ' .
-							 'WHERE channel_id=?' . $sqlTimeFilter . ' ' .
-							 'ORDER BY timestamp ASC' .
-					   ') AS agg ' .
-					   'GROUP BY (timestamp - ' . $timestampOffset . ') >> ' . $bitShift . ' ' .
-					   'ORDER BY timestamp ASC';
-
-				return true;
+				return array($bitShift, $timestampOffset);
 			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Called by interpreter before retrieving result rows
+	 *
+	 * @param  string $sql  		 initial SQL query
+	 * @param  string $sqlParameters initial SQL parameters
+	 * @return boolean               optimization result
+	 */
+	public function optimizeDataSQL(&$sql, &$sqlParameters) {
+		// potential to reduce result set - can't do this for already grouped SQL
+		if ($this->groupBy)
+			return false;
+
+		// perform tuple packaging in SQL
+		if (list($bitShift, $timestampOffset) = $this->applyBinaryTuplePackaging()) {
+			// optimize packaging statement
+			$foo = array();
+			$sqlTimeFilter = $this->interpreter->buildDateTimeFilterSQL($this->from, $this->to, $foo);
+
+			$sql = 'SELECT MAX(agg.timestamp) AS timestamp, ' .
+						   $this->interpreter->groupExprSQL('agg.value') . ' AS value, ' .
+						  'COUNT(agg.value) AS count ' .
+				   'FROM (' .
+						 'SELECT timestamp, value ' .
+						 'FROM data ' .
+						 'WHERE channel_id=?' . $sqlTimeFilter . ' ' .
+						 'ORDER BY timestamp ASC' .
+				   ') AS agg ' .
+				   'GROUP BY (timestamp - ' . $timestampOffset . ') >> ' . $bitShift . ' ' .
+				   'ORDER BY timestamp ASC';
+
+			return true;
 		}
 
 		return false;
