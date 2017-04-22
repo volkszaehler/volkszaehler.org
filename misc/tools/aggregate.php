@@ -93,7 +93,9 @@ class ClearCommand extends BasicCommand {
 	protected function configure() {
 		$this->setName('clear')
 			->setDescription('Clear aggregation table')
- 		->addArgument('uuid', InputArgument::OPTIONAL | InputArgument::IS_ARRAY, 'UUID(s)', array(null));
+ 		->addArgument('uuid', InputArgument::OPTIONAL | InputArgument::IS_ARRAY, 'UUID(s)', array(null))
+			->addOption('level', 'l', InputOption::VALUE_REQUIRED, 'Level (all|hour|day|month|year)', 'all')
+			->addOption('after', 'a', InputOption::VALUE_REQUIRED, 'Clear aggregation data after specified date');
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
@@ -102,7 +104,7 @@ class ClearCommand extends BasicCommand {
 			if ($uuid) $msg .= " for UUID " . $uuid;
 			echo($msg . ".\n");
 
-			$this->aggregator->clear($uuid);
+			$this->aggregator->clear($uuid, $input->getOption('level'), $input->getOption('after'));
 			echo("Done clearing aggregation table.\n");
 		}
 	}
