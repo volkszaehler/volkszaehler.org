@@ -48,39 +48,26 @@ trait SensorInterpreterAverageTrait {
 		$foo = array();
 		$sqlTimeFilter = $this->interpreter->buildDateTimeFilterSQL($this->from, $this->to, $foo);
 
-		// MySQL-specific implementation below
 		if ($this->groupBy) {
 			$sqlGroupFields = self::buildGroupBySQL($this->groupBy);
-
 			$sql = $this->weighedAverageSQL($sqlTimeFilter) .
 				   'GROUP BY ' . $sqlGroupFields . ' ' .
 				   'ORDER BY timestamp ASC';
+
 			return true;
 		}
 
-		// potential to reduce result set - can't do this for already grouped SQL
-		if ($this->tupleCount && ($this->rowCount > $this->tupleCount)) {
-			// use power of 2 instead of division for performance
-			$bitShift = (int) floor(log(($this->to - $this->from) / $this->tupleCount, 2));
+		// perform tuple packaging in SQL - can't do this for grouped queries
+		if (list($bitShift, $timestampOffset) = $this->applyBinaryTuplePackaging()) {
+			// optimize package statement general case: tuple packaging
+			$sql = $this->weighedAverageSQL($sqlTimeFilter) .
+				   'GROUP BY (timestamp - ' . $timestampOffset . ') >> ' . $bitShift . ' ' .
+				   'ORDER BY timestamp ASC';
 
-			if ($bitShift > 0) { // worth doing -> go
-				// ensure first tuple consumes only record
-				$packageSize = 1 << $bitShift;
-				$timestampOffset = $this->from - $packageSize + 1;
-
-				// prevent DataIterator from further packaging
-				// unless exactly one tuple is requested
-				if ($this->tupleCount != 1) $this->tupleCount = null;
-
-				// optimize package statement general case: tuple packaging
-				$sql = $this->weighedAverageSQL($sqlTimeFilter) .
-					   'GROUP BY (timestamp - ' . $timestampOffset . ') >> ' . $bitShift . ' ' .
-					   'ORDER BY timestamp ASC';
-				return true;
-			}
+			return true;
 		}
 
-		// we know the parent optimizer doesn't habe anything better to offer
+		// we know the parent optimizer doesn't have anything better to offer
 		return false;
 	}
 }
