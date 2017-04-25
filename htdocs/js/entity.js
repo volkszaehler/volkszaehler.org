@@ -205,6 +205,7 @@ Entity.prototype.subscribe = function(session) {
 			// process updates only if newer than last known timestamp
 			var last_ts = (this.data.tuples.length) ? this.data.tuples[this.data.tuples.length-1][0] : 0;
 			for (var i=0; i<delta.tuples.length; i++) {
+				// find first new timestamp
 				if (delta.tuples[i][0] > last_ts) {
 					// relevant slice
 					var consumption = 0, deltaTuples = delta.tuples.slice(i);
@@ -218,10 +219,20 @@ Entity.prototype.subscribe = function(session) {
 						consumption += el[1] * tsdiff;
 					}).bind(this)); // bind to entity
 
+					// update consumption
+					consumption /= 3.6e6;
+					if (this.data.consumption !== undefined) {
+						this.data.consumption = (this.data.consumption || 0) + consumption;
+
+						// calculate new left plot border and remove outdated tuples and consumption
+						var left = deltaTuples[deltaTuples.length-1][0] - vz.options.plot.xaxis.max + vz.options.plot.xaxis.min;
+						while (this.data.tuples.length && this.data.tuples[0][0] < left) {
+							var first = this.data.tuples.shift();
+							this.data.consumption -= first[1] * (first[0] - this.data.from) / 3.6e6;
+							this.data.from = first[0];
+						}
+					}
 					if (this.initialconsumption !== undefined) {
-						// update consumption
-						consumption /= 3.6e6;
-						this.consumption = (this.consumption || 0) + consumption;
 						this.totalconsumption = (this.totalconsumption || 0) + consumption;
 					}
 
