@@ -24,9 +24,11 @@
 namespace Volkszaehler\Definition;
 
 use Volkszaehler\Util;
+use Volkszaehler\Model\Aggregator;
 
 /**
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @author Andreas Goetz <cpuidle@gmx.de>
  * @package default
  */
 class EntityDefinition extends Definition {
@@ -109,6 +111,7 @@ class EntityDefinition extends Definition {
 	 */
 	static protected $defaultRequired = array('title');
 	static protected $defaultOptional = array('public', 'color', 'style', 'fillstyle', 'yaxis', 'active', 'description', 'owner', 'address:', 'link');
+	static protected $groupOptional = array('public', 'color', 'active', 'description', 'owner', 'address:', 'link');
 
 	/**
 	 * Constructor
@@ -119,7 +122,11 @@ class EntityDefinition extends Definition {
 	 	parent::__construct($object);
 
 	 	$this->required = array_merge(self::$defaultRequired, $this->required);
-	 	$this->optional = array_merge(self::$defaultOptional, $this->optional);
+
+	 	$optional = $this->getModel() == Aggregator::class
+	 		? self::$groupOptional
+	 		: self::$defaultOptional;
+		$this->optional = array_merge($optional, $this->optional);
 	 }
 
 	/*
