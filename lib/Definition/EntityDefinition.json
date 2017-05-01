@@ -57,6 +57,17 @@
 		}
 	},
 	{
+		"name"			: "user",
+		"icon"			: "user.png",
+		"interpreter"		: "Volkszaehler\\Interpreter\\AggregatorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Aggregator",
+		"translation"		: {
+			"de" : "Nutzer",
+			"en" : "User",
+			"fr" : "Usager"
+		}
+	},
+	{
 		"name"			: "power",
 		"required"		: ["resolution"],
 		"optional"		: ["tolerance", "cost", "local", "initialconsumption"],
@@ -395,17 +406,6 @@
 		"translation"		: {
 			"de" : "Sensor",
 			"en" : "Sensor"
-		}
-	},
-	{
-		"name"			: "user",
-		"icon"			: "user.png",
-		"interpreter"		: "Volkszaehler\\Interpreter\\AggregatorInterpreter",
-		"model"			: "Volkszaehler\\Model\\Aggregator",
-		"translation"		: {
-			"de" : "Nutzer",
-			"en" : "User",
-			"fr" : "Usager"
 		}
 	},
 	{
