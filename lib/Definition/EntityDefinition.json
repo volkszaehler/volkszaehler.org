@@ -170,9 +170,9 @@
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
-			"de" : "Wärmemengenzähler",
-			"en" : "Heat Meter",
-			"fr" : "Capteur d' énergie thermique"
+			"de" : "Wärme (S0-Impulse)",
+			"en" : "Heat (S0-pulses)",
+			"fr" : "Énergie thermique (S0)"
 		}
 	},
 	{
@@ -185,8 +185,25 @@
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
-			"de" : "Wärmemengensensor",
-			"en" : "Heat Sensor"
+			"de" : "Wärme (Leistungswerte)",
+			"en" : "Heat (power readings)",
+			"fr" : "Énergie thermique (puissance)"
+		}
+	},
+	{
+		"name"			: "heattotal",
+		"required"		: ["resolution"],
+		"optional"		: ["tolerance", "cost", "local", "initialconsumption"],
+		"icon"			: "flame.png",
+		"unit"			: "W",
+		"scale"			: 1000,
+		"interpreter"		: "Volkszaehler\\Interpreter\\AccumulatorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
+		"translation"		: {
+			"de" : "Wärme (Zählerstände)",
+			"en" : "Heat (absolute meter readings)",
+			"fr" : "Énergie thermique (consommation compteur)"
 		}
 	},
 	{
