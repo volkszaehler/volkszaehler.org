@@ -212,9 +212,9 @@
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
-			"de" : "Wassermengenzähler",
-			"en" : "Water",
-			"fr" : "Eau"
+			"de" : "Wasser (S0-Impulse)",
+			"en" : "Water (S0-pulses)",
+			"fr" : "Eau (S0)"
 		}
 	},
 	{
@@ -226,9 +226,24 @@
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
-			"de" : "Wassermengensensor",
-			"en" : "Flow rate",
-			"fr" : "Vitesse d'écoulement"
+			"de" : "Wasser (Durchflusswerte)",
+			"en" : "Water (flow rate readings)",
+			"fr" : "Eau (vitesse d'écoulement)"
+		}
+	},
+	{
+		"name"			: "watertotal",
+		"required"		: ["resolution"],
+		"optional"		: ["tolerance", "cost", "local", "initialconsumption"],
+		"icon"			: "waterdrop.png",
+		"unit"			: "l/h",
+		"interpreter"		: "Volkszaehler\\Interpreter\\AccumulatorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
+		"translation"		: {
+			"de" : "Wasser (Zählerstände)",
+			"en" : "Water (absolute meter readings)",
+			"fr" : "Eau (consommation compteur)"
 		}
 	},
 	{
