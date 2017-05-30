@@ -200,14 +200,10 @@ class Router implements HttpKernelInterface {
 		}
 
 		// make sure proxy ip in trusted local network isn't mistaken for client ip
-		$request->setTrustedProxies(Util\Configuration::read('proxies', []));
-		if (is_callable([$request, 'isFromTrustedProxy']) && !$request->isFromTrustedProxy()) {
-			// ensure no proxy header present if proxy not used
-			foreach (['FORWARDED', 'X_FORWARDED_FOR'] as $header) {
-				if (null !== $request->headers->get($header)) {
-					throw new \Exception('Invalid proxy access');
-				}
-			}
+		$proxies = Util\Configuration::read('proxies', []);
+		if (count($proxies)) {
+			$proxy_headers = Util\Configuration::read('proxy_headers', Request::HEADER_FORWARDED);
+			$request->setTrustedProxies($proxies, $proxy_headers);
 		}
 
 		// map GET operation to HTTP method for use in firewall rules
