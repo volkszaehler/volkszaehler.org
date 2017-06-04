@@ -24,7 +24,9 @@ class FirewallTest extends Middleware
 
 		// httpd adapter acts as proxy- set forwarded header
 		if (testAdapter == 'HTTP') {
+			// set both headers for time being
 			$server['HTTP_X_FORWARDED_FOR'] = $ip;
+			$server['HTTP_FORWARDED'] = sprintf("for=%s", $ip);
 		}
 
 		if (isset($headers)) {
