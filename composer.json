@@ -18,7 +18,7 @@
         "andig/dbcopy": "^1.1",
         "symfony/console": "^2.6|^3.0",
         "symfony/http-kernel": "^2.6|^3.0",
-        "symfony/http-foundation": "^2.7|^3.0",
+        "symfony/http-foundation": "^3.3",
         "symfony/routing": "^2.6|^3.0",
         "cboden/ratchet": "^0.4",
         "react/http": "dev-master",

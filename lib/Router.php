@@ -200,7 +200,7 @@ class Router implements HttpKernelInterface {
 		// make sure proxy ip in trusted local network isn't mistaken for client ip
 		$proxies = Util\Configuration::read('proxies', []);
 		if (count($proxies)) {
-			$proxy_headers = Util\Configuration::read('proxy_headers', Request::HEADER_FORWARDED);
+			$proxy_headers = Util\Configuration::read('proxy_headers', Request::HEADER_FORWARDED | Request::HEADER_X_FORWARDED_ALL);
 			$request->setTrustedProxies($proxies, $proxy_headers);
 		}
 
