@@ -18,7 +18,7 @@
         "andig/php-shunting-yard": "dev-master",
         "symfony/console": "^2.6|^3.0",
         "symfony/http-kernel": "^2.6|^3.0",
-        "symfony/http-foundation": "^2.6|^3.0",
+        "symfony/http-foundation": "^3.3",
         "symfony/routing": "^2.6|^3.0",
         "react/socket": "^0.5",
         "cboden/ratchet": "0.4.x-dev",
