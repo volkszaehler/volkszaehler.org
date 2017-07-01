@@ -38,6 +38,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Helper\ProgressBar;
 
 define('VZ_DIR', realpath(__DIR__ . '/../..'));
 
@@ -146,7 +147,7 @@ class RunCommand extends BasicCommand {
 	protected function configure() {
 		$this->setName('run')
 			->setDescription('Run aggregation')
- 		->addArgument('uuid', InputArgument::OPTIONAL | InputArgument::IS_ARRAY, 'UUID(s)', array(null))
+ 		->addArgument('uuid', InputArgument::OPTIONAL | InputArgument::IS_ARRAY, 'UUID(s)')
 			->addOption('level', 'l', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Level (hour|day|month|year)', array('day'))
 			->addOption('mode', 'm', InputOption::VALUE_REQUIRED, 'Mode (full|delta)', 'delta')
 			->addOption('period', 'p', InputOption::VALUE_REQUIRED, 'Previous time periods (full|delta)');
@@ -157,20 +158,41 @@ class RunCommand extends BasicCommand {
 			throw new \Exception('Unsupported aggregation mode ' . $mode);
 		}
 
-		// loop through all uuids
-		foreach ($input->getArgument('uuid') as $uuid) {
-			// loop through all aggregation levels
-			foreach ($input->getOption('level') as $level) {
-				if (!Util\Aggregation::isValidAggregationLevel($level))
+		$levels = $input->getOption('level');
+		$uuids = $input->getArgument('uuid');
+		$channels = count($uuids);
+
+		if (!$uuids) {
+			$uuids = array(null);
+			$channels = count($this->aggregator->getAggregatableEntitiesArray());
+		}
+
+		$progress = new ProgressBar($output, $channels);
+		$progress->setFormatDefinition('debug', ' [%bar%] %percent:3s%% %elapsed:8s%/%estimated:-8s% %current% channels');
+		$progress->setFormat('debug');
+
+		// loop through all aggregation levels
+		foreach ($levels as $level) {
+			$msg = "Performing '" . $mode . "' aggregation";
+			// if ($uuid) $msg .= " for UUID " . $uuid;
+			$output->writeln($msg . " on '" . $level . "' level.\n");
+			$progress->start();
+
+			// loop through all uuids
+			foreach ($uuids as $uuid) {
+				if (!Util\Aggregation::isValidAggregationLevel($level)) {
 					throw new \Exception('Unsupported aggregation level ' . $level);
+				}
 
-				$msg = "Performing '" . $mode . "' aggregation";
-				if ($uuid) $msg .= " for UUID " . $uuid;
-				echo($msg . " on '" . $level . "' level.\n");
+				$rows = $this->aggregator->aggregate($uuid, $level, $mode, $input->getOption('period'), function($rows) use ($uuid, $output, $progress) {
+					$output->writeln($uuid);
+					$progress->advance();
+				});
 
-				$rows = $this->aggregator->aggregate($uuid, $level, $mode, $input->getOption('period'));
-				echo("Updated $rows rows.\n");
+				$output->writeln("Updated $rows rows.\n");
 			}
+
+			$progress->finish();
 		}
 	}
 }
