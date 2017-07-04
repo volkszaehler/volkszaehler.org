@@ -184,7 +184,7 @@ abstract class SQLOptimizer {
 
 				// prevent DataIterator from further packaging
 				// unless exactly one tuple is requested
-				if ($this->tupleCount != 1) $this->tupleCount = null;
+				if ($this->tupleCount !== 1) $this->tupleCount = null;
 
 				return array($bitShift, $timestampOffset);
 			}

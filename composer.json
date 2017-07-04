@@ -34,7 +34,8 @@
         "ringcentral/psr7": "^1.2",
         "jenssegers/proxy": "^3.0-beta",
         "symfony/psr-http-message-bridge": "^1.0",
-        "zendframework/zend-diactoros": "^1.3"
+        "zendframework/zend-diactoros": "^1.3",
+        "jdorn/sql-formatter": "^1.2"
     },
     "autoload": {
         "psr-4": {
