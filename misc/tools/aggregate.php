@@ -67,7 +67,7 @@ abstract class BasicCommand extends Command {
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
 		if ($input->getOption('verbose')) {
-			$this->em->getConnection()->getConfiguration()->setSQLLogger(new EchoSQLLogger());
+			$this->em->getConnection()->getConfiguration()->setSQLLogger(new Util\ConsoleSQLLogger($output));
 		}
 	}
 }
@@ -84,7 +84,7 @@ class OptimizeCommand extends BasicCommand {
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
-		parent::execute();
+		parent::execute($input, $output);
 
 		$conn = $this->em->getConnection();
 
@@ -111,7 +111,7 @@ class ClearCommand extends BasicCommand {
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
-		parent::execute();
+		parent::execute($input, $output);
 
 		foreach ($input->getArgument('uuid') as $uuid) {
 			$msg = "Clearing aggregation table";
@@ -136,12 +136,12 @@ class RunCommand extends BasicCommand {
  		->addArgument('uuid', InputArgument::OPTIONAL | InputArgument::IS_ARRAY, 'UUID(s)')
 			->addOption('level', 'l', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Level (hour|day|month|year)', array('day'))
 			->addOption('mode', 'm', InputOption::VALUE_REQUIRED, 'Mode (full|delta)', 'delta')
-			->addOption('periods', 'p', InputOption::VALUE_REQUIRED, 'Previous time periods to run aggregation for (full mode only)');
+			->addOption('periods', 'p', InputOption::VALUE_REQUIRED, 'Previous time periods to run aggregation for (full mode only)')
 			->addOption('verbose', 'v', InputOption::VALUE_NONE, 'Verbose mode');
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
-		parent::execute();
+		parent::execute($input, $output);
 
 		if (!in_array($mode = $input->getOption('mode'), array('full', 'delta'))) {
 			throw new \Exception('Unsupported aggregation mode ' . $mode);
