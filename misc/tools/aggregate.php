@@ -93,7 +93,7 @@ class OptimizeCommand extends BasicCommand {
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
-		parent::execute();
+		parent::execute($input, $output);
 
 		$conn = $this->em->getConnection();
 
@@ -120,7 +120,7 @@ class ClearCommand extends BasicCommand {
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
-		parent::execute();
+		parent::execute($input, $output);
 
 		foreach ($input->getArgument('uuid') as $uuid) {
 			$msg = "Clearing aggregation table";
@@ -150,8 +150,6 @@ class RunCommand extends BasicCommand {
 	}
 
 	protected function runAggregation($mode, $levels, $uuids = null, $periods = null) {
-		parent::execute();
-
 		if (!in_array($mode = $input->getOption('mode'), array('full', 'delta'))) {
 			throw new \Exception('Unsupported aggregation mode ' . $mode);
 		}
