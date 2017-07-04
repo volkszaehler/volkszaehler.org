@@ -201,14 +201,25 @@ class Aggregation {
 			// get interpreter's aggregation function
 			$aggregationFunction = $interpreter::groupExprSQL('agg.value');
 
-			// max aggregated timestamp before current period
+			// max aggregated timestamp before current aggregation range
 			$intialTimestamp = 'NULL';
 			if ($mode == 'delta') {
+				// since last aggregation only
 				array_push($sqlParameters, $type, $channel_id);
+				$intialTimestamp =
+					'UNIX_TIMESTAMP(DATE_ADD(' .
+					'FROM_UNIXTIME(MAX(timestamp) / 1000, ' . $format . '), ' .
+					'INTERVAL 1 ' . $level . ')) * 1000 ' .
+					'FROM aggregate ' .
+					'WHERE type = ? AND aggregate.channel_id = ?';
+			}
+			elseif ($period) {
+				// selected number of periods only
+				array_push($sqlParameters, $type, $channel_id, $period);
 				$intialTimestamp =
 					'MAX(timestamp) FROM aggregate ' .
 					'WHERE type = ? AND aggregate.channel_id = ? ' .
-					'AND timestamp < UNIX_TIMESTAMP(DATE_FORMAT(NOW(), ' . $format . ')) * 1000';
+					'AND timestamp < UNIX_TIMESTAMP(DATE_SUB(DATE_FORMAT(NOW(), ' . $format . '), INTERVAL ? ' . $level . ')) * 1000';
 			}
 
 			// SQL query similar to MySQLOptimizer group mode
@@ -245,6 +256,7 @@ class Aggregation {
 
 		// since last aggregation only
 		if ($mode == 'delta') {
+			// timestamp at start of next period after last aggregated period
 			array_push($sqlParameters, $type, $channel_id);
 			$sql .=
 			   'AND timestamp >= IFNULL((' .
@@ -257,10 +269,10 @@ class Aggregation {
 		}
 
 		// selected number of periods only
-		if ($period) {
+		elseif ($period) {
+			$sqlParameters[] = $period;
 			$sql .=
 			   'AND timestamp >= (SELECT UNIX_TIMESTAMP(DATE_SUB(DATE_FORMAT(NOW(), ' . $format . '), INTERVAL ? ' . $level . ')) * 1000) ';
-			$sqlParameters[] = $period;
 		}
 
 		// up to before current period

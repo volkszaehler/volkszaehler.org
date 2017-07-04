@@ -150,7 +150,7 @@ class RunCommand extends BasicCommand {
  		->addArgument('uuid', InputArgument::OPTIONAL | InputArgument::IS_ARRAY, 'UUID(s)')
 			->addOption('level', 'l', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Level (hour|day|month|year)', array('day'))
 			->addOption('mode', 'm', InputOption::VALUE_REQUIRED, 'Mode (full|delta)', 'delta')
-			->addOption('period', 'p', InputOption::VALUE_REQUIRED, 'Previous time periods (full|delta)');
+			->addOption('periods', 'p', InputOption::VALUE_REQUIRED, 'Previous time periods to run aggregation for (full mode only)');
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
@@ -159,6 +159,17 @@ class RunCommand extends BasicCommand {
 		}
 
 		$levels = $input->getOption('level');
+		$periods = $input->getOption('periods');
+
+		if ($periods) {
+			if (!is_numeric($periods)) {
+				throw new \Exception('Invalid number of periods: ' . $periods);
+			}
+			if ($mode == 'delta') {
+				throw new \Exception('Cannot use delta mode with periods');
+			}
+		}
+
 		$uuids = $input->getArgument('uuid');
 		$channels = count($uuids);
 
@@ -173,9 +184,9 @@ class RunCommand extends BasicCommand {
 
 		// loop through all aggregation levels
 		foreach ($levels as $level) {
-			$msg = "Performing '" . $mode . "' aggregation";
-			// if ($uuid) $msg .= " for UUID " . $uuid;
-			$output->writeln($msg . " on '" . $level . "' level.\n");
+			$msg = "Performing '" . $mode . "' aggregation on '" . $level . "' level";
+			if ($periods) $msg .= " for " . $periods . " " . $level . "(s)";
+			$output->writeln($msg . "\n");
 			$progress->start();
 
 			// loop through all uuids
@@ -184,7 +195,7 @@ class RunCommand extends BasicCommand {
 					throw new \Exception('Unsupported aggregation level ' . $level);
 				}
 
-				$rows = $this->aggregator->aggregate($uuid, $level, $mode, $input->getOption('period'), function($rows) use ($uuid, $output, $progress) {
+				$rows = $this->aggregator->aggregate($uuid, $level, $mode, $periods, function($rows) use ($uuid, $output, $progress) {
 					$output->writeln($uuid);
 					$progress->advance();
 				});
