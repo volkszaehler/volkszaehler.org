@@ -39,7 +39,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Helper\ProgressBar;
-use Doctrine\DBAL\Logging\EchoSQLLogger;
+use Symfony\Component\Console\Output\StreamOutput;
 
 define('VZ_DIR', realpath(__DIR__ . '/../..'));
 
@@ -167,9 +167,12 @@ class RunCommand extends BasicCommand {
 			$channels = count($this->aggregator->getAggregatableEntitiesArray());
 		}
 
-		$progress = new ProgressBar($output, $channels);
+		$stdout = new StreamOutput($output->getStream());
+		$progress = new ProgressBar($stdout, $channels);
 		$progress->setFormatDefinition('debug', ' [%bar%] %percent:3s%% %elapsed:8s%/%estimated:-8s% %current% channels');
 		$progress->setFormat('debug');
+
+		$rows = 0;
 
 		// loop through all aggregation levels
 		foreach ($levels as $level) {
@@ -184,15 +187,14 @@ class RunCommand extends BasicCommand {
 					throw new \Exception('Unsupported aggregation level ' . $level);
 				}
 
-				$rows = $this->aggregator->aggregate($uuid, $level, $mode, $periods, function($rows) use ($uuid, $output, $progress) {
+				$rows += $this->aggregator->aggregate($uuid, $level, $mode, $periods, function($rows) use ($uuid, $output, $progress) {
 					$output->writeln($uuid);
 					$progress->advance();
 				});
-
-				$output->writeln("Updated $rows rows.\n");
 			}
 
 			$progress->finish();
+			$output->writeln("\n\nUpdated " . $rows . " rows.\n");
 		}
 	}
 }
