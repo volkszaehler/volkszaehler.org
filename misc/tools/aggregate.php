@@ -180,6 +180,7 @@ class RunCommand extends BasicCommand {
 
 		$progress = new ProgressBar($output, $channels);
 		$progress->setFormatDefinition('debug', ' [%bar%] %percent:3s%% %elapsed:8s%/%estimated:-8s% %current% channels');
+		$progress->setFormatDefinition('quiet', '');
 		$progress->setFormat('debug');
 
 		// loop through all aggregation levels
