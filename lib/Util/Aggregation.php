@@ -36,8 +36,8 @@ class Aggregation {
 	/*
 	 * Aggregation modes
 	 */
-	public const MODE_FULL = 'full';
-	public const MODE_DELTA = 'delta';
+	const MODE_FULL = 'full';
+	const MODE_DELTA = 'delta';
 
 	/**
 	 * @var \Doctrine\DBAL\Connection Database connection
