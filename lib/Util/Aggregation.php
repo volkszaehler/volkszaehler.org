@@ -34,7 +34,7 @@ use Doctrine\DBAL;
 class Aggregation {
 
 	/*
-	 * Aggregatiion modes
+	 * Aggregation modes
 	 */
 	public const MODE_FULL = 'full';
 	public const MODE_DELTA = 'delta';
