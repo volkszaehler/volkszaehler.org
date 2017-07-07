@@ -219,10 +219,11 @@ class VirtualInterpreter extends Interpreter {
 			}
 
 			if ($this->output == self::CONSUMPTION_VALUES) {
-				$this->consumption += $value * 3.6e6;
+				$value *= ($this->ts - $ts_last) / 3.6e6;
+				$this->consumption += $value;
 			}
 			else {
-				$this->consumption += $value * ($this->ts - $ts_last);
+				$this->consumption += $value * ($this->ts - $ts_last) / 3.6e6;
 			}
 
 			$tuple = array($this->ts, $value, 1);
@@ -262,7 +263,7 @@ class VirtualInterpreter extends Interpreter {
 	 * @return float total consumption in Wh
 	 */
 	public function getConsumption() {
-		return $this->channel->getDefinition()->hasConsumption ? $this->consumption / 3.6e6 : NULL; // convert to Wh
+		return $this->channel->getDefinition()->hasConsumption ? $this->consumption : NULL; // convert to Wh
 	}
 
 	/**
