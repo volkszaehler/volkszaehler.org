@@ -56,7 +56,15 @@ abstract class BasicCommand extends Command {
 	 */
 	protected $em;
 
+	/**
+	 * @var Aggregator
+	 */
 	protected $aggregator;
+
+	/**
+	 * @var \Symfony\Component\Console\Output\OutputInterface
+	 */
+	protected $output;
 
 	public function __construct() {
 		parent::__construct();
@@ -64,34 +72,12 @@ abstract class BasicCommand extends Command {
 		$this->em = Volkszaehler\Router::createEntityManager(true); // get admin credentials
 		$this->aggregator = new Util\Aggregation($this->em->getConnection());
 	}
-}
-
-/**
- * (Re)create aggregation table
- */
-class CreateCommand extends BasicCommand {
-
-	protected function configure() {
-		$this->setName('create')
-			->setDescription('Create aggregation table (DESTRUCTIVE)');
-	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
-		$conn = $this->em->getConnection();
-
-		echo("Recreating aggregation table.\n");
-		$conn->executeQuery('DROP TABLE IF EXISTS `aggregate`');
-		$conn->executeQuery(
-			'CREATE TABLE `aggregate` (' .
-			'  `id` int(11) NOT NULL AUTO_INCREMENT,' .
-			'  `channel_id` int(11) NOT NULL,' .
-			'  `type` tinyint(1) NOT NULL,' .
-			'  `timestamp` bigint(20) NOT NULL,' .
-			'  `value` double NOT NULL,' .
-			'  `count` int(11) NOT NULL,' .
-			'  PRIMARY KEY (`id`),' .
-			'  UNIQUE KEY `ts_uniq` (`channel_id`,`type`,`timestamp`)' .
-			')');
+		if ($input->getOption('verbose')) {
+			$this->em->getConnection()->getConfiguration()->setSQLLogger(new Util\ConsoleSQLLogger($output));
+		}
+		$this->output = $output;
 	}
 }
 
@@ -151,10 +137,52 @@ class RunCommand extends BasicCommand {
  		->addArgument('uuid', InputArgument::OPTIONAL | InputArgument::IS_ARRAY, 'UUID(s)')
 			->addOption('level', 'l', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Level (hour|day|month|year)', array('day'))
 			->addOption('mode', 'm', InputOption::VALUE_REQUIRED, 'Mode (full|delta)', 'delta')
-			->addOption('periods', 'p', InputOption::VALUE_REQUIRED, 'Previous time periods to run aggregation for (full mode only)');
+			->addOption('periods', 'p', InputOption::VALUE_REQUIRED, 'Previous time periods to run aggregation for (full mode only)')
+			->addOption('verbose', 'v', InputOption::VALUE_NONE, 'Verbose mode');
+	}
+
+	protected function runAggregation($mode, $levels, $uuids = null, $periods = null) {
+		$channels = count($uuids);
+
+		if (!$uuids) {
+			$uuids = array(null);
+			$channels = count($this->aggregator->getAggregatableEntitiesArray());
+		}
+
+		$stdout = new StreamOutput($this->output->getStream());
+		$progress = new ProgressBar($stdout, $channels);
+		$progress->setFormatDefinition('debug', ' [%bar%] %percent:3s%% %elapsed:8s%/%estimated:-8s% %current% channels');
+		$progress->setFormat('debug');
+
+		$rows = 0;
+
+		// loop through all aggregation levels
+		foreach ($levels as $level) {
+			$msg = "Performing '" . $mode . "' aggregation on '" . $level . "' level";
+			if ($periods) $msg .= " for " . $periods . " " . $level . "(s)";
+			$this->output->writeln($msg . "\n");
+			$progress->start();
+
+			// loop through all uuids
+			foreach ($uuids as $uuid) {
+				if (!Util\Aggregation::isValidAggregationLevel($level)) {
+					throw new \Exception('Unsupported aggregation level ' . $level);
+				}
+
+				$rows += $this->aggregator->aggregate($uuid, $level, $mode, $periods, function($rows) use ($uuid, $progress) {
+					$this->output->writeln($uuid);
+					$progress->advance();
+				});
+			}
+
+			$progress->finish();
+			$this->output->writeln("\n\nUpdated " . $rows . " rows.\n");
+		}
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
+		parent::execute($input, $output);
+
 		if (!in_array($mode = $input->getOption('mode'), array('full', 'delta'))) {
 			throw new \Exception('Unsupported aggregation mode ' . $mode);
 		}
@@ -172,42 +200,39 @@ class RunCommand extends BasicCommand {
 		}
 
 		$uuids = $input->getArgument('uuid');
-		$channels = count($uuids);
 
-		if (!$uuids) {
-			$uuids = array(null);
-			$channels = count($this->aggregator->getAggregatableEntitiesArray());
-		}
+		$this->runAggregation($mode, $levels, $uuids, $periods);
+	}
+}
 
-		$stdout = new StreamOutput($output->getStream());
-		$progress = new ProgressBar($stdout, $channels);
-		$progress->setFormatDefinition('debug', ' [%bar%] %percent:3s%% %elapsed:8s%/%estimated:-8s% %current% channels');
-		$progress->setFormat('debug');
 
-		$rows = 0;
+/**
+ * Aggregate selected channels and levels
+ */
+class RebuildCommand extends RunCommand {
 
-		// loop through all aggregation levels
-		foreach ($levels as $level) {
-			$msg = "Performing '" . $mode . "' aggregation on '" . $level . "' level";
-			if ($periods) $msg .= " for " . $periods . " " . $level . "(s)";
-			$output->writeln($msg . "\n");
-			$progress->start();
+	protected function configure() {
+		$this->setName('rebuild')
+			->setDescription('Rebuild aggregation table (using temporary table)')
+			->addOption('level', 'l', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Level (hour|day|month|year)', array('day'))
+			->addOption('verbose', 'v', InputOption::VALUE_NONE, 'Verbose mode');
+	}
 
-			// loop through all uuids
-			foreach ($uuids as $uuid) {
-				if (!Util\Aggregation::isValidAggregationLevel($level)) {
-					throw new \Exception('Unsupported aggregation level ' . $level);
-				}
+	protected function execute(InputInterface $input, OutputInterface $output) {
+		BasicCommand::execute($input, $output);
 
-				$rows += $this->aggregator->aggregate($uuid, $level, $mode, $periods, function($rows) use ($uuid, $output, $progress) {
-					$output->writeln($uuid);
-					$progress->advance();
-				});
-			}
+		$levels = $input->getOption('level');
 
-			$progress->finish();
-			$output->writeln("\n\nUpdated " . $rows . " rows.\n");
-		}
+		$output->writeln('Preparing temporary aggregation table');
+		$this->aggregator->startRebuild();
+
+		// populate temporary table
+		$this->runAggregation(Util\Aggregation::MODE_FULL, $levels);
+
+		$output->writeln('Applying temporary aggregation table');
+		$this->aggregator->finishRebuild();
+
+		$output->writeln('Finished rebuilding aggregation table');
 	}
 }
 
@@ -215,10 +240,10 @@ class RunCommand extends BasicCommand {
 $app = new Util\ConsoleApplication('Data aggregation tool');
 
 $app->addCommands(array(
-	new CreateCommand,
 	new OptimizeCommand,
 	new ClearCommand,
-	new RunCommand
+	new RunCommand,
+	new RebuildCommand
 ));
 
 $app->run();
