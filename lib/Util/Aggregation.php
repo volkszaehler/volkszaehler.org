@@ -33,6 +33,13 @@ use Volkszaehler\Definition;
 use Doctrine\DBAL;
 
 class Aggregation {
+
+	/*
+	 * Aggregation modes
+	 */
+	const MODE_FULL = 'full';
+	const MODE_DELTA = 'delta';
+
 	/**
 	 * @var \Doctrine\DBAL\Connection Database connection
 	 */
@@ -42,6 +49,11 @@ class Aggregation {
 	 * @var SQL aggregation types and assorted date formats
 	 */
 	protected static $aggregationLevels = array();
+
+	/**
+	 * @var Aggregation target
+	 */
+	protected $targetTable = 'aggregate';
 
 	/**
 	 * Initialize static variables
@@ -190,6 +202,26 @@ class Aggregation {
 	}
 
 	/**
+	 * Create temporary aggregate table for rebuild
+	 */
+	public function startRebuild() {
+		$this->conn->executeQuery('DROP TABLE IF EXISTS aggregate_temp');
+		$this->conn->executeQuery('CREATE TABLE aggregate_temp LIKE aggregate');
+		$this->targetTable = 'aggregate_temp';
+	}
+
+	/**
+	 * Appy rebuild temporary aggregate table
+	 */
+	public function finishRebuild() {
+		$this->conn->beginTransaction();
+		$this->conn->executeQuery('DROP TABLE aggregate');
+		$this->conn->executeQuery('RENAME TABLE aggregate_temp TO aggregate');
+		$this->conn->commit();
+		$this->targetTable = 'aggregate';
+	}
+
+	/**
 	 * Core data aggregation
 	 *
 	 * @param  int 	  $channel_id  id of channel to perform aggregation on
@@ -206,7 +238,7 @@ class Aggregation {
 		$weighed_avg = $interpreter == Interpreter\SensorInterpreter::class;
 
 		$sqlParameters = array($type);
-		$sql = 'REPLACE INTO aggregate (channel_id, type, timestamp, value, count) ';
+		$sql = 'REPLACE INTO ' . $this->targetTable . ' (channel_id, type, timestamp, value, count) ';
 
 		if ($weighed_avg) {
 			// get interpreter's aggregation function
@@ -214,7 +246,7 @@ class Aggregation {
 
 			// max aggregated timestamp before current aggregation range
 			$intialTimestamp = 'NULL';
-			if ($mode == 'delta') {
+			if ($mode == self::MODE_DELTA) {
 				// since last aggregation only
 				array_push($sqlParameters, $type, $channel_id);
 				$intialTimestamp =
@@ -266,7 +298,7 @@ class Aggregation {
 		$sql .= 'channel_id = ? ';
 
 		// since last aggregation only
-		if ($mode == 'delta') {
+		if ($mode == self::MODE_DELTA) {
 			// timestamp at start of next period after last aggregated period
 			array_push($sqlParameters, $type, $channel_id);
 			$sql .=
@@ -291,9 +323,7 @@ class Aggregation {
 
 		if ($weighed_avg) {
 			// close inner table
-			$sql .=
-				'ORDER BY timestamp ' .
-			') AS agg ';
+			$sql .= ') AS agg ';
 		}
 
 		$factory = SQLOptimizer::factory();
@@ -327,14 +357,15 @@ class Aggregation {
 	 *
 	 * @param  string $uuid   channel UUID
 	 * @param  string $level  aggregation level (e.g. 'day')
-	 * @param  string $mode   'full' or 'delta' aggretation
+	 * @param  string $mode   MODE_FULL or MODE_DELTA aggretation
 	 * @param  int    $period number of prior periods to aggregate in delta mode
 	 * @param  callable $progress progress callback
 	 * @return int         	  number of affected rows
 	 */
-	public function aggregate($uuid = null, $level = 'day', $mode = 'full', $period = null, $progress = null) {
+	public function aggregate($uuid = null, $level = 'day', $mode = self::MODE_FULL, $period = null, $progress = null) {
+
 		// validate settings
-		if (!in_array($mode, array('full', 'delta'))) {
+		if (!in_array($mode, array(self::MODE_FULL, self::MODE_DELTA))) {
 			throw new \RuntimeException('Unsupported aggregation mode ' . $mode);
 		}
 		if (!$this->isValidAggregationLevel($level)) {
