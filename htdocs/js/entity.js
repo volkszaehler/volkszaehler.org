@@ -191,7 +191,7 @@ Entity.prototype.subscribe = function(session) {
 
 	session.subscribe(this.uuid, (function(args, json) {
 		var push = JSON.parse(json);
-		if (!push.data || push.data.uuid !== this.uuid) {
+		if (!push.data || push.data.uuid !== this.uuid || !vz.wui.tmaxnow) {
 			return false;
 		}
 
