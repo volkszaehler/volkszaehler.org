@@ -57,12 +57,15 @@ vz.wui.init = function() {
     // bind display mode change
 	$('#display select').change(function(event) {
 		var val = $(this).val().split('-');
-		vz.wui.changeDisplayMode(val.pop());
+		var mode = val.pop();
+		var keepPeriodStartFixed = vz.options.mode !== mode;
+		vz.wui.changeDisplayMode(mode);
 		if (val.length) {
-			vz.wui.handleControls('zoom-' + val.pop());
+			vz.wui.handleControls('zoom-' + val.pop(), keepPeriodStartFixed);
 		}
 		else {
-			vz.wui.zoom(vz.options.plot.xaxis.min, vz.options.plot.xaxis.max);
+			var to = Math.min(new Date().getTime(), vz.options.plot.xaxis.max);
+			vz.wui.zoom(vz.options.plot.xaxis.min, to);
 		}
 	});
 
@@ -570,7 +573,7 @@ vz.wui.initEvents = function() {
  *
  * @param ev either click event or literal button event value
  */
-vz.wui.handleControls = function(action) {
+vz.wui.handleControls = function(action, keepPeriodStartFixed) {
 	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min,
 			middle = vz.options.plot.xaxis.min + delta/2,
 			startOfPeriodLocale;
@@ -656,7 +659,7 @@ vz.wui.handleControls = function(action) {
 
 			if (vz.wui.tmaxnow) {
 				/* jshint laxbreak: true */
-				min = period === vz.wui.period
+				min = period === vz.wui.period &! keepPeriodStartFixed
 					? moment().subtract(1, period).valueOf()
 					: moment().startOf(periodLocale).valueOf();
 				max = moment().valueOf();
