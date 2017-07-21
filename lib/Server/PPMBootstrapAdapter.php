@@ -50,6 +50,6 @@ class PPMBootstrapAdapter implements BootstrapInterface
      */
     public function getStaticDirectory()
     {
-        return VZ_DIR . '/htdocs/frontend';
+        return VZ_DIR . '/htdocs';
     }
 }
