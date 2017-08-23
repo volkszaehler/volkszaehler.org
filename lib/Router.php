@@ -89,6 +89,7 @@ class Router implements HttpKernelInterface {
 		'aggregator'	=> 'Volkszaehler\Controller\AggregatorController',
 		'entity'		=> 'Volkszaehler\Controller\EntityController',
 		'data'			=> 'Volkszaehler\Controller\DataController',
+		'prognosis'		=> 'Volkszaehler\Controller\PrognosisController',
 		'capabilities'	=> 'Volkszaehler\Controller\CapabilitiesController',
 		'iot'			=> 'Volkszaehler\Controller\IotController'
 	);
