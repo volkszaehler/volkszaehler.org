@@ -60,9 +60,10 @@ class DataController extends Controller {
 		$dql = 'SELECT e, p
 			FROM Volkszaehler\Model\Entity e
 			LEFT JOIN e.properties p
+			LEFT JOIN e.properties title
 			JOIN e.properties public
-			WHERE p.key = :key
-			AND p.value = :name
+			WHERE title.key = :key
+			AND title.value = :name
 			AND public.key = :key2
 			AND public.value = 1';
 
@@ -93,14 +94,15 @@ class DataController extends Controller {
 				// allow retrieving entity by name
 				try {
 					$entity = $this->getSingleEntityByName($uuid);
-					$uuid = $entity->getUuid();
 				}
 				catch (ORMException $e) {
 					throw new \Exception('Channel \'' . $uuid . '\' does not exist, is not public or its name is not unique.');
 				}
 			}
+			else {
+				$entity = EntityController::factory($this->em, $uuid, true); // from cache
+			}
 
-			$entity = EntityController::factory($this->em, $uuid, true); // from cache
 			$class = $entity->getDefinition()->getInterpreter();
 			return new $class($entity, $this->em, $from, $to, $tuples, $groupBy, $this->options);
 		}
