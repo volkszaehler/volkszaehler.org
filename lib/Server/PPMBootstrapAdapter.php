@@ -29,6 +29,10 @@ use PHPPM\Bootstraps\BootstrapInterface;
 
 // move out of lib/server
 define('VZ_DIR', realpath(__DIR__ . '/../..'));
+// check config file before bootstrap dies
+if (!file_exists(VZ_DIR . '/etc/volkszaehler.conf.php')) {
+	throw new \Exception('Could not find config file.');
+}
 require_once(VZ_DIR . '/lib/bootstrap.php');
 
 /**
@@ -50,6 +54,6 @@ class PPMBootstrapAdapter implements BootstrapInterface
      */
     public function getStaticDirectory()
     {
-        return VZ_DIR . '/htdocs/frontend';
+        return VZ_DIR . '/htdocs';
     }
 }
