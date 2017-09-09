@@ -57,13 +57,11 @@ before_install:
     - if [ -e /home/travis/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini ]; then rm /home/travis/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini; fi
 
 install:
-    # set token if composer is used
-    - if [ -n "$DEPENDENCIES" ]; then composer config github-oauth.github.com ${GH_TOKEN}; fi
-
+    - if [ "$JSLINT" = true ]; then npm install -g gulp; npm install; fi
+    - if [ "$JSLINT" = true ]; then export DB=; export DEPENDENCIES=; export TEST_COMPONENT=; fi
     - if [ "$DEPENDENCIES" = "standard" ]; then composer install; fi
     - if [ "$DEPENDENCIES" = "lowest" ]; then composer update --prefer-lowest -n; fi
     - if [ "$DEPENDENCIES" = "highest" ]; then composer update -n; fi
-    - if [ "$JSLINT" = true ]; then npm install; fi
     - if [ "$TEST_COMPONENT" = "HTTPD" ]; then composer require php-pm/php-pm:dev-master php-pm/httpkernel-adapter:dev-master; fi
 
     # add apc cache
@@ -79,9 +77,10 @@ before_script:
     - set -e
     - cp etc/volkszaehler.conf.template.php etc/volkszaehler.conf.php
 
-    - DATABASE=travis
-    - if [ ! "$DB" = "pgsql" ]; then USER=travis; else USER=postgres; fi
+    - DATABASE=volkszaehler
+    - USER=root
     - PASSWORD=
+    - if [ "$DB" = "pgsql" ]; then USER=postgres; fi
 
     # create config file
     - sed -i "s/'pdo_mysql'/'pdo_$DB'/" etc/volkszaehler.conf.php
@@ -94,8 +93,8 @@ before_script:
     - cat etc/volkszaehler.conf.php
 
     # create database
-    - if [ "$DB" = "mysql" ]; then mysql -e "create database $DATABASE;" -u $USER; fi
-    - if [ "$DB" = "pgsql" ]; then psql -c "create database $DATABASE;" -U postgres; fi
+    - if [ "$DB" = "mysql" ]; then mysql -e "CREATE DATABASE $DATABASE;" -u $USER; fi
+    - if [ "$DB" = "pgsql" ]; then psql -c "CREATE DATABASE $DATABASE;" -U $USER; fi
 
     # create schema
     - if [ -n "$DB" ]; then php misc/tools/doctrine orm:schema-tool:create; fi
