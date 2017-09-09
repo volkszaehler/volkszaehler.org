@@ -116,6 +116,9 @@ vz.options.plot = {
 	}
 };
 
+// minimum displayable value
+vz.options.minNumber = Math.pow(10, -(vz.options.precision + 1));
+
 vz.options.saveCookies = function() {
 	var expires = new Date(2038, 0, 1); // some days before y2k38 problem
 

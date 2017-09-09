@@ -829,7 +829,7 @@ vz.wui.formatNumber = function(number, unit, maxPrefix) {
 	var si = vz.wui.scaleNumberAndUnit(number, unit, maxPrefix);
 
 	// precision, +1 digit for numbers < 1.0
-	var precision = (Math.abs(si.number) < Math.pow(10, -(vz.options.precision + 1))) ? 0 :
+	var precision = (Math.abs(si.number) < vz.options.minNumber) ? 0 :
 		 Math.max(0, vz.options.precision - Math.max(-1, Math.floor(Math.log(Math.abs(si.number))/Math.LN10)));
 
 	if (vz.options.maxPrecision[unit] !== undefined) {
@@ -858,30 +858,6 @@ vz.wui.formatConsumptionUnit = function(unit) {
 	}
 
 	return unit;
-};
-
-/**
- * Flot tickFormatter extension to apply axis labels
- * Copied from jquery.flot.js
- */
-vz.wui.tickFormatter = function (value, axis, tickIndex, ticks) {
-	// return label instead of last tick
-	if (ticks && tickIndex === ticks.length-1 && axis.options.axisLabel) {
-		return '[' + axis.options.axisLabel + ']';
-	}
-
-	var factor = axis.tickDecimals ? Math.pow(10, axis.tickDecimals) : 1;
-	var formatted = "" + Math.round(value * factor) / factor;
-
-	if (axis.tickDecimals !== null) {
-		var decimal = formatted.indexOf(".");
-		var precision = decimal == -1 ? 0 : formatted.length - decimal - 1;
-		if (precision < axis.tickDecimals) {
-			return (precision ? formatted : formatted + ".") + ("" + factor).substr(1, axis.tickDecimals - precision);
-		}
-	}
-
-	return formatted;
 };
 
 /**
