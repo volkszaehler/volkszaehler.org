@@ -183,35 +183,30 @@ vz.wui.tickGenerator = function (axis) {
  * Source: jquery.flot.js
  */
 vz.wui.tickFormatter = function (value, axis, tickIndex, ticks) {
+	var si;
+
 	// last tick: return label instead
 	if (ticks && tickIndex === ticks.length-1 && axis.options.axisLabel) {
-		var si = axis.options.si || {};
+		si = axis.options.si || {};
 		return '[' + si.prefix + si.unit + ']';
 	}
 
 	// first tick: calculate label formatting
-	if (ticks && ticks.length && tickIndex === 0) {
+	if (ticks && tickIndex === 0 && ticks.length) {
 		var maxValue = ticks[ticks.length-1];
 		axis.options.si = vz.wui.scaleNumberAndUnit(maxValue, axis.options.axisLabel);
-		if (maxValue * axis.options.si.scaler < 10) axis.tickDecimals = 1;
+
+		// see vz.wui.formatNumber
+		si = axis.options.si;
+		var precision = (Math.abs(si.number) < vz.options.minNumber) ? 0 : Math.max(0, vz.options.precision - Math.max(-1, Math.floor(Math.log(Math.abs(si.number))/Math.LN10)));
+
+		axis.tickDecimals = precision;
 	}
 
 	// scale value according to unit
 	value *= axis.options.si.scaler;
 
-	// flot original code
-	var factor = axis.tickDecimals ? Math.pow(10, axis.tickDecimals) : 1;
-	var formatted = "" + Math.round(value * factor) / factor;
-
-	if (axis.tickDecimals !== null) {
-		var decimal = formatted.indexOf(".");
-		var precision = decimal == -1 ? 0 : formatted.length - decimal - 1;
-		if (precision < axis.tickDecimals) {
-			return (precision ? formatted : formatted + ".") + ("" + factor).substr(1, axis.tickDecimals - precision);
-		}
-	}
-
-	return formatted;
+	return value.toFixed(axis.tickDecimals);
 };
 
 /**
