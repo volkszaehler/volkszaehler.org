@@ -91,6 +91,9 @@ class InterpreterProxy implements \IteratorAggregate {
 		throw new \Exception("Not implemented");
 	}
 
+	/**
+	 * Get current or previous interpreter value according to leading timestamp
+	 */
 	public function getValueForTimestamp($ts) {
 		$previous = $this->iterator->previous();
 		$current = $this->iterator->current();
