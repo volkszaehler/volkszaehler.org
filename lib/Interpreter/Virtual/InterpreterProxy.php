@@ -54,6 +54,9 @@ class InterpreterProxy implements \IteratorAggregate {
 		return $this->iterator;
 	}
 
+	/**
+	 * Set value evaluation strategy
+	 */
 	public function setStrategy($strategy) {
 		$this->strategy = $strategy;
 	}
