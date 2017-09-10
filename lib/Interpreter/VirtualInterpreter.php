@@ -123,8 +123,11 @@ class VirtualInterpreter extends Interpreter {
 		// assign data functions
 		$this->ctx->def('val', array($this, '_val'));	// value
 		$this->ctx->def('ts', array($this, '_ts')); 	// timestamp
+		$this->ctx->def('prev', array($this, '_prev')); // previous timestamp
 		$this->ctx->def('from', array($this, '_from')); // from timestamp
 		$this->ctx->def('to', array($this, '_to')); 	// to timestamp
+
+		$this->ctx->def('cons', array($this, '_consumption')); 	// period consumption
 
 		// child interpreter options for calculation consumption
 		// at virtual interpreter level
@@ -163,33 +166,45 @@ class VirtualInterpreter extends Interpreter {
 		}
 	}
 
-	/**
-	 * Context function: get channel timestamp
+	/*
+	 * Context functions
 	 */
+
+	// get channel timestamp
 	public function _ts($key = self::PRIMARY) {
-		throw new \Exception("Not tested");
 		return $this->interpreters[$key]->getTimestamp();
 	}
 
-	/**
-	 * Context function: get channel value
-	 */
+	// get previous channel timestamp
+	public function _prev() {
+		return $this->ts_last;
+	}
+
+	// get channel value
 	public function _val($key = self::PRIMARY) {
 		return $this->interpreters[$key]->getValueForTimestamp($this->ts);
 	}
 
-	/**
-	 * Context function: get channel first timestamp
-	 */
+	// get channel first timestamp
 	public function _from($key = self::PRIMARY) {
 		return $this->interpreters[$key]->getFrom();
 	}
 
-	/**
-	 * Context function: get channel last timestamp
-	 */
+	// get channel last timestamp
 	public function _to($key = self::PRIMARY) {
 		return $this->interpreters[$key]->getTo();
+	}
+
+	// get period consumption
+	public function _consumption($value) {
+		if (null === $prev = $this->_prev()) {
+			throw new \LogicException("_consumption could not determine previous timestamp");
+			return 0;
+		}
+
+		$period = $this->ts() - $prev;
+		$consumption = $value * $period / 3.6e6;
+		return $consumption;
 	}
 
 	/**
@@ -199,16 +214,16 @@ class VirtualInterpreter extends Interpreter {
 	 */
 	public function getIterator() {
 		$this->rowCount = 0;
-		$ts_last = null;
+		$this->ts_last = null;
 
 		foreach ($this->timestampGenerator as $this->ts) {
-			if (!isset($ts_last)) {
+			if (!isset($this->ts_last)) {
 				// create first timestmap as min from interpreters
 				foreach ($this->interpreters as $interpreter) {
 					$from = $interpreter->getFrom();
-					$ts_last = ($ts_last === null) ? $from : min($ts_last, $from);
+					$this->ts_last = ($this->ts_last === null) ? $from : min($this->ts_last, $from);
 				}
-				$this->from = $ts_last;
+				$this->from = $this->ts_last;
 			}
 
 			// calculate
@@ -219,15 +234,15 @@ class VirtualInterpreter extends Interpreter {
 			}
 
 			if ($this->output == self::CONSUMPTION_VALUES) {
-				$value *= ($this->ts - $ts_last) / 3.6e6;
+				$value *= ($this->ts - $this->ts_last) / 3.6e6;
 				$this->consumption += $value;
 			}
 			else {
-				$this->consumption += $value * ($this->ts - $ts_last) / 3.6e6;
+				$this->consumption += $value * ($this->ts - $this->ts_last) / 3.6e6;
 			}
 
 			$tuple = array($this->ts, $value, 1);
-			$ts_last = $this->ts;
+			$this->ts_last = $this->ts;
 
 			$this->updateMinMax($tuple);
 			$this->rowCount++;
@@ -235,7 +250,7 @@ class VirtualInterpreter extends Interpreter {
 			yield $tuple;
 		}
 
-		$this->to = $ts_last;
+		$this->to = $this->ts_last;
 	}
 
 	/**
