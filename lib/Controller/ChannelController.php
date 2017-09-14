@@ -34,24 +34,28 @@ use Volkszaehler\Model;
 class ChannelController extends EntityController {
 
 	/**
-	 * Get channel
-	 * @param null $identifier
+	 * Get one or more channels.
+	 * If uuid is empty, list of public channels is returned.
+	 *
+	 * @param $identifier
 	 * @return array
 	 * @throws \Exception
 	 */
-	public function get($identifier = NULL) {
-		$channel = parent::get($identifier);
+	public function get($uuid = NULL) {
+		$channel = parent::get($uuid);
 
-		if (is_array($channel)) { // filter public entities
-			return array('channels' => array_values(array_filter($channel['entities'], function($ch) {
-				return ($ch instanceof Model\Channel);
-			})));
+		if (is_array($channel)) { // filter channels
+			return array('channels' => array_values(
+				array_filter($channel['entities'], function($ch) {
+					return ($ch instanceof Model\Channel);
+				})
+			));
 		}
 		else if ($channel instanceof Model\Channel) {
 			return $channel;
 		}
 		else {
-			throw new \Exception('Entity is not a channel: \'' . $identifier . '\'');
+			throw new \Exception('Entity is not a channel: \'' . $uuid . '\'');
 		}
 	}
 

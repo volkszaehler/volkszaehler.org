@@ -99,6 +99,16 @@ class GroupTest extends Middleware
 	/**
 	 * @depends testCreateGroup
 	 */
+	function testGetGroupAsChannel() {
+		// $this->getTuples($this->ts1-1, $this->ts2);
+		$this->json = $this->getJson('/channel/' . self::$uuid . '.json', array(), 'GET', true);
+
+		$this->assertStringStartsWith('Entity is not a channel', $this->json->exception->message);
+	}
+
+	/**
+	 * @depends testCreateGroup
+	 */
 	function testDeleteGroup() {
 		// delete group
 		$this->getJson('/group/' . self::$uuid . '.json', array(

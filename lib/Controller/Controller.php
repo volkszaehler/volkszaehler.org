@@ -26,6 +26,8 @@ namespace Volkszaehler\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Doctrine\ORM\EntityManager;
+
+use Volkszaehler\Util\EntityFactory;
 use Volkszaehler\View\View;
 
 /**
@@ -58,6 +60,11 @@ abstract class Controller {
 	protected $view;
 
 	/**
+	 * @var EntityFactory
+	 */
+	protected $ef;
+
+	/**
 	 * Constructor
 	 *
 	 * @param Request $request
@@ -68,6 +75,7 @@ abstract class Controller {
 		$this->request = $request;
 		$this->em = $em;
 		$this->view = $view;
+		$this->ef = EntityFactory::getInstance($em);
 	}
 
 	/**
@@ -92,7 +100,7 @@ abstract class Controller {
 	 * @return operation result
 	 * @throws \Exception
 	 */
-	public function run($op, $uuid = null) {
+	public function run($op, $uuid) {
 		if (!method_exists($this, $op)) {
 			throw new \Exception('Invalid context operation: \'' . $op . '\'');
 		}

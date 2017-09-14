@@ -26,7 +26,7 @@ namespace Volkszaehler\Server;
 
 use Volkszaehler\Router;
 use Volkszaehler\Interpreter;
-use Volkszaehler\Controller\EntityController;
+use Volkszaehler\Util\EntityFactory;
 
 use Symfony\Component\HttpFoundation\Request;
 
@@ -72,7 +72,7 @@ class MiddlewareAdapter {
 		try {
 			$this->openController();
 
-			$entity = EntityController::factory($this->em, $uuid);
+			$entity = EntityFactory::getInstance($this->em)->getByUuid($uuid);
 			$class = $entity->getDefinition()->getInterpreter();
 			$interpreter = new $class($entity, $this->em, null, null);
 

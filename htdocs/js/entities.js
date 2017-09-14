@@ -76,7 +76,7 @@ vz.entities.loadDetails = function() {
 			function(xhr) {
 				var exception = (xhr.responseJSON || {}).exception;
 				// default error handling is skipped - be careful
-				if (exception && exception.message.match(/^Invalid UUID|^No entity found with UUID/)) {
+				if (exception && exception.message.match(/^Invalid UUID|^No entity/)) {
 					vz.entities.splice(vz.entities.indexOf(entity), 1); // remove
 					// return new resolved deferred
 					$.Deferred().resolveWith(this, [xhr]);
