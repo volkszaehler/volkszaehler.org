@@ -36,36 +36,19 @@ use Volkszaehler\View\View;
 class IotController extends Controller {
 
 	/**
-	 * @var Volkszaehler\Controller\EntityController
-	 */
-	protected $ec;
-
-	/**
-	 * IotController constructor
-	 *
-	 * @param Request $request
-	 * @param EntityManager $em
-	 * @param View $view
-	 */
-	public function __construct(Request $request, EntityManager $em, View $view) {
-		parent::__construct($request, $em, $view);
-		$this->ec = new EntityController($request, $em);
-	}
-
-	/**
 	 * Run operation
 	 *
 	 * @param null $uuid
 	 * @return array
 	 * @throws \Exception
 	 */
-	public function get($uuid = null) {
-		if ($uuid === null || is_array($uuid) || strlen($uuid) < 32) {
+	public function get($secret) {
+		if ($secret === null || is_array($secret) || strlen($secret) < 32) {
 			throw new \Exception('Invalid identifier');
 		}
 
-		// treat uuid as identifier stored in (hidden) owner parameter
-		return array('entities' => $this->ec->filter(array('owner' => $uuid)));
+		// treat secret as identifier stored in (hidden) owner parameter
+		return array('entities' => $this->ef->getByProperties(array('owner' => $secret)));
 	}
 }
 

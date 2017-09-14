@@ -233,13 +233,13 @@ class Router implements HttpKernelInterface {
 	 * @param bool $admin
 	 * @return ORM\EntityManager
 	 */
-	public static function createEntityManager($admin = FALSE) {
+	public static function createEntityManager($admin = false) {
 		$config = new ORM\Configuration;
 
-		if (Util\Configuration::read('devmode') == FALSE) {
+		if (Util\Configuration::read('devmode') == false) {
 			$cache = null;
 			if (extension_loaded('apcu'))
-				$cache = new Cache\ApcuCache;
+				$cache = new Cache\ApcuCache();
 			if ($cache) {
 				$config->setMetadataCacheImpl($cache);
 				$config->setQueryCacheImpl($cache);
@@ -261,6 +261,9 @@ class Router implements HttpKernelInterface {
 		if ($admin && isset($dbConfig['admin'])) {
 			$dbConfig = array_merge($dbConfig, $dbConfig['admin']);
 		}
+
+		// reset singleton to use new entity manager
+		Util\EntityFactory::reset();
 
 		return ORM\EntityManager::create($dbConfig, $config);
 	}
