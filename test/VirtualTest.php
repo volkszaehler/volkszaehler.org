@@ -162,6 +162,19 @@ class VirtualTest extends Middleware
 		);
 	}
 
+	function addData($data) {
+		// add input values
+		foreach ($data as $uuid => $tuples) {
+			foreach ($tuples as $ts => $value) {
+				$this->getJson('/data/' . $uuid . '.json', array(
+					'operation' => 'add',
+					'ts' => $ts,
+					'value' => $value
+				));
+			}
+		}
+	}
+
 	/**
 	 * @dataProvider virtualInputProvider
 	 */
@@ -201,15 +214,7 @@ class VirtualTest extends Middleware
 		}
 
 		// add input values
-		foreach ($data as $uuid => $tuples) {
-			foreach ($tuples as $ts => $value) {
-				$this->getJson('/data/' . $uuid . '.json', array(
-					'operation' => 'add',
-					'ts' => $ts,
-					'value' => $value
-				));
-			}
-		}
+		$this->addData($data);
 
 		// get result
 		$vi = $this->createInterpreter($out, 1, 'now', null, null);
@@ -222,8 +227,9 @@ class VirtualTest extends Middleware
 
 		// delete
 		foreach ([$in1, $in2, $out] as $uuid) {
-			$url = '/channel/' . $uuid . '.json?operation=delete';
-			$this->getJson($url);
+			// $url = '/channel/' . $uuid . '.json?operation=delete';
+			// $this->getJson($url);
+			$this->deleteChannel($uuid);
 		}
 	}
 
@@ -251,15 +257,7 @@ class VirtualTest extends Middleware
 		];
 
 		// add input values
-		foreach ($data as $uuid => $tuples) {
-			foreach ($tuples as $ts => $value) {
-				$this->getJson('/data/' . $uuid . '.json', array(
-					'operation' => 'add',
-					'ts' => $ts,
-					'value' => $value
-				));
-			}
-		}
+		$this->addData($data);
 
 		// get result
 		$vi = $this->createInterpreter($out, 0, 'now', null, 'hour', ['consumption']);
@@ -285,8 +283,9 @@ class VirtualTest extends Middleware
 
 		// delete
 		foreach ([$in1, $out] as $uuid) {
-			$url = '/channel/' . $uuid . '.json?operation=delete';
-			$this->getJson($url);
+			// $url = '/channel/' . $uuid . '.json?operation=delete';
+			// $this->getJson($url);
+			$this->deleteChannel($uuid);
 		}
 	}
 
@@ -314,15 +313,7 @@ class VirtualTest extends Middleware
 		];
 
 		// add input values
-		foreach ($data as $uuid => $tuples) {
-			foreach ($tuples as $ts => $value) {
-				$this->getJson('/data/' . $uuid . '.json', array(
-					'operation' => 'add',
-					'ts' => $ts,
-					'value' => $value
-				));
-			}
-		}
+		$this->addData($data);
 
 		// get result
 		$vi = $this->createInterpreter($out, 3600 * 1000, 7200 * 1000, null, 'hour', ['consumption']);
@@ -333,8 +324,9 @@ class VirtualTest extends Middleware
 
 		// delete
 		foreach ([$in1, $out] as $uuid) {
-			$url = '/channel/' . $uuid . '.json?operation=delete';
-			$this->getJson($url);
+			// $url = '/channel/' . $uuid . '.json?operation=delete';
+			// $this->getJson($url);
+			$this->deleteChannel($uuid);
 		}
 	}
 }

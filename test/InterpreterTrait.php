@@ -9,10 +9,13 @@
 namespace Tests;
 
 use Volkszaehler\Router;
-use Volkszaehler\Controller\EntityController;
+use Volkszaehler\Util\EntityFactory;
 use Volkszaehler\Interpreter\Interpreter;
 
 trait InterpreterTrait {
+
+	protected $em;
+	protected $ef;
 
 	function createChannel($title, $type, $other = []) {
 		$url = '/channel.json';
@@ -28,11 +31,20 @@ trait InterpreterTrait {
 		return($this->uuid = (isset($this->json->entity->uuid)) ? $this->json->entity->uuid : null);
 	}
 
+	function deleteChannel($uuid) {
+		$entity = $this->ef->getByUuid($uuid);
+		$this->em->remove($entity);
+		$this->em->flush();
+	}
+
 	function createInterpreter($uuid, $from, $to, $tuples, $groupBy, $options= array()) {
-		$em = Router::createEntityManager();
-		$entity = EntityController::factory($em, $uuid);
+		if (!isset($this->em)) {
+			$this->em = Router::createEntityManager();
+			$this->ef = EntityFactory::getInstance($this->em);
+		}
+		$entity = $this->ef->getByUuid($uuid);
 		$class = $entity->getDefinition()->getInterpreter();
-		$interpreter = new $class($entity, $em, $from, $to, $tuples, $groupBy, $options);
+		$interpreter = new $class($entity, $this->em, $from, $to, $tuples, $groupBy, $options);
 		return $interpreter;
 	}
 

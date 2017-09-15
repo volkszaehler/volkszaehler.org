@@ -218,6 +218,7 @@ abstract class Interpreter implements \IteratorAggregate {
 			}
 
 			if (isset($this->to)) {
+				// $sql = 'SELECT MIN(timestamp) FROM data WHERE channel_id=? AND timestamp>?';
 				// avoid generating timestamps outside the requested range for consumption
 				$sql = ($this->hasOption('consumption') || $this->hasOption('consumptionto'))
 					? 'SELECT MAX(timestamp) FROM data WHERE channel_id=? AND timestamp<?'
