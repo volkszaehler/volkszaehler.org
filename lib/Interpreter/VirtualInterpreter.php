@@ -136,13 +136,15 @@ class VirtualInterpreter extends Interpreter {
 			$options[$idx] = 'consumptionto';
 		}
 
+		$ef = Util\EntityFactory::getInstance($this->em);
+
 		// assign input channel functions
 		foreach ($uuids as $key => $value) {
 			$this->ctx->def($key, $key, 'string'); // as key constant
 			$this->ctx->def($key, function() use ($key) { return $this->_val($key); }); // as value function
 
 			// get chached entity
-			$entity = Controller\EntityController::factory($this->em, $value, true);
+			$entity = $ef->get($value, true);
 
 			// define named parameters
 			$title = preg_replace('/\s*/', '', $entity->getProperty('title'));
@@ -172,7 +174,7 @@ class VirtualInterpreter extends Interpreter {
 
 	// get channel timestamp
 	public function _ts($key = self::PRIMARY) {
-		return $this->interpreters[$key]->getTimestamp();
+		return $this->ts;
 	}
 
 	// get previous channel timestamp
@@ -233,13 +235,14 @@ class VirtualInterpreter extends Interpreter {
 				throw new \Exception("Virtual channel rule must yield numeric value.");
 			}
 
-			if ($this->output == self::CONSUMPTION_VALUES) {
-				$value *= ($this->ts - $this->ts_last) / 3.6e6;
-				$this->consumption += $value;
-			}
-			else {
-				$this->consumption += $value * ($this->ts - $this->ts_last) / 3.6e6;
-			}
+			// if ($this->output == self::CONSUMPTION_VALUES) {
+			// 	$value *= ($this->ts - $this->ts_last) / 3.6e6;
+			// 	$this->consumption += $value;
+			// }
+			// else {
+			// 	$this->consumption += $value * ($this->ts - $this->ts_last) / 3.6e6;
+			// }
+			$this->consumption += $value * ($this->ts - $this->ts_last) / 3.6e6;
 
 			$tuple = array($this->ts, $value, 1);
 			$this->ts_last = $this->ts;

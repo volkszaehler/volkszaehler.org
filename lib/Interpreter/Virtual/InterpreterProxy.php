@@ -86,14 +86,6 @@ class InterpreterProxy implements \IteratorAggregate {
 		}
 	}
 
-	/*
-	 * Proxied results
-	 */
-
-	public function getTimestamp() {
-		throw new \Exception("Not implemented");
-	}
-
 	/**
 	 * Get current or previous interpreter value according to leading timestamp
 	 */
