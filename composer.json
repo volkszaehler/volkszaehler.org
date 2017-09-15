@@ -21,7 +21,7 @@
         "symfony/http-foundation": "^3.3",
         "symfony/routing": "^2.6|^3.0",
         "react/socket": "^0.5",
-        "cboden/ratchet": "0.4.x-dev",
+        "cboden/ratchet": "^0.4",
         "react/http": "dev-master#cd15204bd15d106d7832c680e4fb0ca0ce2f5e30",
         "php-pm/php-pm": "dev-master",
         "php-pm/httpkernel-adapter": "dev-master",

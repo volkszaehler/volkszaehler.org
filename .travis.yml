@@ -17,7 +17,6 @@ env:
   global:
     - DB=mysql
     - DEPENDENCIES=standard
-    - APC=true
     - TRAVIS_TEST_EXCLUDES="--exclude-group slow,jpgraph,pushserver"
 
 matrix:
@@ -66,10 +65,9 @@ install:
 
     # add apc cache
     - |
-      if [ "$APC" = true ]; then
-        phpenv config-add ./test/bin/apc.ini
-        if php -r 'exit(version_compare(PHP_VERSION, "5.5", ">=")?0:1);'; then echo "no" | pecl install apcu; fi
-        if php -r 'exit(function_exists("apcu_store")?0:1);'; then echo "APCu enabled"; else echo "APCu disabled"; fi
+      if [ "$JSLINT" != true ]; then
+        phpenv config-add ./test/bin/apc.ini && pecl install apcu
+        php -r 'echo(function_exists("apcu_store")?"APCu enabled":"APCu disabled");'
       fi
 
 before_script:
