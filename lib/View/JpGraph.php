@@ -127,7 +127,7 @@ class JpGraph extends View {
 	 *
 	 * @param \Exception $exception
 	 */
-	public function getExceptionResponse(\Exception $exception) {
+	public function getExceptionResponse(\Throwable $exception) {
 		if (!($exception instanceof \JpGraphException)) {
 			$exception = new \JpGraphException($exception->getMessage(), $exception->getCode());
 		}
