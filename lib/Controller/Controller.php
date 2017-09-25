@@ -113,18 +113,6 @@ abstract class Controller {
 		// call the operation
 		return $this->{$op}($uuid);
 	}
-
-	/**
-	 * Helper function to convert single/multiple parameters to array format
-	 * @param $data
-	 * @return array
-	 */
-	protected static function makeArray($data) {
-		if (!is_array($data)) {
-			$data = isset($data) ? array($data) : array();
-		}
-		return $data;
-	}
 }
 
 ?>
