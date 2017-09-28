@@ -83,7 +83,7 @@ abstract class View {
 	 *
 	 * @param \Exception $exception
 	 */
-	public function getExceptionResponse(\Exception $exception) {
+	public function getExceptionResponse(\Throwable $exception) {
 		$this->add($exception);
 
 		// only set status code if default - allows controllers to overwrite
