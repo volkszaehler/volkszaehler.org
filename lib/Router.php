@@ -142,7 +142,7 @@ class Router implements HttpKernelInterface {
 
 			return $this->handleRaw($request, $type);
 		}
-		catch (\Exception $e) {
+		catch (\Throwable $e) {
 			if (false === $catch) {
 				throw $e;
 			}
@@ -262,7 +262,7 @@ class Router implements HttpKernelInterface {
 	 * @param Request $request A Request instance
 	 * @return Response A Response instance
 	 */
-	private function handleException(\Exception $e, Request $request) {
+	private function handleException(\Throwable $e, Request $request) {
 		if (null === $this->view) {
 			$this->view = new View\JSON($request); // fallback view instantiates error handler
 		}

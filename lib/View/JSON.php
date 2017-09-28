@@ -277,7 +277,7 @@ class JSON extends View {
 		elseif ($data instanceof Util\Debug) {
 			$this->json['debug'] = $data;
 		}
-		elseif ($data instanceof \Exception) {
+		elseif ($data instanceof \Throwable) {
 			$this->addException($data);
 		}
 		elseif (is_array($data)) {
@@ -387,7 +387,7 @@ class JSON extends View {
 	 * @param \Exception $exception
 	 * @param boolean $debug
 	 */
-	protected function addException(\Exception $exception) {
+	protected function addException(\Throwable $exception) {
 		$exceptionType = explode('\\', get_class($exception));
 		$exceptionInfo = array(
 			'message' => $exception->getMessage(),

@@ -57,6 +57,7 @@ abstract class SQLOptimizer {
 
 		switch (Util\Configuration::read('db.driver')) {
 			case 'pdo_mysql':
+			case 'mysqli':
 				if (Util\Configuration::read('aggregation')) {
 					$class = MySQLAggregateOptimizer::class;
 				}
