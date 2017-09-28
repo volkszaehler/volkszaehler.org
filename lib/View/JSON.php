@@ -113,22 +113,6 @@ class JSON extends View {
 		return $this->response;
 	}
 
-	/**
-	 * Creates exception response
-	 *
-	 * @param \Exception $exception
-	 */
-	public function getExceptionResponse(\Exception $exception) {
-		$this->add($exception);
-
-		// only set status code if default - allows controllers to overwrite
-		if ($this->response->getStatusCode() == Response::HTTP_OK) {
-			$this->response->setStatusCode(Response::HTTP_BAD_REQUEST);
-		}
-
-		return $this->send();
-	}
-
 	protected function render() {
 		throw new \LogicException('Cannot call render when using StreamedResponse');
 	}
