@@ -39,15 +39,9 @@ use RR\Shunt;
  */
 class VirtualInterpreter extends Interpreter {
 
+	use Virtual\InterpreterCoordinatorTrait;
+
 	const PRIMARY = 'in1';
-
-	/**
-	 * @var Doctrine\ORM\EntityManager
-	 */
-	protected $em;
-
-	protected $interpreters;	// array of input interpreters
-	protected $ic;				// collection of iterators
 
 	protected $ctx;
 	protected $parser;
@@ -66,9 +60,6 @@ class VirtualInterpreter extends Interpreter {
 		parent::__construct($channel, $em, $from, $to, $tupleCount, $groupBy, $options);
 
 		$this->em = $em;
-
-		$this->interpreters = array();
-		$this->timestampGenerator = new Virtual\TimestampGenerator();
 
 		// create parser for rule
 		$rule = $channel->getProperty('rule');
@@ -154,17 +145,8 @@ class VirtualInterpreter extends Interpreter {
 			$class = $entity->getDefinition()->getInterpreter();
 			$interpreter = new $class($entity, $this->em, $this->from, $this->to, $this->tupleCount, $this->groupBy, $options);
 
-			// timestamp strategy mode
-			$proxy = new Virtual\InterpreterProxy($interpreter);
-			if ($this->groupBy)
-				$proxy->setStrategy(Virtual\InterpreterProxy::STRATEGY_TS_BEFORE);
-			else
-				$proxy->setStrategyByEntityType($entity);
-			$this->interpreters[$key] = $proxy;
-
-			// add timestamp iterator to generator
-			$iterator = new Virtual\TimestampIterator($proxy->getIterator());
-			$this->timestampGenerator->add($iterator);
+			// add interpreter to timestamp coordination
+			$this->addCoordinatedInterpreter($key, $interpreter);
 		}
 	}
 
@@ -184,17 +166,17 @@ class VirtualInterpreter extends Interpreter {
 
 	// get channel value
 	public function _val($key = self::PRIMARY) {
-		return $this->interpreters[$key]->getValueForTimestamp($this->ts);
+		return $this->getCoordinatedInterpreter($key)->getValueForTimestamp($this->ts);
 	}
 
 	// get channel first timestamp
 	public function _from($key = self::PRIMARY) {
-		return $this->interpreters[$key]->getFrom();
+		return $this->getCoordinatedInterpreter($key)->getFrom();
 	}
 
 	// get channel last timestamp
 	public function _to($key = self::PRIMARY) {
-		return $this->interpreters[$key]->getTo();
+		return $this->getCoordinatedInterpreter($key)->getTo();
 	}
 
 	// get period consumption
@@ -204,7 +186,7 @@ class VirtualInterpreter extends Interpreter {
 			return 0;
 		}
 
-		$period = $this->ts_() - $prev;
+		$period = $this->ts() - $prev;
 		$consumption = $value * $period / 3.6e6;
 		return $consumption;
 	}
@@ -218,14 +200,10 @@ class VirtualInterpreter extends Interpreter {
 		$this->rowCount = 0;
 		$this->ts_last = null;
 
-		foreach ($this->timestampGenerator as $this->ts) {
+		foreach ($this->getTimestampGenerator() as $this->ts) {
 			if (!isset($this->ts_last)) {
 				// create first timestmap as min from interpreters
-				foreach ($this->interpreters as $interpreter) {
-					$from = $interpreter->getFrom();
-					$this->ts_last = ($this->ts_last === null) ? $from : min($this->ts_last, $from);
-				}
-				$this->from = $this->ts_last;
+				$this->ts_last = $this->from = $this->getCoordinatedFrom();
 			}
 
 			// calculate
