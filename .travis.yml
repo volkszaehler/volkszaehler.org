@@ -52,19 +52,19 @@ before_install:
     - if [ -e /home/travis/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini ]; then rm /home/travis/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini; fi
 
 install:
+    # add apc cache before installing dependencies
+    - |
+      if [ "$JSLINT" != true ]; then
+        phpenv config-add ./test/bin/apc.ini && printf "\n" | pecl install apcu
+        php -r 'echo(function_exists("apcu_store")?"APCu enabled":"APCu disabled");'
+      fi
+
     - if [ "$JSLINT" = true ]; then npm install -g gulp; npm install; fi
     - if [ "$JSLINT" = true ]; then export DB=; export DEPENDENCIES=; export TEST_COMPONENT=; fi
     - if [ "$DEPENDENCIES" = "standard" ]; then composer install; fi
     - if [ "$DEPENDENCIES" = "lowest" ]; then composer update --prefer-lowest -n; fi
     - if [ "$DEPENDENCIES" = "highest" ]; then composer update -n; fi
     - if [ "$TEST_COMPONENT" = "HTTPD" ]; then composer require php-pm/php-pm:dev-master php-pm/httpkernel-adapter:dev-master; fi
-
-    # add apc cache
-    - |
-      if [ "$JSLINT" != true ]; then
-        phpenv config-add ./test/bin/apc.ini && printf "\n" | pecl install apcu
-        php -r 'echo(function_exists("apcu_store")?"APCu enabled":"APCu disabled");'
-      fi
 
 before_script:
     # enable shell errors
