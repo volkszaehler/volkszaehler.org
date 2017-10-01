@@ -47,7 +47,7 @@ db_host=localhost
 vz_dir=${1:-~/volkszaehler.org}
 
 # default webserver dir (overriden by command line)
-vz_dir=${1:-/var/www/volkszaehler.org}
+web_dir=${1:-/var/www/volkszaehler.org}
 
 
 ###############################
@@ -168,20 +168,31 @@ else
 	ask "link from webserver to volkszaehler directory?" "$web_dir"
 	web_dir="$REPLY"
 
-	if [ -e "$web_dir" ]; then
-		ask "$web_dir already exists. Remove it? (you have to type 'Yes' to do this!)" n
+	if [ -h "$web_dir" ]; then
+		ask "$web_dir symlink already exists. Remove it? (you have to type 'Yes' to do this!)" n
 		if [ "$REPLY" == 'Yes' ]; then
-			rm -fr "$web_dir"
+			sudo rm -fr "$web_dir"
 			REPLY=y
 		else
 			REPLY=n
 		fi
 	else
-		REPLY=y
+		if [ -d "$web_dir" ]; then
+			ask "$web_dir directory already exists. Remove it? (this will remove a previous installation and all changes you made - type 'Yes' to do this!)" n
+			if [ "$REPLY" == 'Yes' ]; then
+				sudo rm -fr "$web_dir"
+				REPLY=y
+			else
+				REPLY=n
+			fi
+		else
+			REPLY=y
+		fi
 	fi
+
 	if [ "$REPLY" == 'y' ]; then
 		echo "linking $web_dir to $vz_dir"
-		ln -sf "$vz_dir" "$web_dir"
+		sudo ln -sf "$vz_dir" "$web_dir"
 	fi
 	
 fi
