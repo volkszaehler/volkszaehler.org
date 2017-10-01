@@ -35,7 +35,7 @@ shopt -s nocasematch
 # some configuration
 
 # minimum php version required
-php_ver_min=5.6
+php_ver_min=7.0
 
 # git url
 vz_git=https://github.com/volkszaehler/volkszaehler.org
@@ -44,7 +44,11 @@ vz_git=https://github.com/volkszaehler/volkszaehler.org
 db_host=localhost
 
 # default vz dir (overriden by command line)
-vz_dir=${1:-/var/www/volkszaehler.org}
+vz_dir=${1:-~/volkszaehler.org}
+
+# default webserver dir (overriden by command line)
+web_dir=${1:-/var/www/volkszaehler.org}
+
 
 ###############################
 # functions
@@ -116,7 +120,7 @@ done
 echo
 if ! (php -m | grep -q pdo_mysql) ; then
 	echo "php module pdo_mysql has not been found"
-	echo "try 'sudo apt-get install php5-mysqlnd' on Debian/Ubuntu based systems"
+	echo "try 'sudo apt-get install php7.0-mysql' on Debian/Ubuntu based systems"
 	cleanup && exit 1
 fi
 
@@ -160,6 +164,37 @@ else
 		echo "git clone volkszaehler.org into $vz_dir"
 		git clone "$vz_git" "$vz_dir"
 	fi
+	
+	ask "link from webserver to volkszaehler directory?" "$web_dir"
+	web_dir="$REPLY"
+
+	if [ -h "$web_dir" ]; then
+		ask "$web_dir symlink already exists. Remove it? (you have to type 'Yes' to do this!)" n
+		if [ "$REPLY" == 'Yes' ]; then
+			sudo rm -fr "$web_dir"
+			REPLY=y
+		else
+			REPLY=n
+		fi
+	else
+		if [ -d "$web_dir" ]; then
+			ask "$web_dir directory already exists. Remove it? (this will remove a previous installation and all changes you made - type 'Yes' to do this!)" n
+			if [ "$REPLY" == 'Yes' ]; then
+				sudo rm -fr "$web_dir"
+				REPLY=y
+			else
+				REPLY=n
+			fi
+		else
+			REPLY=y
+		fi
+	fi
+
+	if [ "$REPLY" == 'y' ]; then
+		echo "linking $web_dir to $vz_dir"
+		sudo ln -sf "$vz_dir" "$web_dir"
+	fi
+	
 fi
 
 config="$vz_dir/etc/volkszaehler.conf.php"
