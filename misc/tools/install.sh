@@ -256,7 +256,7 @@ if [ "$REPLY" == "y" ]; then
 	get_db_name
 
 	echo "creating database $db_name..."
-	mysql -h"$db_host" -u"$db_admin_user" -p"$db_admin_pass" -e 'CREATE DATABASE `'"$db_name"'`'
+	sudo mysql -h"$db_host" -u"$db_admin_user" -p"$db_admin_pass" -e 'CREATE DATABASE `'"$db_name"'`'
 	pushd "$vz_dir"
 		php misc/tools/doctrine orm:schema-tool:create
 		php misc/tools/doctrine orm:generate-proxies
@@ -271,7 +271,7 @@ if [ "$REPLY" == "y" ]; then
 	get_db_name
 
 	echo "creating db user $db_user with proper rights..."
-	mysql -h"$db_host" -u"$db_admin_user" -p"$db_admin_pass" <<-EOF
+	sudo mysql -h"$db_host" -u"$db_admin_user" -p"$db_admin_pass" <<-EOF
 		CREATE USER '$db_user'@'$db_host' IDENTIFIED BY '$db_pass';
 		GRANT USAGE ON *.* TO '$db_user'@'$db_host';
 		GRANT SELECT, UPDATE, INSERT ON $db_name.* TO '$db_user'@'$db_host';
@@ -289,7 +289,7 @@ if [ "$REPLY" == "y" ]; then
 	get_db_name
 
 	echo "granting db user $db_user delete rights..."
-	mysql -h"$db_host" -u"$db_admin_user" -p"$db_admin_pass" <<-EOF
+	sudo mysql -h"$db_host" -u"$db_admin_user" -p"$db_admin_pass" <<-EOF
 		GRANT DELETE ON $db_name.* TO '$db_user'@'$db_host';
 	EOF
 fi
@@ -301,7 +301,7 @@ if [ "$REPLY" == "y" ]; then
 	get_db_name
 
 	cat "$vz_dir/misc/sql/demo.sql" |
-		mysql -h"$db_host" -u"$db_admin_user" -p"$db_admin_pass" "$db_name"
+		sudo mysql -h"$db_host" -u"$db_admin_user" -p"$db_admin_pass" "$db_name"
 fi
 
 cleanup
