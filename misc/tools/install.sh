@@ -258,8 +258,8 @@ if [ "$REPLY" == "y" ]; then
 	echo "creating database $db_name..."
 	sudo mysql -h"$db_host" -u"$db_admin_user" -p"$db_admin_pass" -e 'CREATE DATABASE `'"$db_name"'`'
 	pushd "$vz_dir"
-		php misc/tools/doctrine orm:schema-tool:create
-		php misc/tools/doctrine orm:generate-proxies
+		sudo php misc/tools/doctrine orm:schema-tool:create
+		sudo php misc/tools/doctrine orm:generate-proxies
 	popd
 fi
 
