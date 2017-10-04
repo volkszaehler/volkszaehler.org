@@ -30,7 +30,6 @@
         "react/http-client": "^0.4",
         "react/socket-client": "^0.5",
         "ringcentral/psr7": "^1.2",
-        "jenssegers/proxy": "^3.0-beta",
         "symfony/psr-http-message-bridge": "^1.0",
         "zendframework/zend-diactoros": "^1.3"
     },
