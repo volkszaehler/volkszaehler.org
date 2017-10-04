@@ -126,9 +126,9 @@ for binary in "${deps[@]}"; do
 	fi
 done
 echo
-if ! (php -m | grep -q pdo_mysql) ; then
-	echo "php module pdo_mysql has not been found"
-	echo "try 'sudo apt-get install php7.0-mysql' on Debian/Ubuntu based systems"
+if ! (php -m | grep -q mysql) ; then
+	echo "php module for mysql has not been found"
+	echo "try 'sudo apt-get install php-mysql' on Debian/Ubuntu based systems"
 	cleanup && exit 1
 fi
 
