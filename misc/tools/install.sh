@@ -37,9 +37,6 @@ shopt -s nocasematch
 # minimum php version required
 php_ver_min=7.0
 
-# php package suggested
-php_package=php7.0-mysql
-
 # git url
 vz_git=https://github.com/volkszaehler/volkszaehler.org
 
@@ -129,9 +126,9 @@ for binary in "${deps[@]}"; do
 	fi
 done
 echo
-if ! (php -m | grep -q mysql) ; then
-	echo "php module for mysql has not been found"
-	echo "try 'sudo apt-get install $php_package' on Debian/Ubuntu based systems"
+if ! (php -m | grep -q pdo_mysql) ; then
+	echo "php module pdo_mysql has not been found"
+	echo "try 'sudo apt-get install php7.0-mysql' on Debian/Ubuntu based systems"
 	cleanup && exit 1
 fi
 
