@@ -90,7 +90,7 @@ class DataController extends Controller {
 		}
 
 		try { /* to parse new submission protocol */
-			$rawPost = $this->request->getContent(); // file_get_contents('php://input')
+			$rawPost = $this->request->getContent();
 
 			// check maximum size allowed
 			if ($maxSize = Util\Configuration::read('security.maxbodysize')) {
@@ -101,8 +101,13 @@ class DataController extends Controller {
 
 			$json = Util\JSON::decode($rawPost);
 
-			if (isset($json['data'])) {
-				throw new \Exception('Can only add data for a single channel at a time'); /* backed out b111cfa2 */
+			// validate that POST body is nested array of ts, value arrays
+			if (!is_array($json) || (
+				count($json) && (
+					!is_array($json[0]) || count($json[0]) !== 2
+				)
+			)) {
+				throw new \Exception('POST body must be array of tuple arrays');
 			}
 
 			// convert nested ArrayObject to plain array with flattened tuples
@@ -129,11 +134,15 @@ class DataController extends Controller {
 			$data = array($timestamp, $value);
 		}
 
-		$sql = 'INSERT ' . ((in_array(self::OPT_SKIP_DUPLICATES, $this->options)) ? 'IGNORE ' : '') .
-			   'INTO data (channel_id, timestamp, value) ' .
-			   'VALUES ' . implode(', ', array_fill(0, count($data)>>1, '(' . $channel->getId() . ',?,?)'));
+		$rows = 0;
+		if (count($data)) {
+			$sql = 'INSERT ' . ((in_array(self::OPT_SKIP_DUPLICATES, $this->options)) ? 'IGNORE ' : '') .
+				   'INTO data (channel_id, timestamp, value) ' .
+				   'VALUES ' . implode(', ', array_fill(0, count($data)>>1, '(' . $channel->getId() . ',?,?)'));
 
-		$rows = $this->em->getConnection()->executeUpdate($sql, $data);
+			$rows = $this->em->getConnection()->executeUpdate($sql, $data);
+		}
+
 		return array('rows' => $rows);
 	}
 

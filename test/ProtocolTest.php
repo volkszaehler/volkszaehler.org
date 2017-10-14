@@ -49,6 +49,17 @@ class ProtocolTest extends Data
 		if (($db = \Volkszaehler\Util\Configuration::read('db.driver')) === 'pdo_sqlite')
 			$this->markTestSkipped('not implemented for ' . $db);
 
+		// 0 rows
+		$data = array();
+
+		$request = Request::create('/data/' . static::$uuid . '.json', 'POST',
+			array(), array(), array(), array(),
+			json_encode($data));
+		$request->headers->set('Content-type', 'application/json');
+
+		$this->assertEquals(0, $this->getJson($request)->rows);
+
+		// 2 rows
 		$data = array(
 			array(++self::$ts, self::$value),
 			array(++self::$ts, self::$value)
@@ -59,8 +70,15 @@ class ProtocolTest extends Data
 			json_encode($data));
 		$request->headers->set('Content-type', 'application/json');
 
-		// 2 rows added
 		$this->assertEquals(2, $this->getJson($request)->rows);
+	}
+
+	function testInvalidTuplesPost() {
+		$request = Request::create('/data/' . static::$uuid . '.json', 'POST',
+			array(), array(), array(), array(),
+			'{}');
+
+		$this->assertNotNull(0, $this->getJson($request, array(), 'POST', true)->exception);
 	}
 
 	/**
