@@ -219,14 +219,18 @@ class EntityFactory {
 	 *
 	 * @throws Exception
 	 */
-	protected function cached($key, $cache, $callable) {
+	private function cached($key, $cache, $callable) {
 		if ($cache && $this->cache->contains($key)) {
-			return $this->cache->fetch($key);
+			$entity = $this->cache->fetch($key);
+
+			if ($entity->getType() !== 'group') {
+				return $entity;
+			}
 		}
 
 		$entity = $callable();
 
-		if (isset($entity) && $cache) {
+		if (isset($entity) && $cache && $entity->getType() !== 'group') {
 			if (!isset($this->ttl)) {
 				$this->ttl = Util\Configuration::read('cache.ttl', 3600);
 			}
