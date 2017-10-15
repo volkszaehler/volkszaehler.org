@@ -28,6 +28,7 @@ use Doctrine\Common\Cache;
 
 use Volkszaehler\Util;
 use Volkszaehler\Definition\PropertyDefinition;
+use Volkszaehler\Model\Aggregator;
 
 /**
  * Entity factory
@@ -223,14 +224,14 @@ class EntityFactory {
 		if ($cache && $this->cache->contains($key)) {
 			$entity = $this->cache->fetch($key);
 
-			if ($entity->getType() !== 'group') {
+			if (!$entity instanceof Aggregator) {
 				return $entity;
 			}
 		}
 
 		$entity = $callable();
 
-		if (isset($entity) && $cache && $entity->getType() !== 'group') {
+		if ($cache && isset($entity) &! $entity instanceof Aggregator) {
 			if (!isset($this->ttl)) {
 				$this->ttl = Util\Configuration::read('cache.ttl', 3600);
 			}
