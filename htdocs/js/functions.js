@@ -173,7 +173,7 @@ vz.load.loadHandler = function(args, skipDefaultErrorHandling) {
  */
 vz.load.errorHandler = function(xhr, skipDefaultErrorHandling) {
 	// HTTP_UNAUTHORIZED
-	if (xhr.status == 401 && xhr.getResponseHeader('WWW-Authenticate') == 'Bearer') {
+	if (xhr.status == 401) {
 		return vz.wui.dialogs.authorizationException(xhr).then(function(token) {
 			return vz.load.loadHandler(xhr.originalOptions, skipDefaultErrorHandling);
 		});
