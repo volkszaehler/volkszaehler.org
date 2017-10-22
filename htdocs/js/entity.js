@@ -254,7 +254,7 @@ Entity.prototype.subscribe = function(session) {
  */
 Entity.prototype.unsubscribe = function() {
 	var mw = vz.middleware.find(this.middleware);
-	if (mw.session) {
+	if (mw && mw.session) {
 		try {
 			mw.session.unsubscribe(this.uuid);
 		}
