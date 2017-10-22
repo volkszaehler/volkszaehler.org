@@ -95,5 +95,5 @@ vz.middleware.storeAuthTokens = function() {
 	});
 
 	var expires = new Date(2038, 0, 1); // some days before y2k38 problem
-	$.setCookie('vz_authtoken', tokens.join("|", {expires: expires}));
+	$.setCookie('vz_authtoken', tokens.join("|"), {expires: expires});
 };
