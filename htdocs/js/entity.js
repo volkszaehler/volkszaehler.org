@@ -255,7 +255,15 @@ Entity.prototype.subscribe = function(session) {
 Entity.prototype.unsubscribe = function() {
 	var mw = vz.middleware.find(this.middleware);
 	if (mw.session) {
-		mw.session.unsubscribe(this.uuid);
+		try {
+			mw.session.unsubscribe(this.uuid);
+		}
+		catch (e) {
+			// handle double unsubscribe, e.g. if channel in multiple groups
+			if (!e.match(/^not subscribed to topic/)) {
+				throw(e);
+			}
+		}
 	}
 };
 
