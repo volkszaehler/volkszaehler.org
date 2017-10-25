@@ -465,6 +465,12 @@ Entity.prototype.showDetails = function() {
 							$(this).dialog('close');
 						}
 					}
+				})
+				.keypress(function(ev) {
+					// submit form on enter
+					if (ev.keyCode == $.ui.keyCode.ENTER) {
+						$('#entity-edit').siblings('.ui-dialog-buttonpane').find('button:eq(0)').click();
+					}
 				});
 			},
 			'Schließen': function() {
