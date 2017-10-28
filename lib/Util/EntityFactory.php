@@ -221,7 +221,7 @@ class EntityFactory {
 	 * @throws Exception
 	 */
 	private function cached($key, $cache, $callable) {
-		if ($cache && $this->cache->contains($key)) {
+		if ($cache && $this->cache->contains($key) && !Util\Configuration::read('devmode')) {
 			$entity = $this->cache->fetch($key);
 
 			if (!$entity instanceof Aggregator) {

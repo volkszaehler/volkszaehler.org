@@ -116,6 +116,9 @@ vz.load = function(args, skipDefaultErrorHandling) {
 
 	args.url += '.json';
 
+	// workaround Safari 11 cache bug
+	args.url += '?unique=' + Date.now();
+
 	if (args.data === undefined) {
 		args.data = { };
 	}
@@ -298,5 +301,60 @@ vz.capabilities.definitions.get = function(section, name) {
 			}).get()
 		);
 	};
+
+  var slice = [].slice;
+
+  // https://gist.github.com/fearphage/4341799
+  $.whenAll = function(array) {
+    var
+			/* jshint laxbreak: true */
+      resolveValues = arguments.length == 1 && $.isArray(array)
+        ? array
+        : slice.call(arguments),
+      length = resolveValues.length,
+      remaining = length,
+      deferred = $.Deferred(),
+      i = 0,
+      failed = 0,
+      rejectContexts = Array(length),
+      rejectValues = Array(length),
+      resolveContexts = Array(length),
+      value
+    ;
+
+    function updateFunc (index, contexts, values) {
+      return function() {
+        if (values !== resolveValues) {
+          failed++;
+        }
+        deferred.notifyWith(
+         contexts[index] = this,
+         values[index] = slice.call(arguments)
+        );
+        if (!(--remaining)) {
+          deferred[(!failed ? 'resolve' : 'reject') + 'With'](contexts, values);
+        }
+      };
+    }
+
+    for (; i < length; i++) {
+      if ((value = resolveValues[i]) && $.isFunction(value.promise)) {
+        value.promise()
+          .done(updateFunc(i, resolveContexts, resolveValues))
+          .fail(updateFunc(i, rejectContexts, rejectValues))
+        ;
+      }
+      else {
+        deferred.notifyWith(this, value);
+        --remaining;
+      }
+    }
+
+    if (!remaining) {
+      deferred.resolveWith(resolveContexts, resolveValues);
+    }
+
+    return deferred.promise();
+  };
 
 })(jQuery);
