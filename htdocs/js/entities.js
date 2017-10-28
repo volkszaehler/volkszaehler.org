@@ -77,9 +77,10 @@ vz.entities.loadDetails = function() {
 			},
 			function(xhr) {
 				var exception = (xhr.responseJSON || {}).exception;
+				// remove problematic entity
+				vz.entities.splice(vz.entities.indexOf(entity), 1); // remove
 				// default error handling is skipped - be careful
 				if (exception && exception.message.match(/^Invalid UUID|^No entity/)) {
-					vz.entities.splice(vz.entities.indexOf(entity), 1); // remove
 					// return new resolved deferred
 					return $.Deferred().resolveWith(this, [xhr]);
 				}
