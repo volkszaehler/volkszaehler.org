@@ -80,14 +80,15 @@ vz.entities.loadDetails = function() {
 				// default error handling is skipped - be careful
 				if (exception && exception.message.match(/^Invalid UUID|^No entity/)) {
 					vz.entities.splice(vz.entities.indexOf(entity), 1); // remove
-					return $.Deferred().resolveWith(this, [xhr.responseJSON]);
+					// return new resolved deferred
+					return $.Deferred().resolveWith(this, [xhr]);
 				}
 				vz.wui.dialogs.middlewareException(xhr);
 				return vz.load.errorHandler(xhr);
 			}
 		));
 	}, true); // recursive
-	return $.when.apply($, queue);
+	return $.whenAll.apply($, queue);
 };
 
 /**
