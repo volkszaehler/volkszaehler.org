@@ -75,17 +75,19 @@ vz.entities.loadDetails = function() {
 			null,	// success - no changes needed
 			function(xhr) {
 				var exception = (xhr.responseJSON || {}).exception;
+				// remove problematic entity
+				vz.entities.splice(vz.entities.indexOf(entity), 1); // remove
 				// default error handling is skipped - be careful
 				if (exception && exception.message.match(/^Invalid UUID|^No entity/)) {
 					vz.entities.splice(vz.entities.indexOf(entity), 1); // remove
 					// return new resolved deferred
-					$.Deferred().resolveWith(this, [xhr]);
+					return $.Deferred().resolveWith(this, [xhr]);
 				}
 				return vz.load.errorHandler(xhr);
 			}
 		));
 	}, true); // recursive
-	return $.when.apply($, queue);
+	return $.whenAll.apply($, queue);
 };
 
 /**

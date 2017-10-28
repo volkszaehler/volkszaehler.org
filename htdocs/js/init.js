@@ -98,7 +98,7 @@ $(document).ready(function() {
 
 	// chaining ajax request with jquery deferred object
 	vz.capabilities.load().done(function() {
-		vz.entities.loadDetails().done(function() {
+		vz.entities.loadDetails().always(function() {
 			if (vz.entities.length === 0) {
 				vz.wui.dialogs.init();
 			}

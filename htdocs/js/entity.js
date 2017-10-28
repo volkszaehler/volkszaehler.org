@@ -288,7 +288,7 @@ Entity.prototype.subscribe = function(session) {
  */
 Entity.prototype.unsubscribe = function() {
 	var mw = vz.middleware.find(this.middleware);
-	if (mw.session) {
+	if (mw && mw.session) {
 		try {
 			mw.session.unsubscribe(this.uuid);
 		}
@@ -502,6 +502,12 @@ Entity.prototype.showDetails = function() {
 						'Abbrechen': function() {
 							$(this).dialog('close');
 						}
+					}
+				})
+				.keypress(function(ev) {
+					// submit form on enter
+					if (ev.keyCode == $.ui.keyCode.ENTER) {
+						$('#entity-edit').siblings('.ui-dialog-buttonpane').find('button:eq(0)').click();
 					}
 				});
 			},

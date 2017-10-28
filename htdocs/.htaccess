@@ -10,7 +10,7 @@
 
 # disable negotiation to avoid rewrite rule conflicts
 <IfModule mod_negotiation.c>
-    Options -MultiViews
+#    Options -MultiViews
 </IfModule>
 
 # enable this rule if using ppm middleware
