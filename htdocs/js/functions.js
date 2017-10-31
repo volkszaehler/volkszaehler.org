@@ -117,7 +117,9 @@ vz.load = function(args, skipDefaultErrorHandling) {
 	args.url += '.json';
 
 	// workaround Safari 11 cache bug
-	args.url += '?unique=' + Date.now();
+	if (args.method === undefined || args.method == 'GET') {
+		args.url += '?unique=' + Date.now();
+	}
 
 	if (args.data === undefined) {
 		args.data = { };
