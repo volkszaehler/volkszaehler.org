@@ -26,6 +26,8 @@ namespace Volkszaehler\Server;
 
 use React\Socket\Server as SocketServer;
 use React\Http\Server as HttpServer;
+use React\Http\Middleware;
+use React\Http\MiddlewareRunner;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use RingCentral\Psr7;
@@ -48,7 +50,12 @@ class HttpReceiver {
 	function __construct(SocketServer $socket, MiddlewareAdapter $hub) {
 		$this->hub = $hub;
 
-		$this->http = new HttpServer(array($this, 'handleRequest'));
+		$middleware = new MiddlewareRunner([
+			new Middleware\RequestBodyBufferMiddleware(),
+			[$this, 'handleRequest']
+		]);
+
+		$this->http = new HttpServer($middleware);
 		$this->http->listen($socket);
 	}
 
@@ -59,15 +66,16 @@ class HttpReceiver {
 		$headers = array('Content-Type' => 'application/json');
 
 		try {
-			$content = $request->getBody();
+			$content = (string)$request->getBody();
+
 			$data = $this->hub->handlePushMessage($content);
 			$headers['Content-Length'] = strlen($data);
 
 			if (null === $data) {
-				return new Psr7\Response(400, $headers);
+				return new Psr7\Response(400, $headers, '1');
 			}
 			else {
-				return new Psr7\Response(400, $headers, $data);
+				return new Psr7\Response(200, $headers, $data);
 			}
 		}
 		catch (\Exception $exception) {
