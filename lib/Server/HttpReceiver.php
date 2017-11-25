@@ -25,7 +25,7 @@
 namespace Volkszaehler\Server;
 
 use React\Socket\Server as SocketServer;
-use React\Http\Server as HttpServer;
+use React\Http\StreamingServer as HttpServer;
 use React\Http\Middleware;
 use React\Http\MiddlewareRunner;
 use Psr\Http\Message\ResponseInterface;
