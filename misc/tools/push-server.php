@@ -29,7 +29,9 @@ namespace Volkszaehler\Server;
 
 use Volkszaehler\Util;
 
-use React\Socket\Server as ReactSocketServer;
+use React\EventLoop\Factory;
+use React\Socket\Server as SocketServer;
+
 use Ratchet\Server\IoServer;
 use Ratchet\Http\HttpServer;
 use Ratchet\Http\HttpServerInterface;
@@ -74,11 +76,11 @@ $remotePort = Util\Configuration::read('push.broadcast');
 
 $output->writeln(sprintf("<info>Listening for updates on %d. Clients may connect at %d.</info>", $localPort, $remotePort));
 
-$loop = \React\EventLoop\Factory::create();
+$loop = Factory::create();
 $middleware = new MiddlewareAdapter();
 
 // configure local httpd interface
-$localSocket = new ReactSocketServer(REMOTE_IP_PORT . $localPort, $loop); // remote loggers can push updates
+$localSocket = new SocketServer(REMOTE_IP_PORT . $localPort, $loop); // remote loggers can push updates
 $localServer = new HttpReceiver($localSocket, $middleware);
 
 // configure routes
@@ -118,7 +120,7 @@ else {
 }
 
 // configure remote interface
-$remoteSocket = new ReactSocketServer(REMOTE_IP_PORT . $remotePort, $loop); // remote clients can connect
+$remoteSocket = new SocketServer(REMOTE_IP_PORT . $remotePort, $loop); // remote clients can connect
 $remoteServer = new IoServer(
 	new HttpServer(
 		$router

@@ -24,50 +24,56 @@
 
 namespace Volkszaehler\Server;
 
-use React\Socket\Server as ReactSocketServer;
-use React\Http\Server as ReactHttpServer;
-use React\Http\Request;
-use React\Http\Response;
+use React\Socket\Server as SocketServer;
+use React\Http\Server as HttpServer;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use RingCentral\Psr7;
 
 /**
  * HttpReceiver implements the server side interface for receiving push messages
  */
-class HttpReceiver extends ReactHttpServer {
+class HttpReceiver {
 
 	/**
 	 * @var MiddlewareAdapter
 	 */
 	protected $hub;
 
-	function __construct(ReactSocketServer $socket, MiddlewareAdapter $hub) {
-		parent::__construct($socket);
+	/**
+	 * @var HttpServer
+	 */
+	protected $http;
+
+	function __construct(SocketServer $socket, MiddlewareAdapter $hub) {
 		$this->hub = $hub;
-		$this->on('request', array($this, 'onRequest'));
+
+		$this->http = new HttpServer(array($this, 'handleRequest'));
+		$this->http->listen($socket);
 	}
 
 	/**
 	 * Main push request/ websocket response loop
 	 */
-	function onRequest(Request $request, Response $response) {
+	function handleRequest(ServerRequestInterface $request): ResponseInterface {
 		$headers = array('Content-Type' => 'application/json');
+
 		try {
 			$content = $request->getBody();
 			$data = $this->hub->handlePushMessage($content);
 			$headers['Content-Length'] = strlen($data);
+
 			if (null === $data) {
-				$response->writeHead(400, $headers);
-				$response->end();
+				return new Psr7\Response(400, $headers);
 			}
 			else {
-				$response->writeHead(200, $headers);
-				$response->end($data);
+				return new Psr7\Response(400, $headers, $data);
 			}
 		}
 		catch (\Exception $exception) {
 			$data = $this->getExceptionAsJson($exception, true);
 			$headers['Content-Length'] = strlen($data);
-			$response->writeHead(500, $headers); // internal server error
-			$response->end($data);
+			return new Psr7\Response(500, $headers, $data);
 		}
 	}
 
