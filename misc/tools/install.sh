@@ -125,12 +125,6 @@ for binary in "${deps[@]}"; do
 		cleanup && exit 1
 	fi
 done
-echo
-if ! (php -m | grep -q mysql) ; then
-	echo "php module for mysql has not been found"
-	echo "try 'sudo apt-get install php-mysql' on Debian/Ubuntu based systems"
-	cleanup && exit 1
-fi
 
 # check php version
 php_version=$(php -r 'echo PHP_VERSION;')
@@ -172,7 +166,7 @@ else
 		echo "git clone volkszaehler.org into $vz_dir"
 		git clone "$vz_git" "$vz_dir"
 	fi
-	
+
 	ask "link from webserver to volkszaehler directory?" "$web_dir"
 	web_dir="$REPLY"
 
@@ -202,7 +196,7 @@ else
 		echo "linking $web_dir to $vz_dir"
 		sudo ln -sf "$vz_dir" "$web_dir"
 	fi
-	
+
 fi
 
 config="$vz_dir/etc/volkszaehler.conf.php"

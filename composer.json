@@ -12,6 +12,9 @@
     "prefer-stable": true,
     "require": {
         "php": ">=7.0",
+        "ext-mysqli": "*",
+        "ext-mysqlnd": "*",
+        "ext-pdo_mysql": "*",
         "doctrine/orm": "^2.5",
         "doctrine/dbal": "^2.5",
         "doctrine/cache": "^1.6",
