@@ -4,5 +4,4 @@
 /htdocs/tz
 /node_modules/
 /vendor/
-/composer.lock
 /.ppm/
