@@ -34,9 +34,6 @@ shopt -s nocasematch
 ###############################
 # some configuration
 
-# minimum php version required
-php_ver_min=7.0
-
 # git url
 vz_git=https://github.com/volkszaehler/volkszaehler.org
 
