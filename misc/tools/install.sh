@@ -59,11 +59,6 @@ ask() {
 	REPLY="${REPLY:-$default}"
 }
 
-cleanup() {
-	# nothing to do yet
-	:
-}
-
 get_db_root() {
 	test -n "$db_root_user" && return
 	ask "mysql root user?" root
@@ -122,7 +117,7 @@ for binary in "${deps[@]}"; do
 	else
 		echo
 		echo " $binary: not found. Please install to use this script (e.g. sudo apt-get install $binary)."
-		cleanup && exit 1
+		exit 1
 	fi
 done
 
@@ -303,5 +298,3 @@ if [ "$REPLY" == "y" ]; then
 	cat "$vz_dir/misc/sql/demo.sql" |
 		mysql -h"$db_host" -u"$db_admin_user" -p"$db_admin_pass" "$db_name"
 fi
-
-cleanup
