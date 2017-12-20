@@ -126,16 +126,6 @@ for binary in "${deps[@]}"; do
 	fi
 done
 
-# check php version
-php_version=$(php -r 'echo PHP_VERSION;')
-echo -n "checking php version: $php_version "
-if php -r "exit(version_compare(PHP_VERSION, '$php_ver_min', '>=')? 0 : 1);"; then
-	echo ">= $php_ver_min, ok"
-else
-	echo "is too old, $php_ver_min or higher required"
-	cleanup && exit 1
-fi
-
 ###############################
 echo
 echo "volkszaehler setup..."
