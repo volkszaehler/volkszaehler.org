@@ -1,6 +1,6 @@
 <?php
 /**
- * @copyright Copyright (c) 2013, The volkszaehler.org project
+ * @copyright Copyright (c) 2011-2017, The volkszaehler.org project
  * @package default
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  * @author Andreas Goetz <cpuidle@gmx.de>

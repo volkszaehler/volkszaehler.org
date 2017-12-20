@@ -2,7 +2,7 @@
  * Middleware handling
  *
  * @author Andreas Götz <cpuidle@gmx.de>
- * @copyright Copyright (c) 2017, The volkszaehler.org project
+ * @copyright Copyright (c) 2011-2017, The volkszaehler.org project
  * @package default
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */

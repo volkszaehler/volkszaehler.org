@@ -2,7 +2,7 @@
 #
 # This is a simple bash script to log S0-Hutschienenzähler, directly connected to an RS232 port
 #
-# @copyright Copyright (c) 2011, The volkszaehler.org project
+# @copyright Copyright (c) 2011-2017, The volkszaehler.org project
 # @package controller
 # @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
 # @author Harald Koenig <koenig@tat.physik.uni-tuebingen.de>

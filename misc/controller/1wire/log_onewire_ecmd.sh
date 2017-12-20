@@ -1,14 +1,14 @@
 #!/bin/bash
 #
 # This is a simple bash script to read Dallas 1-Wire sensors
-# connected to a controller board running ethersex and log their 
+# connected to a controller board running ethersex and log their
 # values to the volkszaehler project.
 #
 # call it with a cronjob similiar to this one:
 #
 # */5 * * * *   ~/bin/log_onewire_ecmd.sh
 #
-# @copyright Copyright (c) 2011, The volkszaehler.org project
+# @copyright Copyright (c) 2011-2017, The volkszaehler.org project
 # @package controller
 # @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
 # @author Justin Otherguy <justin@justinotherguy.org>
@@ -46,7 +46,7 @@ ESEXIP=<put the ip address of your controller board here>
 #  uuid of the sensor in the volkszaehler database
 UUID=<put the uuid of your temperature sensor here>
 
-## 
+##
 # paths to binaries - you should not need to change these
 CURL=/usr/bin/curl
 NC=/bin/nc

@@ -6,7 +6,7 @@
 # and downloading of required libraries
 # and configuration of of the PHP interpreter/webserver
 #
-# @copyright Copyright (c) 2011, The volkszaehler.org project
+# @copyright Copyright (c) 2011-2017, The volkszaehler.org project
 # @package tools
 # @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
 # @author Jakob Hirsch
@@ -172,7 +172,7 @@ else
 		echo "git clone volkszaehler.org into $vz_dir"
 		git clone "$vz_git" "$vz_dir"
 	fi
-	
+
 	ask "link from webserver to volkszaehler directory?" "$web_dir"
 	web_dir="$REPLY"
 
@@ -202,7 +202,7 @@ else
 		echo "linking $web_dir to $vz_dir"
 		sudo ln -sf "$vz_dir" "$web_dir"
 	fi
-	
+
 fi
 
 config="$vz_dir/etc/volkszaehler.conf.php"

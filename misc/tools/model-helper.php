@@ -2,7 +2,7 @@
 <?php
 /**
  * @package default
- * @copyright Copyright (c) 2014, The volkszaehler.org project
+ * @copyright Copyright (c) 2011-2017, The volkszaehler.org project
  * @license http://www.gnu.org/licenses/gpl.txt GNU Public License
  */
 /*

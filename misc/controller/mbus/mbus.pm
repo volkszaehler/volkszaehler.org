@@ -1,11 +1,11 @@
 #
 # Messbus-perl library (c) by Sven Anders <mbus@sven.anders.im> 2011
-#  @copyright Copyright (c) 2011, The volkszaehler.org project
+#  @copyright Copyright (c) 2011-2017, The volkszaehler.org project
 #  @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
 
 #
 #  This file is part of volkzaehler.org
-# 
+#
 #  volkzaehler.org is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,7 +15,7 @@
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-# 
+#
 #  You should have received a copy of the GNU General Public License
 #  along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
 #
@@ -45,7 +45,7 @@ sub INTtoBCD {
     }
     my $i=0;
     my $out="";
-    while ($i<$bytes) 
+    while ($i<$bytes)
     {
 	$hex=chr(eval("0x".substr($int,$i*2,2)));
 	$out=$hex.$out;
@@ -66,7 +66,7 @@ sub BCDtoINT {
 	$out=~s/^f//;
 # Offizizelle Berechnung
 #	print "Negativ!",length($out),"\n";
-#	
+#
 #	$len=length($out);
 #	my $new="";
 #	while (length($new)<$len)
@@ -103,7 +103,7 @@ sub send {
 #    my $done=0;
 #    while ($done==0) {
 #	($done, $count_out) = $PortObj->write_done(0);
-#        ($done=1) if (!(defined($done)));	
+#        ($done=1) if (!(defined($done)));
 #    }
 }
 
@@ -154,10 +154,10 @@ sub readAnswer {
 		    my $len=ord($buchstabe[1])+6;
 		    if (length($readstr)>$len) {
 			$okay=0; #
-		    } elsif (length($readstr)==$len) { 
+		    } elsif (length($readstr)==$len) {
 			$okay=1;
 			# Stopbyte
-			ord($buchstabe[$len-1])==0x16 or $okay=0; 
+			ord($buchstabe[$len-1])==0x16 or $okay=0;
 			my $i=4;
 			my $str="";
 			while ($i<($len-2))
@@ -177,13 +177,13 @@ sub readAnswer {
 	if ($okay==1) {
 	    $timeout=0;
 	}
-	      
+
     }
     return ($readstr,$okay);
 }
 
 sub sendLongFrame {
-    my $PortObj=shift; 
+    my $PortObj=shift;
     my $cfield=shift;
     my $afield=shift;
     my $cifield=shift;
@@ -281,13 +281,13 @@ sub strToArray {
      $outvif.=" $vife";
      $extension=$vife &128;
      $pos++;
-    } 
+    }
     my $val="";
     my $exitnow=0;
     if ($coding==0) {# NoData
      $pos+=0;
     } elsif ($coding==1) {# 8 bit int
-     $val=$arr[$pos];     
+     $val=$arr[$pos];
      $pos+=1;
     } elsif ($coding==2) {# 16 bit int
      $val=$arr[$pos+1]*0x100+$arr[$pos];
@@ -325,7 +325,7 @@ sub strToArray {
      $pos++;
      if ($lval<0xC0) {
      #LVAR = 00h .. BFh : ASCII string with LVAR characters
-       $val=substr($str,$pos,$lval);       
+       $val=substr($str,$pos,$lval);
        $pos+=$lval;
      } elsif ($lval<0xD0) {
      # LVAR = C0h .. CFh : positive BCD number with (LVAR - C0h) Â· 2 digits
@@ -339,7 +339,7 @@ sub strToArray {
      # LVAR = E0h .. EFh : binary number with (LVAR - E0h) bytes
        $pos+=($lval-0xE0);
      } else {
-     # LVAR = F0h .. FAh : floating point number  with (LVAR - F0h) bytes [to be defined] 
+     # LVAR = F0h .. FAh : floating point number  with (LVAR - F0h) bytes [to be defined]
      # LVAR = FBh .. FFh : Reserved
       die("variable length not implemented");
      }
@@ -438,7 +438,7 @@ sub strToArray {
      $zweck="Druck";
    } elsif ($description5==108) {
      $zweck="Zeitpunkt";
-     if ($n2==0) 
+     if ($n2==0)
      {
      	$unit="Datum";# Bit 0-4 Tag 5,6,7,12-15 Jahr 8-11 Monat
 	my $day=$val & (2**0+2**1+2**2+2**3+2**4);
@@ -446,7 +446,7 @@ sub strToArray {
 	my $month=($val & (2**8+2**9+2**10+2**11))/2**8;
 	$year+=($val & (2**12+2**13+2**14+2**15))/2**12;
 	$val=sprintf("20%02d-%02d-%02d",$year,$month,$day);
-     } elsif ($n2==1) 
+     } elsif ($n2==1)
      {
      	$unit="Uhr";
 	my $min=$val & (1+2+4+8+16+32); # bit 0 bis 5
@@ -456,7 +456,7 @@ sub strToArray {
 	my $day=($val & (2**16+2**17+2**18+2**19+2**20))/2**16; # bit 16 bis 20
 	my $year=($val & (2**21+2**22+2**23))/2**21; # 21 bis 23 und 28 bis 31
 	my $month=($val & (2**24+2**25+2**26+2**27))/2**24; # 24 bis 27
-	$year+=($val & (2**28+2**29+2**30+2**31))/2**28; 
+	$year+=($val & (2**28+2**29+2**30+2**31))/2**28;
 	# sommerzeit bis 15
 	my $sommerzeit=($val & 2**15);
 	if ($invalidTime==0) {
@@ -466,11 +466,11 @@ sub strToArray {
 		}
 	} else {
 		$val=sprintf("20%02d-%02d-%02d xx:xx",$year,$month,$day,$h,$min);
-	}	
-     } elsif ($n2==2) 
+	}
+     } elsif ($n2==2)
      {
      	$zweck="unklar (H.C.A)";
-     } else #($n2==3) 
+     } else #($n2==3)
      {
         $zweck="reserved (108)";
      }
@@ -493,9 +493,9 @@ sub strToArray {
       } else {
         $zweck="vife: $vife"
       }
-      
+
     } else {
-	print "noch nicht definiert d5:  $description5 newvif $newvif\n" if $debug;   
+	print "noch nicht definiert d5:  $description5 newvif $newvif\n" if $debug;
     }
     if (($unit eq "Wh") and ($n=3)) {
     	$unit="kWh";
@@ -528,7 +528,7 @@ sub strToArray {
      $pos=$len;
     }
     $counter++;
-    
+
    }
    return @rtn;
 

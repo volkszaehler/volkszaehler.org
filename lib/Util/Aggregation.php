@@ -3,7 +3,7 @@
  * Data aggregation utility
  *
  * @author Andreas Goetz <cpuidle@gmx.de>
- * @copyright Copyright (c) 2013, The volkszaehler.org project
+ * @copyright Copyright (c) 2011-2017, The volkszaehler.org project
  * @package util
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
