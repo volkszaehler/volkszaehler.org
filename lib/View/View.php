@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright Copyright (c) 2011-2017, The volkszaehler.org project
- * @package default
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  */
 /*
@@ -33,7 +32,6 @@ use Volkszaehler\Util;
 /**
  * Base class for all view formats
  *
- * @package default
  * @author Steffen Vogel <info@steffenvogel.de>
  */
 abstract class View {

@@ -1,6 +1,5 @@
 <?php
 /**
- * @package util
  * @copyright Copyright (c) 2011-2017, The volkszaehler.org project
  * @license http://www.gnu.org/licenses/gpl.txt GNU Public License
  */
@@ -31,7 +30,6 @@ define('JSON_PRETTY', 128);
 /**
  * Static JSON utility class
  *
- * @package util
  * @author Steffen Vogel <info@steffenvogel.de>
  * @author Andreas Goetz <cpuidle@gmx.de>
  */

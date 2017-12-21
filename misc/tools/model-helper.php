@@ -1,7 +1,6 @@
 #!/usr/bin/env php
 <?php
 /**
- * @package default
  * @copyright Copyright (c) 2011-2017, The volkszaehler.org project
  * @license http://www.gnu.org/licenses/gpl.txt GNU Public License
  */
@@ -44,7 +43,6 @@ require VZ_DIR . '/lib/bootstrap.php';
  *
  * This class can report property usage across all entitiy definitions
  *
- * @package default
  * @author Andreas Goetz <cpuidle@gmx.de>
  */
 class ValidateCommand extends Command {

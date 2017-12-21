@@ -31,7 +31,6 @@
  * @copyright Copyright (c) 2011-2017, The volkszaehler.org project
  * @author Florian Knodt <adlerweb@adlerweb.info>
  * @author Andreas Goetz <cpuidle@gmx.de>
- * @package tools
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  */
 

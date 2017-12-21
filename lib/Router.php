@@ -1,6 +1,5 @@
 <?php
 /**
- * @package default
  * @copyright Copyright (c) 2011-2017, The volkszaehler.org project
  * @license http://www.gnu.org/licenses/gpl.txt GNU Public License
  */
@@ -41,7 +40,6 @@ use Volkszaehler\Util;
  *
  * This class routes incoming requests to controllers
  *
- * @package default
  * @author Steffen Vogel <info@steffenvogel.de>
  * @author Andreas Götz <cpuidle@gmx.de>
  */

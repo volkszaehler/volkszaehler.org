@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright Copyright (c) 2011-2017, The volkszaehler.org project
- * @package default
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  */
 /*
@@ -30,7 +29,6 @@ use Volkszaehler\Model;
  * Aggregate materialized view entity
  *
  * @author Andreas Goetz <cpuidle@gmx.de>
- * @package default
  *
  * @Entity
  * @Table(

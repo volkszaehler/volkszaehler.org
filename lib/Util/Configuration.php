@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright Copyright (c) 2011-2017, The volkszaehler.org project
- * @package util
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  */
 /*
@@ -26,7 +25,6 @@ namespace Volkszaehler\Util;
 /**
  * Static configuration class for loading and storing the configuration to the disk
  *
- * @package util
  * @author Steffen Vogel <info@steffenvogel.de>
  * @todo why not with json?
  */

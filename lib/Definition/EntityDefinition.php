@@ -1,6 +1,5 @@
 <?php
 /**
- * @package default
  * @copyright Copyright (c) 2011-2017, The volkszaehler.org project
  * @license http://www.gnu.org/licenses/gpl.txt GNU Public License
  */
@@ -27,7 +26,6 @@ use Volkszaehler\Util;
 
 /**
  * @author Steffen Vogel <info@steffenvogel.de>
- * @package default
  */
 class EntityDefinition extends Definition {
 	/**

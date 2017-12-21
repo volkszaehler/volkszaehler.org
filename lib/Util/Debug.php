@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright Copyright (c) 2011-2017, The volkszaehler.org project
- * @package util
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  */
 /*
@@ -29,7 +28,6 @@ use Doctrine\DBAL\Logging;
 /**
  * Static debugging class
  *
- * @package util
  * @author Steffen Vogel <info@steffenvogel.de>
  * @author Andreas Goetz <cpuidle@gmx.de>
  */

@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright Copyright (c) 2011-2017, The volkszaehler.org project
- * @package util
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  */
 /*
@@ -27,7 +26,6 @@ namespace Volkszaehler\Util;
  * DrUUID RFC4122 library for PHP5
  *
  * @author J. King
- * @package util
  * @link http://jkingweb.ca/code/php/lib.uuid/
  * @license Licensed under MIT license
  *

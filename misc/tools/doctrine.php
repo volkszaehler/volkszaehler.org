@@ -3,7 +3,6 @@
  * Doctrine cli configuration
  *
  * @author Steffen Vogel <info@steffenvogel.de>
- * @package doctrine
  * @copyright Copyright (c) 2011-2017, The volkszaehler.org project
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */

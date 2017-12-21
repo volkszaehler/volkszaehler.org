@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright Copyright (c) 2011-2017, The volkszaehler.org project
- * @package util
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  */
 /*
@@ -35,7 +34,6 @@ define('CAPICOM_ENCODE_BINARY', 1);
  * Extensible PRNG
  *
  * @author Steffen Vogel <info@steffenvogel.de>
- * @package util
  */
 class Random {
 	protected static $func = NULL;

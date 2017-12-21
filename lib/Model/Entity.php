@@ -1,7 +1,6 @@
 <?php
 /**
  * @copyright Copyright (c) 2011-2017, The volkszaehler.org project
- * @package default
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  */
 /*
@@ -32,7 +31,6 @@ use Volkszaehler\Definition;
  * Entity superclass for all objects referenced by a UUID
  *
  * @author Steffen Vogel <info@steffenvogel.de>
- * @package default
  *
  * @Entity
  * @Table(name="entities")
