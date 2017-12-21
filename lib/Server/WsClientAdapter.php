@@ -1,7 +1,7 @@
 <?php
 /**
- * @copyright Copyright (c) 2011-2017, The volkszaehler.org project
  * @author Andreas Goetz <cpuidle@gmx.de>
+ * @copyright Copyright (c) 2011-2017, The volkszaehler.org project
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  */
 /*

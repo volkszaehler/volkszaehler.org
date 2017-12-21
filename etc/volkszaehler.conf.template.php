@@ -5,8 +5,8 @@
  * You should use this file to obtain your custom configuration
  * new parameters should be documented
  *
- * @copyright Copyright (c) 2011-2017, The volkszaehler.org project
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @copyright Copyright (c) 2011-2017, The volkszaehler.org project
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  */
 /*
