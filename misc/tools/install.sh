@@ -34,9 +34,6 @@ shopt -s nocasematch
 ###############################
 # some configuration
 
-# minimum php version required
-php_ver_min=7.0
-
 # git url
 vz_git=https://github.com/volkszaehler/volkszaehler.org
 
@@ -57,11 +54,6 @@ ask() {
 	default="$2"
 	read -e -p "$question [$default] "
 	REPLY="${REPLY:-$default}"
-}
-
-cleanup() {
-	# nothing to do yet
-	:
 }
 
 get_db_root() {
@@ -122,25 +114,9 @@ for binary in "${deps[@]}"; do
 	else
 		echo
 		echo " $binary: not found. Please install to use this script (e.g. sudo apt-get install $binary)."
-		cleanup && exit 1
+		exit 1
 	fi
 done
-echo
-if ! (php -m | grep -q mysql) ; then
-	echo "php module for mysql has not been found"
-	echo "try 'sudo apt-get install php-mysql' on Debian/Ubuntu based systems"
-	cleanup && exit 1
-fi
-
-# check php version
-php_version=$(php -r 'echo PHP_VERSION;')
-echo -n "checking php version: $php_version "
-if php -r "exit(version_compare(PHP_VERSION, '$php_ver_min', '>=')? 0 : 1);"; then
-	echo ">= $php_ver_min, ok"
-else
-	echo "is too old, $php_ver_min or higher required"
-	cleanup && exit 1
-fi
 
 ###############################
 echo
@@ -172,7 +148,7 @@ else
 		echo "git clone volkszaehler.org into $vz_dir"
 		git clone "$vz_git" "$vz_dir"
 	fi
-	
+
 	ask "link from webserver to volkszaehler directory?" "$web_dir"
 	web_dir="$REPLY"
 
@@ -202,7 +178,7 @@ else
 		echo "linking $web_dir to $vz_dir"
 		sudo ln -sf "$vz_dir" "$web_dir"
 	fi
-	
+
 fi
 
 config="$vz_dir/etc/volkszaehler.conf.php"
@@ -319,5 +295,3 @@ if [ "$REPLY" == "y" ]; then
 	cat "$vz_dir/misc/sql/demo.sql" |
 		mysql -h"$db_host" -u"$db_admin_user" -p"$db_admin_pass" "$db_name"
 fi
-
-cleanup
