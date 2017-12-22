@@ -7,12 +7,11 @@
 #
 # */5 * * * *   ~/bin/log_open2300.sh
 #
-# @copyright Copyright (c) 2011-2017, The volkszaehler.org project
-# @package controller
-# @license http://www.gnu.org/licenses/gpl.txt GNU Public License
 # @author Steffen Vogel <info@steffenvogel.de>
 # modifications from the original file log_onewire.sh
 # @author Berthold Bredenkamp
+# @copyright Copyright (c) 2011-2017, The volkszaehler.org project
+# @license http://www.gnu.org/licenses/gpl.txt GNU Public License
 #
 #
 # This file is part of volkzaehler.org

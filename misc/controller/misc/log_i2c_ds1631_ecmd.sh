@@ -8,12 +8,11 @@
 #
 # */5 * * * *   ~/bin/log_i2c_ds1631_ecmd.sh
 #
-# @copyright Copyright (c) 2011-2017, The volkszaehler.org project
-# @package controller
-# @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
 # @author Justin Otherguy <justin@justinotherguy.org>
 # @author Steffen Vogel <info@steffenvogel.de>
 # @author Sven Peitz <sven@pubeam.de>
+# @copyright Copyright (c) 2011-2017, The volkszaehler.org project
+# @license https://opensource.org/licenses/gpl-license.php GNU Public License
 ##
 # This file is part of volkzaehler.org
 #

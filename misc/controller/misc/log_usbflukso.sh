@@ -3,10 +3,9 @@
 # This is a simple bash script to log data from a fluksousb adapter
 #
 # @link http://developer.mysmartgrid.de/doku.php?id=fluksousb
-# @copyright Copyright (c) 2011-2017, The volkszaehler.org project
-# @package controller
-# @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
 # @author Harald Koenig <koenig@tat.physik.uni-tuebingen.de>
+# @copyright Copyright (c) 2011-2017, The volkszaehler.org project
+# @license https://opensource.org/licenses/gpl-license.php GNU Public License
 #
 ##
 # This file is part of volkzaehler.org

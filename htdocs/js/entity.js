@@ -5,7 +5,7 @@
  * @author Steffen Vogel <info@steffenvogel.de>
  * @author Andreas Götz <cpuidle@gmx.de>
  * @copyright Copyright (c) 2011-2017, The volkszaehler.org project
- * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ * @license https://opensource.org/licenses/gpl-license.php GNU Public License
  */
 /*
  * This file is part of volkzaehler.org
