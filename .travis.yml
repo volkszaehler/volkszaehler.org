@@ -3,6 +3,7 @@ language: php
 php:
     - 7.0
     - 7.1
+    - 7.2
 
 services:
     - mysql
@@ -57,7 +58,6 @@ install:
     - if [ "$DEPENDENCIES" = "standard" ]; then composer install; fi
     - if [ "$DEPENDENCIES" = "lowest" ]; then composer update --prefer-lowest -n; fi
     - if [ "$DEPENDENCIES" = "highest" ]; then composer update -n; fi
-    - if [ "$TEST_COMPONENT" = "HTTPD" ]; then composer require php-pm/php-pm:dev-master php-pm/httpkernel-adapter:dev-master; fi
 
     # add apc cache
     - |
