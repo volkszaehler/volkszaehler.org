@@ -105,10 +105,10 @@ abstract class Definition {
 
 		$cache_id = static::CACHE_KEY . static::FILE;
 
-		if (Util\Configuration::read('devmode') == FALSE && extension_loaded('apc') && apc_exists($cache_id) &&
-			(time() - filemtime(__DIR__ . '/' . static::FILE) > Util\Configuration::read('cache.ttl')))
+		if (Util\Configuration::read('devmode') == FALSE && extension_loaded('apcu') && apcu_exists($cache_id) &&
+			(time() - filemtime(__DIR__ . '/' . static::FILE) > Util\Configuration::read('cache.ttl', 3600)))
 		{
-			static::$definitions = apc_fetch($cache_id);
+			static::$definitions = apcu_fetch($cache_id);
 		}
 		else {
 			// expensive - cache results
@@ -118,8 +118,8 @@ abstract class Definition {
 				static::$definitions[$property->name] = new static($property);
 			}
 
-			if (extension_loaded('apc')) {
-				apc_store($cache_id, static::$definitions, Util\Configuration::read('cache.ttl'));
+			if (extension_loaded('apcu')) {
+				apcu_store($cache_id, static::$definitions, Util\Configuration::read('cache.ttl', 3600));
 			}
 		}
 	}

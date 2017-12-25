@@ -83,7 +83,6 @@ class AggregatorController extends EntityController {
 		}
 
 		$this->em->flush();
-		$this->ef->remove($uuid);
 
 		return $aggregator;
 	}
