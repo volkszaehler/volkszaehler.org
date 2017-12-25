@@ -16,6 +16,7 @@ env:
   global:
     - DEPENDENCIES=standard
     - TRAVIS_TEST_EXCLUDES="--exclude-group slow,jpgraph,pushserver"
+  matrix:
     - DB=mysql
 
 matrix:
