@@ -58,10 +58,8 @@ before_install:
 
 install:
     - if [ "$JSLINT" = true ]; then npm install -g gulp; npm install; fi
-    - if [ "$JSLINT" = true ]; then export DB=; export DEPENDENCIES=; export TEST_COMPONENT=; fi
     - if [ "$DEPENDENCIES" = "standard" ]; then composer install; fi
     - if [ "$DEPENDENCIES" = "lowest" ]; then composer update --prefer-lowest -n; fi
-    - if [ "$DEPENDENCIES" = "highest" ]; then composer update -n; fi
 
     # add apc cache
     - |
