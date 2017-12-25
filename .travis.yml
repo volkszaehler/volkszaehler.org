@@ -108,7 +108,11 @@ before_script:
       fi
 
 after_script:
-    - if [ "$TEST_COMPONENT" = "HTTPD" ]; then kill -9 $HTTPD_PID; fi
+    # stop middleware service
+    - |
+      if [ "$TEST_COMPONENT" = "HTTPD" ]; then
+        vendor/bin/ppm stop -c etc/middleware.json
+      fi
 
 script:
     # run core tests
@@ -128,8 +132,3 @@ script:
     # jslint javascript sources
     - if [ "$JSLINT" = true ]; then gulp jshint; fi
 
-    # stop middleware service
-    - |
-      if [ "$TEST_COMPONENT" = "HTTPD" ]; then
-        vendor/bin/ppm stop -c etc/middleware.json
-      fi
