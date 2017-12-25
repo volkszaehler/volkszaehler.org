@@ -19,7 +19,7 @@ use Zend\Diactoros\Uri;
 
 use Volkszaehler\Router;
 
-abstract class Middleware extends \PHPUnit_Framework_TestCase
+abstract class Middleware extends \PHPUnit\Framework\TestCase
 {
 	/**
 	 * @var Volkszaehler\Router

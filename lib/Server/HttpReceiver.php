@@ -26,8 +26,6 @@ namespace Volkszaehler\Server;
 
 use React\Socket\Server as SocketServer;
 use React\Http\Server as HttpServer;
-use React\Http\Middleware;
-use React\Http\MiddlewareRunner;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use RingCentral\Psr7;
@@ -50,12 +48,7 @@ class HttpReceiver {
 	function __construct(SocketServer $socket, MiddlewareAdapter $hub) {
 		$this->hub = $hub;
 
-		$middleware = new MiddlewareRunner([
-			new Middleware\RequestBodyBufferMiddleware(),
-			[$this, 'handleRequest']
-		]);
-
-		$this->http = new HttpServer($middleware);
+		$this->http = new HttpServer([$this, 'handleRequest']);
 		$this->http->listen($socket);
 	}
 
