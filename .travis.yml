@@ -30,10 +30,10 @@ matrix:
       env: DB=sqlite
     # httpd-based
     - php: 7.0
-      env: DB=mysql TEST_COMPONENT=HTTPD
+      env: DB=mysql COMPONENT=HTTPD
     # push-server
     - php: 7.0
-      env: DB=mysql TEST_COMPONENT=PUSH_SERVER
+      env: DB=mysql COMPONENT=PUSHD
     # from..to
     - php: 7.0
       env: DB=mysql DEPENDENCIES=lowest
@@ -95,14 +95,14 @@ before_script:
 
     # start middleware service
     - |
-      if [ "$TEST_COMPONENT" = "HTTPD" ]; then
+      if [ "$COMPONENT" = "HTTPD" ]; then
         sed -i "s/testAdapter\" value=\".*\"/testAdapter\" value=\"HTTP\"/" phpunit.xml
         vendor/bin/ppm start -c etc/middleware.json &
       fi
 
     # push server tests
     - |
-      if [ "$TEST_COMPONENT" = "PUSH_SERVER" ]; then
+      if [ "$COMPONENT" = "PUSHD" ]; then
         sed -i "s/\?>/\$config['push']['enabled']\ =\ true\;\n?>/" etc/volkszaehler.conf.php
         php misc/tools/push-server.php &
       fi
@@ -110,7 +110,7 @@ before_script:
 after_script:
     # stop middleware service
     - |
-      if [ "$TEST_COMPONENT" = "HTTPD" ]; then
+      if [ "$COMPONENT" = "HTTPD" ]; then
         vendor/bin/ppm stop -c etc/middleware.json
       fi
 
@@ -127,7 +127,7 @@ script:
       fi
 
     # push server tests
-    - if [ "$TEST_COMPONENT" = "PUSH_SERVER" ]; then vendor/bin/phpunit --group pushserver; fi
+    - if [ "$COMPONENT" = "PUSHD" ]; then vendor/bin/phpunit --group pushserver; fi
 
     # jslint javascript sources
     - if [ "$JSLINT" = true ]; then gulp jshint; fi
