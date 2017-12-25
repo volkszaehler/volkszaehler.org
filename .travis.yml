@@ -3,6 +3,7 @@ language: php
 php:
     - 7.0
     - 7.1
+    - 7.2
 
 services:
     - mysql
@@ -20,12 +21,11 @@ env:
     - DB=mysql
     - DB=pgsql
     - DB=sqlite
+    # httpd-based
+    - DB=mysql TEST_COMPONENT=HTTPD
 
 matrix:
   include:
-    # httpd-based
-    - php: 7.0
-      env: DB=mysql TEST_COMPONENT=HTTPD
     # push-server
     - php: 7.0
       env: DB=mysql TEST_COMPONENT=PUSH_SERVER
@@ -37,7 +37,7 @@ matrix:
       env: DB= DEPENDENCIES= JSLINT=true
 
 notifications:
-    mail: "volkszaehler-dev@lists.volkszaehler.org"
+    email: "volkszaehler-dev@lists.volkszaehler.org"
     irc: "chat.freenode.net#volkszaehler.org"
 
 # speedup build
@@ -57,7 +57,6 @@ install:
     - if [ "$DEPENDENCIES" = "standard" ]; then composer install; fi
     - if [ "$DEPENDENCIES" = "lowest" ]; then composer update --prefer-lowest -n; fi
     - if [ "$DEPENDENCIES" = "highest" ]; then composer update -n; fi
-    - if [ "$TEST_COMPONENT" = "HTTPD" ]; then composer require php-pm/php-pm:dev-master php-pm/httpkernel-adapter:dev-master; fi
 
     # add apc cache
     - |
