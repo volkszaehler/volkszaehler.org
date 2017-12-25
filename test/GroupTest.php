@@ -70,14 +70,8 @@ class GroupTest extends Middleware
 		$this->getJson('/group/' . $child . '.json', array(
 			'operation' => 'delete'
 		));
-		
-		error_log("-- Travis debug --");
-		print_r($this->json);
-		$json = $this->getJson('/group/' . self::$uuid . '.json');
-		print_r($json);
-		
-		$this->assertObjectNotHasAttribute('children', $json->entity);
-//		$this->assertObjectNotHasAttribute('children', $this->getJson('/group/' . self::$uuid . '.json')->entity);
+
+		$this->assertObjectNotHasAttribute('children', $this->getJson('/group/' . self::$uuid . '.json')->entity);
 	}
 
 	/**
