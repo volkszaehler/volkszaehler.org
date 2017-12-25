@@ -42,7 +42,7 @@ matrix:
       env: DB= DEPENDENCIES= JSLINT=true
 
 notifications:
-    mail: "volkszaehler-dev@lists.volkszaehler.org"
+    email: "volkszaehler-dev@lists.volkszaehler.org"
     irc: "chat.freenode.net#volkszaehler.org"
 
 # speedup build
