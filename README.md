@@ -61,5 +61,5 @@ Or follow the detailed installation instructions at http://wiki.volkszaehler.org
 
 ## Copyright
 
-Copyright © 2011-2017 volkszaehler.org  
+Copyright © 2011-2018 volkszaehler.org  
 Licensed under the GNU Public License (https://opensource.org/licenses/gpl-license.php).

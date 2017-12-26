@@ -5,7 +5,7 @@
  * @author Justin Otherguy <justin@justinotherguy.org>
  * @author Steffen Vogel <info@steffenvogel.de>
  * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @license https://opensource.org/licenses/gpl-license.php GNU Public License
+ * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org

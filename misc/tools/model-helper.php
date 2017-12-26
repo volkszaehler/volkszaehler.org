@@ -1,8 +1,8 @@
 #!/usr/bin/env php
 <?php
 /**
- * @copyright Copyright (c) 2011-2017, The volkszaehler.org project
- * @license http://www.gnu.org/licenses/gpl.txt GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
