@@ -5,7 +5,7 @@
 # @link http://developer.mysmartgrid.de/doku.php?id=fluksousb
 # @author Harald Koenig <koenig@tat.physik.uni-tuebingen.de>
 # @copyright Copyright (c) 2011-2018, The volkszaehler.org project
-# @license https://opensource.org/licenses/GPL-3.0 GNU General Public License version 3
+# @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
 #
 ##
 # This file is part of volkzaehler.org
