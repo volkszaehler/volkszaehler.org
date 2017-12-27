@@ -22,23 +22,23 @@ env:
 matrix:
   include:
     # postgres
-    - php: 7.0
+    - php: 7.1
       services: postresql
       env: DB=pgsql
     # sqlite
-    - php: 7.0
+    - php: 7.1
       env: DB=sqlite
     # httpd-based
-    - php: 7.0
+    - php: 7.1
       env: DB=mysql COMPONENT=HTTPD
     # push-server
-    - php: 7.0
+    - php: 7.1
       env: DB=mysql COMPONENT=PUSHD
     # from..to
-    - php: 7.0
+    - php: 7.1
       env: DB=mysql DEPENDENCIES=lowest
     # jslint-only
-    - php: 7.0
+    - php: 7.1
       env: DB= DEPENDENCIES= JSLINT=true
 
 notifications:
