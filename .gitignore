@@ -4,6 +4,6 @@
 /htdocs/tz
 /node_modules/
 /vendor/
-/.ppm/
 /composer.lock
+/.ppm/
 /.vscode/
