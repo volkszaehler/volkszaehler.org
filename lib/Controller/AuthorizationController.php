@@ -1,7 +1,7 @@
 <?php
 /**
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
+ * @author Andreas Goetz <cpuidle@gmx.de>
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
  * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  */
 /*
@@ -45,9 +45,6 @@ use Firebase\JWT\ExpiredException;
  *		403	FORBIDDEN		Indicates that the server understood the request but refuses to authorize it.
  *							If authentication credentials were provided in the request, the
  *							server considers them insufficient to grant access.
- *
- * @author Andreas Goetz <cpuidle@gmx.de>
- * @package default
  */
 class AuthorizationController extends Controller {
 
@@ -84,8 +81,6 @@ class AuthorizationController extends Controller {
 
 	/**
 	 * Run operation
-	 *
-	 * @param string $operation runs the operation if class method is available
 	 */
 	public function add() {
 		try {
