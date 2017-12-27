@@ -131,4 +131,16 @@ vz.options.loadCookies = function() {
 			}
 		}
 	}
+
+	// load auth tokens from cookie
+	var authCookie = $.getCookie('vz_authtoken') || '';
+	authCookie.split("|").forEach(function(str) {
+		var token = str.split("@");
+		if (token.length == 2) {
+			var mw = vz.middleware.find(token[1]);
+			if (mw) {
+				mw.authToken = token[0];
+			}
+		}
+	});
 };

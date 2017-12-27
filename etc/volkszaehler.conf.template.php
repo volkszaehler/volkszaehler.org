@@ -56,21 +56,28 @@ $config['db']['user']				= 'vz';
 $config['db']['password']			= 'demo';
 
 /**
- * @var string database name
+ * Database name
  *
  * See Doctrine doc for details: http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
  */
 $config['db']['dbname']				= 'volkszaehler';
 
 /**
- * @var database connection encoding - should not be changed
+ * Database connection encoding - should not be changed
  *
  * See http://stackoverflow.com/questions/13399912/symfony2-charset-for-queries-parameters
  */
 $config['db']['charset']			= 'UTF8';
 
 /**
- * @var database optimizer class
+ * Path of the SQLite database - only used if $config['db']['driver'] = 'pdo_sqlite'
+ *
+ * See Doctrine doc for details: http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
+ */
+$config['db']['path']				= 'volkszaehler.db3';
+
+/**
+ * Database optimizer class
  *
  * For automatic leave empty. Other options:
  *   - MysqlOptimizer: provides additional group=15m setting (does not work with aggregation)
@@ -94,26 +101,72 @@ $config['db']['charset']			= 'UTF8';
 $config['aggregation'] = true;
 
 /**
- * Path of the SQLite database
- *
- * See Doctrine doc for details: http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
- */
-//$config['db']['path']				= 'volkszaehler';
-
-/**
  * Push server settings
+ *
+ * See misc/tools/push-server.php for details
  */
-$config['push']['enabled'] = false;		// set to true to enable push updates
-$config['push']['server'] = 5582;		// vzlogger will push to this ports (binds on 0.0.0.0)
-$config['push']['broadcast'] = 8082;	// frontend will subscribe on this port (binds on 0.0.0.0)
-
-$config['push']['routes']['wamp'] = array('/', '/ws');		// routes for wamp access
-$config['push']['routes']['websocket'] = array();			// routes for plain web sockets, try array('/socket')
+$config['push'] = array(
+	'enabled' => false,					// set to true to enable push updates
+	'server' => 5582,					// vzlogger will push to this ports (binds on 0.0.0.0)
+	'broadcast' => 8082,				// frontend will subscribe on this port (binds on 0.0.0.0)
+	'routes' => array(
+		'wamp' => array('/', '/ws'),	// routes for wamp access
+		'websocket' => array()			// routes for plain web sockets, try array('/socket')
+	)
+);
 
 /**
  * Security settings
  */
 $config['security']['maxbodysize'] = false;	// limit maximum POST body size, e.g. 4096
+
+/**
+ * Access control
+ *
+ * Define firewall rules per ip, path or method and actions 'allow', 'deny' and 'auth'
+ */
+$config['firewall'] = array(
+	[	// localhost
+		'ips'		=> ['127.0.0.1/8', '::1'],
+		'action'	=> 'allow'
+	],
+	[	// local network
+		'ips'		=> ['192.168.0.0/16', '172.16.0.0/12', '10.0.0.0/8', 'fe80::/64'],
+		'action'	=> 'allow'
+	],
+	[	// always allow /auth - this is required
+		'path'		=> '/auth',
+		'methods'	=> 'POST',
+		'action'	=> 'allow'
+	],
+	[	// authorize all other requests
+		'action'	=> 'auth'
+	]
+);
+
+/**
+ * Proxies
+ *
+ * Trust any local machine as (reverse) proxy
+ */
+$config['proxies'] = array(
+	'127.0.0.1/8', '::1', '192.168.0.0/16', '172.16.0.0/12', '10.0.0.0/8', 'fe80::/64'
+);
+
+/**
+ * User authorization for firewall rule action 'auth'
+ *
+ * NOTE: if using authorization *ALWAYS* make sure HTTPS is enforced
+ */
+$config['authorization'] = array(
+	'secretkey' => '',		// define your own random secret key
+	'valid' => 24 * 3600,	// token validity period
+);
+
+// add users below as 'user' => 'pass'
+$config['users']['plain'] = array(
+	'user' => 'pass'
+);
 
 /**
  * Timezone for the middleware
@@ -140,16 +193,8 @@ $config['colors'] = array('#83CAFF', '#7E0021', '#579D1C', '#FFD320', '#FF420E',
 /**
  * Developer mode
  *
- * This disables all caching mechanisms and enabled debugging by default
+ * This disables all caching mechanisms
  */
-$config['devmode']				= FALSE;
-$config['cache']['ttl']			= 3600;	// only used if devmode == FALSE
-
-/**
- * Debugging level
- *
- * Set to > 0 to enable debug messages by default
- */
-$config['debug']				= 0;
+$config['devmode']				= false;
 
 ?>

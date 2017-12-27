@@ -83,7 +83,6 @@ vz.entities.loadDetails = function() {
 					// return new resolved deferred
 					return $.Deferred().resolveWith(this, [xhr]);
 				}
-				vz.wui.dialogs.middlewareException(xhr);
 				return vz.load.errorHandler(xhr);
 			}
 		));

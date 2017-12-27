@@ -65,6 +65,7 @@ class JSON extends View {
 		// add JSON headers
 		$this->response->headers->set('Content-Type', 'application/json');
 		$this->response->headers->set('Access-Control-Allow-Origin', '*');
+		$this->response->headers->set('Access-Control-Allow-Headers', 'Authorization');
 	}
 
 	/**
@@ -110,6 +111,22 @@ class JSON extends View {
 		}
 
 		return $this->response;
+	}
+
+	/**
+	 * Creates exception response
+	 *
+	 * @param \Exception $exception
+	 */
+	public function getExceptionResponse(\Exception $exception) {
+		$this->add($exception);
+
+		// only set status code if default - allows controllers to overwrite
+		if ($this->response->getStatusCode() == Response::HTTP_OK) {
+			$this->response->setStatusCode(Response::HTTP_BAD_REQUEST);
+		}
+
+		return $this->send();
 	}
 
 	protected function render() {

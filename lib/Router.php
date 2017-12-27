@@ -24,6 +24,7 @@ namespace Volkszaehler;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\RequestMatcher;
 
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
@@ -34,6 +35,7 @@ use Doctrine\Common\Cache;
 
 use Volkszaehler\View;
 use Volkszaehler\Util;
+use Volkszaehler\Controller;
 
 /**
  * Router
@@ -44,6 +46,11 @@ use Volkszaehler\Util;
  * @author Andreas Götz <cpuidle@gmx.de>
  */
 class Router implements HttpKernelInterface {
+
+	// firewall actions
+	const ACTION_ALLOW     = 'allow';
+	const ACTION_DENY      = 'deny';
+	const ACTION_AUTHORIZE = 'auth';
 
 	/**
 	 * @var ORM\EntityManager Doctrine EntityManager
@@ -70,6 +77,7 @@ class Router implements HttpKernelInterface {
 	 * @var array context => controller mapping
 	 */
 	public static $controllerMapping = array(
+		'auth'			=> 'Volkszaehler\Controller\AuthorizationController',
 		'channel'		=> 'Volkszaehler\Controller\ChannelController',
 		'group'			=> 'Volkszaehler\Controller\AggregatorController',
 		'aggregator'	=> 'Volkszaehler\Controller\AggregatorController',
@@ -186,6 +194,34 @@ class Router implements HttpKernelInterface {
 			throw new \Exception((empty($context)) ? 'Missing context' : 'Unknown context: \'' . $context . '\'');
 		}
 
+		// make sure proxy ip in trusted local network isn't mistaken for client ip
+		$request->setTrustedProxies(Util\Configuration::read('proxies', []));
+		if (is_callable([$request, 'isFromTrustedProxy']) && !$request->isFromTrustedProxy()) {
+			// ensure no proxy header present if proxy not used
+			foreach (['FORWARDED', 'X_FORWARDED_FOR'] as $header) {
+				if (null !== $request->headers->get($header)) {
+					throw new \Exception('Invalid proxy access');
+				}
+			}
+		}
+
+		// firewall
+		$firewallAction = $this->firewall($request);
+
+		if ($firewallAction == self::ACTION_DENY) {
+			$this->view->getResponse()->setStatusCode(Response::HTTP_UNAUTHORIZED);
+			throw new \Exception('Access denied');
+		}
+
+		// authorize requests
+		if ($firewallAction == self::ACTION_AUTHORIZE) {
+			if (null == Util\Configuration::read('authorization')) {
+				throw new \Exception('No authorization ruleset');
+			}
+
+			Controller\AuthorizationController::authorize($request, $this->view);
+		}
+
 		return $this->handler($request, $context, $uuid);
 	}
 
@@ -227,6 +263,31 @@ class Router implements HttpKernelInterface {
 		}
 
 		return $this->view->getExceptionResponse($e);
+	}
+
+	public function firewall(Request $request) {
+		$firewallAction = Util\Configuration::read('firewall');
+		if (!(is_array($firewallAction) && count($firewallAction))) {
+			return self::ACTION_DENY;
+		}
+
+		foreach ($firewallAction as $ruleset) {
+			$path = (isset($ruleset['path'])) ? $ruleset['path'] : null;
+			$host = (isset($ruleset['host'])) ? $ruleset['host'] : null;
+			$methods = (isset($ruleset['methods'])) ? $ruleset['methods'] : null;
+			$ips = (isset($ruleset['ips'])) ? $ruleset['ips'] : null;
+
+			if (!isset($ruleset['action'])) {
+				throw new \Exception('Missing firewall rule action');
+			}
+
+			$matcher = new RequestMatcher($path, $host, $methods, $ips);
+			if ($matcher->matches($request)) {
+				return $ruleset['action'];
+			}
+		}
+
+		throw new \Exception('No matching firewall ruleset');
 	}
 
 	/**
