@@ -5,4 +5,5 @@
 /node_modules/
 /vendor/
 /.ppm/
+/composer.lock
 /.vscode/
