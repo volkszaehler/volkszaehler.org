@@ -70,6 +70,7 @@ class GroupTest extends Middleware
 		$this->getJson('/group/' . $child . '.json', array(
 			'operation' => 'delete'
 		));
+
 		$this->assertObjectNotHasAttribute('children', $this->getJson('/group/' . self::$uuid . '.json')->entity);
 	}
 
