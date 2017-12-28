@@ -5,8 +5,7 @@
  * @author Justin Otherguy <justin@justinotherguy.org>
  * @author Steffen Vogel <info@steffenvogel.de>
  * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -32,18 +31,18 @@ $.extend( {
 	getUrlParams : function() {
 		var vars = {};
 		var hashes = decodeURIComponent(window.location.href).slice(window.location.href.indexOf('?') + 1).split('&');
-		
+
 		for (var i = 0; i < hashes.length; i++) {
 			var hash = hashes[i].split('=');
 			var key = hash[0];
 			var value = hash[1];
-			
+
 			if (key.substr(key.length-2) == '[]') { // Array
 				key = key.substr(0, key.length-2);
 				if (vars[key] === undefined) {
 					vars[key] = new Array;
 				}
-				
+
 				vars[key].push(value);
 			}
 			else {
@@ -62,7 +61,7 @@ $.extend( {
  *
  * @author Klaus Hartl  <klaus.hartl@stilbuero.de>
  * @author Steffen Vogel <info@steffenvogel.de>
- * 
+ *
  * Copyright (c) 2006 Klaus Hartl (stilbuero.de)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
@@ -71,12 +70,12 @@ $.extend( {
 $.extend({
 	setCookie: function(name, value, options) {
 		options = options || { };
-		
+
 		if (value === null) {
 			value = '';
 			options.expires = -1;
 		}
-		
+
 		var expires = '';
 		if (options.expires && (typeof options.expires == 'number' || options.expires.toUTCString)) {
 			var date;
@@ -89,14 +88,14 @@ $.extend({
 			}
 			expires = '; expires=' + date.toUTCString(); // use expires attribute, max-age is not supported by IE
 		}
-		
+
 		// CAUTION: Needed to parenthesize options.path and options.domain
 		// in the following expressions, otherwise they evaluate to undefined
 		// in the packed version for some reason...
 		var path = options.path ? '; path=' + (options.path) : '';
 		var domain = options.domain ? '; domain=' + (options.domain) : '';
 		var secure = options.secure ? '; secure' : '';
-		
+
 		document.cookie = name + '=' + encodeURIComponent(value) + expires + path + domain + secure;
 	},
 	getCookie: function(name) {

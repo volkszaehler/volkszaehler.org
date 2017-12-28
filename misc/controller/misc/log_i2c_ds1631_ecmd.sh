@@ -1,19 +1,18 @@
 #!/bin/bash
 #
 # This is a simple bash script to read Dallas 1-Wire sensors
-# connected to a controller board running ethersex and log their 
+# connected to a controller board running ethersex and log their
 # values to the volkszaehler project.
 #
 # call it with a cronjob similiar to this one:
 #
 # */5 * * * *   ~/bin/log_i2c_ds1631_ecmd.sh
 #
-# @copyright Copyright (c) 2011, The volkszaehler.org project
-# @package controller
-# @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
 # @author Justin Otherguy <justin@justinotherguy.org>
 # @author Steffen Vogel <info@steffenvogel.de>
 # @author Sven Peitz <sven@pubeam.de>
+# @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+# @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
 ##
 # This file is part of volkzaehler.org
 #
@@ -47,7 +46,7 @@ ESEXIP=<put the ip address of your controller board here>
 #  uuid of the sensor in the volkszaehler database
 UUID=<put the uuid of your temperature sensor here>
 
-## 
+##
 # paths to binaries - you should not need to change these
 CURL=/usr/bin/curl
 NC=/bin/nc
