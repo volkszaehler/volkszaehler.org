@@ -56,6 +56,17 @@
 		}
 	},
 	{
+		"name"			: "user",
+		"icon"			: "user.png",
+		"interpreter"		: "Volkszaehler\\Interpreter\\AggregatorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Aggregator",
+		"translation"		: {
+			"de" : "Nutzer",
+			"en" : "User",
+			"fr" : "Usager"
+		}
+	},
+	{
 		"name"			: "power",
 		"required"		: ["resolution"],
 		"optional"		: ["tolerance", "cost", "local", "initialconsumption"],
@@ -169,9 +180,9 @@
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
-			"de" : "Wärmemengenzähler",
-			"en" : "Heat Meter",
-			"fr" : "Capteur d' énergie thermique"
+			"de" : "Wärme (S0-Impulse)",
+			"en" : "Heat (S0-pulses)",
+			"fr" : "Énergie thermique (S0)"
 		}
 	},
 	{
@@ -184,8 +195,25 @@
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
-			"de" : "Wärmemengensensor",
-			"en" : "Heat Sensor"
+			"de" : "Wärme (Leistungswerte)",
+			"en" : "Heat (power readings)",
+			"fr" : "Énergie thermique (puissance)"
+		}
+	},
+	{
+		"name"			: "heattotal",
+		"required"		: ["resolution"],
+		"optional"		: ["tolerance", "cost", "local", "initialconsumption"],
+		"icon"			: "flame.png",
+		"unit"			: "W",
+		"scale"			: 1000,
+		"interpreter"		: "Volkszaehler\\Interpreter\\AccumulatorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
+		"translation"		: {
+			"de" : "Wärme (Zählerstände)",
+			"en" : "Heat (absolute meter readings)",
+			"fr" : "Énergie thermique (consommation compteur)"
 		}
 	},
 	{
@@ -211,9 +239,9 @@
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
-			"de" : "Wassermengenzähler",
-			"en" : "Water",
-			"fr" : "Eau"
+			"de" : "Wasser (S0-Impulse)",
+			"en" : "Water (S0-pulses)",
+			"fr" : "Eau (S0)"
 		}
 	},
 	{
@@ -225,9 +253,24 @@
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
-			"de" : "Wassermengensensor",
-			"en" : "Flow rate",
-			"fr" : "Vitesse d'écoulement"
+			"de" : "Wasser (Durchflusswerte)",
+			"en" : "Water (flow rate readings)",
+			"fr" : "Eau (vitesse d'écoulement)"
+		}
+	},
+	{
+		"name"			: "watertotal",
+		"required"		: ["resolution"],
+		"optional"		: ["tolerance", "cost", "local", "initialconsumption"],
+		"icon"			: "waterdrop.png",
+		"unit"			: "l/h",
+		"interpreter"		: "Volkszaehler\\Interpreter\\AccumulatorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
+		"translation"		: {
+			"de" : "Wasser (Zählerstände)",
+			"en" : "Water (absolute meter readings)",
+			"fr" : "Eau (consommation compteur)"
 		}
 	},
 	{
@@ -362,17 +405,6 @@
 		"translation"		: {
 			"de" : "Sensor",
 			"en" : "Sensor"
-		}
-	},
-	{
-		"name"			: "user",
-		"icon"			: "user.png",
-		"interpreter"		: "Volkszaehler\\Interpreter\\AggregatorInterpreter",
-		"model"			: "Volkszaehler\\Model\\Aggregator",
-		"translation"		: {
-			"de" : "Nutzer",
-			"en" : "User",
-			"fr" : "Usager"
 		}
 	},
 	{
