@@ -1,9 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-#  @copyright Copyright (c) 2011, The volkszaehler.org project
-#  @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
-#  Author Sven Anders <volkszaehler2011@sven.anders.im> 2011
+#  @author Sven Anders <volkszaehler2011@sven.anders.im> 2011
+#  @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+#  @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
 
 #
 #  This file is part of volkzaehler.org

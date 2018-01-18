@@ -1,8 +1,7 @@
 <?php
 /**
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://www.gnu.org/licenses/gpl.txt GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -27,7 +26,6 @@ use Volkszaehler\Util;
 
 /**
  * @author Steffen Vogel <info@steffenvogel.de>
- * @package default
  */
 abstract class Definition {
 	/**
@@ -105,10 +103,10 @@ abstract class Definition {
 
 		$cache_id = static::CACHE_KEY . static::FILE;
 
-		if (Util\Configuration::read('devmode') == FALSE && extension_loaded('apc') && apc_exists($cache_id) &&
+		if (Util\Configuration::read('devmode') == FALSE && extension_loaded('apcu') && apcu_exists($cache_id) &&
 			(time() - filemtime(__DIR__ . '/' . static::FILE) > Util\Configuration::read('cache.ttl', 3600)))
 		{
-			static::$definitions = apc_fetch($cache_id);
+			static::$definitions = apcu_fetch($cache_id);
 		}
 		else {
 			// expensive - cache results
@@ -118,8 +116,8 @@ abstract class Definition {
 				static::$definitions[$property->name] = new static($property);
 			}
 
-			if (extension_loaded('apc')) {
-				apc_store($cache_id, static::$definitions, Util\Configuration::read('cache.ttl', 3600));
+			if (extension_loaded('apcu')) {
+				apcu_store($cache_id, static::$definitions, Util\Configuration::read('cache.ttl', 3600));
 			}
 		}
 	}
