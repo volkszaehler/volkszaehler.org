@@ -48,27 +48,44 @@ use Firebase\JWT\ExpiredException;
  */
 class AuthorizationController extends Controller {
 
+	const TOKEN_CIPHER = 'HS256';
 	const TOKEN_LIFETIME = 24 * 3600;
 
 	/**
 	 * Authorize request via header
 	 */
-	public static function authorize(Request $request, View $view) {
+	public static function authorize(Request $request, $context, View $view) {
 		if (!($key = Util\Configuration::read('authorization.secretkey'))) {
 			$view->getResponse()->setStatusCode(Response::HTTP_INTERNAL_SERVER_ERROR);
 			throw new \Exception('Missing authorization.secretkey');
 		}
 
 		try {
-			if (!($header = $request->headers->get('Authorization')) || (0 !== strpos($header, 'Bearer '))) {
+			// authorization header?
+			if (($header = $request->headers->get('Authorization')) && (0 !== strpos($header, 'Bearer '))) {
+				$jwt = substr($header, strlen('Bearer '));
+			}
+			// authorization cookie?
+			elseif ($cookie = $request->cookies->get('vz_authtoken')) {
+				$jwt = explode('@', $cookie)[0]; // split @middleware portion
+			}
+			else {
 				throw new \Exception('Missing authorization token');
 			}
 
-			$jwt = substr($header, strlen('Bearer '));
-			if ($token = JWT::decode($jwt, $key, array('HS256'))) {
-				// Check if this token has expired due to changed config
-				if (isset($token->iat) && ($token->iat + Util\Configuration::read('authorization.valid', self::TOKEN_LIFETIME)) < time()) {
-					throw new ExpiredException('Expired token');
+			if ($token = JWT::decode($jwt, $key, array(self::TOKEN_CIPHER))) {
+				// operation contraint
+				if (isset($token->{'vz:ops'})) {
+					if (!in_array($request->getMethod(), explode(',', $token->{'vz:ops'}))) {
+						throw new \Exception(sprintf('Method %s restricted', $request->getMethod()));
+					}
+				}
+
+				// context contraint
+				if (isset($token->{'vz:ctx'})) {
+					if (!in_array($context, explode(',', $token->{'vz:ctx'}))) {
+						throw new \Exception(sprintf('Context %s restricted', $context));
+					}
 				}
 			}
 		}
@@ -115,7 +132,7 @@ class AuthorizationController extends Controller {
 			$auth = Util\Configuration::read('users.plain');
 
 			if (isset($auth[$username]) && $password === $auth[$username]) {
-				$jwt = $this->issueToken($json->username);
+				$jwt = self::issueToken($json->username);
 				return(['authtoken' => $jwt]);
 			}
 		}
@@ -127,17 +144,20 @@ class AuthorizationController extends Controller {
 	/**
 	 * Issue bearer auth token identifying user by name
 	 */
-	protected function issueToken($username) {
+	public static function issueToken($username, $claims = []) {
 		if (!($key = Util\Configuration::read('authorization.secretkey'))) {
 			$this->view->getResponse()->setStatusCode(Response::HTTP_INTERNAL_SERVER_ERROR);
 			throw new \Exception('Missing authorization.secretkey');
 		}
 
 		$token = array(
-			"iat" => time(),
-			"exp" => time() + Util\Configuration::read('authorization.valid', self::TOKEN_LIFETIME),
-			"sub" => $username
+			'sub' => $username,
+			'iat' => time(),
+			'exp' => time() + Util\Configuration::read('authorization.valid', self::TOKEN_LIFETIME),
 		);
+
+		// additional claims
+		$token = array_merge($token, $claims);
 
 		return JWT::encode($token, $key);
 	}

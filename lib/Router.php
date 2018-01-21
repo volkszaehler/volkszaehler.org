@@ -228,7 +228,7 @@ class Router implements HttpKernelInterface {
 				throw new \Exception('No authorization ruleset');
 			}
 
-			Controller\AuthorizationController::authorize($request, $this->view);
+			Controller\AuthorizationController::authorize($request, $context, $this->view);
 		}
 
 		return $this->handler($request, $context, $uuid);
