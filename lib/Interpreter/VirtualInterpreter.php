@@ -1,9 +1,8 @@
 <?php
 /**
- * @copyright Copyright (c) 2016, The volkszaehler.org project
  * @author Andreas Goetz <cpuidle@gmx.de>
- * @package default
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -43,6 +42,11 @@ class VirtualInterpreter extends Interpreter {
 
 	const PRIMARY = 'in1';
 
+	/**
+	 * @var Doctrine\ORM\EntityManager
+	 */
+	protected $em;
+
 	protected $ctx;
 	protected $parser;
 
@@ -69,11 +73,6 @@ class VirtualInterpreter extends Interpreter {
 		$this->ctx = new Shunt\Context();
 		$this->createStaticContextFunctions();
 		$this->createDynamicContextFunctions($channel->getPropertiesByRegex('/in\d/'));
-
-		// consolidate timestamps by period is required
-		if ($this->groupBy) {
-			$this->timestampGenerator = new Virtual\GroupedTimestampIterator($this->timestampGenerator, $this->groupBy);
-		}
 	}
 
 	/**
