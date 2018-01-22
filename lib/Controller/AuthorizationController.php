@@ -66,8 +66,8 @@ class AuthorizationController extends Controller {
 				$jwt = substr($header, strlen('Bearer '));
 			}
 			// authorization cookie?
-			elseif ($cookie = $request->cookies->get('vz_authtoken')) {
-				$jwt = explode('@', $cookie)[0]; // split @middleware portion
+			elseif ($cookie = $request->cookies->get('authToken')) {
+				$jwt = $cookie;
 			}
 			else {
 				throw new \Exception('Missing authorization token');
