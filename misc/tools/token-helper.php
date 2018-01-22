@@ -66,7 +66,7 @@ class CreateCommand extends Command {
 			throw new \Exception('Invalid user credentials');
 		}
 
-		if ($input->hasOption('valid')) {
+		if ($input->getOption('valid')) {
 			$claims['exp'] = strtotime($input->getOption('valid'));
 		}
 

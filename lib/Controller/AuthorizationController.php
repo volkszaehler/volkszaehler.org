@@ -62,7 +62,7 @@ class AuthorizationController extends Controller {
 
 		try {
 			// authorization header?
-			if (($header = $request->headers->get('Authorization')) && (0 !== strpos($header, 'Bearer '))) {
+			if (($header = $request->headers->get('Authorization')) && (0 === strpos($header, 'Bearer '))) {
 				$jwt = substr($header, strlen('Bearer '));
 			}
 			// authorization cookie?
