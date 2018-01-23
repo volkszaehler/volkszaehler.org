@@ -182,8 +182,8 @@ class Aggregation {
 			}
 		}
 
-		if (Util\Debug::isActivated())
-			echo(Util\Debug::getParametrizedQuery($sql, $sqlParameters)."\n");
+		if (Debug::isActivated())
+			echo(Debug::getParametrizedQuery($sql, $sqlParameters)."\n");
 
 		$rows = $this->conn->executeQuery($sql, $sqlParameters);
 	}
@@ -315,8 +315,8 @@ class Aggregation {
 
 		$sql .= 'GROUP BY channel_id, ' . Interpreter\Interpreter::buildGroupBySQL($level);
 
-		if (Util\Debug::isActivated())
-			echo(Util\Debug::getParametrizedQuery($sql, $sqlParameters)."\n");
+		if (Debug::isActivated())
+			echo(Debug::getParametrizedQuery($sql, $sqlParameters)."\n");
 
 		$rows = $this->conn->executeUpdate($sql, $sqlParameters);
 
