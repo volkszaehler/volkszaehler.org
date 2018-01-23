@@ -172,6 +172,17 @@ $config['users']['plain'] = array(
 	// 'user' => 'pass'
 );
 
+// add users restrictions below as understood by misc/tools/token-helper.php
+// empty context/operation array means no constraints
+$config['users']['constraints'] = array(
+/*
+	'user' => [
+		'context' => [ array of allowed contexts ],
+		'operation' => [ array of allowed operations ],
+	]
+*/
+);
+
 /**
  * Timezone for the middleware
  *
