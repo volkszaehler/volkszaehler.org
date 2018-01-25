@@ -24,6 +24,7 @@ namespace Volkszaehler;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\RequestMatcher;
 
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
@@ -34,6 +35,7 @@ use Doctrine\Common\Cache;
 
 use Volkszaehler\View;
 use Volkszaehler\Util;
+use Volkszaehler\Controller;
 
 /**
  * Router
@@ -44,6 +46,11 @@ use Volkszaehler\Util;
  * @author Andreas Götz <cpuidle@gmx.de>
  */
 class Router implements HttpKernelInterface {
+
+	// firewall actions
+	const ACTION_ALLOW     = 'allow';
+	const ACTION_DENY      = 'deny';
+	const ACTION_AUTHORIZE = 'auth';
 
 	/**
 	 * @var ORM\EntityManager Doctrine EntityManager
@@ -56,20 +63,25 @@ class Router implements HttpKernelInterface {
 	public $view;
 
 	/**
+	 * @var float timestamp
+	 */
+	public $requestReceived;
+
+	/**
 	 * @var array HTTP-method => operation mapping
 	 */
 	public static $operationMapping = array(
 		'POST'			=> 'add',
 		'DELETE'		=> 'delete',
 		'GET'			=> 'get',
-		'PATCH'			=> 'edit',
-		'PULL'			=> 'edit'		// not REST-conform
+		'PATCH'			=> 'edit'
 	);
 
 	/**
 	 * @var array context => controller mapping
 	 */
 	public static $controllerMapping = array(
+		'auth'			=> 'Volkszaehler\Controller\AuthorizationController',
 		'channel'		=> 'Volkszaehler\Controller\ChannelController',
 		'group'			=> 'Volkszaehler\Controller\AggregatorController',
 		'aggregator'	=> 'Volkszaehler\Controller\AggregatorController',
@@ -117,6 +129,7 @@ class Router implements HttpKernelInterface {
 		try {
 			// initialize view to ensure StreamedResponse->streamed is false
 			$this->view = null;
+			$this->requestReceived = microtime(true);
 
 			// initialize entity manager
 			if (null == $this->em || !$this->em->isOpen() || $this->em->getConnection()->ping() === false) {
@@ -168,7 +181,7 @@ class Router implements HttpKernelInterface {
 
 		// initialize debugging
 		if ($request->query->get('debug') || Util\Configuration::read('debug')) {
-			Util\Debug::activate($this->em);
+			Util\Debug::activate($this->em)->startTimer($this->requestReceived);
 		}
 		else {
 			// make sure static debug instance is removed
@@ -186,6 +199,38 @@ class Router implements HttpKernelInterface {
 			throw new \Exception((empty($context)) ? 'Missing context' : 'Unknown context: \'' . $context . '\'');
 		}
 
+		// make sure proxy ip in trusted local network isn't mistaken for client ip
+		$proxies = Util\Configuration::read('proxies', []);
+		if (count($proxies)) {
+			$proxy_headers = Util\Configuration::read('proxy_headers', Request::HEADER_FORWARDED | Request::HEADER_X_FORWARDED_ALL);
+			$request->setTrustedProxies($proxies, $proxy_headers);
+		}
+
+		// map GET operation to HTTP method for use in firewall rules
+		if ($operation = $request->query->get('operation')) {
+			$request->query->remove('operation');
+			$method = array_flip(self::$operationMapping)[strtolower($operation)];
+			$request->setMethod($method);
+		}
+
+		// firewall
+		$firewallAction = $this->firewall($request);
+
+		if ($firewallAction == self::ACTION_DENY) {
+			$this->view->getResponse()->setStatusCode(Response::HTTP_UNAUTHORIZED);
+			throw new \Exception('Access denied');
+		}
+
+		// authorize requests
+		if ($firewallAction == self::ACTION_AUTHORIZE) {
+			if (null == Util\Configuration::read('authorization')) {
+				$this->view->getResponse()->setStatusCode(Response::HTTP_INTERNAL_SERVER_ERROR);
+				throw new \Exception('No authorization ruleset');
+			}
+
+			Controller\AuthorizationController::authorize($request, $context, $this->view);
+		}
+
 		return $this->handler($request, $context, $uuid);
 	}
 
@@ -199,11 +244,7 @@ class Router implements HttpKernelInterface {
 	 * @return Response
 	 */
 	function handler(Request $request, $context, $uuid) {
-		// get controller operation
-		if (null === ($operation = $request->query->get('operation'))) {
-			$operation = self::$operationMapping[$request->getMethod()];
-		}
-
+		$operation = self::$operationMapping[$request->getMethod()];
 		$class = self::$controllerMapping[$context];
 		$controller = new $class($request, $this->em, $this->view);
 
@@ -227,6 +268,31 @@ class Router implements HttpKernelInterface {
 		}
 
 		return $this->view->getExceptionResponse($e);
+	}
+
+	public function firewall(Request $request) {
+		$firewallAction = Util\Configuration::read('firewall');
+		if (!(is_array($firewallAction) && count($firewallAction))) {
+			return self::ACTION_DENY;
+		}
+
+		foreach ($firewallAction as $ruleset) {
+			$path = (isset($ruleset['path'])) ? $ruleset['path'] : null;
+			$host = (isset($ruleset['host'])) ? $ruleset['host'] : null;
+			$methods = (isset($ruleset['methods'])) ? $ruleset['methods'] : null;
+			$ips = (isset($ruleset['ips'])) ? $ruleset['ips'] : null;
+
+			if (!isset($ruleset['action'])) {
+				throw new \Exception('Missing firewall rule action');
+			}
+
+			$matcher = new RequestMatcher($path, $host, $methods, $ips);
+			if ($matcher->matches($request)) {
+				return $ruleset['action'];
+			}
+		}
+
+		throw new \Exception('No matching firewall ruleset');
 	}
 
 	/**

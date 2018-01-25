@@ -32,6 +32,7 @@ var Middleware = function(definition) {
 
 	this.public = [];
 	this.session = null;
+	this.authToken = null;
 };
 
 /**
@@ -62,6 +63,28 @@ Middleware.prototype.loadEntities = function() {
 };
 
 /**
+ * Update middleware auth token
+ */
+Middleware.prototype.setAuthorization = function(authToken) {
+	this.authToken = authToken;
+	vz.middleware.storeAuthTokens();
+	this.setAuthCookie();
+};
+
+/**
+ * Set auth cookie
+ */
+Middleware.prototype.setAuthCookie = function() {
+	var parser = document.createElement('a');
+	parser.href = this.url;
+
+	$.setCookie('authToken', this.authToken, {
+		domain: parser.hostname,
+		path: parser.pathname
+	});
+};
+
+/**
  * Find middleware by url
  */
 vz.middleware.find = function(url) {
@@ -72,4 +95,18 @@ vz.middleware.find = function(url) {
 	});
 
 	return mw.length ? mw[0] : null;
+};
+
+/**
+ * Store auth tokens in cookie
+ */
+vz.middleware.storeAuthTokens = function() {
+	var tokens = vz.middleware.filter(function(mw) {
+		return !!mw.authToken;
+	}).map(function(mw) {
+		return mw.authToken + "@" + mw.url;
+	});
+
+	var expires = new Date(2038, 0, 1); // some days before y2k38 problem
+	$.setCookie('vz_authtoken', tokens.join("|"), {expires: expires});
 };
