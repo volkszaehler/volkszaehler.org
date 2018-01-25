@@ -172,8 +172,13 @@ $config['users']['plain'] = array(
 	// 'user' => 'pass'
 );
 
-// add users restrictions below as understood by misc/tools/token-helper.php
-// empty context/operation array means no constraints
+/**
+ * Access restrictions per user as understood by misc/tools/token-helper.php
+ *
+ * NOTE: Constraints are effective when firewall rule demands 'auth', NOT otherwise.
+ *       They are applied whenever a user logs in. Empty context/operation array
+ *       means no constraints.
+ */
 $config['users']['constraints'] = array(
 /*
 	'user' => [
