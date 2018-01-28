@@ -43,6 +43,15 @@ $config['db']['driver']				= 'pdo_mysql';
 $config['db']['host']				= 'localhost';
 
 /**
+ * Port of database server
+ *
+ * Use 3306 for standard MySQL servers.
+ * See Doctrine doc for details: http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
+ */
+$config['db']['port']				= 3306;
+
+
+/**
  * Username for the database server
  *
  * See Doctrine doc for details: http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
