@@ -37,28 +37,29 @@ $config['db']['driver']				= 'pdo_mysql';
  * Hostname of database server
  *
  * Use 'localhost' for the machine your webserver is running on.
- * See Doctrine doc for details: http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
  */
 $config['db']['host']				= 'localhost';
 
 /**
- * Username for the database server
+ * Port of database server
  *
- * See Doctrine doc for details: http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
+ * Only needed for other Ports than 3306 on MySQL servers.
+ * Only needed for other Ports than 5432 on PostgreSQL servers. 
+ */
+//$config['db']['port']				= 3306;
+
+/**
+ * Username for the database server
  */
 $config['db']['user']				= 'vz';
 
 /**
  * Password for the database server
- *
- * See Doctrine doc for details: http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
  */
 $config['db']['password']			= 'demo';
 
 /**
  * @var string database name
- *
- * See Doctrine doc for details: http://www.doctrine-project.org/projects/dbal/2.0/docs/reference/configuration/en
  */
 $config['db']['dbname']				= 'volkszaehler';
 
