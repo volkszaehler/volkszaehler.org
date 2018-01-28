@@ -48,7 +48,6 @@ $config['db']['host']				= 'localhost';
  */
 $config['db']['port']				= 3306;
 
-
 /**
  * Username for the database server
  */
