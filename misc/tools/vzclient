@@ -46,8 +46,11 @@ parser.add_argument('-u', '--uuid',action='append',help="the uuid to edit, get o
 parser.add_argument('-f', '--format',choices=["json","xml","csv","png","gif","jpg"],action='store',help="the format");
 parser.add_argument('-e', '--eval',action='store',help="get comma-separated attribute from json response (Example: entity,uuid will extract the uuid from a json string: {\"entity\":{\"uuid\":\"4...\"}})");
 parser.add_argument('-j', '--json',action='store',help="send json request");
+parser.add_argument('-t', '--token',action='store',help="access token as generated with token-helper tool");
 parser.add_argument('param',nargs='*',help="Paramter always in syntax key=value");
 args = parser.parse_args();
+
+# read config
 
 Config.read(["/etc/vzclient.conf",os.path.expanduser('~/.vzclient.conf'),".vzclient.conf"]);
 url=args.url;
@@ -63,6 +66,9 @@ if (format is None):
     format=Config.get("default","format");
   except:
     format="json";
+
+# build uri
+
 context=args.context;
 url=url+"/"+context;
 uuid=args.uuid;
@@ -75,8 +81,22 @@ for p in args.param:
   (key,value)=p.split("=");
   url=url+"&"+urllib2.quote(key)+"="+urllib2.quote(value);
 # print url;
+
+# build request
+
 req = urllib2.Request(url)
 req.add_header('User-agent', 'vzclient/$version')
+
+token=args.token;
+if (token is None):
+  try:
+    format=Config.get('default', 'token');
+  except: pass
+if (token):
+  req.add_header('Authentication', 'Bearer '+token);
+
+# execute request
+
 try:
   if (args.json):
     req.add_header('Content-Type', 'application/json');
@@ -84,6 +104,13 @@ try:
   else:
     f=urllib2.urlopen(url);
   jsonstr=f.read();
+except urllib2.URLError as error:
+  print "HTTP error: {0}".format(error.reason);
+  exit(1);
+
+# parse request
+
+try:
   if (args.eval is None):
     print jsonstr;
   else:
@@ -98,7 +125,6 @@ try:
       except KeyError:
         print "Key: "+ev+" not found in str: "+jsonstr;
     print obj;
-  exit(0);
-except urllib2.HTTPError,error:
-  print error.read();
+except Exception as error:
+  print error.strerror;
   exit(1);
