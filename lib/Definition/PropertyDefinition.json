@@ -445,7 +445,7 @@
 	{
 		"name"			: "unit",
 		"type"			: "string",
-		"pattern"		: "#^[\\w°µ€\\$/²³]+$#u",
+		"pattern"		: "#^[\\w°%µ€\\$/²³]+$#u",
 		"max"			: 5,
 		"translation"		: {
 			"de" : "Einheit",
