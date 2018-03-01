@@ -148,7 +148,11 @@ Entity.prototype.assignAxis = function() {
 			}
 		}
 
-		yaxis.axisLabel = this.getUnit();
+		// overwrite undefined labels only - allows reserving a forced axis
+		if (yaxis.axisLabel === undefined) {
+			yaxis.axisLabel = this.getUnit();
+		}
+
 		yaxis.forcedGroup = this.yaxis;
 	}
 
