@@ -24,9 +24,7 @@
 
 namespace Volkszaehler;
 
-use Volkszaehler\Router;
-use Volkszaehler\Controller\AuthorizationController;
-use Volkszaehler\Util\ConsoleApplication;
+use Volkszaehler\Util;
 
 use Firebase\JWT\JWT;
 
@@ -57,8 +55,6 @@ class CreateCommand extends Command {
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
-		$claims = [];
-
 		$user = $input->getArgument('username');
 		$auth = Util\Configuration::read('users.plain');
 
@@ -66,14 +62,17 @@ class CreateCommand extends Command {
 			throw new \Exception('Invalid user credentials');
 		}
 
-		if ($input->hasOption('valid')) {
+		$tokenHelper = new Util\TokenHelper();
+		$claims = $tokenHelper->getUserConstraints($user);
+
+		if ($input->getOption('valid')) {
 			$claims['exp'] = strtotime($input->getOption('valid'));
 		}
 
 		$contextConstraints = array_map(function($context) {
 			return strtolower($context);
 		}, $input->getOption('context'));
-		$operationConstraints = $this->getOperationConstraints($input->getOption('operation'));
+		$operationConstraints = $tokenHelper->mapOperationsToHttpMethods($input->getOption('operation'));
 
 		if (count($contextConstraints)) {
 			$claims['vz:ctx'] = join(',', $contextConstraints);
@@ -82,27 +81,8 @@ class CreateCommand extends Command {
 			$claims['vz:ops'] = join(',', $operationConstraints);
 		}
 
-		$token = AuthorizationController::issueToken($user, $claims);
+		$token = $tokenHelper->issueToken($user, $claims);
 		echo $token;
-	}
-
-	private function getOperationConstraints(array $operations) {
-		$constraints = [];
-		$flipped = array_flip(Router::$operationMapping);
-
-		foreach ($operations as $op) {
-			if (in_array(strtoupper($op), array_keys(Router::$operationMapping))) {
-				$constraints[] = strtoupper($op);
-			}
-			elseif (in_array(strtolower($op), array_keys($flipped))) {
-				$constraints[] = $flipped[strtolower($op)];
-			}
-			else {
-				throw new \Exception('Invalid operation constraint: ' . $op);
-			}
-		}
-
-		return array_unique($constraints);
 	}
 }
 
@@ -124,7 +104,7 @@ class DecodeCommand extends Command {
 			throw new \Exception('Missing authorization.secretkey');
 		}
 
-		echo json_encode(JWT::decode($jwt, $key, array(AuthorizationController::TOKEN_CIPHER)));
+		echo json_encode(JWT::decode($jwt, $key, array(Util\TokenHelper::TOKEN_CIPHER)));
 	}
 }
 

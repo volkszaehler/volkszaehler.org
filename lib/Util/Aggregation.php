@@ -25,7 +25,6 @@
 
 namespace Volkszaehler\Util;
 
-use Volkszaehler\Util;
 use Volkszaehler\Interpreter;
 use Volkszaehler\Interpreter\SQL\SQLOptimizer;
 use Volkszaehler\Definition;
@@ -194,8 +193,8 @@ class Aggregation {
 			$sql = $factory::buildDeleteFromJoinSQL('aggregate', $sql);
 		}
 
-		if (Util\Debug::isActivated())
-			echo(Util\Debug::getParametrizedQuery($sql, $sqlParameters)."\n");
+		if (Debug::isActivated())
+			echo(Debug::getParametrizedQuery($sql, $sqlParameters)."\n");
 
 		$rows = $this->conn->executeQuery($sql, $sqlParameters);
 	}
@@ -328,8 +327,8 @@ class Aggregation {
 		$factory = SQLOptimizer::factory();
 		$sql .= 'GROUP BY channel_id, ' . $factory::buildGroupBySQL($level);
 
-		if (Util\Debug::isActivated())
-			echo(Util\Debug::getParametrizedQuery($sql, $sqlParameters)."\n");
+		if (Debug::isActivated())
+			echo(Debug::getParametrizedQuery($sql, $sqlParameters)."\n");
 
 		$rows = $this->conn->executeUpdate($sql, $sqlParameters);
 

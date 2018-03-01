@@ -173,6 +173,22 @@ $config['users']['plain'] = array(
 );
 
 /**
+ * Access restrictions per user as understood by misc/tools/token-helper.php
+ *
+ * NOTE: Constraints are effective when firewall rule demands 'auth', NOT otherwise.
+ *       They are applied whenever a user logs in. Empty context/operation array
+ *       means no constraints.
+ */
+$config['users']['constraints'] = array(
+/*
+	'user' => [
+		'context' => [ array of allowed contexts ],
+		'operation' => [ array of allowed operations ],
+	]
+*/
+);
+
+/**
  * Timezone for the middleware
  *
  * See PHP doc for details: http://www.php.net/manual/de/timezones.php

@@ -68,6 +68,20 @@ Middleware.prototype.loadEntities = function() {
 Middleware.prototype.setAuthorization = function(authToken) {
 	this.authToken = authToken;
 	vz.middleware.storeAuthTokens();
+	this.setAuthCookie();
+};
+
+/**
+ * Set auth cookie
+ */
+Middleware.prototype.setAuthCookie = function() {
+	var parser = document.createElement('a');
+	parser.href = this.url;
+
+	$.setCookie('authToken', this.authToken, {
+		domain: parser.hostname,
+		path: parser.pathname
+	});
 };
 
 /**
