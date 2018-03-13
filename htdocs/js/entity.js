@@ -169,14 +169,22 @@ Entity.prototype.assignAxis = function() {
  */
 Entity.prototype.updateAxisScale = function() {
 	if (this.assignedYaxis !== undefined && vz.options.plot.yaxes.length >= this.assignedYaxis) {
-		if (vz.options.plot.yaxes[this.assignedYaxis-1].min === undefined) { // axis min still not set
+		var axis = vz.options.plot.yaxes[this.assignedYaxis-1];
+		if (axis.min === undefined) { // axis min still not set
 			// avoid overriding user-defined options
-			vz.options.plot.yaxes[this.assignedYaxis-1].min = 0;
+			axis.min = 0;
 		}
 		if (this.data && this.data.tuples && this.data.tuples.length > 0) {
 			// allow negative values, e.g. for temperature sensors
-			if (this.data.min && this.data.min[1] < 0) { // set axis min to 'auto'
-				vz.options.plot.yaxes[this.assignedYaxis-1].min = null;
+			if (this.data.min && this.data.min[1] < 0 && axis.min === 0) { // set axis min to 'auto'
+				axis.min = null;
+				if (this.data.max && this.data.max[1] < 0 && axis.max === undefined) {
+					axis.max = 0;
+				}
+			}
+			// allow positive values if max forced to 0 by another channel
+			if (this.data.max && this.data.max[1] > 0 && axis.max === 0) {
+				axis.max = null;
 			}
 		}
 	}
@@ -722,6 +730,18 @@ Entity.prototype.activate = function(state, parent, recursive) {
 			queue.push(child.activate(state, parent, false));
 		}, true); // recursive!
 	}
+
+	// reset axis extrema (NOTE: this does not handle min/max=0 in options)
+	var axis = vz.options.plot.yaxes[this.assignedYaxis-1];
+	if (axis.min === 0 || axis.min === null) {
+		axis.min = undefined;
+	}
+	if (axis.max === 0 || axis.max === null) {
+		axis.max = undefined;
+	}
+
+	// force axis assignment
+	vz.options.plot.axesAssigned = false;
 
 	return $.when.apply($, queue);
 };
