@@ -61,8 +61,8 @@ class Channel extends Entity {
 	 *
 	 * prevents doctrine of using single delete statements
 	 */
-	public function clearData(\Doctrine\DBAL\Connection $conn, $from = null, $to = null) {
-		$conn->transactional(function() use ($conn, $from, $to, &$res) {
+	public function clearData(\Doctrine\DBAL\Connection $conn, $from = null, $to = null, $filters = []) {
+		$conn->transactional(function() use ($conn, $from, $to, $filters, &$res) {
 			$params = array($this->id);
 
 			$sql = 'WHERE channel_id = ?';
@@ -76,12 +76,20 @@ class Channel extends Entity {
 				}
 			}
 
-			$res = $conn->executeUpdate('DELETE FROM data ' . $sql, $params);
-
 			// clean aggregation table as well
 			if (Util\Configuration::read('aggregation')) {
 				$conn->executeUpdate('DELETE FROM aggregate ' . $sql, $params);
 			}
+
+			// add value filters
+			foreach ($filters as $filter) {
+				list($op, $value) = $filter;
+				$params[] = $value;
+				$sql .= ' AND value ' . $op . '?';
+			}
+
+			$res = $conn->executeUpdate('DELETE FROM data ' . $sql, $params);
+
 		});
 
 		return $res;

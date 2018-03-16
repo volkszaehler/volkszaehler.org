@@ -63,7 +63,15 @@ class DataController extends Controller {
 
 			$entity = $this->ef->get($uuid, true);
 			$class = $entity->getDefinition()->getInterpreter();
-			return new $class($entity, $this->em, $from, $to, $tuples, $groupBy, $this->options);
+			$interpreter = new $class($entity, $this->em, $from, $to, $tuples, $groupBy, $this->options);
+
+			// parse value filters
+			if ($values = (array) $this->getParameters()->get('value')) {
+				$filters = $this->parseValueFilter($values);
+				$interpreter->setValueFilter($filters);
+			}
+
+			return $interpreter;
 		}
 
 		// multiple UUIDs
@@ -166,14 +174,40 @@ class DataController extends Controller {
 			throw new \Exception('Missing timestamp (ts, from, to)');
 		}
 
+		// parse value filters
+		$filters = [];
+		if ($values = (array) $this->getParameters()->get('value')) {
+			$filters = $this->parseValueFilter($values);
+		}
+
 		$rows = 0;
 
 		foreach ((array) $uuids as $uuid) {
 			$channel = $this->ef->get($uuid, true);
-			$rows += $channel->clearData($this->em->getConnection(), $from, $to);
+			$rows += $channel->clearData($this->em->getConnection(), $from, $to, $filters);
 		}
 
 		return array('rows' => $rows);
+	}
+
+
+	/**
+	 * Parse query parameters into SQL filters
+	 */
+	private function parseValueFilter(array $filters) {
+		$ops = ['' => '=', 'lt' => '<', 'gt' => '>', 'le' => '<=', 'ge' => '>='];
+		$result = [];
+
+		foreach ($filters as $filter) {
+			if (!preg_match('/^(lt|gt|le|ge)?(.+)/', $filter, $matches)) {
+				throw new \Exception('Invalid filter value ' . $filter);
+			}
+
+			// array of [operator,value]
+			$result[] = [$ops[$matches[1]], $matches[2]];
+		}
+
+		return $result;
 	}
 }
 
