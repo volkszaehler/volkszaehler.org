@@ -131,7 +131,9 @@ Entity.prototype.assignAxis = function() {
 
 		while (vz.options.plot.yaxes.length < this.assignedYaxis) { // no more axes available
 			// create new right-hand axis
-			vz.options.plot.yaxes.push($.extend({}, vz.options.plot.yaxes[1]));
+			var length = vz.options.plot.yaxes.push($.extend({}, vz.options.plot.yaxes[1]));
+			// make sure new axis is neutral
+			delete vz.options.plot.yaxes[length-1].axisLabel;
 		}
 
 		// check if axis already has auto-allocated entities
@@ -139,12 +141,13 @@ Entity.prototype.assignAxis = function() {
 		if (yaxis.forcedGroup === undefined) { // axis auto-assigned
 			if (yaxis.axisLabel !== undefined && this.getUnit() !== yaxis.axisLabel) { // unit mismatch
 				// move previously auto-assigned entities to different axis
-				yaxis.axisLabel = '*'; // force unit mismatch
+				yaxis.axisLabel = 'andig'; // force unit mismatch
 				vz.entities.each((function(entity) {
 					if (entity.assignedYaxis == this.yaxis && (entity.yaxis === undefined || entity.yaxis == 'auto')) {
 						entity.assignMatchingAxis();
 					}
 				}).bind(this), true); // bind to have callback->this = this
+				yaxis.axisLabel = this.getUnit(); // set proper unit again
 			}
 		}
 
