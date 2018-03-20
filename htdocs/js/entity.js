@@ -714,6 +714,7 @@ Entity.prototype.activate = function(state, parent, recursive) {
 
 	var queue = [];
 	if (this.active) {
+		this.assignedYaxis = undefined; // clear axis
 		queue.push(this.loadData()); // reload data
 		// start live updates
 		this.subscribe();
@@ -732,12 +733,14 @@ Entity.prototype.activate = function(state, parent, recursive) {
 	}
 
 	// reset axis extrema (NOTE: this does not handle min/max=0 in options)
-	var axis = vz.options.plot.yaxes[this.assignedYaxis-1];
-	if (axis.min === 0 || axis.min === null) {
-		axis.min = undefined;
-	}
-	if (axis.max === 0 || axis.max === null) {
-		axis.max = undefined;
+	if (this.assignedYaxis !== undefined) {
+		var axis = vz.options.plot.yaxes[this.assignedYaxis-1];
+		if (axis.min === 0 || axis.min === null) {
+			axis.min = undefined;
+		}
+		if (axis.max === 0 || axis.max === null) {
+			axis.max = undefined;
+		}
 	}
 
 	// force axis assignment
