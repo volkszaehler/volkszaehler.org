@@ -39,6 +39,7 @@ use Volkszaehler\View\View;
 class DataController extends Controller {
 
 	const OPT_SKIP_DUPLICATES = 'skipduplicates';
+	const REGEX_FLOAT = '[-+]?[0-9]*\.?[0-9]+';
 
 	protected $options;	// optional request parameters
 
@@ -66,8 +67,7 @@ class DataController extends Controller {
 			$interpreter = new $class($entity, $this->em, $from, $to, $tuples, $groupBy, $this->options);
 
 			// parse value filters
-			if ($values = (array) $this->getParameters()->get('value')) {
-				$filters = $this->parseValueFilter($values);
+			if ($filters = $this->parseValueParamFilter('value')) {
 				$interpreter->setValueFilter($filters);
 			}
 
@@ -177,7 +177,7 @@ class DataController extends Controller {
 		// parse value filters
 		$filters = [];
 		if ($values = (array) $this->getParameters()->get('value')) {
-			$filters = $this->parseValueFilter($values);
+			$filters = $this->parseValueParamFilter($values);
 		}
 
 		$rows = 0;
@@ -194,17 +194,36 @@ class DataController extends Controller {
 	/**
 	 * Parse query parameters into SQL filters
 	 */
-	private function parseValueFilter(array $filters) {
-		$ops = ['' => '=', 'lt' => '<', 'gt' => '>', 'le' => '<=', 'ge' => '>='];
+	private function parseValueParamFilter($param) {
+		// array of [operator,value]
 		$result = [];
 
-		foreach ($filters as $filter) {
-			if (!preg_match('/^(lt|gt|le|ge)?(.+)/', $filter, $matches)) {
+		// array syntax (value[]=ge0&value[]=lt1) or quality (value=0)
+		$re = sprintf('/^(lt|gt|le|ge)?(%s)$/', self::REGEX_FLOAT);
+		$ops = ['' => '=', 'lt' => '<', 'gt' => '>', 'le' => '<=', 'ge' => '>='];
+
+		foreach ((array) $this->getParameters()->get($param) as $filter) {
+			if (!preg_match($re, $filter, $matches)) {
 				throw new \Exception('Invalid filter value ' . $filter);
 			}
 
-			// array of [operator,value]
-			$result[] = [$ops[$matches[1]], $matches[2]];
+			$result[$ops[$matches[1]]] = (float)$matches[2];
+		}
+
+		// value syntax (value>=0&value<1)
+		$re = sprintf('/%s([<>])(%s)?$/', $param, self::REGEX_FLOAT);
+
+		foreach ($this->getParameters()->keys() as $key) {
+			if (preg_match($re, $key, $matches)) {
+				if (isset($matches[2])) {
+					// no = sign included in operator
+					$result[$matches[1]] = (float)$matches[2];
+				}
+				else {
+					// = sign included in operator
+					$result[$matches[1] . '='] = (float)$this->getParameters()->get($key);
+				}
+			}
 		}
 
 		return $result;

@@ -116,15 +116,9 @@ abstract class Interpreter implements \IteratorAggregate {
 	 * Set value filter
 	 */
 	public function setValueFilter($filters) {
-		$sql = '';
-
-		foreach ($filters as $filter) {
-			list($op, $value) = $filter;
-			$sql .= sprintf(' AND value%s? ', $op);
-			$this->sqlValueFilterParams[] = $value;
+		if ($filter = SQL\SQLOptimizer::getFilterSQL($filters, $this->sqlValueFilterParams)) {
+			$this->sqlValueFilter = ' AND ' . $filter;
 		}
-
-		$this->sqlValueFilter = $sql;
 	}
 
 	/*

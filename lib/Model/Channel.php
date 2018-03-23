@@ -23,6 +23,7 @@
 namespace Volkszaehler\Model;
 
 use Volkszaehler\Util;
+use Volkszaehler\Interpreter\SQL;
 use Doctrine\Common\Collections\ArrayCollection;
 
 /**
@@ -81,11 +82,8 @@ class Channel extends Entity {
 				$conn->executeUpdate('DELETE FROM aggregate ' . $sql, $params);
 			}
 
-			// add value filters
-			foreach ($filters as $filter) {
-				list($op, $value) = $filter;
-				$params[] = $value;
-				$sql .= ' AND value ' . $op . '?';
+			if ($filter = SQL\SQLOptimizer::getFilterSQL($filters, $params)) {
+				$sql .= ' AND ' . $filters;
 			}
 
 			$res = $conn->executeUpdate('DELETE FROM data ' . $sql, $params);
