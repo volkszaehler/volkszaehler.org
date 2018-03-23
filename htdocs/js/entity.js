@@ -122,8 +122,11 @@ Entity.prototype.getUnitForMode = function() {
 /**
  * Helper function to manage yaxes array (last entry contains template)
  */
-function ensureAavailableAxis()  {
-	return vz.options.plot.yaxes.push($.extend({}, vz.options.plot.yaxes[vz.options.plot.yaxes.length-1])) - 1;
+function ensureAavailableAxis() {
+	var length = vz.options.plot.yaxes.push($.extend({}, vz.options.plot.yaxes[1]));
+	// make sure new axis is neutral
+	delete vz.options.plot.yaxes[length-1].axisLabel;
+	return length - 1;
 }
 
 /**
@@ -172,12 +175,13 @@ Entity.prototype.assignAxis = function() {
 		if (yaxis.forcedGroup === undefined) { // axis auto-assigned
 			if (yaxis.axisLabel !== undefined && unit !== yaxis.axisLabel) { // unit mismatch
 				// move previously auto-assigned entities to different axis
-				yaxis.axisLabel = '*'; // force unit mismatch
+				yaxis.axisLabel = 'andig'; // force unit mismatch
 				vz.entities.each((function(entity) {
 					if (entity.assignedYaxis == this.yaxis && (entity.yaxis === undefined || entity.yaxis == 'auto')) {
 						entity.assignMatchingAxis();
 					}
 				}).bind(this), true); // bind to have callback->this = this
+				yaxis.axisLabel = this.getUnit(); // set proper unit again
 			}
 		}
 
@@ -203,14 +207,22 @@ Entity.prototype.assignAxis = function() {
  */
 Entity.prototype.updateAxisScale = function() {
 	if (this.assignedYaxis !== undefined && vz.options.plot.yaxes.length >= this.assignedYaxis) {
-		if (vz.options.plot.yaxes[this.assignedYaxis-1].min === undefined) { // axis min still not set
+		var axis = vz.options.plot.yaxes[this.assignedYaxis-1];
+		if (axis.min === undefined) { // axis min still not set
 			// avoid overriding user-defined options
-			vz.options.plot.yaxes[this.assignedYaxis-1].min = 0;
+			axis.min = 0;
 		}
 		if (this.data && this.data.tuples && this.data.tuples.length > 0) {
 			// allow negative values, e.g. for temperature sensors
-			if (this.data.min && this.data.min[1] < 0 && vz.options.plot.yaxes[this.assignedYaxis-1].min === 0) { // set axis min to 'auto'
-				vz.options.plot.yaxes[this.assignedYaxis-1].min = null;
+			if (this.data.min && this.data.min[1] < 0 && axis.min === 0) { // set axis min to 'auto'
+				axis.min = null;
+				if (this.data.max && this.data.max[1] < 0 && axis.max === undefined) {
+					axis.max = 0;
+				}
+			}
+			// allow positive values if max forced to 0 by another channel
+			if (this.data.max && this.data.max[1] > 0 && axis.max === 0) {
+				axis.max = null;
 			}
 		}
 	}
@@ -721,6 +733,7 @@ Entity.prototype.activate = function(state, parent, recursive) {
 
 	var queue = [];
 	if (this.active) {
+		this.assignedYaxis = undefined; // clear axis
 		queue.push(this.loadData()); // reload data
 		// start live updates
 		this.subscribe();
@@ -738,6 +751,20 @@ Entity.prototype.activate = function(state, parent, recursive) {
 		}, true); // recursive!
 	}
 
+<<<<<<< HEAD
+=======
+	// reset axis extrema (NOTE: this does not handle min/max=0 in options)
+	if (this.assignedYaxis !== undefined) {
+		var axis = vz.options.plot.yaxes[this.assignedYaxis-1];
+		if (axis.min === 0 || axis.min === null) {
+			axis.min = undefined;
+		}
+		if (axis.max === 0 || axis.max === null) {
+			axis.max = undefined;
+		}
+	}
+
+>>>>>>> master
 	// force axis assignment
 	vz.options.plot.axesAssigned = false;
 
