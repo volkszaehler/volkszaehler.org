@@ -39,6 +39,7 @@ use Volkszaehler\View\View;
 class DataController extends Controller {
 
 	const OPT_SKIP_DUPLICATES = 'skipduplicates';
+	const REGEX_FLOAT = '[-+]?[0-9]*\.?[0-9]+';
 
 	protected $options;	// optional request parameters
 
@@ -63,7 +64,14 @@ class DataController extends Controller {
 
 			$entity = $this->ef->get($uuid, true);
 			$class = $entity->getDefinition()->getInterpreter();
-			return new $class($entity, $this->em, $from, $to, $tuples, $groupBy, $this->options);
+			$interpreter = new $class($entity, $this->em, $from, $to, $tuples, $groupBy, $this->options);
+
+			// parse value filters
+			if ($filters = $this->parseValueParamFilter('value')) {
+				$interpreter->setValueFilter($filters);
+			}
+
+			return $interpreter;
 		}
 
 		// multiple UUIDs
@@ -166,14 +174,59 @@ class DataController extends Controller {
 			throw new \Exception('Missing timestamp (ts, from, to)');
 		}
 
+		// parse value filters
+		$filters = [];
+		if ($values = (array) $this->getParameters()->get('value')) {
+			$filters = $this->parseValueParamFilter($values);
+		}
+
 		$rows = 0;
 
 		foreach ((array) $uuids as $uuid) {
 			$channel = $this->ef->get($uuid, true);
-			$rows += $channel->clearData($this->em->getConnection(), $from, $to);
+			$rows += $channel->clearData($this->em->getConnection(), $from, $to, $filters);
 		}
 
 		return array('rows' => $rows);
+	}
+
+
+	/**
+	 * Parse query parameters into SQL filters
+	 */
+	private function parseValueParamFilter($param) {
+		// array of [operator,value]
+		$result = [];
+
+		// array syntax (value[]=ge0&value[]=lt1) or quality (value=0)
+		$re = sprintf('/^(lt|gt|le|ge)?(%s)$/', self::REGEX_FLOAT);
+		$ops = ['' => '=', 'lt' => '<', 'gt' => '>', 'le' => '<=', 'ge' => '>='];
+
+		foreach ((array) $this->getParameters()->get($param) as $filter) {
+			if (!preg_match($re, $filter, $matches)) {
+				throw new \Exception('Invalid filter value ' . $filter);
+			}
+
+			$result[$ops[$matches[1]]] = (float)$matches[2];
+		}
+
+		// value syntax (value>=0&value<1)
+		$re = sprintf('/%s([<>])(%s)?$/', $param, self::REGEX_FLOAT);
+
+		foreach ($this->getParameters()->keys() as $key) {
+			if (preg_match($re, $key, $matches)) {
+				if (isset($matches[2])) {
+					// no = sign included in operator
+					$result[$matches[1]] = (float)$matches[2];
+				}
+				else {
+					// = sign included in operator
+					$result[$matches[1] . '='] = (float)$this->getParameters()->get($key);
+				}
+			}
+		}
+
+		return $result;
 	}
 }
 

@@ -173,6 +173,23 @@ class SQLOptimizer {
 	public function disableCache() {
 		throw new \RuntimeException('Disabling caching not implemented for current DBMS');
 	}
+
+	/**
+	 * Combine operation => value array into SQL filter
+	 *
+	 * @param array $filter associative array of filters
+	 * @param array $params output prarameter array
+	 * @param string $valueParam name of value column
+	 */
+	public static function getFilterSQL(array $filters, &$params, $valueParam = 'value') {
+		$sql = '';
+		foreach ($filters as $op => $value) {
+			if ($sql) $sql .= ' AND ';
+			$sql .= $valueParam . $op . '?';
+			$params[] = $value;
+		}
+		return $sql;
+	}
 }
 
 ?>
