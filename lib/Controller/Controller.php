@@ -1,8 +1,7 @@
 <?php
 /**
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -35,7 +34,6 @@ use Volkszaehler\View\View;
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @author Andreas Goetz <cpuidle@gmx.de>
- * @package default
  */
 abstract class Controller {
 
@@ -112,18 +110,6 @@ abstract class Controller {
 
 		// call the operation
 		return $this->{$op}($uuid);
-	}
-
-	/**
-	 * Helper function to convert single/multiple parameters to array format
-	 * @param $data
-	 * @return array
-	 */
-	protected static function makeArray($data) {
-		if (!is_array($data)) {
-			$data = isset($data) ? array($data) : array();
-		}
-		return $data;
 	}
 }
 

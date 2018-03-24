@@ -4,9 +4,8 @@
  * @author Justin Otherguy <justin@justinotherguy.org>
  * @author Steffen Vogel <info@steffenvogel.de>
  * @author Andreas Götz <cpuidle@gmx.de>
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -173,16 +172,21 @@ Entity.prototype.assignAxis = function() {
 		if (yaxis.forcedGroup === undefined) { // axis auto-assigned
 			if (yaxis.axisLabel !== undefined && unit !== yaxis.axisLabel) { // unit mismatch
 				// move previously auto-assigned entities to different axis
-				yaxis.axisLabel = '*'; // force unit mismatch
+				yaxis.axisLabel = 'andig'; // force unit mismatch
 				vz.entities.each((function(entity) {
 					if (entity.assignedYaxis == this.yaxis && (entity.yaxis === undefined || entity.yaxis == 'auto')) {
 						entity.assignMatchingAxis();
 					}
 				}).bind(this), true); // bind to have callback->this = this
+				yaxis.axisLabel = this.getUnit(); // set proper unit again
 			}
 		}
 
-		yaxis.axisLabel = unit;
+		// overwrite undefined labels only - allows reserving a forced axis
+		if (yaxis.axisLabel === undefined) {
+			yaxis.axisLabel = this.getUnit();
+		}
+
 		yaxis.forcedGroup = this.yaxis;
 	}
 
@@ -200,14 +204,22 @@ Entity.prototype.assignAxis = function() {
  */
 Entity.prototype.updateAxisScale = function() {
 	if (this.assignedYaxis !== undefined && vz.options.plot.yaxes.length >= this.assignedYaxis) {
-		if (vz.options.plot.yaxes[this.assignedYaxis-1].min === undefined) { // axis min still not set
+		var axis = vz.options.plot.yaxes[this.assignedYaxis-1];
+		if (axis.min === undefined) { // axis min still not set
 			// avoid overriding user-defined options
-			vz.options.plot.yaxes[this.assignedYaxis-1].min = 0;
+			axis.min = 0;
 		}
 		if (this.data && this.data.tuples && this.data.tuples.length > 0) {
 			// allow negative values, e.g. for temperature sensors
-			if (this.data.min && this.data.min[1] < 0 && vz.options.plot.yaxes[this.assignedYaxis-1].min === 0) { // set axis min to 'auto'
-				vz.options.plot.yaxes[this.assignedYaxis-1].min = null;
+			if (this.data.min && this.data.min[1] < 0 && axis.min === 0) { // set axis min to 'auto'
+				axis.min = null;
+				if (this.data.max && this.data.max[1] < 0 && axis.max === undefined) {
+					axis.max = 0;
+				}
+			}
+			// allow positive values if max forced to 0 by another channel
+			if (this.data.max && this.data.max[1] > 0 && axis.max === 0) {
+				axis.max = null;
 			}
 		}
 	}
@@ -288,8 +300,16 @@ Entity.prototype.subscribe = function(session) {
  */
 Entity.prototype.unsubscribe = function() {
 	var mw = vz.middleware.find(this.middleware);
-	if (mw.session) {
-		mw.session.unsubscribe(this.uuid);
+	if (mw && mw.session) {
+		try {
+			mw.session.unsubscribe(this.uuid);
+		}
+		catch (e) {
+			// handle double unsubscribe, e.g. if channel in multiple groups
+			if (!e.match(/^not subscribed to topic/)) {
+				throw(e);
+			}
+		}
 	}
 };
 
@@ -494,6 +514,12 @@ Entity.prototype.showDetails = function() {
 						'Abbrechen': function() {
 							$(this).dialog('close');
 						}
+					}
+				})
+				.keypress(function(ev) {
+					// submit form on enter
+					if (ev.keyCode == $.ui.keyCode.ENTER) {
+						$('#entity-edit').siblings('.ui-dialog-buttonpane').find('button:eq(0)').click();
 					}
 				});
 			},
@@ -704,6 +730,7 @@ Entity.prototype.activate = function(state, parent, recursive) {
 
 	var queue = [];
 	if (this.active) {
+		this.assignedYaxis = undefined; // clear axis
 		queue.push(this.loadData()); // reload data
 		// start live updates
 		this.subscribe();
@@ -719,6 +746,17 @@ Entity.prototype.activate = function(state, parent, recursive) {
 		this.eachChild(function(child, parent) {
 			queue.push(child.activate(state, parent, false));
 		}, true); // recursive!
+	}
+
+	// reset axis extrema (NOTE: this does not handle min/max=0 in options)
+	if (this.assignedYaxis !== undefined) {
+		var axis = vz.options.plot.yaxes[this.assignedYaxis-1];
+		if (axis.min === 0 || axis.min === null) {
+			axis.min = undefined;
+		}
+		if (axis.max === 0 || axis.max === null) {
+			axis.max = undefined;
+		}
 	}
 
 	// force axis assignment

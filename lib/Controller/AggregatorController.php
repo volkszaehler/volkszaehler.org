@@ -1,8 +1,7 @@
 <?php
 /**
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -29,7 +28,6 @@ use Volkszaehler\Model;
  * Aggregator controller
  *
  * @author Steffen Vogel (info@steffenvogel.de)
- * @package default
  */
 class AggregatorController extends EntityController {
 
@@ -65,7 +63,7 @@ class AggregatorController extends EntityController {
 	 */
 	public function add($uuid) {
 		if (isset($uuid)) {	// add entity to aggregator
-			if ($uuids = self::makeArray($this->getParameters()->get('uuid'))) {
+			if ($uuids = (array) $this->getParameters()->get('uuid')) {
 				$aggregator = $this->ef->get($uuid);
 				foreach ($uuids as $uuid) {
 					$aggregator->addChild($this->ef->get($uuid));
@@ -83,7 +81,6 @@ class AggregatorController extends EntityController {
 		}
 
 		$this->em->flush();
-		$this->ef->remove($uuid);
 
 		return $aggregator;
 	}
@@ -99,7 +96,7 @@ class AggregatorController extends EntityController {
 		}
 
 		$aggregator = null;
-		if ($uuids = self::makeArray($this->getParameters()->get('uuid'))) { // remove entity from aggregator
+		if ($uuids = (array) $this->getParameters()->get('uuid')) { // remove entity from aggregator
 			$aggregator = $this->ef->getByUuid($uuid);
 			foreach ($uuids as $uuid) {
 				$aggregator->removeChild($this->ef->getByUuid($uuid));

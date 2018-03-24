@@ -1,8 +1,7 @@
 <?php
 /**
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -30,7 +29,6 @@ use Doctrine\ORM;
 /**
  * Interpreter superclass for all interpreters
  *
- * @package default
  * @author Steffen Vogel <info@steffenvogel.de>
  * @author Andreas Götz <cpuidle@gmx.de>
  */
@@ -67,6 +65,9 @@ abstract class Interpreter implements \IteratorAggregate {
 
 	protected $scale;		// unit scale from entity definition
 	protected $resolution;	// interpreter resolution from entity definition
+
+	protected $sqlValueFilter;				// value filter SQL
+	protected $sqlValueFilterParams = [];	// value filter params
 
 	/**
 	 * Constructor
@@ -127,6 +128,15 @@ abstract class Interpreter implements \IteratorAggregate {
 
 		if ($this->hasOption('nocache')) {
 			$this->optimizer->disableCache();
+		}
+	}
+
+	/**
+	 * Set value filter
+	 */
+	public function setValueFilter($filters) {
+		if ($filter = SQL\SQLOptimizer::getFilterSQL($filters, $this->sqlValueFilterParams)) {
+			$this->sqlValueFilter = ' AND ' . $filter;
 		}
 	}
 
@@ -234,22 +244,23 @@ abstract class Interpreter implements \IteratorAggregate {
 		// common conditions for following SQL queries
 		$sqlParameters = array($this->channel->getId());
 		$sqlTimeFilter = self::buildDateTimeFilterSQL($this->from, $this->to, $sqlParameters);
+		$sqlParameters = array_merge($sqlParameters, $this->sqlValueFilterParams);
 
 		if ($this->groupBy) {
 			$sqlGroupFields = self::buildGroupBySQL($this->groupBy);
 			if (!$sqlGroupFields)
 				throw new \Exception('Unknown group');
 
-			$sqlRowCount = 'SELECT COUNT(DISTINCT ' . $sqlGroupFields . ') FROM data WHERE channel_id = ?' . $sqlTimeFilter;
+			$sqlRowCount = 'SELECT COUNT(DISTINCT ' . $sqlGroupFields . ') FROM data WHERE channel_id = ?' . $sqlTimeFilter . ' ' . $this->sqlValueFilter;
 			$sql = 'SELECT MAX(timestamp) AS timestamp, ' . static::groupExprSQL('value') . ' AS value, COUNT(timestamp) AS count ' .
 				   'FROM data ' .
-				   'WHERE channel_id = ?' . $sqlTimeFilter . ' ' .
+				   'WHERE channel_id = ?' . $sqlTimeFilter . ' ' . $this->sqlValueFilter .
 				   'GROUP BY ' . $sqlGroupFields . ' ' .
 				   'ORDER BY timestamp ASC';
 		}
 		else {
-			$sqlRowCount = 'SELECT COUNT(1) FROM data WHERE channel_id = ?' . $sqlTimeFilter;
-			$sql = 'SELECT timestamp, value, 1 AS count FROM data WHERE channel_id=?' . $sqlTimeFilter . ' ORDER BY timestamp ASC';
+			$sqlRowCount = 'SELECT COUNT(1) FROM data WHERE channel_id = ?' . $sqlTimeFilter . ' ' . $this->sqlValueFilter;
+			$sql = 'SELECT timestamp, value, 1 AS count FROM data WHERE channel_id=?' . $sqlTimeFilter . ' ' . $this->sqlValueFilter . ' ORDER BY timestamp ASC';
 		}
 
 		// optimize sql

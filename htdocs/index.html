@@ -168,7 +168,7 @@
 	</div>
 </div>
 <div id="footer">
-	&copy; 2011 - <a href="http://volkszaehler.org/">volkszaehler.org</a> - the open smartmeter platform
+	&copy; 2011-2018 - <a href="http://volkszaehler.org/">volkszaehler.org</a> - the open smartmeter platform
 </div>
 
 <!-- dialogs -->
@@ -194,21 +194,33 @@
 			<li><a href="#entity-subscribe">Private Kanäle</a></li>
 			<li><a href="#entity-create">Kanal erstellen</a></li>
 		</ul>
-		<div id="entity-subscribe">
-			<p>Private Kanäle und Kanäle anderer Middlewares mittels UUID hinzufügen:</p>
-			<table>
-				<tr><td><label for="entity-subscribe-middleware">Middleware:</label></td><td><input id="entity-subscribe-middleware" type="text" /></td></tr>
-				<tr><td><label for="entity-subscribe-uuid">UUID:</label></td><td><input id="entity-subscribe-uuid" type="text" maxlength="36" /></td></tr>
-			</table>
-			<p><input type="button" value="Abonnieren" /> <label for="entity-subscribe-cookie">Cookie:</label> <input id="entity-subscribe-cookie" type="checkbox" checked="checked" /></p>
-		</div>
 		<div id="entity-public">
 			<p>Öffentliche Kanäle abonnieren:</p>
-			<table>
-				<tr><td><label for="entity-public-middleware">Middleware:</label></td><td><select id="entity-public-middleware"></select></td></tr>
-				<tr><td><label for="entity-public-entity">Kanal:</label></td><td><select id="entity-public-entity"></select></td></tr>
-			</table>
-			<p><input type="button" value="Abonnieren" /> <label for="entity-public-cookie">Cookie:</label> <input id="entity-public-cookie" type="checkbox" checked="checked" /></p>
+			<form>
+				<table>
+					<tr><td><label for="entity-public-middleware">Middleware:</label></td><td><select id="entity-public-middleware"></select></td></tr>
+					<tr><td><label for="entity-public-entity">Kanal:</label></td><td><select id="entity-public-entity" class="defaultfocus"></select></td></tr>
+				</table>
+				<p>
+					<input type="submit" value="Abonnieren" />
+					<label for="entity-public-cookie">Cookie:</label>
+					<input id="entity-public-cookie" type="checkbox" checked="checked" />
+				</p>
+			</form>
+		</div>
+		<div id="entity-subscribe">
+			<p>Private Kanäle und Kanäle anderer Middlewares mittels UUID hinzufügen:</p>
+			<form>
+				<table>
+					<tr><td><label for="entity-subscribe-middleware">Middleware:</label></td><td><input id="entity-subscribe-middleware" type="text" /></td></tr>
+					<tr><td><label for="entity-subscribe-uuid">UUID:</label></td><td><input id="entity-subscribe-uuid" type="text" class="defaultfocus" maxlength="36" /></td></tr>
+				</table>
+				<p>
+					<input type="submit" value="Abonnieren" />
+					<label for="entity-subscribe-cookie">Cookie:</label>
+					<input id="entity-subscribe-cookie" type="checkbox" checked="checked" />
+				</p>
+			</form>
 		</div>
 		<div id="entity-create">
 			<form>
@@ -221,7 +233,11 @@
 						<tr><td>Typ:</td><td><select class="icons" name="type"></select></td></tr>
 					</tbody>
 				</table>
-				<p><input type="submit" value="Erstellen" /> <label for="entity-create-cookie">Cookie:</label> <input id="entity-create-cookie" type="checkbox" checked="checked" /></p>
+				<p>
+					<input type="submit" value="Erstellen" />
+					<label for="entity-create-cookie">Cookie:</label>
+					<input id="entity-create-cookie" type="checkbox" checked="checked" />
+				</p>
 			</form>
 		</div>
 	</div>

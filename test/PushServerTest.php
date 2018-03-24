@@ -2,8 +2,9 @@
 /**
  * Meter tests
  *
- * @package Test
  * @author Andreas Götz <cpuidle@gmx.de>
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 
 namespace Tests;
@@ -84,7 +85,7 @@ class PushServerTest extends Data
 
 		$this->assertEquals(0, $exitCode, sprintf('Curl failed with exit code %d', $exitCode));
 
-		$json = json_decode($this->curl);		
+		$json = json_decode($this->curl);
 		$this->assertTrue(isset($json->data) && is_array($json->data) && isset($json->data[0]->tuples), 'Invalid json response');
 		$this->assertEquals(1, count($json->data[0]->tuples), 'Unexpected json response tuples');
 		$this->assertEquals([2,36000000,1], $json->data[0]->tuples[0], 'Unexpected json response tuples');

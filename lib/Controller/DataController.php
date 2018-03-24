@@ -1,8 +1,7 @@
 <?php
 /**
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -36,17 +35,17 @@ use Volkszaehler\View\View;
  * Data controller
  *
  * @author Steffen Vogel <info@steffenvogel.de>
- * @package default
  */
 class DataController extends Controller {
 
 	const OPT_SKIP_DUPLICATES = 'skipduplicates';
+	const REGEX_FLOAT = '[-+]?[0-9]*\.?[0-9]+';
 
 	protected $options;	// optional request parameters
 
 	public function __construct(Request $request, EntityManager $em, View $view) {
 		parent::__construct($request, $em, $view);
-		$this->options = self::makeArray(strtolower($this->getParameters()->get('options')));
+		$this->options = (array) strtolower($this->getParameters()->get('options'));
 	}
 
 	/**
@@ -65,13 +64,20 @@ class DataController extends Controller {
 
 			$entity = $this->ef->get($uuid, true);
 			$class = $entity->getDefinition()->getInterpreter();
-			return new $class($entity, $this->em, $from, $to, $tuples, $groupBy, $this->options);
+			$interpreter = new $class($entity, $this->em, $from, $to, $tuples, $groupBy, $this->options);
+
+			// parse value filters
+			if ($filters = $this->parseValueParamFilter('value')) {
+				$interpreter->setValueFilter($filters);
+			}
+
+			return $interpreter;
 		}
 
 		// multiple UUIDs
 		return array_map(function($uuid) {
 			return $this->get($uuid);
-		}, self::makeArray($uuid));
+		}, (array) $uuid);
 	}
 
 	/**
@@ -168,14 +174,59 @@ class DataController extends Controller {
 			throw new \Exception('Missing timestamp (ts, from, to)');
 		}
 
+		// parse value filters
+		$filters = [];
+		if ($values = (array) $this->getParameters()->get('value')) {
+			$filters = $this->parseValueParamFilter($values);
+		}
+
 		$rows = 0;
 
-		foreach (self::makeArray($uuids) as $uuid) {
+		foreach ((array) $uuids as $uuid) {
 			$channel = $this->ef->get($uuid, true);
-			$rows += $channel->clearData($this->em->getConnection(), $from, $to);
+			$rows += $channel->clearData($this->em->getConnection(), $from, $to, $filters);
 		}
 
 		return array('rows' => $rows);
+	}
+
+
+	/**
+	 * Parse query parameters into SQL filters
+	 */
+	private function parseValueParamFilter($param) {
+		// array of [operator,value]
+		$result = [];
+
+		// array syntax (value[]=ge0&value[]=lt1) or quality (value=0)
+		$re = sprintf('/^(lt|gt|le|ge)?(%s)$/', self::REGEX_FLOAT);
+		$ops = ['' => '=', 'lt' => '<', 'gt' => '>', 'le' => '<=', 'ge' => '>='];
+
+		foreach ((array) $this->getParameters()->get($param) as $filter) {
+			if (!preg_match($re, $filter, $matches)) {
+				throw new \Exception('Invalid filter value ' . $filter);
+			}
+
+			$result[$ops[$matches[1]]] = (float)$matches[2];
+		}
+
+		// value syntax (value>=0&value<1)
+		$re = sprintf('/%s([<>])(%s)?$/', $param, self::REGEX_FLOAT);
+
+		foreach ($this->getParameters()->keys() as $key) {
+			if (preg_match($re, $key, $matches)) {
+				if (isset($matches[2])) {
+					// no = sign included in operator
+					$result[$matches[1]] = (float)$matches[2];
+				}
+				else {
+					// = sign included in operator
+					$result[$matches[1] . '='] = (float)$this->getParameters()->get($key);
+				}
+			}
+		}
+
+		return $result;
 	}
 }
 

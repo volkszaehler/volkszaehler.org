@@ -1,8 +1,7 @@
 <?php
 /**
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -29,12 +28,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Volkszaehler\Interpreter;
 use Volkszaehler\Model;
 use Volkszaehler\Util;
-use Volkszaehler\Exception\HttpExceptionInterface;
 
 /**
  * Base class for all view formats
  *
- * @package default
  * @author Steffen Vogel <info@steffenvogel.de>
  */
 abstract class View {
@@ -83,13 +80,12 @@ abstract class View {
 	 *
 	 * @param \Exception $exception
 	 */
-	public function getExceptionResponse(\Exception $exception) {
+	public function getExceptionResponse(\Throwable $exception) {
 		$this->add($exception);
 
 		// only set status code if default - allows controllers to overwrite
 		if ($this->response->getStatusCode() == Response::HTTP_OK) {
-			$code = $exception instanceof HttpExceptionInterface ? $exception->getStatusCode() : Response::HTTP_BAD_REQUEST;
-			$this->response->setStatusCode($code);
+			$this->response->setStatusCode(Response::HTTP_BAD_REQUEST);
 		}
 
 		return $this->send();

@@ -1,8 +1,7 @@
 <?php
 /**
- * @package default
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @license http://www.gnu.org/licenses/gpl.txt GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -28,7 +27,6 @@ use Doctrine\DBAL;
 
 /**
  * @author Steffen Vogel <info@steffenvogel.de>
- * @package default
  */
 class DataIterator implements \IteratorAggregate, \Countable {
 	protected $stmt;	// PDO statement
@@ -49,7 +47,7 @@ class DataIterator implements \IteratorAggregate, \Countable {
 	 * @param integer $rowCount total num of rows in $stmt
 	 * @param integer $tupleCount set to NULL to get all rows
 	 */
-	public function __construct(\PDOStatement $stmt, $rowCount, $tupleCount) {
+	public function __construct(\Traversable $stmt, $rowCount, $tupleCount) {
 		$this->rowCount = $rowCount;
 		$this->tupleCount = $tupleCount;
 
