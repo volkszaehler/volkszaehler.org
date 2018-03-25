@@ -751,8 +751,6 @@ Entity.prototype.activate = function(state, parent, recursive) {
 		}, true); // recursive!
 	}
 
-<<<<<<< HEAD
-=======
 	// reset axis extrema (NOTE: this does not handle min/max=0 in options)
 	if (this.assignedYaxis !== undefined) {
 		var axis = vz.options.plot.yaxes[this.assignedYaxis-1];
@@ -764,7 +762,6 @@ Entity.prototype.activate = function(state, parent, recursive) {
 		}
 	}
 
->>>>>>> master
 	// force axis assignment
 	vz.options.plot.axesAssigned = false;
 
