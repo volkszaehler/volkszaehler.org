@@ -114,6 +114,8 @@ abstract class Interpreter implements \IteratorAggregate {
 
 	/**
 	 * Set value filter
+	 *
+	 * @param array $filters associative filter => value array
 	 */
 	public function setValueFilter($filters) {
 		if ($filter = SQL\SQLOptimizer::getFilterSQL($filters, $this->sqlValueFilterParams)) {
@@ -242,7 +244,7 @@ abstract class Interpreter implements \IteratorAggregate {
 
 		// optimize sql
 		$sqlParametersRowCount = $sqlParameters;
-		if (!$this->hasOption('slow')) {
+		if (!$this->hasOption('slow') && !$this->sqlValueFilter) {
 			$this->optimizer->optimizeRowCountSQL($sqlRowCount, $sqlParametersRowCount);
 		}
 
