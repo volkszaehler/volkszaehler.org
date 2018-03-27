@@ -159,10 +159,10 @@ class Aggregation {
 	 * @param  string $level aggregation level to remove data for
 	 * @return int 			 number of affected rows
 	 */
-	public function clear($uuid = null, $level = 'all', $after = null) {
+	public function clear($uuid = null, $level = 'all', $since = null) {
 		$sqlParameters = array();
 
-		if ($level == 'all' && !$uuid && !$after) {
+		if ($level == 'all' && !$uuid && !$since) {
 			$sql = 'TRUNCATE TABLE aggregate';
 		}
 		else {
@@ -182,10 +182,7 @@ class Aggregation {
 				$sqlParameters[] = $uuid;
 			}
 
-			if ($after) {
-				if (false === $timestamp = strtotime($after)) {
-					throw new \Exception('Invalid timestamp ' . $after);
-				}
+			if ($since) {
 				$sql .= 'aggregate.timestamp >= 1000*?';
 				$sqlParameters[] = $timestamp;
 			}

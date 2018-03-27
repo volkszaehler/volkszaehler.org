@@ -115,7 +115,7 @@ class ClearCommand extends BasicCommand {
 			->setDescription('Clear aggregation table')
 		->addArgument('uuid', InputArgument::OPTIONAL | InputArgument::IS_ARRAY, 'UUID(s)', array(null))
 			->addOption('level', 'l', InputOption::VALUE_REQUIRED, 'Level (all|hour|day|month|year)', 'all')
-			->addOption('after', 'a', InputOption::VALUE_REQUIRED, 'Clear aggregation data after specified date')
+			->addOption('since', 's', InputOption::VALUE_REQUIRED, 'Clear aggregation data since specified date')
 			->addOption('verbose', 'v', InputOption::VALUE_NONE, 'Verbose mode');
 	}
 
@@ -127,7 +127,12 @@ class ClearCommand extends BasicCommand {
 			if ($uuid) $msg .= " for UUID " . $uuid;
 			echo($msg . ".\n");
 
-			$this->aggregator->clear($uuid, $input->getOption('level'), $input->getOption('after'));
+			$since = $input->getOption('since');
+			if (false === $timestamp = strtotime($since)) {
+				throw new \Exception('Invalid timestamp ' . $since);
+			}
+
+			$this->aggregator->clear($uuid, $input->getOption('level'), $timestamp);
 			echo("Done clearing aggregation table.\n");
 		}
 	}
