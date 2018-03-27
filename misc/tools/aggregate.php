@@ -150,23 +150,6 @@ class RunCommand extends BasicCommand {
 	}
 
 	protected function runAggregation($mode, $levels, $uuids = null, $periods = null) {
-		if (!in_array($mode = $input->getOption('mode'), array('full', 'delta'))) {
-			throw new \Exception('Unsupported aggregation mode ' . $mode);
-		}
-
-		$levels = $input->getOption('level');
-		$periods = $input->getOption('periods');
-
-		if ($periods) {
-			if (!is_numeric($periods)) {
-				throw new \Exception('Invalid number of periods: ' . $periods);
-			}
-			if ($mode == 'delta') {
-				throw new \Exception('Cannot use delta mode with periods');
-			}
-		}
-
-		$uuids = $input->getArgument('uuid');
 		$channels = count($uuids);
 
 		if (!$uuids) {
