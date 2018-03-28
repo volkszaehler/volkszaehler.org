@@ -39,14 +39,15 @@ trait SensorInterpreterAverageTrait {
 	 * @param  array  $sqlParameters Parameters list
 	 * @return boolean               Success
 	 */
-	public function optimizeDataSQL(&$sql, &$sqlParameters) {
+	public function optimizeDataSQL(&$sql, &$sqlParameters, $rowCount) {
 		// additional optimizations for SensorInterpreter only
-		if (get_class($this->interpreter) !== SensorInterpreter::class)
-			return parent::optimizeDataSQL($sql, $sqlParameters);
+		if (get_class($this->interpreter) !== SensorInterpreter::class) {
+			return parent::optimizeDataSQL($sql, $sqlParameters, $rowCount);
+		}
 
 		// SensorInterpreter needs weighed average calculation
 		$foo = array();
-		$sqlTimeFilter = $this->interpreter->buildDateTimeFilterSQL($this->from, $this->to, $foo);
+		$sqlTimeFilter = self::buildDateTimeFilterSQL($this->from, $this->to, $foo);
 
 		if ($this->groupBy) {
 			$sqlGroupFields = self::buildGroupBySQL($this->groupBy);
@@ -58,7 +59,7 @@ trait SensorInterpreterAverageTrait {
 		}
 
 		// perform tuple packaging in SQL - can't do this for grouped queries
-		if (list($bitShift, $timestampOffset) = $this->applyBinaryTuplePackaging()) {
+		if (list($bitShift, $timestampOffset) = $this->applyBinaryTuplePackaging($rowCount)) {
 			// optimize package statement general case: tuple packaging
 			$sql = $this->weighedAverageSQL($sqlTimeFilter) .
 				   'GROUP BY (timestamp - ' . $timestampOffset . ') >> ' . $bitShift . ' ' .

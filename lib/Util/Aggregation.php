@@ -187,8 +187,8 @@ class Aggregation {
 				$sqlParameters[] = $timestamp;
 			}
 
-			$factory = SQLOptimizer::factory();
-			$sql = $factory::buildDeleteFromJoinSQL('aggregate', $sql);
+			$optimizer = SQLOptimizer::staticFactory();
+			$sql = $optimizer::buildDeleteFromJoinSQL('aggregate', $sql);
 		}
 
 		if (Util\Debug::isActivated())
@@ -322,8 +322,8 @@ class Aggregation {
 			$sql .= ') AS agg ';
 		}
 
-		$factory = SQLOptimizer::factory();
-		$sql .= 'GROUP BY channel_id, ' . $factory::buildGroupBySQL($level);
+		$optimizer = SQLOptimizer::staticFactory();
+		$sql .= 'GROUP BY channel_id, ' . $optimizer::buildGroupBySQL($level);
 
 		if (Util\Debug::isActivated())
 			echo(Util\Debug::getParametrizedQuery($sql, $sqlParameters)."\n");
