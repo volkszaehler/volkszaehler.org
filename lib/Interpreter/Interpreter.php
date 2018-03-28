@@ -73,8 +73,8 @@ abstract class Interpreter implements \IteratorAggregate {
 	 */
 	public function __construct(Model\Channel $channel, ORM\EntityManager $em, $from, $to, $tupleCount = null, $groupBy = null, $options = array()) {
 		$this->channel = $channel;
-		$this->groupBy = $groupBy;
-		$this->tupleCount = $tupleCount;
+		$this->groupBy = (string)$groupBy;
+		$this->tupleCount = (int)$tupleCount;
 		$this->options = $options;
 
 		// client wants raw data?
