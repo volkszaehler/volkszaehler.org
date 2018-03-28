@@ -31,7 +31,7 @@ use Doctrine\DBAL;
 /**
  * SQLOptimizer is the base class for DB-specific optimizations
  */
-class SQLOptimizer {
+abstract class SQLOptimizer {
 
 	protected $interpreter;
 	protected $conn;
@@ -58,17 +58,17 @@ class SQLOptimizer {
 			case 'pdo_mysql':
 			case 'mysqli':
 				if (Util\Configuration::read('aggregation')) {
-					$class = __NAMESPACE__ . '\MySQLAggregateOptimizer';
+					$class = MySQLAggregateOptimizer::class;
 				}
 				else {
-					$class = __NAMESPACE__ . '\MySQLOptimizer';
+					$class = MySQLOptimizer::class;
 				}
 				break;
 			case 'pdo_sqlite':
-				$class = __NAMESPACE__ . '\SQLiteOptimizer';
+				$class = SQLiteOptimizer::class;
 				break;
 			case 'pdo_pgsql':
-				$class = __NAMESPACE__ . '\PostgreSQLOptimizer';
+				$class = PostgreSQLOptimizer::class;
 				break;
 			default:
 				$class = __CLASS__;
@@ -135,12 +135,24 @@ class SQLOptimizer {
 	 * @return string the sql part
 	 */
 	public static function buildGroupBySQL($groupBy) {
-		$class = self::factory();
-		// fall back on default implementation if nothing else declared
-		if ($class == __CLASS__) {
-			$class = __NAMESPACE__ . '\MySQLOptimizer';
-		}
-		return $class::buildGroupBySQL($groupBy);
+		// fall back on default implementation
+		return MySQLOptimizer::buildGroupBySQL($groupBy);
+	}
+
+	/**
+	 * DB-specific cross-database join table delete statements
+	 *
+	 * Except MySQL: DELETE FROM aggregate WHERE id in (SELECT id FROM aggregate)
+	 */
+	public static function buildDeleteFromJoinSQL($table, $join, $id = 'id') {
+		$sql = sprintf("DELETE FROM %s WHERE %s.%s in (SELECT %s FROM %s)", [
+			$table,
+			$table,
+			$id,
+			$id,
+			$join
+		]);
+		return $sql;
 	}
 
 	/**
@@ -156,6 +168,33 @@ class SQLOptimizer {
 	}
 
 	/**
+	 * Calculate if binary tuple packaging can be used
+	 * Updates tupleCount to prevent double packaging
+	 *
+	 * @return bitshift & timestampOffset parameters for binary tuple packaging
+	 */
+	protected function applyBinaryTuplePackaging() {
+		if ($this->tupleCount && ($this->rowCount > $this->tupleCount)) {
+			// use power of 2 instead of division for performance
+			$bitShift = (int) floor(log(($this->to - $this->from) / $this->tupleCount, 2));
+
+			if ($bitShift > 0) { // worth doing -> go
+				// ensure first tuple consumes only record
+				$packageSize = 1 << $bitShift;
+				$timestampOffset = $this->from - $packageSize + 1;
+
+				// prevent DataIterator from further packaging
+				// unless exactly one tuple is requested
+				if ($this->tupleCount !== 1) $this->tupleCount = null;
+
+				return array($bitShift, $timestampOffset);
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Called by interpreter before retrieving result rows
 	 *
 	 * @param  string $sql  		 initial SQL query
@@ -163,7 +202,31 @@ class SQLOptimizer {
 	 * @return boolean               optimization result
 	 */
 	public function optimizeDataSQL(&$sql, &$sqlParameters) {
-		// not implemented
+		// potential to reduce result set - can't do this for already grouped SQL
+		if ($this->groupBy)
+			return false;
+
+		// perform tuple packaging in SQL
+		if (list($bitShift, $timestampOffset) = $this->applyBinaryTuplePackaging()) {
+			// optimize packaging statement
+			$foo = array();
+			$sqlTimeFilter = $this->interpreter->buildDateTimeFilterSQL($this->from, $this->to, $foo);
+
+			$sql = 'SELECT MAX(agg.timestamp) AS timestamp, ' .
+						   $this->interpreter->groupExprSQL('agg.value') . ' AS value, ' .
+						  'COUNT(agg.value) AS count ' .
+				   'FROM (' .
+						 'SELECT timestamp, value ' .
+						 'FROM data ' .
+						 'WHERE channel_id=?' . $sqlTimeFilter . ' ' .
+						 'ORDER BY timestamp ASC' .
+				   ') AS agg ' .
+				   'GROUP BY (timestamp - ' . $timestampOffset . ') >> ' . $bitShift . ' ' .
+				   'ORDER BY timestamp ASC';
+
+			return true;
+		}
+
 		return false;
 	}
 

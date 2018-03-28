@@ -76,8 +76,8 @@ abstract class Interpreter implements \IteratorAggregate {
 	 */
 	public function __construct(Model\Channel $channel, ORM\EntityManager $em, $from, $to, $tupleCount = null, $groupBy = null, $options = array()) {
 		$this->channel = $channel;
-		$this->groupBy = $groupBy;
-		$this->tupleCount = $tupleCount;
+		$this->groupBy = (string)$groupBy;
+		$this->tupleCount = (int)$tupleCount;
 		$this->options = $options;
 
 		// client wants raw data?
@@ -226,7 +226,7 @@ abstract class Interpreter implements \IteratorAggregate {
 		$sqlParameters = array_merge($sqlParameters, $this->sqlValueFilterParams);
 
 		if ($this->groupBy) {
-			$sqlGroupFields = self::buildGroupBySQL($this->groupBy);
+			$sqlGroupFields = $this->optimizer->buildGroupBySQL($this->groupBy);
 			if (!$sqlGroupFields)
 				throw new \Exception('Unknown group');
 
@@ -279,17 +279,6 @@ abstract class Interpreter implements \IteratorAggregate {
 	}
 
 	/**
-	 * Builds sql query part for grouping data by date functions
-	 *
-	 * @param string $groupBy
-	 * @return string the sql part
-	 */
-	public static function buildGroupBySQL($groupBy) {
-		// call db-specific version
-		return SQL\SQLOptimizer::buildGroupBySQL($groupBy);
-	}
-
-	/**
 	 * Build sql query part to filter specified time interval
 	 *
 	 * @param integer $from timestamp in ms since 1970
@@ -323,6 +312,8 @@ abstract class Interpreter implements \IteratorAggregate {
 	 */
 	public static function parseDateTimeString($string) {
 		if (ctype_digit((string)$string)) { // handling as ms timestamp
+			if ((int) $string == (float) $string)
+				return (int) $string;
 			return (float) $string;
 		}
 		elseif ($ts = strtotime($string)) {
