@@ -44,6 +44,7 @@ Or follow the detailed installation instructions at http://wiki.volkszaehler.org
      |   \_ frontend            web ui
      |
      |_ lib/                    middleware libraries
+     |_ test/                   unit tests
      \_ misc/
          |_ controller/
          |   |_ vzlogger/       command line tool to log meters/sensors
@@ -55,8 +56,7 @@ Or follow the detailed installation instructions at http://wiki.volkszaehler.org
          |_ sql/                database schema dumps
          |   \_ demo/           demo data
          |
-         |_ tools/              scripts for imports, installation etc.
-         \_ tests/              simple tests for middleware classes
+         \_ tools/              scripts for imports, installation etc.
 
 
 ## Copyright

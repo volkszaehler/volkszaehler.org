@@ -91,8 +91,9 @@ class MySQLOptimizer extends SQLOptimizer {
 	/**
 	 * DB-specific cross-database join table delete statements
 	 *
-	 * @param string $table
-	 * @param string $join
+	 * @param string $table table name
+	 * @param string $join join table name
+	 * @param string $id id column name
 	 * @return string the sql part
 	 */
 	public static function buildDeleteFromJoinSQL($table, $join, $id = 'id') {
@@ -114,7 +115,7 @@ class MySQLOptimizer extends SQLOptimizer {
 			'SELECT MAX(agg.timestamp) AS timestamp, ' .
 				  'COALESCE( ' .
 					  'SUM(agg.val_by_time) / (MAX(agg.timestamp) - MIN(agg.prev_timestamp)), ' .
-					  $this->interpreter->groupExprSQL('agg.value') .
+					  $this->interpreter::groupExprSQL('agg.value') .
 				  ') AS value, ' .
 				  'COUNT(agg.value) AS count ' .
 		   'FROM ( ' .
