@@ -76,11 +76,10 @@ class Channel extends Entity {
 			}
 
 			if ($filter = SQL\SQLOptimizer::buildValueFilterSQL($filters, $params)) {
-				$sql .= $filters;
+				$sql .= $filter;
 			}
 
 			$res = $conn->executeUpdate('DELETE FROM data ' . $sql, $params);
-
 		});
 
 		return $res;
