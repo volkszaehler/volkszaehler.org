@@ -48,8 +48,7 @@ Or follow the detailed installation instructions at http://wiki.volkszaehler.org
      \_ misc/
          |_ controller/         various logging tools, e.g. for mbus/messbus
          |_ docs/               documentation
-         |_ frontend/           alternative frontends
-         |_ graphics/           several graphics for docs, etc.
+         |_ graphics/           graphics for docs, etc.
          \_ sql/                database schema dumps
              \_ demo/           demo data
 
