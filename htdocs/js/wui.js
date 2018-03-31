@@ -888,8 +888,7 @@ vz.wui.drawPlot = function () {
 
 	var series = [];
 	vz.entities.each(function(entity) {
-		if (entity.active && entity.definition && entity.definition.model == 'Volkszaehler\\Model\\Channel' &&
-				entity.data && entity.data.tuples && entity.data.tuples.length > 0) {
+		if (entity.isChannel() && entity.active && entity.data && entity.data.tuples && entity.data.tuples.length > 0) {
 			var i, maxTuples = 0;
 
 			// work on copy here to be able to redraw
