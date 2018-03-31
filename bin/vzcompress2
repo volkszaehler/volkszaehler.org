@@ -7,7 +7,7 @@
  * it's age. Lower resolution results in less data and thus may
  * save a lot of storage space
  *
- * Script must be executed with misc/tools as current workdir
+ * Script must be executed with bin as current workdir
  * Script was only tested with MySQL-Storage
  * Script should only be executed if you've got a recent backup
  *

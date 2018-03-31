@@ -44,7 +44,7 @@ $config['db']['host']				= 'localhost';
  * Port of database server
  *
  * Only needed for other Ports than 3306 on MySQL servers.
- * Only needed for other Ports than 5432 on PostgreSQL servers. 
+ * Only needed for other Ports than 5432 on PostgreSQL servers.
  */
 //$config['db']['port']				= 3306;
 
@@ -90,7 +90,7 @@ $config['db']['charset']			= 'UTF8';
 /**
  * Database aggregation
  *
- * See misc/tools/aggregation.php for details
+ * See bin/aggregation for details
  */
 $config['aggregation'] = true;
 

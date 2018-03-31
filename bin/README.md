@@ -208,7 +208,7 @@ To install `push-server` as a service create the service using `sudo nano /etc/s
     Requires=
 
     [Service]
-    ExecStart=/usr/bin/php /var/www/volkszaehler.org/misc/tools/push-server.php
+    ExecStart=/usr/bin/php /var/www/volkszaehler.org/bin/push-server
     ExecReload=/bin/kill -HUP $MAINPID
     StandardOutput=null
     Restart=always

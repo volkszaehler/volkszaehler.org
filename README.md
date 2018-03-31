@@ -17,7 +17,7 @@ http://demo.volkszaehler.org
 
 From the shell:
 
-    wget https://raw.github.com/volkszaehler/volkszaehler.org/master/misc/tools/install.sh
+    wget https://raw.github.com/volkszaehler/volkszaehler.org/master/bin/install.sh
     bash install.sh
 
 Or follow the detailed installation instructions at http://wiki.volkszaehler.org/software/middleware/installation
