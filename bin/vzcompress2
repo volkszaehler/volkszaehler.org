@@ -55,7 +55,7 @@ use Volkszaehler\Util;
 use Volkszaehler\Definition;
 use Doctrine\DBAL;
 
-define('VZ_DIR', realpath(__DIR__ . '/../../'));
+define('VZ_DIR', realpath(__DIR__ . '/..'));
 
 require VZ_DIR . '/lib/bootstrap.php';
 

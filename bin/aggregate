@@ -41,7 +41,7 @@ use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Output\StreamOutput;
 use Doctrine\DBAL\Logging\EchoSQLLogger;
 
-define('VZ_DIR', realpath(__DIR__ . '/../..'));
+define('VZ_DIR', realpath(__DIR__ . '/..'));
 
 require_once VZ_DIR . '/lib/bootstrap.php';
 
