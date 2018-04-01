@@ -327,7 +327,7 @@ Entity.prototype.loadDetails = function(skipDefaultErrorHandling) {
  * @return jQuery dereferred object
  */
 Entity.prototype.loadData = function() {
-	if (!this.isChannel() && this.active) {
+	if (!(this.isChannel() && this.active)) {
 		return $.Deferred().resolve().promise();
 	}
 	return vz.load({
