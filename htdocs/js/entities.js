@@ -157,7 +157,7 @@ vz.entities.each = function(cb, recursive) {
  */
 vz.entities.eachActiveChannel = function(cb) {
 	this.each(function(entity) {
-		if (entity.hasData() && entity.data && entity.data.tuples && entity.data.tuples.length > 0) {
+		if (entity.isChannel() && entity.active && entity.data && entity.data.tuples && entity.data.tuples.length > 0) {
 			cb(entity);
 		}
 	}, true);
@@ -273,7 +273,7 @@ vz.entities.showTable = function() {
 					return; // drop on itself -> do nothing
 				if (from === to)
 					return; // drop into same group -> do nothing
-				if (to && to.definition.model == 'Volkszaehler\\Model\\Aggregator' && $.inArray(child, to.children) >= 0)
+				if (to && !to.isChannel() && $.inArray(child, to.children) >= 0)
 					return;
 				if (to && child.middleware !== to.middleware) {
 					vz.wui.dialogs.error("Fehler", "Kanäle können nur in Gruppen der gleichen Middleware verschoben werden.");
@@ -363,14 +363,14 @@ vz.entities.showTable = function() {
 vz.entities.inheritVisibility = function() {
 	vz.entities.each(function(entity, parent) {
 		// inherit active state if parent
-		if (entity.definition.model !== 'Volkszaehler\\Model\\Aggregator' && entity.parent !== undefined) {
+		if (entity.isChannel() && entity.parent !== undefined) {
 			if (entity.active !== entity.parent.active) {
 				entity.activate(entity.parent.active);
 			}
 		}
 
 		// collapse aggregators if inactive
-		if (entity.definition.model == 'Volkszaehler\\Model\\Aggregator' && entity.active === false) {
+		if (!entity.isChannel() && entity.active === false) {
 			entity.activate(false, entity.parent, true);
 			$('#entity-' + entity.uuid + '.aggregator').removeClass('expanded').collapse();
 		}

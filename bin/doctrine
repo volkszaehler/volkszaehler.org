@@ -1,3 +1,4 @@
+#!/usr/bin/env php
 <?php
 /**
  * Doctrine cli configuration
@@ -23,7 +24,7 @@
  * along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
  */
 
-define('VZ_DIR', realpath(__DIR__ . '/../..'));
+define('VZ_DIR', realpath(__DIR__ . '/..'));
 
 require VZ_DIR . '/lib/bootstrap.php';
 

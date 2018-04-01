@@ -95,7 +95,7 @@ $config['db']['path']				= 'volkszaehler.db3';
 /**
  * Database aggregation
  *
- * See misc/tools/aggregation.php for details
+ * See bin/aggregation for details
  */
 $config['aggregation'] = true;
 

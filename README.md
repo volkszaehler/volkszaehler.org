@@ -17,7 +17,7 @@ http://demo.volkszaehler.org
 
 From the shell:
 
-    wget https://raw.github.com/volkszaehler/volkszaehler.org/master/misc/tools/install.sh
+    wget https://raw.github.com/volkszaehler/volkszaehler.org/master/bin/install.sh
     bash install.sh
 
 Or follow the detailed installation instructions at http://wiki.volkszaehler.org/software/middleware/installation
@@ -39,27 +39,21 @@ Or follow the detailed installation instructions at http://wiki.volkszaehler.org
 
     volkszaehler.org/
      |_ etc/                    configuration files
-     |_ htdocs/                 public web files
-     |   |_ middleware.php      middleware
-     |   \_ frontend            web ui
+     |_ bin/                    scripts for imports, installation etc.
+     |_ htdocs/                 web UI
+     |   \_ middleware.php      middleware
      |
      |_ lib/                    middleware libraries
      |_ test/                   unit tests
      \_ misc/
-         |_ controller/
-         |   |_ vzlogger/       command line tool to log meters/sensors
-         |   \_ mbus/           a controller for mbus/messbus
-         |
+         |_ controller/         various logging tools, e.g. for mbus/messbus
          |_ docs/               documentation
-         |_ frontend/           alternative frontends
-         |_ graphics/           several graphics for docs, etc.
-         |_ sql/                database schema dumps
-         |   \_ demo/           demo data
-         |
-         \_ tools/              scripts for imports, installation etc.
+         |_ graphics/           graphics for docs, etc.
+         \_ sql/                database schema dumps
+             \_ demo/           demo data
 
 
 ## Copyright
 
-Copyright © 2011-2018 volkszaehler.org  
+Copyright © 2011-2018 volkszaehler.org
 Licensed under the GNU General Public License Version 3 (https://opensource.org/licenses/GPL-3.0).

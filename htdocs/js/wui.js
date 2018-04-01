@@ -539,7 +539,9 @@ vz.wui.zoomToPartialUpdate = function(to) {
 		// draw after timeout
 		vz.wui.pushRedrawTimeout = window.setTimeout(function() {
 			vz.wui.pushRedrawTimeout = null;
-			vz.wui.drawPlot();
+			if (!vz.wui.plotSelectionActive) {
+				vz.wui.drawPlot();
+			}
 		}, vz.options.pushRedrawTimeout);
 	}
 	else {
@@ -552,6 +554,12 @@ vz.wui.zoomToPartialUpdate = function(to) {
  */
 vz.wui.initEvents = function() {
 	$('#plot')
+		.bind('mousedown', function(event) {
+			vz.wui.plotSelectionActive = true;
+		})
+		.bind('mouseup', function(event) {
+			vz.wui.plotSelectionActive = false;
+		})
 		.bind("plotselected", function (event, ranges) {
 			vz.wui.period = null;
 			vz.wui.zoom(ranges.xaxis.from, ranges.xaxis.to);

@@ -272,8 +272,8 @@ if [ "$REPLY" == "y" ]; then
 		EOF
 	echo "creating database schema..."
 	pushd "$vz_dir"
-		php misc/tools/doctrine orm:schema-tool:create
-		php misc/tools/doctrine orm:generate-proxies
+		php bin/doctrine orm:schema-tool:create
+		php bin/doctrine orm:generate-proxies
 	popd
 fi
 

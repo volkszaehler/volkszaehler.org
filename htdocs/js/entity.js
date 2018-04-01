@@ -293,12 +293,9 @@ Entity.prototype.handlePushData = function(delta) {
 			// concatenate in-place
 			Array.prototype.push.apply(this.data.tuples, deltaTuples);
 
-			// only update if not currently selecting data
-			if (!vz.plot.getSelection()) {
-				// update UI without reloading totals
-				this.dataUpdated();
-				vz.wui.zoomToPartialUpdate(deltaTuples[deltaTuples.length-1][0]);
-			}
+			// update UI without reloading totals
+			this.dataUpdated();
+			vz.wui.zoomToPartialUpdate(deltaTuples[deltaTuples.length-1][0]);
 
 			break;
 		}
@@ -324,10 +321,11 @@ Entity.prototype.unsubscribe = function() {
 };
 
 /**
- * Check if data can be loaded from entity
+ * Check if an entity a channel or group
  */
-Entity.prototype.hasData = function() {
-	return this.active && this.definition && this.definition.model == 'Volkszaehler\\Model\\Channel';
+Entity.prototype.isChannel = function() {
+	if (!this.definition) return null;
+	return this.definition.model == 'Volkszaehler\\Model\\Channel';
 };
 
 /**
@@ -364,7 +362,7 @@ Entity.prototype.loadDetails = function(skipDefaultErrorHandling) {
  * @return jQuery dereferred object
  */
 Entity.prototype.loadData = function() {
-	if (!this.hasData()) {
+	if (!this.isChannel() && this.active) {
 		return $.Deferred().resolve().promise();
 	}
 	return vz.load({
@@ -421,8 +419,9 @@ Entity.prototype.loadTotalConsumption = function() {
  * Show and edit entity details
  */
 Entity.prototype.showDetails = function() {
-	var entity = this,
-			general = ['title', 'type', 'uuid', /*'middleware', 'color', 'style', 'active',*/ 'cookie'];
+	var entity = this;
+	var dialog = $('<div>');
+	var deleteDialog = (this.isChannel()) ? '#entity-delete' : '#entity-delete-group';
 
 	var dialog = $('#entity-info').dialog({
 		title: 'Details für ' + this.title,
@@ -437,7 +436,7 @@ Entity.prototype.showDetails = function() {
 				window.open(entity.middleware + '/data/' + entity.uuid + '.json?' + $.param(params), '_blank');
 			},
 			'Löschen' : function() {
-				$('#entity-delete').dialog({ // confirm prompt
+				$(deleteDialog).dialog({ // confirm prompt
 					resizable: false,
 					modal: true,
 					title: 'Löschen',
@@ -660,8 +659,8 @@ Entity.prototype.getDOMRow = function(parent) {
 
 	var row = $('<tr>')
 		.addClass((parent) ? 'child-of-entity-' + parent.uuid : '')
-		.addClass((this.definition.model == 'Volkszaehler\\Model\\Aggregator') ? 'aggregator' : 'channel')
-		.addClass('entity-' + this.uuid)
+		.addClass((this.isChannel()) ? 'channel' : 'aggregator')
+		.addClass('entity')
 		.attr('id', 'entity-' + this.uuid)
 		.append($('<td>')
 			.addClass('visibility')
@@ -869,7 +868,7 @@ Entity.prototype.delete = function() {
  * Add entity as child
  */
 Entity.prototype.addChild = function(child) {
-	if (this.definition.model != 'Volkszaehler\\Model\\Aggregator') {
+	if (this.isChannel()) {
 		throw new Exception('EntityException', 'Entity is not an Aggregator');
 	}
 
@@ -888,7 +887,7 @@ Entity.prototype.addChild = function(child) {
  * Remove entity from children
  */
 Entity.prototype.removeChild = function(child) {
-	if (this.definition.model != 'Volkszaehler\\Model\\Aggregator') {
+	if (this.isChannel()) {
 		throw new Exception('EntityException', 'Entity is not an Aggregator');
 	}
 
@@ -935,9 +934,9 @@ Entity.compare = function(a, b) {
 	if (b.definition === undefined)
 		return 1;
 	// Channels before Aggregators
-	if (a.definition.model == 'Volkszaehler\\Model\\Channel' && b.definition.model == 'Volkszaehler\\Model\\Aggregator')
+	if (a.isChannel() && !b.isChannel())
 		return -1;
-	else if (a.definition.model == 'Volkszaehler\\Model\\Aggregator' && b.definition.model == 'Volkszaehler\\Model\\Channel')
+	else if (!a.isChannel() && b.isChannel())
 		return 1;
 	else
 		return ((a.title < b.title) ? -1 : ((a.title > b.title) ? 1 : 0));

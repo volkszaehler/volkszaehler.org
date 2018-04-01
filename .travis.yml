@@ -93,7 +93,7 @@ before_script:
     - if [ "$DB" = "pgsql" ]; then psql -c "CREATE DATABASE $DATABASE;" -U $USER; fi
 
     # create schema
-    - if [ -n "$DB" ]; then php misc/tools/doctrine orm:schema-tool:create; fi
+    - if [ -n "$DB" ]; then php bin/doctrine orm:schema-tool:create; fi
 
     # start middleware service
     - |
@@ -106,7 +106,7 @@ before_script:
     - |
       if [ "$COMPONENT" = "PUSHD" ]; then
         sed -i "s/\?>/\$config['push']['enabled']\ =\ true\;\n?>/" etc/volkszaehler.conf.php
-        php misc/tools/push-server.php &
+        php bin/push-server &
       fi
 
 after_script:
@@ -124,7 +124,7 @@ script:
     - |
       if [ "$DB" = "mysql" ]; then
         sed -i "s/\?>/\$config['aggregation']\ =\ true;\n?>/" etc/volkszaehler.conf.php
-        php misc/tools/aggregate.php run -m delta -l hour
+        php bin/aggregate run -m delta -l hour
         vendor/bin/phpunit $TRAVIS_TEST_EXCLUDES
       fi
 
