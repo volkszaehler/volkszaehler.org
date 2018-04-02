@@ -537,8 +537,18 @@ Entity.prototype.showDetails = function() {
 			}
 		}
 	}).select();
+};
 
-	$('#entity-info tr').remove();
+/**
+ * Show channel details for info dialog
+ */
+Entity.prototype.getDOMDetails = function(edit) {
+	var table = $('<table><thead><tr><th>Eigenschaft</th><th>Wert</th></tr></thead></table>');
+	var data = $('<tbody>');
+
+	// general properties
+	var general = ['title', 'type', 'uuid', /*'middleware', 'color', 'style', 'active',*/ 'cookie'],
+			sections = ['required', 'optional'];
 
 	addRow = function(key, value) {
 		$('#entity-info table').append(
