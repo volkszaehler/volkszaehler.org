@@ -23,10 +23,6 @@ class RawTest extends Data
      * @dataProvider channelDataProvider
      */
 	function testAddAndGetRawTuples($type, $resolution) {
-		// PHP_MAX_INT to float not portable
-		if (($db = \Volkszaehler\Util\Configuration::read('db.driver')) === 'pdo_pgsql')
-			$this->markTestSkipped('not implemented for ' . $db);
-
 		self::$uuid = self::createChannel('Test', $type, $resolution);
 
 		$data = array(

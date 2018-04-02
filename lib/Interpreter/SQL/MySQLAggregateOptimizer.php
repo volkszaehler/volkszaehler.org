@@ -62,8 +62,8 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 	/**
 	 * Must only be instantiated if config['aggregation'] = true
 	 */
-	public function __construct(Interpreter\Interpreter $interpreter, DBAL\Connection $conn) {
-		parent::__construct($interpreter, $conn);
+	public function __construct(Interpreter\Interpreter $interpreter) {
+		parent::__construct($interpreter);
 		$this->aggregator = new Util\Aggregation($this->conn);
 	}
 
@@ -108,7 +108,7 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 
 			if ($this->groupBy) {
 				// optimize grouped count statement by applying aggregation table
-				$sqlGroupFields = $this->interpreter->buildGroupBySQL($this->groupBy);
+				$sqlGroupFields = self::buildGroupBySQL($this->groupBy);
 
 				// 	   table:   --DATA-- -----aggregate----- -DATA-
 				$sqlRowCount = 'SELECT DISTINCT ' . $sqlGroupFields . ' ' .
@@ -137,10 +137,10 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 		}
 
 		// get upstream optimization
-		return ($optimize) ?: parent::optimizeDataSQL($sql, $sqlParameters);
+		return ($optimize) ?: parent::optimizeRowCountSQL($sql, $sqlParameters);
 	}
 
-	public function optimizeDataSQL(&$sql, &$sqlParameters) {
+	public function optimizeDataSQL(&$sql, &$sqlParameters, $rowCount) {
 		$optimize = false;
 
 		if ($this->validateAggregationUsage()) {
@@ -150,7 +150,7 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 
 				// optimize grouped statement
 				$sqlParameters = $this->buildAggregationTableParameters();
-				$sqlGroupFields = $this->interpreter->buildGroupBySQL($this->groupBy);
+				$sqlGroupFields = self::buildGroupBySQL($this->groupBy);
 
 				// 	   table:   --DATA-- -----aggregate----- -DATA-
 				$sql = 'SELECT timestamp, value, 1 AS count ' .
@@ -166,13 +166,13 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 				// add common aggregation and sorting on UNIONed table
 				// (sorting applied outside UNION as MySQL doesn't guarantee UNION result ordering)
 				$sql = 'SELECT MAX(timestamp) AS timestamp, ' .
-						$this->interpreter->groupExprSQL('value') . ' AS value, SUM(count) AS count ' .
+						$this->interpreter::groupExprSQL('value') . ' AS value, SUM(count) AS count ' .
 					   'FROM (' . $sql . ') AS agg ' .
 					   'GROUP BY ' . $sqlGroupFields . ' ORDER BY timestamp ASC';
 			}
-			elseif ($this->tupleCount == 1 && ($this->rowCount > $this->tupleCount)) {
+			elseif ($this->tupleCount == 1 && ($rowCount > $this->tupleCount)) {
 				// optimize non-grouped statement special case: package into 1 tuple
-				$packageSize = floor($this->rowCount / $this->tupleCount);
+				$packageSize = floor($rowCount / $this->tupleCount);
 
 				// shift aggregation boundary start by 1 unit to make sure first tuple is not aggregated
 				$optimize = $packageSize > 1 && $this->getAggregationBoundary(1);
@@ -181,27 +181,39 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 					$sqlParameters = $this->buildAggregationTableParameters();
 
 					// 	   table:   --DATA-- -----aggregate----- -DATA-
-					$sql = 'SELECT timestamp, value, 1 AS count, @row:=@row+1 AS row ' .
+					$sql = 'SELECT timestamp, value, 1 AS count ' .
 						   'FROM data ' .
 						   'WHERE channel_id = ? ' .
 						   'AND (' . $this->sqlTimeFilterPre . ' OR' . $this->sqlTimeFilterPost . ') ';
 
 					// 	   table:   --data-- -----AGGREGATE----- -data-
-					$sql.= 'UNION SELECT timestamp, value, count, @row:=@row+1 AS row ' .
+					$sql.= 'UNION SELECT timestamp, value, count ' .
 						   'FROM aggregate ' .
 						   'WHERE channel_id = ? AND type = ?' . $this->sqlTimeFilter;
 
+					// find lowest timestamp for grouping after first record
+					$sqlParameters[] = $this->channel->getId();
+					$leftSql = 'SELECT MIN(timestamp) AS timestamp FROM data ' .
+						   'WHERE channel_id = ? ' . self::buildDateTimeFilterSQL($this->from, null, $sqlParameters) . ' UNION ';
+
+					$sqlParameters[] = $this->channel->getId();
+					$leftSql.= 'SELECT MIN(timestamp) AS timestamp FROM aggregate ' .
+						   'WHERE channel_id = ? ' . self::buildDateTimeFilterSQL($this->aggFrom, null, $sqlParameters);
+
+					$leftSql = 'SELECT MIN(timestamp) AS timestamp FROM (' . $leftSql . ') AS agg';
+
 					// add common aggregation and sorting on UNIONed table
 					$sql = 'SELECT MAX(timestamp) AS timestamp, ' .
-							$this->interpreter->groupExprSQL('value') . ' AS value, SUM(count) AS count ' .
-						   'FROM (SELECT @row:=0) AS init, (' . $sql . ') AS agg ' .
-						   'GROUP BY row > 1 ORDER BY timestamp ASC';
+							$this->interpreter::groupExprSQL('value') . ' AS value, SUM(count) AS count ' .
+						   'FROM (' . $sql . ') AS agg ' .
+						   'GROUP BY timestamp > (' . $leftSql . ') ' .
+						   'ORDER BY timestamp ASC';
 				}
 			}
 		}
 
 		// get upstream optimization
-		return ($optimize) ?: parent::optimizeDataSQL($sql, $sqlParameters);
+		return ($optimize) ?: parent::optimizeDataSQL($sql, $sqlParameters, $rowCount);
 	}
 
 	/**
@@ -297,33 +309,6 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 	private static function pd($ts) {
 		$date = \DateTime::createFromFormat('U', (int)($ts/1000))->setTimeZone(new \DateTimeZone('Europe/Berlin'));
 		return (null === $ts) ? 'NULL       ' : $date->format('d.m.Y H:i:s');
-	}
-
-	/**
-	 * Build sql query part to filter specified time interval
-	 *
-	 * Replaces Interpreter::buildDateTimeFilterSQL
-	 *
-	 * @param integer $from timestamp in ms since 1970
-	 * @param integer $to timestamp in ms since 1970
-	 * @param boolean $sequential use < operator instead of <= for time comparison at end of period
-	 * @param string  $op initial concatenation operator
-	 * @return string the sql part
-	 */
-	public static function buildDateTimeFilterSQL($from = NULL, $to = NULL, &$parameters, $sequential = false, $op = ' AND') {
-		$sql = '';
-
-		if (isset($from)) {
-			$sql .= $op . ' timestamp >= ?';
-			$parameters[] = $from;
-		}
-
-		if (isset($to)) {
-			$sql .= (($sql) ? ' AND' : $op) . ' timestamp ' . (($sequential) ? '<' : '<=') . ' ?';
-			$parameters[] = $to;
-		}
-
-		return $sql;
 	}
 }
 

@@ -246,53 +246,57 @@ Entity.prototype.subscribe = function(session) {
 			return;
 		}
 
-		var delta = push.data;
-		if (delta.tuples && delta.tuples.length) {
-			// process updates only if newer than last known timestamp
-			var last_ts = (this.data.tuples.length) ? this.data.tuples[this.data.tuples.length-1][0] : 0;
-			for (var i=0; i<delta.tuples.length; i++) {
-				// find first new timestamp
-				if (delta.tuples[i][0] > last_ts) {
-					// relevant slice
-					var consumption = 0, deltaTuples = delta.tuples.slice(i);
-					/* jshint loopfunc: true */
-					deltaTuples.forEach((function(el, idx) {
-						// min/max
-						if (this.data.min === undefined || el[1] < this.data.min[1]) this.data.min = el;
-						if (this.data.max === undefined || el[1] > this.data.max[1]) this.data.max = el;
-						// consumption
-						var tsdiff = (idx === 0) ? el[0] - last_ts : el[0] - deltaTuples[idx-1][0];
-						consumption += el[1] * tsdiff;
-					}).bind(this)); // bind to entity
-
-					// update consumption
-					consumption /= 3.6e6;
-					if (this.data.consumption !== undefined) {
-						this.data.consumption = (this.data.consumption || 0) + consumption;
-
-						// calculate new left plot border and remove outdated tuples and consumption
-						var left = deltaTuples[deltaTuples.length-1][0] - vz.options.plot.xaxis.max + vz.options.plot.xaxis.min;
-						while (this.data.tuples.length && this.data.tuples[0][0] < left) {
-							var first = this.data.tuples.shift();
-							this.data.consumption -= first[1] * (first[0] - this.data.from) / 3.6e6;
-							this.data.from = first[0];
-						}
-					}
-					if (this.initialconsumption !== undefined) {
-						this.totalconsumption = (this.totalconsumption || 0) + consumption;
-					}
-
-					// concatenate in-place
-					Array.prototype.push.apply(this.data.tuples, deltaTuples);
-					// update UI without reloading totals
-					this.dataUpdated();
-
-					vz.wui.zoomToPartialUpdate(deltaTuples[deltaTuples.length-1][0]);
-					break;
-				}
-			}
+		if (push.data && push.data.tuples) {
+			this.handlePushData(push.data);
 		}
 	}).bind(this)); // bind to Entity
+};
+
+Entity.prototype.handlePushData = function(delta) {
+	// process updates only if newer than last known timestamp
+	var last_ts = (this.data.tuples.length) ? this.data.tuples[this.data.tuples.length-1][0] : 0;
+	for (var i=0; i<delta.tuples.length; i++) {
+		// find first new timestamp
+		if (delta.tuples[i][0] > last_ts) {
+			// relevant slice
+			var consumption = 0, deltaTuples = delta.tuples.slice(i);
+			/* jshint loopfunc: true */
+			deltaTuples.forEach((function(el, idx) {
+				// min/max
+				if (this.data.min === undefined || el[1] < this.data.min[1]) this.data.min = el;
+				if (this.data.max === undefined || el[1] > this.data.max[1]) this.data.max = el;
+				// consumption
+				var tsdiff = (idx === 0) ? el[0] - last_ts : el[0] - deltaTuples[idx-1][0];
+				consumption += el[1] * tsdiff;
+			}).bind(this)); // bind to entity
+
+			// update consumption
+			consumption /= 3.6e6;
+			if (this.data.consumption !== undefined) {
+				this.data.consumption = (this.data.consumption || 0) + consumption;
+
+				// calculate new left plot border and remove outdated tuples and consumption
+				var left = deltaTuples[deltaTuples.length-1][0] - vz.options.plot.xaxis.max + vz.options.plot.xaxis.min;
+				while (this.data.tuples.length && this.data.tuples[0][0] < left) {
+					var first = this.data.tuples.shift();
+					this.data.consumption -= first[1] * (first[0] - this.data.from) / 3.6e6;
+					this.data.from = first[0];
+				}
+			}
+			if (this.initialconsumption !== undefined) {
+				this.totalconsumption = (this.totalconsumption || 0) + consumption;
+			}
+
+			// concatenate in-place
+			Array.prototype.push.apply(this.data.tuples, deltaTuples);
+
+			// update UI without reloading totals
+			this.dataUpdated();
+			vz.wui.zoomToPartialUpdate(deltaTuples[deltaTuples.length-1][0]);
+
+			break;
+		}
+	}
 };
 
 /**
@@ -314,10 +318,11 @@ Entity.prototype.unsubscribe = function() {
 };
 
 /**
- * Check if data can be loaded from entity
+ * Check if an entity a channel or group
  */
-Entity.prototype.hasData = function() {
-	return this.active && this.definition && this.definition.model == 'Volkszaehler\\Model\\Channel';
+Entity.prototype.isChannel = function() {
+	if (!this.definition) return null;
+	return this.definition.model == 'Volkszaehler\\Model\\Channel';
 };
 
 /**
@@ -354,7 +359,7 @@ Entity.prototype.loadDetails = function(skipDefaultErrorHandling) {
  * @return jQuery dereferred object
  */
 Entity.prototype.loadData = function() {
-	if (!this.hasData()) {
+	if (!(this.isChannel() && this.active)) {
 		return $.Deferred().resolve().promise();
 	}
 	return vz.load({
@@ -411,8 +416,9 @@ Entity.prototype.loadTotalConsumption = function() {
  * Show and edit entity details
  */
 Entity.prototype.showDetails = function() {
-	var entity = this,
-			general = ['title', 'type', 'uuid', /*'middleware', 'color', 'style', 'active',*/ 'cookie'];
+	var entity = this;
+	var dialog = $('<div>');
+	var deleteDialog = (this.isChannel()) ? '#entity-delete' : '#entity-delete-group';
 
 	var dialog = $('#entity-info').dialog({
 		title: 'Details für ' + this.title,
@@ -427,7 +433,7 @@ Entity.prototype.showDetails = function() {
 				window.open(entity.middleware + '/data/' + entity.uuid + '.json?' + $.param(params), '_blank');
 			},
 			'Löschen' : function() {
-				$('#entity-delete').dialog({ // confirm prompt
+				$(deleteDialog).dialog({ // confirm prompt
 					resizable: false,
 					modal: true,
 					title: 'Löschen',
@@ -660,7 +666,7 @@ Entity.prototype.getDOMRow = function(parent) {
 
 	var row = $('<tr>')
 		.addClass((parent) ? 'child-of-entity-' + parent.uuid : '')
-		.addClass((this.definition.model == 'Volkszaehler\\Model\\Aggregator') ? 'aggregator' : 'channel')
+		.addClass((this.isChannel()) ? 'channel' : 'aggregator')
 		.addClass('entity-' + this.uuid)
 		.attr('id', 'entity-' + this.uuid)
 		.append($('<td>')
@@ -869,7 +875,7 @@ Entity.prototype.delete = function() {
  * Add entity as child
  */
 Entity.prototype.addChild = function(child) {
-	if (this.definition.model != 'Volkszaehler\\Model\\Aggregator') {
+	if (this.isChannel()) {
 		throw new Exception('EntityException', 'Entity is not an Aggregator');
 	}
 
@@ -888,7 +894,7 @@ Entity.prototype.addChild = function(child) {
  * Remove entity from children
  */
 Entity.prototype.removeChild = function(child) {
-	if (this.definition.model != 'Volkszaehler\\Model\\Aggregator') {
+	if (this.isChannel()) {
 		throw new Exception('EntityException', 'Entity is not an Aggregator');
 	}
 
@@ -935,9 +941,9 @@ Entity.compare = function(a, b) {
 	if (b.definition === undefined)
 		return 1;
 	// Channels before Aggregators
-	if (a.definition.model == 'Volkszaehler\\Model\\Channel' && b.definition.model == 'Volkszaehler\\Model\\Aggregator')
+	if (a.isChannel() && !b.isChannel())
 		return -1;
-	else if (a.definition.model == 'Volkszaehler\\Model\\Aggregator' && b.definition.model == 'Volkszaehler\\Model\\Channel')
+	else if (!a.isChannel() && b.isChannel())
 		return 1;
 	else
 		return ((a.title < b.title) ? -1 : ((a.title > b.title) ? 1 : 0));

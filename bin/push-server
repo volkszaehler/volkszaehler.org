@@ -46,7 +46,7 @@ use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
 
-define('VZ_DIR', realpath(__DIR__ . '/../..'));
+define('VZ_DIR', realpath(__DIR__ . '/..'));
 
 require_once VZ_DIR . '/lib/bootstrap.php';
 

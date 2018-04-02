@@ -27,6 +27,7 @@ namespace Volkszaehler\Util;
 
 use Volkszaehler\Util;
 use Volkszaehler\Interpreter;
+use Volkszaehler\Interpreter\SQL\SQLOptimizer;
 use Volkszaehler\Definition;
 use Doctrine\DBAL;
 
@@ -158,29 +159,36 @@ class Aggregation {
 	 * @param  string $level aggregation level to remove data for
 	 * @return int 			 number of affected rows
 	 */
-	public function clear($uuid = null, $level = 'all') {
+	public function clear($uuid = null, $level = 'all', $since = null) {
 		$sqlParameters = array();
 
-		if ($level == 'all') {
-			if ($uuid) {
-				$sql = 'DELETE aggregate FROM aggregate ' .
-					   'INNER JOIN entities ON aggregate.channel_id = entities.id ' .
-					   'WHERE entities.uuid = ?';
-				$sqlParameters[] = $uuid;
-			}
-			else {
-				$sql = 'TRUNCATE TABLE aggregate';
-			}
+		if ($level == 'all' && !$uuid && !$since) {
+			$sql = 'TRUNCATE TABLE aggregate';
 		}
 		else {
-			$sqlParameters[] = self::getAggregationLevelTypeValue($level);
-			$sql = 'DELETE aggregate FROM aggregate ' .
-				   'INNER JOIN entities ON aggregate.channel_id = entities.id ' .
-				   'WHERE aggregate.type = ? ';
+			$sql = 'INNER JOIN entities ON aggregate.channel_id = entities.id ' .
+				   'WHERE ';
+
+			if ($level !== 'all') {
+				$sqlParameters[] = self::getAggregationLevelTypeValue($level);
+				$sql .=  'aggregate.type = ? ';
+				if ($uuid) {
+					$sql .= 'AND ';
+				}
+			}
+
 			if ($uuid) {
-				$sql .= 'AND entities.uuid = ?';
+				$sql .= 'entities.uuid = ?';
 				$sqlParameters[] = $uuid;
 			}
+
+			if ($since) {
+				$sql .= 'aggregate.timestamp >= 1000*?';
+				$sqlParameters[] = $timestamp;
+			}
+
+			$optimizer = SQLOptimizer::staticFactory();
+			$sql = $optimizer::buildDeleteFromJoinSQL('aggregate', $sql);
 		}
 
 		if (Util\Debug::isActivated())
@@ -223,7 +231,7 @@ class Aggregation {
 		$format = self::getAggregationDateFormat($level);
 		$type = self::getAggregationLevelTypeValue($level);
 
-		$weighed_avg = ($interpreter == 'Volkszaehler\\Interpreter\\SensorInterpreter');
+		$weighed_avg = $interpreter == Interpreter\SensorInterpreter::class;
 
 		$sqlParameters = array($type);
 		$sql = 'REPLACE INTO ' . $this->targetTable . ' (channel_id, type, timestamp, value, count) ';
@@ -265,7 +273,7 @@ class Aggregation {
 				'FROM ( ' .
 					'SELECT channel_id, timestamp, value, ' .
 						'value * (timestamp - @prev_timestamp) AS val_by_time, ' .
-						'GREATEST(0, IF(@prev_timestamp = NULL, NULL, @prev_timestamp)) AS prev_timestamp, ' .
+						'COALESCE(@prev_timestamp, 0) AS prev_timestamp, ' .
 						'@prev_timestamp := timestamp ' .
 					'FROM data ' .
 					'CROSS JOIN (SELECT @prev_timestamp := ' . $intialTimestamp . ') AS vars ' .
@@ -314,7 +322,8 @@ class Aggregation {
 			$sql .= ') AS agg ';
 		}
 
-		$sql .= 'GROUP BY channel_id, ' . Interpreter\Interpreter::buildGroupBySQL($level);
+		$optimizer = SQLOptimizer::staticFactory();
+		$sql .= 'GROUP BY channel_id, ' . $optimizer::buildGroupBySQL($level);
 
 		if (Util\Debug::isActivated())
 			echo(Util\Debug::getParametrizedQuery($sql, $sqlParameters)."\n");

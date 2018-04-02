@@ -39,8 +39,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Output\StreamOutput;
+use Doctrine\DBAL\Logging\EchoSQLLogger;
 
-define('VZ_DIR', realpath(__DIR__ . '/../..'));
+define('VZ_DIR', realpath(__DIR__ . '/..'));
 
 require_once VZ_DIR . '/lib/bootstrap.php';
 
@@ -87,10 +88,13 @@ class OptimizeCommand extends BasicCommand {
 
 	protected function configure() {
 		$this->setName('optimize')
-			->setDescription('Optimize data and aggregate tables');
+			->setDescription('Optimize data and aggregate tables')
+			->addOption('verbose', 'v', InputOption::VALUE_NONE, 'Verbose mode');
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
+		parent::execute($input, $output);
+
 		$conn = $this->em->getConnection();
 
 		echo("Optimizing aggregate table.\n");
@@ -109,16 +113,26 @@ class ClearCommand extends BasicCommand {
 	protected function configure() {
 		$this->setName('clear')
 			->setDescription('Clear aggregation table')
- 		->addArgument('uuid', InputArgument::OPTIONAL | InputArgument::IS_ARRAY, 'UUID(s)', array(null));
+		->addArgument('uuid', InputArgument::OPTIONAL | InputArgument::IS_ARRAY, 'UUID(s)', array(null))
+			->addOption('level', 'l', InputOption::VALUE_REQUIRED, 'Level (all|hour|day|month|year)', 'all')
+			->addOption('since', 's', InputOption::VALUE_REQUIRED, 'Clear aggregation data since specified date')
+			->addOption('verbose', 'v', InputOption::VALUE_NONE, 'Verbose mode');
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
+		parent::execute($input, $output);
+
 		foreach ($input->getArgument('uuid') as $uuid) {
 			$msg = "Clearing aggregation table";
 			if ($uuid) $msg .= " for UUID " . $uuid;
 			echo($msg . ".\n");
 
-			$this->aggregator->clear($uuid);
+			$since = $input->getOption('since');
+			if (false === $timestamp = strtotime($since)) {
+				throw new \Exception('Invalid timestamp ' . $since);
+			}
+
+			$this->aggregator->clear($uuid, $input->getOption('level'), $timestamp);
 			echo("Done clearing aggregation table.\n");
 		}
 	}

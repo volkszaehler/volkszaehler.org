@@ -61,15 +61,11 @@ class DataController extends Controller {
 			$to = $this->getParameters()->get('to');
 			$tuples = $this->getParameters()->get('tuples');
 			$groupBy = $this->getParameters()->get('group');
+			$filters = $this->parseValueParamFilter('value');
 
 			$entity = $this->ef->get($uuid, true);
 			$class = $entity->getDefinition()->getInterpreter();
-			$interpreter = new $class($entity, $this->em, $from, $to, $tuples, $groupBy, $this->options);
-
-			// parse value filters
-			if ($filters = $this->parseValueParamFilter('value')) {
-				$interpreter->setValueFilter($filters);
-			}
+			$interpreter = new $class($entity, $this->em, $from, $to, $tuples, $groupBy, $this->options, $filters);
 
 			return $interpreter;
 		}
@@ -174,13 +170,8 @@ class DataController extends Controller {
 			throw new \Exception('Missing timestamp (ts, from, to)');
 		}
 
-		// parse value filters
-		$filters = [];
-		if ($values = (array) $this->getParameters()->get('value')) {
-			$filters = $this->parseValueParamFilter($values);
-		}
-
 		$rows = 0;
+		$filters = $this->parseValueParamFilter('value'); // parse value filters
 
 		foreach ((array) $uuids as $uuid) {
 			$channel = $this->ef->get($uuid, true);
@@ -195,8 +186,7 @@ class DataController extends Controller {
 	 * Parse query parameters into SQL filters
 	 */
 	private function parseValueParamFilter($param) {
-		// array of [operator,value]
-		$result = [];
+		$result = []; // array of [operator => value]
 
 		// array syntax (value[]=ge0&value[]=lt1) or quality (value=0)
 		$re = sprintf('/^(lt|gt|le|ge)?(%s)$/', self::REGEX_FLOAT);

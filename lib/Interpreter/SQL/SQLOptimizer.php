@@ -31,24 +31,26 @@ use Doctrine\DBAL;
 /**
  * SQLOptimizer is the base class for DB-specific optimizations
  */
-class SQLOptimizer {
+abstract class SQLOptimizer {
 
+	/** @var Interpreter\Interpreter */
 	protected $interpreter;
+	/** @var Model\Channel */
+	protected $channel;
+	/** @var DBAL\Connection */
 	protected $conn;
 
 	protected $from;
 	protected $to;
+	protected $tupleCount;
 	protected $groupBy;
 
 	/**
-	 * Factory method
+	 * Static factory method
 	 *
-	 * @param  InterpreterInterpreter $interpreter
-	 * @param  ModelChannel           $channel
-	 * @param  DBALConnection         $conn
-	 * @return SQL\SQLOptimizer 	  instantiated class or false
+	 * @return string SQL optimizer class name for DBMS
 	 */
-	public static function factory() {
+	public static function staticFactory() {
 		// optimizer defined in config file
 		if (null !== ($class = Util\Configuration::read('db.optimizer'))) {
 			return $class;
@@ -58,17 +60,17 @@ class SQLOptimizer {
 			case 'pdo_mysql':
 			case 'mysqli':
 				if (Util\Configuration::read('aggregation')) {
-					$class = __NAMESPACE__ . '\MySQLAggregateOptimizer';
+					$class = MySQLAggregateOptimizer::class;
 				}
 				else {
-					$class = __NAMESPACE__ . '\MySQLOptimizer';
+					$class = MySQLOptimizer::class;
 				}
 				break;
 			case 'pdo_sqlite':
-				$class = __NAMESPACE__ . '\SQLiteOptimizer';
+				$class = SQLiteOptimizer::class;
 				break;
 			case 'pdo_pgsql':
-				$class = __NAMESPACE__ . '\PostgreSQLOptimizer';
+				$class = PostgreSQLOptimizer::class;
 				break;
 			default:
 				$class = __CLASS__;
@@ -76,54 +78,21 @@ class SQLOptimizer {
 		return $class;
 	}
 
-	public function __construct(Interpreter\Interpreter $interpreter, DBAL\Connection $conn) {
+	/**
+	 * Constructor
+	 *
+	 * @param  Interpreter      $interpreter
+	 */
+	public function __construct(Interpreter\Interpreter $interpreter) {
 		$this->interpreter = $interpreter;
-		$this->conn = $conn;
-	}
 
-	/**
-	 * Gives access to hidden interpreter properties
-	 */
-	public function setParameters($from, $to, $tupleCount, $groupBy) {
-		$this->from = $from;
-		$this->to = $to;
-		$this->tupleCount = $tupleCount;
-		$this->groupBy = $groupBy;
-	}
-
-	/**
-	 * Proxy magic. Transparently access public interpreter properties
-	 * Keeps the code portable between Interpreter and SQLOptimizer
-	 */
-	public function __get($property) {
-		if ($property == 'channel') {
-			return $this->interpreter->getEntity();
-		}
-		elseif ($property == 'rowCount') {
-			return $this->interpreter->getRowCount();
-		}
-		elseif ($property == 'tupleCount') {
-			return $this->interpreter->getTupleCount();
-		}
- 		else {
-   			throw new \Exception('Invalid property access: \'' . $property . '\'');
-   		}
-	}
-
-	/**
-	 * Proxy magic. Transparently access public interpreter properties
-	 * Keeps the code portable between Interpreter and SQLOptimizer
-	 */
-	public function __set($property, $value) {
-		if ($property == 'rowCount') {
-			return $this->interpreter->setRowCount($value);
-		}
-		elseif ($property == 'tupleCount') {
-			return $this->interpreter->setTupleCount($value);
-		}
- 		else {
-   			throw new \Exception('Invalid property access: \'' . $property . '\'');
-   		}
+		// get interpreter properties
+		$this->channel = $interpreter->getEntity();
+		$this->conn = $interpreter->getConnection();
+		$this->from = $interpreter->getOriginalFrom();
+		$this->to = $interpreter->getOriginalTo();
+		$this->tupleCount = $interpreter->getTupleCount();
+		$this->groupBy = $interpreter->getGroupBy();
 	}
 
 	/**
@@ -134,13 +103,72 @@ class SQLOptimizer {
 	 * @param string $groupBy
 	 * @return string the sql part
 	 */
-	public static function buildGroupBySQL($groupBy) {
-		$class = self::factory();
-		// fall back on default implementation if nothing else declared
-		if ($class == __CLASS__) {
-			$class = __NAMESPACE__ . '\MySQLOptimizer';
+	abstract public static function buildGroupBySQL($groupBy);
+
+	/**
+	 * DB-specific cross-database join table delete statements
+	 *
+	 * Except MySQL: DELETE FROM aggregate WHERE id in (SELECT id FROM aggregate)
+	 *
+	 * @param string $table table name
+	 * @param string $join join table name
+	 * @param string $id id column name
+	 * @return string the sql part
+	 */
+	public static function buildDeleteFromJoinSQL($table, $join, $id = 'id') {
+		$sql = sprintf("DELETE FROM %s WHERE %s.%s in (SELECT %s FROM %s)", [
+			$table,
+			$table,
+			$id,
+			$id,
+			$join
+		]);
+		return $sql;
+	}
+
+	/**
+	 * Build sql query part to filter specified time interval
+	 *
+	 * @param integer $from timestamp in ms since 1970
+	 * @param integer $to timestamp in ms since 1970
+	 * @param boolean $sequential use < operator instead of <= for time comparison at end of period
+	 * @param string  $op initial concatenation operator
+	 * @return string sql part including leading operator (' AND ')
+	 */
+	public static function buildDateTimeFilterSQL($from = NULL, $to = NULL, &$parameters, $sequential = false, $op = ' AND') {
+		$sql = '';
+
+		if (isset($from)) {
+			$sql .= $op . ' timestamp >= ?';
+			$parameters[] = $from;
 		}
-		return $class::buildGroupBySQL($groupBy);
+
+		if (isset($to)) {
+			$sql .= (($sql) ? ' AND' : $op) . ' timestamp ' . (($sequential) ? '<' : '<=') . ' ?';
+			$parameters[] = $to;
+		}
+
+		return $sql;
+	}
+
+	/**
+	 * Combine operation => value array into SQL filter
+	 *
+	 * @param array $filter associative array of filters
+	 * @param array $params output prarameter array
+	 * @param string $valueParam name of value column
+	 * @return string sql part including leading operator (' AND ')
+	 */
+	public static function buildValueFilterSQL(array $filters, &$params, $valueParam = 'value') {
+		$sql = '';
+
+		foreach ($filters as $op => $value) {
+			if ($sql) $sql .= ' AND ';
+			$sql .= $valueParam . $op . '?';
+			$params[] = $value;
+		}
+
+		return ($sql) ? ' AND ' . $sql : '';
 	}
 
 	/**
@@ -156,14 +184,67 @@ class SQLOptimizer {
 	}
 
 	/**
+	 * Calculate if binary tuple packaging can be used
+	 * Updates tupleCount to prevent double packaging
+	 *
+	 * @param  string $rowCount 	 actual number of rows expected from count sql
+	 * @return array [$bitshift,$timestampOffset] parameters for binary tuple packaging
+	 */
+	protected function applyBinaryTuplePackaging($rowCount) {
+		if ($this->tupleCount && ($rowCount > $this->tupleCount)) {
+			// use power of 2 instead of division for performance
+			$bitShift = (int) floor(log(($this->to - $this->from) / $this->tupleCount, 2));
+
+			if ($bitShift > 0) { // worth doing -> go
+				// ensure first tuple consumes only record
+				$packageSize = 1 << $bitShift;
+				$timestampOffset = $this->from - $packageSize + 1;
+
+				// prevent DataIterator from further packaging
+				// unless exactly one tuple is requested
+				if ($this->tupleCount != 1) $this->interpreter->setTupleCount(null);
+
+				return array($bitShift, $timestampOffset);
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Called by interpreter before retrieving result rows
 	 *
 	 * @param  string $sql  		 initial SQL query
 	 * @param  string $sqlParameters initial SQL parameters
+	 * @param  string $rowCount 	 actual number of rows expected from count sql
 	 * @return boolean               optimization result
 	 */
-	public function optimizeDataSQL(&$sql, &$sqlParameters) {
-		// not implemented
+	public function optimizeDataSQL(&$sql, &$sqlParameters, $rowCount) {
+		// potential to reduce result set - can't do this for already grouped SQL
+		if ($this->groupBy)
+			return false;
+
+		// perform tuple packaging in SQL
+		if (list($bitShift, $timestampOffset) = $this->applyBinaryTuplePackaging($rowCount)) {
+			// optimize packaging statement
+			$foo = array();
+			$sqlTimeFilter = self::buildDateTimeFilterSQL($this->from, $this->to, $foo);
+
+			$sql = 'SELECT MAX(agg.timestamp) AS timestamp, ' .
+						   $this->interpreter::groupExprSQL('agg.value') . ' AS value, ' .
+						  'COUNT(agg.value) AS count ' .
+				   'FROM (' .
+						 'SELECT timestamp, value ' .
+						 'FROM data ' .
+						 'WHERE channel_id=?' . $sqlTimeFilter . ' ' .
+						 'ORDER BY timestamp ASC' .
+				   ') AS agg ' .
+				   'GROUP BY (timestamp - ' . $timestampOffset . ') >> ' . $bitShift . ' ' .
+				   'ORDER BY timestamp ASC';
+
+			return true;
+		}
+
 		return false;
 	}
 
@@ -172,23 +253,6 @@ class SQLOptimizer {
 	 */
 	public function disableCache() {
 		throw new \RuntimeException('Disabling caching not implemented for current DBMS');
-	}
-
-	/**
-	 * Combine operation => value array into SQL filter
-	 *
-	 * @param array $filter associative array of filters
-	 * @param array $params output prarameter array
-	 * @param string $valueParam name of value column
-	 */
-	public static function getFilterSQL(array $filters, &$params, $valueParam = 'value') {
-		$sql = '';
-		foreach ($filters as $op => $value) {
-			if ($sql) $sql .= ' AND ';
-			$sql .= $valueParam . $op . '?';
-			$params[] = $value;
-		}
-		return $sql;
 	}
 }
 

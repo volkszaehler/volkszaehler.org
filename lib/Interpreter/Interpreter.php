@@ -79,12 +79,13 @@ abstract class Interpreter implements \IteratorAggregate {
 	 * @param null $tupleCount
 	 * @param null $groupBy
 	 * @param array $options
+	 * @param array $filters SQL value filters
 	 * @throws \Exception
 	 */
-	public function __construct(Model\Channel $channel, ORM\EntityManager $em, $from, $to, $tupleCount = null, $groupBy = null, $options = array()) {
+	public function __construct(Model\Channel $channel, ORM\EntityManager $em, $from, $to, $tupleCount = null, $groupBy = null, $options = [], $filters = []) {
 		$this->channel = $channel;
-		$this->groupBy = $groupBy;
-		$this->tupleCount = $tupleCount;
+		$this->groupBy = (string)$groupBy;
+		$this->tupleCount = (int)$tupleCount;
 		$this->options = $options;
 
 		// store channel properties locally for performance
@@ -123,20 +124,14 @@ abstract class Interpreter implements \IteratorAggregate {
 		}
 
 		// add db-specific SQL optimizations
-		$class = SQL\SQLOptimizer::factory();
-		$this->optimizer = new $class($this, $this->conn);
+		$class = SQL\SQLOptimizer::staticFactory();
+		$this->optimizer = new $class($this);
+
+		// value filters
+		$this->sqlValueFilter = $this->optimizer::buildValueFilterSQL($filters, $this->sqlValueFilterParams);
 
 		if ($this->hasOption('nocache')) {
 			$this->optimizer->disableCache();
-		}
-	}
-
-	/**
-	 * Set value filter
-	 */
-	public function setValueFilter($filters) {
-		if ($filter = SQL\SQLOptimizer::getFilterSQL($filters, $this->sqlValueFilterParams)) {
-			$this->sqlValueFilter = ' AND ' . $filter;
 		}
 	}
 
@@ -192,7 +187,7 @@ abstract class Interpreter implements \IteratorAggregate {
 	 * @return array (0 => timestamp, 1 => value)
 	 */
 	public function getMin() {
-		return ($this->min) ? array_map('floatval', array_slice($this->min, 0 , 2)) : NULL;
+		return ($this->min) ? array_map('floatval', array_slice($this->min, 0, 2)) : NULL;
 	}
 
 	/**
@@ -201,7 +196,7 @@ abstract class Interpreter implements \IteratorAggregate {
 	 * @return array (0 => timestamp, 1 => value)
 	 */
 	public function getMax() {
-		return ($this->max) ? array_map('floatval', array_slice($this->max, 0 , 2)) : NULL;
+		return ($this->max) ? array_map('floatval', array_slice($this->max, 0, 2)) : NULL;
 	}
 
 	/**
@@ -238,16 +233,13 @@ abstract class Interpreter implements \IteratorAggregate {
 			}
 		}
 
-		// set parameters; repeat if modified after setting
-		$this->optimizer->setParameters($this->from, $this->to, $this->tupleCount, $this->groupBy);
-
 		// common conditions for following SQL queries
 		$sqlParameters = array($this->channel->getId());
-		$sqlTimeFilter = self::buildDateTimeFilterSQL($this->from, $this->to, $sqlParameters);
+		$sqlTimeFilter = $this->optimizer::buildDateTimeFilterSQL($this->from, $this->to, $sqlParameters);
 		$sqlParameters = array_merge($sqlParameters, $this->sqlValueFilterParams);
 
 		if ($this->groupBy) {
-			$sqlGroupFields = self::buildGroupBySQL($this->groupBy);
+			$sqlGroupFields = $this->optimizer::buildGroupBySQL($this->groupBy);
 			if (!$sqlGroupFields)
 				throw new \Exception('Unknown group');
 
@@ -265,7 +257,7 @@ abstract class Interpreter implements \IteratorAggregate {
 
 		// optimize sql
 		$sqlParametersRowCount = $sqlParameters;
-		if (!$this->hasOption('slow')) {
+		if (!$this->hasOption('slow') && !$this->sqlValueFilter) {
 			$this->optimizer->optimizeRowCountSQL($sqlRowCount, $sqlParametersRowCount);
 		}
 
@@ -276,7 +268,7 @@ abstract class Interpreter implements \IteratorAggregate {
 
 		// optimize sql
 		if (!$this->hasOption('slow')) {
-			$this->optimizer->optimizeDataSQL($sql, $sqlParameters);
+			$this->optimizer->optimizeDataSQL($sql, $sqlParameters, $this->rowCount);
 		}
 
 		// run query
@@ -300,40 +292,6 @@ abstract class Interpreter implements \IteratorAggregate {
 	}
 
 	/**
-	 * Builds sql query part for grouping data by date functions
-	 *
-	 * @param string $groupBy
-	 * @return string the sql part
-	 */
-	public static function buildGroupBySQL($groupBy) {
-		// call db-specific version
-		return SQL\SQLOptimizer::buildGroupBySQL($groupBy);
-	}
-
-	/**
-	 * Build sql query part to filter specified time interval
-	 *
-	 * @param integer $from timestamp in ms since 1970
-	 * @param integer $to timestamp in ms since 1970
-	 * @return string the sql part
-	 */
-	public static function buildDateTimeFilterSQL($from = NULL, $to = NULL, &$parameters) {
-		$sql = '';
-
-		if (isset($from)) {
-			$sql .= ' AND timestamp >= ?';
-			$parameters[] = $from;
-		}
-
-		if (isset($to)) {
-			$sql .= ' AND timestamp <= ?';
-			$parameters[] = $to;
-		}
-
-		return $sql;
-	}
-
-	/**
 	 * Parses a timestamp
 	 *
 	 * @link http://de3.php.net/manual/en/datetime.formats.php
@@ -344,6 +302,8 @@ abstract class Interpreter implements \IteratorAggregate {
 	 */
 	public static function parseDateTimeString($string) {
 		if (ctype_digit((string)$string)) { // handling as ms timestamp
+			if ((int) $string == (float) $string)
+				return (int) $string;
 			return (float) $string;
 		}
 		elseif ($ts = strtotime($string)) {
@@ -370,13 +330,17 @@ abstract class Interpreter implements \IteratorAggregate {
 	 * Getter & setter
 	 */
 
+	public function getConnection() { return $this->conn; }
 	public function getEntity() { return $this->channel; }
 	public function getRowCount() { return $this->rowCount; }
 	public function setRowCount($count) { $this->rowCount = $count; }
 	public function getTupleCount() { return $this->tupleCount; }
 	public function setTupleCount($count) { $this->tupleCount = $count; }
+	public function getOriginalFrom() { return $this->from; }
+	public function getOriginalTo() { return $this->to; }
 	public function getFrom() { return ($this->rowCount > 0) ? $this->rows->getFrom() : NULL; }
 	public function getTo() { return ($this->rowCount > 0) ? $this->rows->getTo() : NULL; }
+	public function getGroupBy() { return $this->groupBy; }
 }
 
 ?>
