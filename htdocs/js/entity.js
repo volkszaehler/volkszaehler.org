@@ -123,10 +123,10 @@ Entity.prototype.getUnitForMode = function() {
  * Helper function to manage yaxes array (last entry contains template)
  */
 function ensureAavailableAxis() {
-	var length = vz.options.plot.yaxes.push($.extend({}, vz.options.plot.yaxes[1]));
+	var length = vz.options.plot.yaxes.push($.extend({}, vz.options.plot.yaxes[1])) - 1;
 	// make sure new axis is neutral
-	delete vz.options.plot.yaxes[length-1].axisLabel;
-	return length - 1;
+	delete vz.options.plot.yaxes[length].axisLabel;
+	return length;
 }
 
 /**
@@ -673,7 +673,7 @@ Entity.prototype.getDOMRow = function(parent) {
 	var row = $('<tr>')
 		.addClass((parent) ? 'child-of-entity-' + parent.uuid : '')
 		.addClass((this.isChannel()) ? 'channel' : 'aggregator')
-		.addClass('entity')
+		.addClass('entity-' + this.uuid)
 		.attr('id', 'entity-' + this.uuid)
 		.append($('<td>')
 			.addClass('visibility')
