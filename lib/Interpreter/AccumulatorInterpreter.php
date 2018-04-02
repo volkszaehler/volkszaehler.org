@@ -52,8 +52,8 @@ class AccumulatorInterpreter extends Interpreter {
 		}
 
 		foreach ($this->rows as $row) {
-			if ($this->raw) {
-				// raw database values
+			// raw database values
+			if ($this->output == self::RAW_VALUES) {
 				yield array_slice($row, 0, 3);
 			}
 			else {
@@ -61,7 +61,6 @@ class AccumulatorInterpreter extends Interpreter {
 				$this->valsum += $this->delta_val;
 
 				$this->updateMinMax($tuple);
-
 				yield $tuple;
 			}
 		}
@@ -71,20 +70,33 @@ class AccumulatorInterpreter extends Interpreter {
 	 * Convert raw meter readings
 	 */
 	public function convertRawTuple($row) {
-		$delta_ts = $row[0] - $this->ts_last; // time between now and row before
-
 		// instead of reverting what DataIterator->next did when packaging by $val = $row[1] / $row[2]
 		// get max value which DataIterator->next provides as courtesy
 		$value = isset($row[3]) ? $row[3] : $row[1];
 		$this->delta_val = $value - $this->last_val;
 		$this->last_val = $value;
 
-		// (1 imp / 1 imp/kWh) * (60 min/h * 60 s/min * 1000 ms/s * scale) / 1 ms
-		$tuple = array(
-			(float) ($this->ts_last = $row[0]), // timestamp of interval end
-			(float) ($this->delta_val * 3.6e6 * $this->scale) / ($delta_ts * $this->resolution), // doing df/dt
-			(int) $row[2] // num of rows
-		);
+		if ($this->output == self::ACTUAL_VALUES) {
+			// actual values
+			$delta_ts = $row[0] - $this->ts_last; // time between now and row before
+
+			// (1 imp / 1 imp/kWh) * (60 min/h * 60 s/min * 1000 ms/s * scale) / 1 ms
+			$tuple = array(
+				(float) $row[0], // timestamp of interval end
+				(float) ($this->delta_val * 3.6e6 * $this->scale) / ($delta_ts * $this->resolution), // doing df/dt
+				(int) $row[2] // num of rows
+			);
+		}
+		else {
+			// consumption values
+			$tuple = array(
+				(float) $row[0], // timestamp of interval end
+				(float) ($this->delta_val * $this->scale) / $this->resolution,
+				(int) $row[2] // num of rows
+			);
+		}
+
+		$this->ts_last = $row[0];
 
 		return $tuple;
 	}
@@ -95,7 +107,7 @@ class AccumulatorInterpreter extends Interpreter {
 	 * @return float total consumption in Wh
 	 */
 	public function getConsumption() {
-		return $this->channel->getDefinition()->hasConsumption ? $this->valsum * $this->scale / $this->resolution : NULL;
+		return $this->definition->hasConsumption ? $this->valsum * $this->scale / $this->resolution : NULL;
 	}
 
 	/**
@@ -104,7 +116,10 @@ class AccumulatorInterpreter extends Interpreter {
 	 * @return float average in W
 	 */
 	public function getAverage() {
-		if ($this->valsum) {
+		if ($this->output == self::CONSUMPTION_VALUES) {
+			return $this->getAverageConsumption();
+		}
+		elseif ($this->valsum) {
 			$delta = $this->getTo() - $this->getFrom();
 			// 60 s/min * 60 min/h * 1.000 ms/s * 1.000 W/kW = 3.6e9 (Units: s/h*ms/s*W/kW = s/3.600s*.001s/s*W/1.000W = 1)
 			return (3.6e6 * $this->scale * $this->valsum) / ($this->resolution * $delta);
