@@ -248,7 +248,7 @@
 		"name"			: "flow",
 		"optional"		: ["resolution", "tolerance", "local", "gap", "initialconsumption"],
 		"icon"			: "waterdrop.png",
-		"unit"			: "m^3/h",
+		"unit"			: "m³/h",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
