@@ -897,17 +897,15 @@ vz.wui.drawPlot = function () {
 	var series = [];
 	vz.entities.each(function(entity) {
 		if (entity.isChannel() && entity.active && entity.data && entity.data.tuples && entity.data.tuples.length > 0) {
-			var i, maxTuples = 0;
-
 			// work on copy here to be able to redraw
-			var tuples = entity.data.tuples.map(function(t) {
+			var i, tuples = entity.data.tuples.map(function(t) {
 				return t.slice(0);
 			});
-
 
 			var style = vz.options.style || entity.style;
 			var fillstyle = parseFloat(vz.options.fillstyle || entity.fillstyle);
 			var linewidth = parseFloat(vz.options.linewidth || vz.options[entity.uuid == vz.wui.selectedChannel ? 'lineWidthSelected' : 'lineWidthDefault']);
+			var gap = vz.options.gap || entity.gap;
 
 			// mangle data for "steps" curves by shifting one ts left ("step-before")
 			if (style == "steps") {
@@ -920,7 +918,6 @@ vz.wui.drawPlot = function () {
 			// remove number of datapoints from each tuple to avoid flot fill error
 			if (fillstyle || entity.gap) {
 				for (i=0; i<tuples.length; i++) {
-					maxTuples = Math.max(maxTuples, tuples[i][2]);
 					delete tuples[i][2];
 				}
 			}
@@ -946,7 +943,7 @@ vz.wui.drawPlot = function () {
 			// disable interpolation when data has gaps
 			if (entity.gap) {
 				var minGapWidth = (entity.data.to - entity.data.from) / tuples.length;
-				serie.xGapThresh = Math.max(entity.gap * 1000 * maxTuples, minGapWidth);
+				serie.xGapThresh = Math.max(entity.gap * 1000, 2 * minGapWidth);
 				vz.options.plot.xaxis.insertGaps = true;
 			}
 
