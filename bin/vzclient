@@ -69,6 +69,8 @@ if (url is None):
   except:
     print "ERROR: Please specify an url!";
     exit(1);
+elif (url[:4].lower() != "http"):
+  url="http://"+url
 
 format=args.format;
 if (format is None):
