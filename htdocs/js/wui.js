@@ -897,9 +897,9 @@ vz.wui.drawPlot = function () {
 	var series = [];
 	vz.entities.each(function(entity) {
 		if (entity.isChannel() && entity.active && entity.data && entity.data.tuples && entity.data.tuples.length > 0) {
-			// work on copy here to be able to redraw
+			// work on deep copy here to be able to redraw
 			var i, tuples = entity.data.tuples.map(function(t) {
-				return t.slice(0);
+				return t.slice(0, 2);
 			});
 
 			var style = vz.options.style || entity.style;
@@ -912,13 +912,6 @@ vz.wui.drawPlot = function () {
 				tuples.unshift([entity.data.from, 1, 1]); // add new first ts
 				for (i=0; i<tuples.length-1; i++) {
 					tuples[i][1] = tuples[i+1][1];
-				}
-			}
-
-			// remove number of datapoints from each tuple to avoid flot fill error
-			if (fillstyle || entity.gap) {
-				for (i=0; i<tuples.length; i++) {
-					delete tuples[i][2];
 				}
 			}
 
