@@ -172,6 +172,52 @@ abstract class SQLOptimizer {
 	}
 
 	/**
+	 * Get period duration in ms
+	 * Used for SensorInterpreter weighed average & consumption calculation
+	 *
+	 * @param string $groupBy
+	 * @return float number of milliseconds
+	 */
+	public static function groupDuration($groupBy) {
+		switch ($groupBy) {
+			case 'year':
+				return 365 * 24 * 3.6e6;
+				break;
+
+			case 'month':
+				return 30 * 24 * 3.6e6;
+				break;
+
+			case 'week':
+				return 7 * 24 * 3.6e6;
+				break;
+
+			case 'day':
+				return 24 * 3.6e6;
+				break;
+
+			case 'hour':
+				return 3.6e6;
+				break;
+
+			case '15m':
+				return 15 * 60e3;
+				break;
+
+			case 'minute':
+				return 60e3;
+				break;
+
+			case 'second':
+				return 1e3;
+				break;
+
+			default:
+				return FALSE;
+		}
+	}
+
+	/**
 	 * Called by interpreter before counting result rows
 	 *
 	 * @param  string $sqlRowCount   initial SQL query
@@ -246,6 +292,29 @@ abstract class SQLOptimizer {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Get duration in milleseconds that, if tuples are further apart than this,
+	 * are considered gaps in the data.
+	 * This influences weighed average calculation for SensorInterpreters,
+	 * both during retrieval and (optimally) aggregation.
+	 *
+	 * @return int gap duration in milleseconds
+	 */
+	protected function getEntityDataGapWidth() {
+		try {
+			$gap = (int) $this->interpreter->getEntity()->getProperty('gap');
+		}
+		catch (\Throwable $e) {
+			$gap = (int) Util\Configuration::read('gap', 3600) * 1e3;
+		}
+
+		if ($this->groupBy) {
+			$gap = max($gap, 2 * self::groupDuration($this->groupBy));
+		}
+
+		return $gap;
 	}
 
 	/**

@@ -111,23 +111,26 @@ class MySQLOptimizer extends SQLOptimizer {
 	 * http://www.xaprb.com/blog/2006/12/15/advanced-mysql-user-variable-techniques/
 	 */
 	public function weighedAverageSQL($sqlTimeFilter) {
+		$gap = $this->getEntityDataGapWidth();
+
 		$sql =
 			'SELECT MAX(agg.timestamp) AS timestamp, ' .
-				  'COALESCE( ' .
-					  'SUM(agg.val_by_time) / (MAX(agg.timestamp) - MIN(agg.prev_timestamp)), ' .
-					  $this->interpreter::groupExprSQL('agg.value') .
-				  ') AS value, ' .
-				  'COUNT(agg.value) AS count ' .
-		   'FROM ( ' .
+				'COALESCE(' .
+					'SUM(agg.val_by_time) / (MAX(agg.timestamp) - MIN(agg.prev_timestamp)), ' .
+						$this->interpreter::groupExprSQL('agg.value') .
+				') AS value, ' .
+				'COUNT(agg.value) AS count ' .
+			'FROM (' .
 				'SELECT timestamp, value, ' .
-					'value * (timestamp - @prev_timestamp) AS val_by_time, ' .
+					// 'value * (timestamp - @prev_timestamp) AS val_by_time, ' .
+					'value * IF(timestamp - @prev_timestamp > ' . $gap . ', 0, timestamp - @prev_timestamp) AS val_by_time, ' .
 					'COALESCE(@prev_timestamp, 0) AS prev_timestamp, ' .
 					'@prev_timestamp := timestamp ' .
 				'FROM data ' .
 				'CROSS JOIN (SELECT @prev_timestamp := NULL) AS vars ' .
 				'WHERE channel_id=? ' . $sqlTimeFilter . ' ' .
 				'ORDER BY timestamp ASC' .
-		   ') AS agg ';
+			') AS agg ';
 		return $sql;
 	}
 }

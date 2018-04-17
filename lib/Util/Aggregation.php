@@ -240,11 +240,11 @@ class Aggregation {
 			$aggregationFunction = $interpreter::groupExprSQL('agg.value');
 
 			// max aggregated timestamp before current aggregation range
-			$intialTimestamp = 'NULL';
+			$initialTimestamp = 'NULL';
 			if ($mode == self::MODE_DELTA) {
 				// since last aggregation only
 				array_push($sqlParameters, $type, $channel_id);
-				$intialTimestamp =
+				$initialTimestamp =
 					'UNIX_TIMESTAMP(DATE_ADD(' .
 					'FROM_UNIXTIME(MAX(timestamp) / 1000, ' . $format . '), ' .
 					'INTERVAL 1 ' . $level . ')) * 1000 ' .
@@ -254,11 +254,14 @@ class Aggregation {
 			elseif ($period) {
 				// selected number of periods only
 				array_push($sqlParameters, $type, $channel_id, $period);
-				$intialTimestamp =
+				$initialTimestamp =
 					'MAX(timestamp) FROM aggregate ' .
 					'WHERE type = ? AND aggregate.channel_id = ? ' .
 					'AND timestamp < UNIX_TIMESTAMP(DATE_SUB(DATE_FORMAT(NOW(), ' . $format . '), INTERVAL ? ' . $level . ')) * 1000';
 			}
+
+			// durations bigger than this are considered gaps in the data
+			$gap = Util\Configuration::read('gap', 3600) * 1e3;
 
 			// SQL query similar to MySQLOptimizer group mode
 			$sql .=
@@ -271,11 +274,12 @@ class Aggregation {
 					'COUNT(agg.value) AS count ' .
 				'FROM ( ' .
 					'SELECT channel_id, timestamp, value, ' .
-						'value * (timestamp - @prev_timestamp) AS val_by_time, ' .
+						// 'value * (timestamp - @prev_timestamp) AS val_by_time, ' .
+						'value * IF(timestamp - @prev_timestamp > ' . $gap . ', 0, timestamp - @prev_timestamp) AS val_by_time, ' .
 						'COALESCE(@prev_timestamp, 0) AS prev_timestamp, ' .
 						'@prev_timestamp := timestamp ' .
 					'FROM data ' .
-					'CROSS JOIN (SELECT @prev_timestamp := ' . $intialTimestamp . ') AS vars ' .
+					'CROSS JOIN (SELECT @prev_timestamp := ' . $initialTimestamp . ') AS vars ' .
 					'WHERE ';
 		}
 		else {

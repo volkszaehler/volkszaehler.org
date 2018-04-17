@@ -58,6 +58,8 @@ class PostgreSQLOptimizer extends SQLOptimizer {
 	/**
 	 * Provide SQL statement for SensorInterpreterAverageTrait->optimizeDataSQL
 	 * SensorInterpreter special case
+	 *
+	 * @TODO implement gap
 	 */
 	public function weighedAverageSQL($sqlTimeFilter) {
 		$sql =
