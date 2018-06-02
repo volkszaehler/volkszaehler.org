@@ -23,30 +23,21 @@
 
 namespace Volkszaehler\Controller;
 
-use Symfony\Component\HttpFoundation\Request;
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\ORMException;
-
-use Volkszaehler\Model;
-use Volkszaehler\Util;
-use Volkszaehler\Interpreter\Interpreter;
-use Volkszaehler\View\View;
-
 /**
  * Prognose controller
  *
  * @author Andreas Goetz <cpuidle@gmx.de>
  * @package default
  */
-class PrognosisController extends DataController {
+class PrognosisController extends Controller {
 
 	/**
 	 * Create and populate an interpreter
 	 */
 	private function populate($uuid, $from, $to, $tuples = null, $groupBy = null) {
-		$entity = EntityController::factory($this->em, $uuid, true); // from cache
+		$entity = $this->ef->get($uuid, true);
 		$class = $entity->getDefinition()->getInterpreter();
-		$interpreter = new $class($entity, $this->em, $from, $to, $tuples, $groupBy, $this->options);
+		$interpreter = new $class($entity, $this->em, $from, $to, $tuples, $groupBy);
 
 		foreach ($interpreter as $tuple) {
 			// loop through iterator tuples
@@ -65,17 +56,7 @@ class PrognosisController extends DataController {
 		$period = $this->getParameters()->get('period');
 		$groupBy = $this->getParameters()->get('group');
 
-		// single UUID
-		if (!Util\UUID::validate($uuid)) {
-			// allow retrieving entity by name
-			try {
-				$entity = $this->getSingleEntityByName($uuid);
-				$uuid = $entity->getUuid();
-			}
-			catch (ORMException $e) {
-				throw new \Exception('Channel \'' . $uuid . '\' does not exist, is not public or its name is not unique.');
-			}
-		}
+		$entity = $this->ef->get($uuid, true);
 
 		$partial = 'now';
 		$format = 'd.m.Y';
@@ -112,14 +93,13 @@ class PrognosisController extends DataController {
 		$ref_partial_consumption = $ref_partial->getConsumption();
 		$ref_period_consumption = $ref_period->getConsumption();
 
-		// actual forecast/prognosis
+		// if reference period is empty
+		$factor = $prognosis = 0;
+
+		// otherwise actual forecast/prognosis
 		if ($ref_partial_consumption) {
 			$factor = $current_consumption / $ref_partial_consumption;
 			$prognosis = $ref_period_consumption * $factor;
-		}
-		else {
-			$factor = null;
-			$prognosis = null;
 		}
 
 		// result
@@ -145,18 +125,6 @@ class PrognosisController extends DataController {
 				),
 			)
 		);
-	}
-
-	/*
-	 * Override inherited visibility
-	 */
-
-	public function add($uuid) {
-		throw new \Exception('Invalid context operation: \'add\'');
-	}
-
-	public function delete($uuids) {
-		throw new \Exception('Invalid context operation: \'delete\'');
 	}
 }
 
