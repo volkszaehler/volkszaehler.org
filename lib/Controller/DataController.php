@@ -45,7 +45,7 @@ class DataController extends Controller {
 
 	public function __construct(Request $request, EntityManager $em, View $view) {
 		parent::__construct($request, $em, $view);
-		$this->options = (array) strtolower($this->getParameters()->get('options'));
+		$this->options = (array) explode(',', strtolower($this->getParameters()->get('options')));
 	}
 
 	/**
