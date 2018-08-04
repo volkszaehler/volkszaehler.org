@@ -70,7 +70,7 @@ class Text extends CSV {
 		echo "database:\t" . Util\Configuration::read('db.driver') . PHP_EOL;
 		echo "time:\t" . $debug->getExecutionTime() . PHP_EOL;
 
-		if ($uptime = Util\Debug::getUptime()) echo "uptime:\t" . $uptime*1000;
+		if ($uptime = Util\Debug::getUptime()) echo "uptime:\t" . $uptime*1000 . PHP_EOL;
 		if ($load = Util\Debug::getLoadAvg()) echo "load:\t" . implode(', ', $load) . PHP_EOL;
 		if ($commit = Util\Debug::getCurrentCommit()) echo "commit-hash:\t" . $commit . PHP_EOL;
 		if ($version = phpversion()) echo "php-version:\t" . $version . PHP_EOL;
