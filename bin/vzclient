@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+#  @author Andreas Götz <cpuidle@gmx.de>
 #  @author Sven Anders <volkszaehler2011@sven.anders.im> 2011
 #  @copyright Copyright (c) 2011-2018, The volkszaehler.org project
 #  @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
@@ -29,21 +30,32 @@ import urllib
 import urllib2
 import os
 import json
+
 Config = ConfigParser.ConfigParser()
-version="0.9";
+version="1.0";
 
 parser = argparse.ArgumentParser(description='A python client for volkszaehler.org',
-              formatter_class=argparse.RawDescriptionHelpFormatter,
-              epilog="Syntax of /etc/vzclient.conf or ~/.vzclient.conf: \n"+
-                     "------------------------------------------------------------\n"+
-                     "[default]\n"+
-                     " url:http://www.example.org/subdir/volkszaehler/middleware.php\n"+
-                     " format:json\n");
+  formatter_class=argparse.RawDescriptionHelpFormatter,
+  epilog="""
+
+Example request
+---------------
+To get the titles of all public channels use:
+
+  vzclient --url demo.volkszaehler.org/middleware.php -f json -e channels,...title get channel
+
+Note that the ... operator will build an array containing the following child property, in this case `title`.
+
+Syntax of /etc/vzclient.conf or ~/.vzclient.conf
+------------------------------------------------
+[default]
+url:http://www.example.org/subdir/volkszaehler/middleware.php
+format:json""")
 parser.add_argument("operation",choices=["add","get","edit","delete"],help="what to do");
 parser.add_argument('context',choices=["data","channel","group","capabilities"],help="the context of the operation");
 parser.add_argument('--url',action='store',help="url to the volkszaehler.org middleware.php (tip: put this in config file, see below)");
 parser.add_argument('-u', '--uuid',action='append',help="the uuid to edit, get or delete");
-parser.add_argument('-f', '--format',choices=["json","xml","csv","png","gif","jpg"],action='store',help="the format");
+parser.add_argument('-f', '--format',choices=["json","xml","csv","png","gif","jpg"],action='store',help="the format (Note: when requesting json format the response is pretty-printed)");
 parser.add_argument('-e', '--eval',action='store',help="get comma-separated attribute from json response (Example: entity,uuid will extract the uuid from a json string: {\"entity\":{\"uuid\":\"4...\"}})");
 parser.add_argument('-j', '--json',action='store',help="send json request");
 parser.add_argument('-t', '--token',action='store',help="access token as generated with token-helper tool");
@@ -60,6 +72,9 @@ if (url is None):
   except:
     print "ERROR: Please specify an url!";
     exit(1);
+elif (url[:4].lower() != "http"):
+  url="http://"+url
+
 format=args.format;
 if (format is None):
   try:
@@ -112,14 +127,28 @@ except urllib2.URLError as error:
 
 try:
   if (args.eval is None):
-    print jsonstr;
-  else:
-    obj=json.loads(jsonstr);
-    for ev in args.eval.split(",") :
-      if (isinstance(obj,(list,tuple))):
+    if (args.format == "json"):
+      print json.dumps(json.loads(jsonstr), indent=2)
+    else:
+      print jsonstr;
+    exit(0)
+
+  # parsed - only json
+  obj=json.loads(jsonstr);
+  for ev in args.eval.split(",") :
+    if (isinstance(obj,(list,tuple))):
+      if (ev[:3]=="..."):
+        ev=ev[3:] # child access key
+        children = []
+        for child in obj:
+          children.append(child[ev])
+        obj = children
+        ev = None
+      else:
         try:
           ev=int(ev) # array access
         except: pass
+    if (ev != None):
       try:
         obj=obj[ev]
       except KeyError:
