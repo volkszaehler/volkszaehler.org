@@ -114,7 +114,7 @@ class ClearCommand extends BasicCommand {
 		$this->setName('clear')
 			->setDescription('Clear aggregation table')
 		->addArgument('uuid', InputArgument::OPTIONAL | InputArgument::IS_ARRAY, 'UUID(s)', array(null))
-			->addOption('level', 'l', InputOption::VALUE_REQUIRED, 'Level (all|hour|day|month|year)', 'all')
+			->addOption('level', 'l', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Level (hour|day|month|year)', ['all'])
 			->addOption('since', 's', InputOption::VALUE_REQUIRED, 'Clear aggregation data since specified date')
 			->addOption('verbose', 'v', InputOption::VALUE_NONE, 'Verbose mode');
 	}
@@ -122,19 +122,27 @@ class ClearCommand extends BasicCommand {
 	protected function execute(InputInterface $input, OutputInterface $output) {
 		parent::execute($input, $output);
 
-		foreach ($input->getArgument('uuid') as $uuid) {
-			$msg = "Clearing aggregation table";
-			if ($uuid) $msg .= " for UUID " . $uuid;
-			echo($msg . ".\n");
-
-			$since = $input->getOption('since');
-			if (false === $timestamp = strtotime($since)) {
-				throw new \Exception('Invalid timestamp ' . $since);
-			}
-
-			$this->aggregator->clear($uuid, $input->getOption('level'), $timestamp);
-			echo("Done clearing aggregation table.\n");
+		$since = $input->getOption('since');
+		if ($since === null) {
+			$timestamp = null;
 		}
+		elseif (false === $timestamp = strtotime($since)) {
+			throw new \Exception('Invalid timestamp ' . $since);
+		}
+
+		// loop through all aggregation levels
+		foreach ($input->getOption('level') as $level) {
+			foreach ($input->getArgument('uuid') as $uuid) {
+				$msg = "Clearing aggregation table";
+				if ($uuid) $msg .= " for UUID " . $uuid;
+				$msg .= " on '" . $level . "' level";
+				echo($msg . ".\n");
+
+				$this->aggregator->clear($uuid, $level, $timestamp);
+			}
+		}
+
+		echo("Done clearing aggregation table.\n");
 	}
 }
 
