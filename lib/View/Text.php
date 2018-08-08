@@ -67,6 +67,7 @@ class Text extends CSV {
 	 * @param Util\Debug $debug
 	 */
 	protected function addDebug(Util\Debug $debug) {
+		echo PHP_EOL;
 		echo "database:\t" . Util\Configuration::read('db.driver') . PHP_EOL;
 		echo "time:\t" . $debug->getExecutionTime() . PHP_EOL;
 
@@ -79,11 +80,10 @@ class Text extends CSV {
 			echo "message:\t" . $message['message'] . PHP_EOL;	// TODO add more information
 		}
 
+		echo "sql:\t" . PHP_EOL;
 		foreach ($debug->getQueries() as $query) {
-			echo "query:\t" . $query['sql'] . PHP_EOL;
-			if (isset($query['parameters'])) {
-				echo "\tparameters:\t" . implode(', ', $query['parameters']) . PHP_EOL;
-			}
+			$parameters = isset($query['params']) ? $query['params'] : [];
+			echo Util\Debug::getParametrizedQuery($query['sql'], $parameters) . PHP_EOL;
 		}
 	}
 
