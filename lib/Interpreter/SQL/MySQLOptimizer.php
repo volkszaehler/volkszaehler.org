@@ -110,7 +110,7 @@ class MySQLOptimizer extends SQLOptimizer {
 	 * http://stackoverflow.com/questions/24457442/how-to-find-previous-record-n-per-group-maxtimestamp-timestamp
 	 * http://www.xaprb.com/blog/2006/12/15/advanced-mysql-user-variable-techniques/
 	 */
-	public function weighedAverageSQL($sqlTimeFilter) {
+	public function weighedAverageSQL($sqlTimeFilter, $aggregateQuery = false) {
 		$sql =
 			'SELECT MAX(agg.timestamp) AS timestamp, ' .
 				  'COALESCE( ' .
@@ -122,12 +122,25 @@ class MySQLOptimizer extends SQLOptimizer {
 				'SELECT timestamp, value, ' .
 					'value * (timestamp - @prev_timestamp) AS val_by_time, ' .
 					'COALESCE(@prev_timestamp, 0) AS prev_timestamp, ' .
-					'@prev_timestamp := timestamp ' .
-				'FROM data ' .
+					'@prev_timestamp := timestamp ';
+
+		// calculate weighed average on aggregate data
+		if ($aggregateQuery) {
+			$sql .= 
+				'FROM (' . $aggregateQuery . ') AS inner_query ' .
+				'CROSS JOIN (SELECT @prev_timestamp := NULL) AS vars ' .
+				'ORDER BY timestamp ASC' .
+		   ') AS agg ';
+		}
+		else {
+			$sql .= 
+				'FROM data ' . 
 				'CROSS JOIN (SELECT @prev_timestamp := NULL) AS vars ' .
 				'WHERE channel_id=? ' . $sqlTimeFilter . ' ' .
 				'ORDER BY timestamp ASC' .
 		   ') AS agg ';
+		}
+
 		return $sql;
 	}
 }
