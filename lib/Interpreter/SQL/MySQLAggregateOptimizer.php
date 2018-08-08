@@ -141,13 +141,10 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 	}
 
 	public function optimizeDataSQL(&$sql, &$sqlParameters, $rowCount) {
-		$optimize = false;
-
+		// suitable aggregation data available?
 		if ($this->validateAggregationUsage()) {
 
 			if ($this->groupBy) {
-				$optimize = true;
-
 				// optimize grouped statement
 				$sqlParameters = $this->buildAggregationTableParameters();
 				$sqlGroupFields = self::buildGroupBySQL($this->groupBy);
@@ -163,21 +160,28 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 					   'FROM aggregate ' .
 					   'WHERE channel_id = ? AND type = ?' . $this->sqlTimeFilter;
 
-				// add common aggregation and sorting on UNIONed table
-				// (sorting applied outside UNION as MySQL doesn't guarantee UNION result ordering)
-				$sql = 'SELECT MAX(timestamp) AS timestamp, ' .
-						$this->interpreter::groupExprSQL('value') . ' AS value, SUM(count) AS count ' .
-					   'FROM (' . $sql . ') AS agg ' .
-					   'GROUP BY ' . $sqlGroupFields . ' ORDER BY timestamp ASC';
+				if (get_class($this->interpreter) == Interpreter\SensorInterpreter::class) {
+					$sql = $this->weighedAverageSQL('', $sql) .
+						   'GROUP BY ' . $sqlGroupFields . ' ' .
+						   'ORDER BY timestamp ASC';
+				}
+				else {
+					// add common aggregation and sorting on UNIONed table
+					// (sorting applied outside UNION as MySQL doesn't guarantee UNION result ordering)
+					$sql = 'SELECT MAX(timestamp) AS timestamp, ' .
+							$this->interpreter::groupExprSQL('value') . ' AS value, SUM(count) AS count ' .
+						   'FROM (' . $sql . ') AS agg ' .
+						   'GROUP BY ' . $sqlGroupFields . ' ORDER BY timestamp ASC';
+				}
+
+				return true;
 			}
 			elseif ($this->tupleCount == 1 && ($rowCount > $this->tupleCount)) {
 				// optimize non-grouped statement special case: package into 1 tuple
 				$packageSize = floor($rowCount / $this->tupleCount);
 
 				// shift aggregation boundary start by 1 unit to make sure first tuple is not aggregated
-				$optimize = $packageSize > 1 && $this->getAggregationBoundary(1);
-
-				if ($optimize) {
+				if ($packageSize > 1 && $this->getAggregationBoundary(1)) {
 					$sqlParameters = $this->buildAggregationTableParameters();
 
 					// 	   table:   --DATA-- -----aggregate----- -DATA-
@@ -208,12 +212,14 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 						   'FROM (' . $sql . ') AS agg ' .
 						   'GROUP BY timestamp > (' . $leftSql . ') ' .
 						   'ORDER BY timestamp ASC';
+
+					return true;
 				}
 			}
 		}
 
 		// get upstream optimization
-		return ($optimize) ?: parent::optimizeDataSQL($sql, $sqlParameters, $rowCount);
+		return parent::optimizeDataSQL($sql, $sqlParameters, $rowCount);
 	}
 
 	/**
