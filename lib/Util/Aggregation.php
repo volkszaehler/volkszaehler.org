@@ -156,7 +156,9 @@ class Aggregation {
 	/**
 	 * Remove aggregration data - either all or selected type
 	 *
+	 * @param  string $uuid  uuid to clean or 'all'
 	 * @param  string $level aggregation level to remove data for
+	 * @param  int $since    unix timestap in seconds to clean data from to now
 	 * @return int 			 number of affected rows
 	 */
 	public function clear($uuid = null, $level = 'all', $since = null) {
@@ -166,6 +168,7 @@ class Aggregation {
 			$sql = 'TRUNCATE TABLE aggregate';
 		}
 		else {
+			// join clause
 			$sql = 'INNER JOIN entities ON aggregate.channel_id = entities.id ' .
 				   'WHERE ';
 
@@ -184,9 +187,8 @@ class Aggregation {
 
 			if ($since) {
 				$sql .= 'aggregate.timestamp >= 1000*?';
-				$sqlParameters[] = $timestamp;
+				$sqlParameters[] = $since;
 			}
-
 			$optimizer = SQLOptimizer::staticFactory();
 			$sql = $optimizer::buildDeleteFromJoinSQL('aggregate', $sql);
 		}

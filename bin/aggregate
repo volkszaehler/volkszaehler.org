@@ -122,12 +122,11 @@ class ClearCommand extends BasicCommand {
 	protected function execute(InputInterface $input, OutputInterface $output) {
 		parent::execute($input, $output);
 
-		$since = $input->getOption('since');
-		if ($since === null) {
-			$timestamp = null;
-		}
-		elseif (false === $timestamp = strtotime($since)) {
-			throw new \Exception('Invalid timestamp ' . $since);
+		$timestamp = null;
+		if ($since = $input->getOption('since')) {
+			if (false === $timestamp = strtotime($since)) {
+				throw new \Exception('Invalid timestamp ' . $since);
+			}
 		}
 
 		// loop through all aggregation levels
