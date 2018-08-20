@@ -79,12 +79,12 @@ trait InterpreterCoordinatorTrait {
 	}
 
 	public function getCoordinatedFrom() {
-		$from = PHP_INT_MAX;
+		$from = null;
 
 		// create first timestmap as min from interpreters
 		foreach ($this->interpreters as $interpreter) {
 			$value = $interpreter->getFrom();
-			$from = min($from, $value);
+			$from = min($from ?? $value, $value);
 		}
 
 		return $from;
