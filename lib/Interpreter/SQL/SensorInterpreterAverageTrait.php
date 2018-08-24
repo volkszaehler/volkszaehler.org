@@ -33,6 +33,14 @@ use Volkszaehler\Interpreter\SensorInterpreter;
 trait SensorInterpreterAverageTrait {
 
 	/**
+	 * Determine if interpreter requires a weighed average calculation
+	 * @return boolean Weighed average required
+	 */
+	public function weighedAverageRequired() {
+		return get_class($this->interpreter) == SensorInterpreter::class;
+	}
+
+	/**
 	 * SQL statement optimization for performance
 	 *
 	 * @param  string $sql           SQL statement to modify
@@ -41,7 +49,7 @@ trait SensorInterpreterAverageTrait {
 	 */
 	public function optimizeDataSQL(&$sql, &$sqlParameters, $rowCount) {
 		// additional optimizations for SensorInterpreter only
-		if (get_class($this->interpreter) !== SensorInterpreter::class) {
+		if (!$this->weighedAverageRequired()) {
 			return parent::optimizeDataSQL($sql, $sqlParameters, $rowCount);
 		}
 

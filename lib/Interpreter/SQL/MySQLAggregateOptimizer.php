@@ -160,7 +160,7 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 					   'FROM aggregate ' .
 					   'WHERE channel_id = ? AND type = ?' . $this->sqlTimeFilter;
 
-				if (get_class($this->interpreter) == Interpreter\SensorInterpreter::class) {
+				if ($this->weighedAverageRequired()) {
 					$sql = $this->weighedAverageSQL('', $sql) .
 						   'GROUP BY ' . $sqlGroupFields . ' ' .
 						   'ORDER BY timestamp ASC';
