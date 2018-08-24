@@ -1,134 +1,142 @@
+sudo: false
+
+notifications:
+  email: "volkszaehler-dev@lists.volkszaehler.org"
+
+matrix:
+  fast_finish: true
+
 language: php
 
 php:
-    - 7.0
-    - 7.1
-    - 7.2
+  - 7.0
+  - 7.1
+  - 7.2
 
 services:
-    - mysql
+  - mysql
 
-# http://docs.travis-ci.com/user/migrating-from-legacy/
-sudo: false
-
-env:
-  # run composer by default
-  global:
-    - DEPENDENCIES=standard
-    - TRAVIS_TEST_EXCLUDES="--exclude-group slow,jpgraph,pushserver"
-  matrix:
-    - DB=mysql
-
-matrix:
-  include:
-    # postgres
-    - php: 7.0
-      services: postresql
-      env: DB=pgsql
-    # sqlite
-    - php: 7.0
-      env: DB=sqlite
-    # httpd-based
-    - php: 7.0
-      env: DB=mysql COMPONENT=HTTPD
-    # push-server
-    - php: 7.0
-      env: DB=mysql COMPONENT=PUSHD
-    # from..to
-    - php: 7.0
-      env: DB=mysql DEPENDENCIES=lowest
-    # jslint-only
-    - php: 7.0
-      env: DB= DEPENDENCIES= JSLINT=true
-
-notifications:
-    email: "volkszaehler-dev@lists.volkszaehler.org"
-    irc: "chat.freenode.net#volkszaehler.org"
-
-# speedup build
 cache:
   directories:
     - $COMPOSER_CACHE_DIR
     - $HOME/.composer/cache
     - node_modules
 
+env:
+  # run composer by default
+  global:
+    - TRAVIS_TEST_EXCLUDES="--exclude-group slow,jpgraph,pushserver"
+  matrix:
+    - DB=mysql
+
+stages:
+  - test
+  - components
+  - databases
+  - dependencies
+  - jslint
+
 before_install:
-    # disable xdebug for composer performance
-    - if [ -e /home/travis/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini ]; then rm /home/travis/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini; fi
+  # disable xdebug for composer performance
+  - if [ -e /home/travis/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini ]; then rm /home/travis/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini; fi
 
 install:
-    - if [ "$JSLINT" = true ]; then npm install -g gulp; npm install; fi
-    - if [ "$DEPENDENCIES" = "standard" ]; then composer install; fi
-    - if [ "$DEPENDENCIES" = "lowest" ]; then composer update --prefer-lowest -n; fi
+  - composer install
 
-    # add apc cache
-    - |
-      if [ "$JSLINT" != true ]; then
-        phpenv config-add ./test/bin/apc.ini && printf "\n" | pecl install apcu
-        php -r 'echo(function_exists("apcu_store")?"APCu enabled":"APCu disabled");'
-      fi
+  # add apc cache
+  - |
+    phpenv config-add ./test/bin/apc.ini && printf "\n" | pecl install apcu
+    php -r 'echo(function_exists("apcu_store")?"APCu enabled":"APCu disabled");'
 
 before_script:
-    # enable shell errors
-    - set -e
-    - cp etc/volkszaehler.conf.template.php etc/volkszaehler.conf.php
+  # enable shell errors
+  - set -e
+  - cp etc/volkszaehler.conf.template.php etc/volkszaehler.conf.php
 
-    - DATABASE=volkszaehler
-    - USER=root
-    - PASSWORD=
-    - if [ "$DB" = "pgsql" ]; then USER=postgres; fi
+  - DATABASE=volkszaehler
+  - USER=root
+  - PASSWORD=
+  - if [ "$DB" = "pgsql" ]; then USER=postgres; fi
 
-    # create config file
-    - sed -i "s/'pdo_mysql'/'pdo_$DB'/" etc/volkszaehler.conf.php
-    - sed -i "s/'vz'/'$USER'/" etc/volkszaehler.conf.php
-    - sed -i "s/'demo'/'$PASSWORD'/" etc/volkszaehler.conf.php
-    - sed -i "s/'volkszaehler'/'$DATABASE'/" etc/volkszaehler.conf.php
-    - if [ "$DB" = "sqlite" ]; then sed -i "s/\?>/\$config['db']['path']\ =\ VZ_DIR.'\/sqlite.db3'\;\n?>/" etc/volkszaehler.conf.php; fi
-    - cat etc/volkszaehler.conf.php
+  # create config file
+  - sed -i "s/'pdo_mysql'/'pdo_$DB'/" etc/volkszaehler.conf.php
+  - sed -i "s/'vz'/'$USER'/" etc/volkszaehler.conf.php
+  - sed -i "s/'demo'/'$PASSWORD'/" etc/volkszaehler.conf.php
+  - sed -i "s/'volkszaehler'/'$DATABASE'/" etc/volkszaehler.conf.php
+  - if [ "$DB" = "sqlite" ]; then sed -i "s/\?>/\$config['db']['path']\ =\ VZ_DIR.'\/sqlite.db3'\;\n?>/" etc/volkszaehler.conf.php; fi
+  - cat etc/volkszaehler.conf.php
 
-    # create database
-    - if [ "$DB" = "mysql" ]; then mysql -e "CREATE DATABASE $DATABASE;" -u $USER; fi
-    - if [ "$DB" = "pgsql" ]; then psql -c "CREATE DATABASE $DATABASE;" -U $USER; fi
+  # create database
+  - if [ "$DB" = "mysql" ]; then mysql -e "CREATE DATABASE $DATABASE;" -u $USER; fi
+  - if [ "$DB" = "pgsql" ]; then psql -c "CREATE DATABASE $DATABASE;" -U $USER; fi
 
-    # create schema
-    - if [ -n "$DB" ]; then php bin/doctrine orm:schema-tool:create; fi
+  # create schema
+  - if [ -n "$DB" ]; then php bin/doctrine orm:schema-tool:create; fi
 
-    # start middleware service
-    - |
-      if [ "$COMPONENT" = "HTTPD" ]; then
-        sed -i "s/testAdapter\" value=\".*\"/testAdapter\" value=\"HTTP\"/" phpunit.xml
-        vendor/bin/ppm start -c etc/middleware.json &
-      fi
+  # start middleware service
+  - |
+    if [ "$COMPONENT" = "HTTPD" ]; then
+      sed -i "s/testAdapter\" value=\".*\"/testAdapter\" value=\"HTTP\"/" phpunit.xml
+      vendor/bin/ppm start -c etc/middleware.json &
+    fi
 
-    # push server tests
-    - |
-      if [ "$COMPONENT" = "PUSHD" ]; then
-        sed -i "s/\?>/\$config['push']['enabled']\ =\ true\;\n?>/" etc/volkszaehler.conf.php
-        php bin/push-server &
-      fi
-
-after_script:
-    # stop middleware service
-    - |
-      if [ "$COMPONENT" = "HTTPD" ]; then
-        vendor/bin/ppm stop -c etc/middleware.json
-      fi
+  # push server tests
+  - |
+    if [ "$COMPONENT" = "PUSHD" ]; then
+      sed -i "s/\?>/\$config['push']['enabled']\ =\ true\;\n?>/" etc/volkszaehler.conf.php
+      php bin/push-server &
+    fi
 
 script:
-    # run core tests
-    - if [ -n "$DB" ]; then vendor/bin/phpunit $TRAVIS_TEST_EXCLUDES,aggregation; fi
+  # run core tests
+  - if [ -n "$DB" ]; then vendor/bin/phpunit $TRAVIS_TEST_EXCLUDES,aggregation; fi
 
-    # run aggregation tests (mysql only)
-    - |
-      if [ "$DB" = "mysql" ]; then
-        sed -i "s/\?>/\$config['aggregation']\ =\ true;\n?>/" etc/volkszaehler.conf.php
-        php bin/aggregate run -m delta -l hour
-        vendor/bin/phpunit $TRAVIS_TEST_EXCLUDES
-      fi
+  # run aggregation tests (mysql only)
+  - |
+    if [ "$DB" = "mysql" ]; then
+      sed -i "s/\?>/\$config['aggregation']\ =\ true;\n?>/" etc/volkszaehler.conf.php
+      php bin/aggregate run -m delta -l hour
+      vendor/bin/phpunit $TRAVIS_TEST_EXCLUDES
+    fi
 
-    # push server tests
-    - if [ "$COMPONENT" = "PUSHD" ]; then vendor/bin/phpunit --group pushserver; fi
+  # push server tests
+  - if [ "$COMPONENT" = "PUSHD" ]; then vendor/bin/phpunit --group pushserver; fi
 
-    # jslint javascript sources
-    - if [ "$JSLINT" = true ]; then gulp jshint; fi
 
+jobs:
+  include:
+  - stage: components
+    # httpd-based
+    php: 7.1
+    env: DB=mysql COMPONENT=HTTPD
+    after_script:
+      - vendor/bin/ppm stop -c etc/middleware.json
+
+  - stage: components
+    # push-server
+    php: 7.1
+    env: DB=mysql COMPONENT=PUSHD
+
+  - stage: dependencies
+    php: 7.0
+    install:
+      - composer update --prefer-lowest -n
+    script:
+      - vendor/bin/phpunit $TRAVIS_TEST_EXCLUDES,aggregation
+
+  - stage: jslint
+    install:
+      - npm install -g gulp
+      - npm install
+    script:
+      # jslint javascript sources
+      - gulp jshint
+
+
+    # # postgres
+    # - php: 7.0
+    #   services: postresql
+    #   env: DB=pgsql
+    # # sqlite
+    # - php: 7.0
+    #   env: DB=sqlite
