@@ -102,9 +102,11 @@ vz.wui.updateLegend = function(pos, item) {
 		var legend = $('.legend .legendLabel');
 		if (y === null) {
 			legend.eq(i).text(series.title);
+			$('#legend .value.' + series.uuid).empty();
 		}
 		else {
 			legend.eq(i).text(series.title + ": " + vz.wui.formatNumber(y, series.unit));
+			$('#legend .value.' + series.uuid).text(" " + vz.wui.formatNumber(y, series.unit));
 		}
 	}
 
@@ -209,6 +211,56 @@ vz.wui.tickFormatter = function (value, axis, tickIndex, ticks) {
 	return value.toFixed(axis.tickDecimals);
 };
 
+vz.wui.drawLegend = function (series) {
+	container = $('#legend');
+	container.empty();
+
+	series.forEach(function(serie) {
+		if (!serie.yaxis) return;
+
+		var el = $('<div>');
+
+		var axis = vz.options.plot.yaxes[serie.yaxis-1];
+		if (axis && axis.position == 'right') {
+			el.addClass('right');
+		}
+
+		var lineWidth = 4;
+		if (serie.lines) {
+			lineWidth = serie.lines.lineWidth;
+		}
+		else if (serie.points) {
+			lineWidth = serie.points.lineWidth;
+		}
+
+		var background = serie.color;
+		if (serie.dashes) {
+			var dashes = serie.dashes.dashLength;
+			if (!dashes.length) {
+				// convert to array
+				dashes = [dashes, dashes];
+			}
+			background = 'repeating-linear-gradient('+
+			  'to right,'+
+			  serie.color +','+
+			  serie.color +' '+dashes[0]+'px,'+
+			  '#fff '+dashes[0]+ 'px,'+
+			  '#fff '+(dashes[0]+dashes[1])+ 'px)';
+		}
+
+		var hr = $('<hr>').css({
+			height: lineWidth + 'px',
+			background: background,
+		});
+
+		el.append(hr);
+		el.append($('<span>').text(serie.title));
+		el.append($('<span class=value>').addClass(serie.uuid));
+
+		container.append(el);
+	});
+}
+
 /**
  * Draws plot to container
  *
@@ -280,6 +332,7 @@ vz.wui.drawPlot = function () {
 
 		var serie = {
 			data: tuples,
+			uuid: entity.uuid, // added for legend generation
 			color: entity.color,
 			label: entity.title,
 			title: entity.title,
@@ -377,6 +430,9 @@ vz.wui.drawPlot = function () {
 	else {
 		$('#overlay').empty();
 	}
+
+	// prepare legend
+	vz.wui.drawLegend(series);
 
 	// call flot
 	vz.plot = $.plot($('#flot'), series, plotOptions);

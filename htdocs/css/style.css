@@ -63,8 +63,41 @@ td input:not([type=image]):not([type=checkbox]) {
 	background-color: white;
 }
 
+/* legacy flot legend */
 .legend table {
 	width: auto;
+}
+
+/* floating legend below chart area */
+#legend {
+	font-size: 0.8em;
+}
+
+/* clearfix for floated legend entries */
+#legend:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+#legend div {
+	float: left;
+	display: inline-block;
+	margin: auto 8px auto 0;
+}
+
+#legend div.right {
+	float: right;
+	margin: auto 0 auto 8px;
+}
+
+#legend hr {
+	width: 25px;
+	height: 4px;
+	margin: auto 4px auto 0;
+	display: inline-block;
+	border: none;
+	vertical-align: middle;
 }
 
 .axisLabels { /* if axislabels plugin is used */

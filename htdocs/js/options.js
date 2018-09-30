@@ -76,7 +76,7 @@ vz.options.plot = {
 		}
 	},
  	legend: {
-		show: true,
+		show: false,
 		position: 'nw',
 		backgroundOpacity: 0.80,
 	},
