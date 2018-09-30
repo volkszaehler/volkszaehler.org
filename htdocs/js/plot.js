@@ -151,6 +151,7 @@ vz.wui.plotLeave = function() {
 	vz.plot.getData().forEach(function(series, idx) {
 		$('.legend .legendLabel').eq(idx).text(series.title);
 	});
+	$('#legend .value').empty();
 };
 
 /**
