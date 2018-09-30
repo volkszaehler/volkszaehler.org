@@ -434,6 +434,18 @@
 		}
 	},
 	{
+		"name"			: "universalcounter",
+		"required"		: ["unit"],
+		"optional"		: ["resolution", "tolerance", "cost", "local", "gap", "initialconsumption"],
+		"icon"			: "gauge.png",
+		"interpreter"		: "Volkszaehler\\Interpreter\\CounterInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"		: {
+			"de" : "Zähler",
+			"en" : "Counter"
+		}
+	},
+	{
 		"name"                  : "filllevel",
 		"optional"              : ["resolution", "tolerance", "cost", "local"],
 		"icon"                  : "waterdrop.png",
