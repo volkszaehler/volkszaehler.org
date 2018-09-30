@@ -253,7 +253,7 @@ vz.wui.drawLegend = function (series) {
 			background: background,
 		});
 
-		el.append(hr);
+		el.append($('<div>').append(hr));
 		el.append($('<span>').text(serie.title));
 		el.append($('<span class=value>').addClass(serie.uuid));
 

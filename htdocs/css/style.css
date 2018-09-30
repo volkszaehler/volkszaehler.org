@@ -71,6 +71,7 @@ td input:not([type=image]):not([type=checkbox]) {
 /* floating legend below chart area */
 #legend {
 	font-size: 0.8em;
+	color: rgb(84, 84, 84);
 }
 
 /* clearfix for floated legend entries */
@@ -80,24 +81,30 @@ td input:not([type=image]):not([type=checkbox]) {
   clear: both;
 }
 
-#legend div {
+#legend > div {
 	float: left;
 	display: inline-block;
 	margin: auto 8px auto 0;
 }
 
-#legend div.right {
+#legend > div.right {
 	float: right;
 	margin: auto 0 auto 8px;
 }
 
-#legend hr {
-	width: 25px;
-	height: 4px;
+/* hr wrapper for Safari which ignores hr#width */
+#legend > div div {
+	width: 15px;
 	margin: auto 4px auto 0;
-	display: inline-block;
-	border: none;
 	vertical-align: middle;
+	display: inline-block;
+}
+
+#legend hr {
+	height: 4px;
+	vertical-align: middle;
+	border: none;
+	box-shadow: unset;
 }
 
 .axisLabels { /* if axislabels plugin is used */
