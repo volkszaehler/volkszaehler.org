@@ -93,13 +93,13 @@ for p in args.param:
 # print url;
 
 req = urllib2.Request(url)
-req.add_header('User-agent', 'vzclient/$version')
+req.add_header('User-Agent', 'vzclient/'+version)
 try:
   if (args.json):
     req.add_header('Content-Type', 'application/json');
-    f=urllib2.urlopen(url, args.json);
+    f=urllib2.urlopen(req, args.json);
   else:
-    f=urllib2.urlopen(url);
+    f=urllib2.urlopen(req);
   jsonstr=f.read();
 
   # unparsed - json or other format
