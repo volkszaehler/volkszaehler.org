@@ -92,14 +92,17 @@ for p in args.param:
   url=url+"&"+urllib2.quote(key)+"="+urllib2.quote(value);
 # print url;
 
-req = urllib2.Request(url)
-req.add_header('User-agent', 'vzclient/$version')
+
+opener = urllib2.build_opener()
+opener.addheaders = [('User-agent', 'vzclient_' + version)]
+
+
 try:
   if (args.json):
-    req.add_header('Content-Type', 'application/json');
-    f=urllib2.urlopen(url, args.json);
+    opener.addheaders = [('Content-Type', 'application/json')];
+    f=opener.open(url, args.json);
   else:
-    f=urllib2.urlopen(url);
+    f=opener.open(url);
   jsonstr=f.read();
 
   # unparsed - json or other format
