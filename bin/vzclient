@@ -94,7 +94,7 @@ for p in args.param:
 
 
 opener = urllib2.build_opener()
-opener.addheaders = [('User-agent', 'vzclient_' + version)]
+opener.addheaders = [('User-agent', 'vzclient/' + version)]
 
 
 try:
