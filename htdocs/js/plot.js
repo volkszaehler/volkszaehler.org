@@ -260,7 +260,7 @@ vz.wui.drawLegend = function (series) {
 
 		container.append(el);
 	});
-}
+};
 
 /**
  * Draws plot to container
