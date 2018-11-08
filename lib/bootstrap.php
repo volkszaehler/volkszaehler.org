@@ -24,6 +24,19 @@
 
 use Volkszaehler\Util;
 
+function fail($msg) {
+	if (preg_match('/\.json/', $_SERVER['REQUEST_URI'])) {
+		header('Content-type: application/json');
+		echo json_encode([
+			'version' => VZ_VERSION,
+			'exception' => array(
+				'message' => $msg
+			)
+		]);
+	}
+	die();
+}
+
 // enable strict error reporting
 error_reporting(E_ALL | E_STRICT);
 
@@ -36,11 +49,11 @@ if (!defined('VZ_DIR')) {
 }
 
 if (!file_exists(VZ_DIR . '/vendor/autoload.php')) {
-	die('Could not find autoloader. Check that dependencies have been installed via `composer install`.');
+	fail('Could not find autoloader. Check that dependencies have been installed via `composer install`.');
 }
 
 if (!file_exists(VZ_DIR . '/etc/volkszaehler.conf.php')) {
-	die('Could not find config file. Check that etc/volkszaehler.conf.php exists.');
+	fail('Could not find config file. Check that etc/volkszaehler.conf.php exists.');
 }
 
 require_once VZ_DIR . '/vendor/autoload.php';
