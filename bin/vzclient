@@ -100,7 +100,7 @@ for p in args.param:
 # build request
 
 req = urllib2.Request(url)
-req.add_header('User-agent', 'vzclient/$version')
+req.add_header('User-Agent', 'vzclient/'+version)
 
 token=args.token;
 if (token is None):
@@ -115,9 +115,9 @@ if (token):
 try:
   if (args.json):
     req.add_header('Content-Type', 'application/json');
-    f=urllib2.urlopen(url, args.json);
+    f=urllib2.urlopen(req, args.json);
   else:
-    f=urllib2.urlopen(url);
+    f=urllib2.urlopen(req);
   jsonstr=f.read();
 except urllib2.URLError as error:
   print "HTTP error: {0}".format(error.reason);
