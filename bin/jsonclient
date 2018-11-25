@@ -29,6 +29,8 @@ import urllib
 import urllib2
 import os
 import json
+import ssl
+
 version="0.1";
 
 parser = argparse.ArgumentParser(description='A python client for json data sources');
@@ -37,6 +39,9 @@ parser.add_argument('-f', '--file', action='store', help="filename of the data s
 parser.add_argument('-e', '--eval', action='store', help="get comma-separated attribute from json response (use @prop=value to filter arrays)\n(Example: entity,@uuid=4,0,type will extract the type from a json string: {entity:[{uuid:4,type=\"power\"...}]})");
 parser.add_argument('-j', '--json', action='store', help="send json request");
 args = parser.parse_args();
+
+ctx = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
+#urllib2.urlopen("https://your-test-server.local", context=ctx)
 
 url=args.url;
 if (url is None):
@@ -55,7 +60,7 @@ else:
       req.add_header('Content-Type', 'application/json');
       f=urllib2.urlopen(url, args.json);
     else:
-      f=urllib2.urlopen(url);
+      f=urllib2.urlopen(url, context=ctx);
     jsonstr=f.read();
   except urllib2.HTTPError,error:
     print error.read();
