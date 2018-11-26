@@ -60,16 +60,16 @@ tmp_file=$(mktemp)
 # analyze json response
 #
 #cat "$tmp_file" > /var/www/volkszaehler.org/htdocs/dsm.json
+#
 #exit  # Currency of the tests should be aborted here
 
 # parse data
-
-    for uuid in "${!sensors[@]}"; do
-            sensor=${sensors[$uuid]}
-            
-            val=$("$jc" --file "$tmp_file" -e result,dSMeters,$sensor,energyMeterValue)
-			echo $uuid  $val
-            #if [ -n "$val" ]; then "$vzc" -u $uuid add data value=$val; fi
-    done
+for uuid in "${!sensors[@]}"; do
+ sensor=${sensors[$uuid]}
+ val=$("$jc" --file "$tmp_file" -e result,dSMeters,$sensor,energyMeterValue)
+ echo $uuid  $val
+ # save to vzclient
+ if [ -n "$val" ]; then "$vzc" -u $uuid add data value=$val; fi
+done
 
 rm "$tmp_file"
