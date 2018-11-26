@@ -61,7 +61,7 @@ tmp_file=$(mktemp)
 #
 #cat "$tmp_file" > /var/www/volkszaehler.org/htdocs/dsm.json
 #
-#exit  # Currency of the tests should be aborted here
+#exit  # Exit script here for testing
 
 # parse data
 for uuid in "${!sensors[@]}"; do
