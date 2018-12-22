@@ -169,7 +169,7 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 					// add common aggregation and sorting on UNIONed table
 					// (sorting applied outside UNION as MySQL doesn't guarantee UNION result ordering)
 					$sql = 'SELECT MAX(timestamp) AS timestamp, ' .
-							$this->interpreter::groupExprSQL('value') . ' AS value, SUM(count) AS count ' .
+							$this->interpreter->groupExprSQL('value') . ' AS value, SUM(count) AS count ' .
 						   'FROM (' . $sql . ') AS agg ' .
 						   'GROUP BY ' . $sqlGroupFields . ' ORDER BY timestamp ASC';
 				}

@@ -115,7 +115,7 @@ class MySQLOptimizer extends SQLOptimizer {
 			'SELECT MAX(agg.timestamp) AS timestamp, ' .
 				  'COALESCE( ' .
 					  'SUM(agg.val_by_time) / (MAX(agg.timestamp) - MIN(agg.prev_timestamp)), ' .
-					  $this->interpreter::groupExprSQL('agg.value') .
+					  $this->interpreter->groupExprSQL('agg.value') .
 				  ') AS value, ' .
 				  'COUNT(agg.value) AS count ' .
 		   'FROM ( ' .

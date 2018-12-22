@@ -231,7 +231,7 @@ abstract class SQLOptimizer {
 			$sqlTimeFilter = self::buildDateTimeFilterSQL($this->from, $this->to, $foo);
 
 			$sql = 'SELECT MAX(agg.timestamp) AS timestamp, ' .
-						   $this->interpreter::groupExprSQL('agg.value') . ' AS value, ' .
+						   $this->interpreter->groupExprSQL('agg.value') . ' AS value, ' .
 						  'COUNT(agg.value) AS count ' .
 				   'FROM (' .
 						 'SELECT timestamp, value ' .

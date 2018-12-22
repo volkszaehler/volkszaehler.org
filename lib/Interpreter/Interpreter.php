@@ -109,7 +109,7 @@ abstract class Interpreter implements \IteratorAggregate {
 		$this->optimizer = new $class($this);
 
 		// value filters
-		$this->sqlValueFilter = $this->optimizer::buildValueFilterSQL($filters, $this->sqlValueFilterParams);
+		$this->sqlValueFilter = $this->optimizer->buildValueFilterSQL($filters, $this->sqlValueFilterParams);
 
 		if ($this->hasOption('nocache')) {
 			$this->optimizer->disableCache();
@@ -212,11 +212,11 @@ abstract class Interpreter implements \IteratorAggregate {
 
 		// common conditions for following SQL queries
 		$sqlParameters = array($this->channel->getId());
-		$sqlTimeFilter = $this->optimizer::buildDateTimeFilterSQL($this->from, $this->to, $sqlParameters);
+		$sqlTimeFilter = $this->optimizer->buildDateTimeFilterSQL($this->from, $this->to, $sqlParameters);
 		$sqlParameters = array_merge($sqlParameters, $this->sqlValueFilterParams);
 
 		if ($this->groupBy) {
-			$sqlGroupFields = $this->optimizer::buildGroupBySQL($this->groupBy);
+			$sqlGroupFields = $this->optimizer->buildGroupBySQL($this->groupBy);
 			if (!$sqlGroupFields)
 				throw new \Exception('Unknown group');
 
