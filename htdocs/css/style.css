@@ -1,286 +1,474 @@
-body {
-	margin: 0;
-	padding: 0;
-	background-color: white;
-	font-family: sans-serif;
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    font-family: Arial;
+    background-color: #F5F9FD;
 }
 
-table {
-	border-collapse: collapse;
-	empty-cells: show;
-	width: 100%;
+#header-site {
+    width: 100%;
+    background-color: #3949AB;
+    color: #fff;
+    height: 50px;
+    position: relative;
 }
 
-tr th {
-	border-bottom: 2px solid grey;
-
-	text-align: left;
-	font-size: 0.9em;
+#header-titel {
+    width: 300px;
+    display: block;
+    vertical-align: middle;
+    height: 50px;
+    position: absolute;
+    left: 60px;
 }
 
-tr td {
-	font-size: 1em;
+#header-titel-img {
+    vertical-align: middle;
 }
 
-tr.optional,
-tr.stale td.min, tr.stale td.max, tr.stale td.average, tr.stale td.last,
-tr.stale td.consumption, tr.stale td.cost, tr.stale td.total {
-  color: grey;
+#header-title-text {
+    line-height: 50px;
+    font-size: 20px;
+    margin-left: 10px;
+    vertical-align: middle;
 }
 
-tr.property td, tr.entity td {
-	border-top: 1px solid #A7A7A7;
+#header-export {
+    position: absolute;
+    right: 60px;
+    height: 50px;
 }
 
-#content {
-	padding: 10px;
+#header-export-img {
+    height: 25px;
+    display: inline-block;
 }
 
-#content div {
-	padding: 2px 0;
-	display: block;
+#header-export-select {
+    width: 150px;
+    display: inline-block;
 }
 
-#content h3 {
-	background-color: grey;
-	padding: 4px;
-	margin: 2px 0;
-	color: white;
-	cursor: pointer;
-	font-size: 0.9em;
+#select-wrapper {
+    background: url('../img/ic_dropdown.png') no-repeat 96% 0;
+    background-size: 30px, 29px;
+    background-color: rgba(0, 0, 0, 0);
+    height: 29px;
+    overflow: hidden;
+    width: 150px;
+    background-color: #3F51B5;
+    margin-top: 10px;
+    color: #fff;
+    border-radius: 3px;
+    cursor: pointer;
 }
 
-#content h3 img {
-	vertical-align: bottom;
+#select-wrapper select#export {
+    background: transparent;
+    border: none;
+    font-size: 14px;
+    height: 29px;
+    width: 170px;
+    color: #fff;
+    padding: 3px 7px;
+    cursor: pointer;
 }
 
-#plot {
-	position: relative;
-	background-color: white;
+select#export > option {
+    background-color: #3F51B5;
 }
 
-.legend table {
-	width: auto;
+section, dialog {
+    position: relative;
+    width: 97%;
+    background-color: #fff;
+    margin: auto;
+    margin-top: 10px;
+    display: block;
+    border-radius: 2px;
+    border-color: #E2E2E2;
+    border-width: 1px;
+    border-style: solid;
+    padding-left: 10px;
+    padding-right: 10px;
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.3);
 }
 
-.axisLabels { /* if axislabels plugin is used */
-	font-size: smaller;
-	color: #545454;
+dialog {
+    display: none;
+    position: fixed;
+    top: 30%;
+    padding: 0;
+    border: none;
+    width: 600px;
 }
 
-#flot {
-	height: 300px;
-	z-index: 1;
-	margin-bottom: 5px;
+section:last-child {
+    margin-bottom: 70px;
 }
 
-#overlay {
-	position: absolute;
-	width: 100%;
-	top: 50%;
-	margin-top: -42px;
-	text-align: center;
-	color: grey;
-}
-
-#footer {
-	text-align: center;
-	font-size: 0.7em;
-	background-color: #0292C0;
-	color: white;
-	padding: 10px;
-}
-
-#footer a, #footer a:visited {
-	color: white;
+.title {
+    font-size: 21px;
+    color: #424242;
+    margin-top: 15px;
+    display: block;
+    margin-bottom: 15px;
 }
 
 #controls {
-	background-color: grey;
-	margin-right: 0px; /* override jquery ui */
-	padding: 2px!important;
+    display: block;
+    text-align: center;
 }
 
-#controls button {
-	width: 10.0%;
-	height: 30px;
-	margin-right: 0px; /* override jquery ui */
-	font-size: 1em;
-	padding: 0;
+button, input[type=submit] {
+    padding: 6px 40px;
+    background-color: #3949AB;
+    color: #fff;
+    text-transform: uppercase;
+    border: none;
+    margin: 5px;
+    border-radius: 2px;
+    vertical-align: middle;
 }
 
-#controls button img {
-	vertical-align: text-bottom;
+button:hover, button:focus, input[type=submit]:hover, input[type=submit]:focus {
+    background-color: #475AC9;
+    cursor: pointer;
 }
 
-#accordion button {
-	font-size: 0.9em;
+.icon-control {
+    height: 24px;
 }
 
-#accordion button img {
-	vertical-align: text-top;
+.btn-icon {
+    padding: 1px 40px;
 }
 
-button {
-	background-color: silver;
-	border: 1px solid darkgrey;
-	-moz-border-radius: 3px;
-	-webkit-border-radius: 3px;
-	border-radius: 3px;
+.container {
+    display: block;
+    position: relative;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    height: 30px;
+    margin-left: 5px;
 }
 
-/* header */
-#title {
-	margin: 0 0 0.2em 0;
-	float: left;
+.container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
 }
 
-#export {
-	float: right;
+/* Create a custom checkbox */
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 20px;
+    width: 20px;
+    background-color: #eee;
+    margin-top: 5px;
 }
 
-select.icons option {
-	padding-left: 20px;
-	background-repeat: no-repeat;
+/* On mouse-over, add a grey background color */
+.container:hover input ~ .checkmark {
+    filter: brightness(0.8);
 }
 
-/* treeTable for entities */
-#entity-list tbody img {
-	margin: 0.2em 0.4em 0 0; /* sprite image margin */
-	vertical-align: top;
+/* Create the checkmark/indicator (hidden when not checked) */
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
 }
 
-#entity-list tbody span {
-	background-position: left center;
-	background-repeat: no-repeat;
-	padding: 0 0 0.2em 0; /* 0.2em 0 0.2em 1.7em if not using sprite images */
-	margin: 0;
+/* Show the checkmark when checked */
+.container input:checked ~ .checkmark:after {
+    display: block;
 }
 
-.indicator {
-	height: 12px;
+/* Style the checkmark/indicator */
+.container .checkmark:after {
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
 }
 
-.ops, .min, .max, .average, .last, .consumption, .total, .cost {
-	text-align: right;
+.indicator > span {
+    margin-right: 6px;
 }
 
-.visibility {
-	width: 18px;
+th {
+    text-align: left;
+}
+
+.min, .max, .average, .last, .consumption, .cost, .total, .ops {
+    text-align: right;
+}
+
+.toggle {
+    width: 25px;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    empty-cells: show;
+}
+
+.icon-delete, .icon-information {
+    height: 24px;
+    vertical-align: middle;
+}
+
+.table > tbody > tr td, .table > thead > tr th {
+    border-bottom: 1px solid #424242;
+}
+
+#btn_add, #btn_save {
+    margin-top: 20px;
+    margin-bottom: 15px;
+}
+
+#footer {
+    position: fixed;
+    display: block;
+    bottom: 0;
+    height: 30px;
+    width: 100%;
+    text-align: center;
+    vertical-align: middle;
+    background: #3f51b5;
+    line-height: 30px;
+    color: #fff;
+}
+
+#overlay {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    text-align: center;
+}
+
+#footer > a {
+    color: #fff;
+}
+
+.dialog {
+    display: none;
+}
+
+.selected {
+    background: #8db6fb;
+}
+
+#plot {
+    position: relative;
+}
+
+.dialog-titlebar {
+    background: #3f51b5;
+    color: #fff;
+    padding: 0 20px;
+    vertical-align: middle;
+    position: relative;
+    height: 35px;
+    line-height: 35px;
+}
+
+.dialog-content {
+    padding: 0 20px;
+}
+
+.dialog-close {
+    height: 24px;
+    position: absolute;
+    top: 16%;
+    right: 20px;
+}
+
+.dialog-tab-close {
+    height: 24px;
+    position: absolute;
+    top: 13%;
+    right: 5px;
+}
+
+.dialog-tab {
+    background: none;
+    box-shadow: none;
+}
+
+.tablist > span {
+    height: 30px;
+    display: inline-block;
+    line-height: 30px;
+    width: 30%;
+    background: #3f51b5;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    text-align: center;
+    color: #fff;
+}
+
+.tablist {
+    position: relative;
+    background: #3f51b5;
+}
+
+.tabs {
+    margin-top: 6px;
+    background-color: rgb(255, 255, 255);
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.tablist > span:hover {
+    background: #3949ab;
+}
+
+.tablist > span > a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.tabcontent {
+    padding: 10px;
+}
+
+.tabcontent > div > p {
+    margin: 0;
+}
+
+.invisible {
+    display: none;
+}
+
+.visible {
+    display: block;
+}
+
+.tab-link:hover {
+    cursor: pointer;
+    background-color: #3949ab;
+}
+
+.tab-selected {
+    background-color: #3949ab !important;
+}
+
+.textalignc {
+    text-align: center;
+}
+
+.tabledetails {
+    border-spacing: 0;
+    margin: 5px;
+    width: 100%;
+}
+
+.tabledetails > tbody > tr > td {
+    border-bottom: 1px solid;
+    height: 25px;
+    padding-right: 20px;
+}
+
+.tabledetails > thead > tr > th {
+    border-bottom: 2px solid;
+    padding: 10px 0;
+    padding-right: 18px;
 }
 
 .expander {
-	width: 20px;
+    width: 20px;
 }
 
-/* dialogs */
-
-.dialog {
-	display: none;
-	padding: 10px;
+span.expander {
+    background-position: left center;
+    background-repeat: no-repeat;
+    margin: 0;
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+    padding-left: 2px !important;
 }
 
-.dialog select {
-	width: 100%;
+tr.collapsed.selected td .expander {
+    background-image: url(../img/toggle-expand-light.png);
 }
 
-/* mobile styles */
-
-@media only screen and (max-width: 40em) {
-	/* small */
-	table .min, table .max, table .average {
-		display: none;
-	}
-	tr td {
-		font-size: 0.9em;
-	}
-	#footer {
-		display: none;
-	}
+tr.collapsed td .expander {
+    background-image: url(../img/toggle-expand-dark.png);
 }
 
-/*@media only screen and (min-width: 40.063em) and (max-width: 64em) {*/
-@media only screen and (max-width: 64em) {
-	/* medium */
-	table .type {
-		display: none;
-	}
-	h2 {
-		font-size: 1.2em;
-	}
-	#controls button {
-		font-size: 0.9em;
-	}
-	.ui-widget {
-		font-size: 1em;
-	}
-	.ui-widget .ui-widget {
-		font-size: 0.9em;
-	}
+tr.expanded.selected td .expander {
+    background-image: url(../img/toggle-collapse-light.png);
 }
 
-/* jQuery UI customizations */
-input.ui-button {
-	padding: 0.1em 0.5em;
+tr.expanded td .expander {
+    background-image: url(../img/toggle-collapse-dark.png);
 }
 
-.ui-button-text-only .ui-button-text {
-	padding: 0.1em 0.5em;
+.ui-helper-hidden {
+    display: none;
 }
 
-#entity-add.ui-dialog-content {
-	padding: 0.3em 0 0;
+tr.optional {
+    color: #4f4f4f;
 }
 
-.ui-tabs .ui-tabs-nav li a {
-  padding: 0.1em 0.5em !important;
+.ui-slider-horizontal {
+    height: 12px;
+    border-radius: 15px;
+    border: 1px solid #c5c5c5;
+    position: relative;
 }
 
-.ui-error .ui-widget-header { /* red header */
-	background-image: url("../img/ui-bg_gloss-wave_35_red_500x100.png");
+.ui-slider .ui-slider-handle {
+    position: absolute;
+    z-index: 2;
+    width: 19px;
+    height: 19px;
+    cursor: default;
+    -ms-touch-action: none;
+    touch-action: none;
+    background: #3949ab;
+    font-weight: normal;
+    color: #454545;
+    border-radius: 10px;
+    top: -4px;
 }
 
-
-/* jQuery TreeTable Core 2.0 stylesheet
- *
- * This file contains styles that are used to display the tree table. Each tree
- * table is assigned the +treeTable+ class.
- * ========================================================================= */
-
-/* jquery.treeTable.collapsible
- * ------------------------------------------------------------------------- */
-.treeTable tr td .expander {
-  background-position: left center;
-  background-repeat: no-repeat;
-  cursor: pointer;
-  padding: 0;
-  zoom: 1; /* IE7 Hack */
+.ui-droppable-hover {
+    background: #4489fd;
 }
 
-.treeTable tr.collapsed td .expander {
-  background-image: url(../img/toggle-expand-dark.png);
+.legendColorBox div {
+    height: 15px;
+    width: 15px;
+    margin-left: 2px;
 }
 
-.treeTable tr.expanded td .expander {
-  background-image: url(../img/toggle-collapse-dark.png);
+#fullscreen {
+    position: absolute;
+    right: 0;
+    top: 0;
 }
 
-/* jquery.treeTable.sortable
- * ------------------------------------------------------------------------- */
-.treeTable tr.selected, .treeTable tr.accept {
-  background-color: #3875d7;
-  color: #fff;
-}
-
-.treeTable tr.collapsed.selected td .expander, .treeTable tr.collapsed.accept td .expander {
-  background-image: url(../img/toggle-expand-light.png);
-}
-
-.treeTable tr.expanded.selected td .expander, .treeTable tr.expanded.accept td .expander {
-  background-image: url(../img/toggle-collapse-light.png);
-}
-
-.treeTable .ui-draggable-dragging {
-  color: #000;
-  z-index: 1;
+#fullscreen img {
+    height: 24px;
+    transform: rotateY(180deg);
+    width: 24px;
+    margin: 5px;
 }

@@ -48,7 +48,7 @@ vz.wui.init = function() {
 	$('button[name=options-save]').click(vz.options.saveCookies);
 	$('button[name=entity-add]').click(this.dialogs.init);
 
-	$('#export select').change(function(event) {
+	$('select#export').change(function(event) {
 		vz.wui.exportData($(this).val());
 		$(this).val('default');
 	});
@@ -164,32 +164,12 @@ vz.wui.dialogs.init = function() {
 		$('#entity-public-middleware, #entity-create-middleware').append($('<option>').val(middleware.url).text(middleware.title));
 	});
 
-	// initialize dialogs
-	$('#entity-add.dialog').dialog({
-		title: unescape('Kanal hinzufügen'),
-		width: 650,
-		resizable: false,
-		open: function() {
-			// populate and refresh public entities
-			var middleware = vz.middleware.find($('#entity-public-middleware option:selected').val());
-			populateEntities(middleware);
-			middleware.loadEntities().done(function(middleware) {
-				populateEntities(middleware);
-			});
-		}
-	});
-	$('#entity-add.dialog > div').tabs({
-		create: function(ev, ui) {
-			$(ui.panel).find('.defaultfocus').focus();
-		},
-		activate: function(ev, ui) {
-			if (ui.newPanel.attr('id') == 'entity-create') {
-				$(ui.newPanel).find('input[name=title]').focus();
-			}
-			else {
-				$(ui.newPanel).find('.defaultfocus').focus();
-			}
-		}
+	vz.dialog.open($('#entity-add'));
+	// populate and refresh public entities
+	var middleware = vz.middleware.find($('#entity-public-middleware option:selected').val());
+	populateEntities(middleware);
+	middleware.loadEntities().done(function(middleware) {
+		populateEntities(middleware);
 	});
 
 	// show available entity types
@@ -234,7 +214,7 @@ vz.wui.dialogs.init = function() {
 			vz.wui.dialogs.exception(e);
 		}
 		finally {
-			$('#entity-add').dialog('close');
+			vz.dialog.close($('#entity-add'));
 		}
 
 		return false;
@@ -253,7 +233,7 @@ vz.wui.dialogs.init = function() {
 			vz.wui.dialogs.exception(e);
 		}
 		finally {
-			$('#entity-add').dialog('close');
+			vz.dialog.close($('#entity-add'));
 		}
 
 		return false;
@@ -311,23 +291,14 @@ vz.wui.dialogs.init = function() {
 				vz.wui.dialogs.exception(e);
 			}
 			finally {
-				$('#entity-add').dialog('close');
+				wui_dialog_close($('#entity-create'));
+				
+				var btnok = function() {
+					wui_dialog_close($(this));
+				}				
+				new wui_dialog('Kanal UUID',$('<p>').html(entity.uuid),btnok);			
 
-				// show the channel UUID to the user
-				$('<div>').append(
-					$('<p>').html(entity.uuid)
-				).dialog({
-					title: 'Kanal UUID',
-					width: 450,
-					resizable: false,
-					modal: true,
-					buttons: {
-						Ok: function() {
-							$(this).dialog('close');
-							$(this).remove();
-						}
-					}
-				});
+				
 			}
 		});
 
@@ -337,7 +308,7 @@ vz.wui.dialogs.init = function() {
 	// update event handler after lazy loading
 	$('button[name=entity-add]').unbind('click', this.init);
 	$('button[name=entity-add]').click(function() {
-		$('#entity-add.dialog').dialog('open');
+		vz.dialog.open($('#entity-add'))
 	});
 };
 
@@ -981,26 +952,16 @@ vz.wui.dialogs.error = function(error, description, code) {
 	// make error messages singleton (suppress follow-on errors)
 	vz.wui.errorDialog = true;
 
-	$('<div>').append(
-		$('<span>').html(description)
-	).dialog({
-		title: error,
-		width: 450,
-		dialogClass: 'ui-error',
-		resizable: false,
-		modal: true,
-		close: function() {
-			vz.wui.errorDialog = false;
-		},
-		buttons: {
+	var content = $('<span>').html(description);
+
+	var buttons = {
 			Ok: function() {
-				$(this).dialog('close');
+				wui_dialog_close($(this));
 			}
-		},
-		open: function() {
-			$(this).next().find('button:eq(0)').focus();
-		}
-	});
+		};
+
+	new wui_dialog('Error!',content,buttons);
+
 };
 
 vz.wui.dialogs.exception = function(exception) {

@@ -256,26 +256,23 @@ vz.entities.showTable = function() {
 					vz.wui.dialogs.error("Fehler", "Kanäle können nur in Gruppen der gleichen Middleware verschoben werden.");
 					return;
 				}
-
-				$('#entity-move').dialog({ // confirm prompt
-					resizable: false,
-					modal: true,
-					title: 'Verschieben',
-					width: 400,
-					buttons: {
+			
+				var buttons_verschieben = {
 						'Verschieben': function() {
 							vz.entities.dropTableHandler(from, to, child, false);
-							$(this).dialog('close');
+							wui_dialog_close($(this));
 						},
 						'Kopieren': function() {
 							vz.entities.dropTableHandler(from, to, child, true);
-							$(this).dialog('close');
+							wui_dialog_close($(this));
 						},
 						'Abbrechen': function() {
-							$(this).dialog('close');
+							wui_dialog_close($(this));
 						}
-					}
-				});
+					};
+
+				new wui_dialog('Verschieben','',buttons_verschieben);
+
 			},
 			hoverClass: 'accept',
 			over: function(event, ui) {

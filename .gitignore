@@ -7,3 +7,11 @@
 /composer.lock
 /.ppm/
 /.vscode/
+.idea/workspace.xml
+.idea/vcs.xml
+.idea/modules.xml
+.idea/volkszaehler.org.iml
+.idea/php.xml
+.idea/encodings.xml
+.idea/deployment.xml
+.idea/misc.xml
