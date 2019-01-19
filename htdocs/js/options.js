@@ -58,7 +58,8 @@ vz.options = {
 	speedupFactor: 2,   // higher values give higher speedup but can produce chunky display
 	hiddenProperties: ['link', 'tolerance', 'local', 'owner', 'description', 'gap', 'active'], // hide less commonly used properties
 	fullscreen: true,
-	followingLegend: true
+	followingLegend: true,
+	siteTitle: 'Volkszaehler.org'
 };
 
 /**

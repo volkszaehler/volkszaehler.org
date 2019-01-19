@@ -169,6 +169,7 @@ $(function () {
     document.addEventListener("webkitfullscreenchange", changeHandler, false);
     document.addEventListener("mozfullscreenchange", changeHandler, false);
 
+    setSiteTitle();
 });
 
 
@@ -196,6 +197,15 @@ function closeFullscreen(elem){
     }
 }
 
+
+
+function setSiteTitle(){
+    var title = vz.options.siteTitle;
+    if(title !== null){
+        document.title = title;
+        $('#header-title-text').html(title);
+    }
+}
 
 
 window.addEventListener('load', function(){
@@ -315,6 +325,5 @@ window.addEventListener('load', function(){
     }, false)
 
 }, false); // end window.onload
-
 
 
