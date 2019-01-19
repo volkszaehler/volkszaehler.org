@@ -41,7 +41,8 @@ var vz = {
 		definitions: {}	// definitions of entities & properties
 	},
 	plot: { },				// flot instance
-	options: { }			// options loaded from cookies in options.js
+	options: { },			// options loaded from cookies in options.js
+	dialog: { }
 };
 
 /**

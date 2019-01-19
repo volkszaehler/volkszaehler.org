@@ -373,6 +373,7 @@ Entity.prototype.loadTotalConsumption = function() {
 	});
 };
 
+
 /**
  * Show and edit entity details
  */
@@ -381,133 +382,225 @@ Entity.prototype.showDetails = function() {
 	var dialog = $('<div>');
 	var deleteDialog = (this.isChannel()) ? '#entity-delete' : '#entity-delete-group';
 
-	dialog.addClass('details')
-	.append(this.getDOMDetails())
-	.dialog({
-		title: 'Details für ' + this.title,
-		width: 480,
-		resizable: false,
-		buttons : {
-			'Daten': function() {
-				var params = $.extend($.getUrlParams(), {
-					from: Math.floor(vz.options.plot.xaxis.min),
-					to: Math.ceil(vz.options.plot.xaxis.max)
-				});
-				window.open(entity.middleware + '/data/' + entity.uuid + '.json?' + $.param(params), '_blank');
-			},
-			'Löschen' : function() {
-				$(deleteDialog).dialog({ // confirm prompt
-					resizable: false,
-					modal: true,
-					title: 'Löschen',
-					width: 400,
-					buttons: {
-						'Löschen': function() {
-							entity.delete().done(function() {
-								entity.cookie = false;
-								vz.entities.saveCookie();
 
-								vz.entities.each(function(it, parent) { // remove from tree
-									if (entity.uuid == it.uuid) {
-										var array = (parent) ? parent.children : vz.entities;
-										array.splice(array.indexOf(it), 1); // remove
-									}
-								}, true);
+var buttons_channel = {
+    'Daten': function() {
+        var params = $.extend($.getUrlParams(), {
+            from: Math.floor(vz.options.plot.xaxis.min),
+            to: Math.ceil(vz.options.plot.xaxis.max)
+        });
+        window.open(entity.middleware + '/data/' + entity.uuid + '.json?' + $.param(params), '_blank');
+    },
+    'Löschen' : function() {
+            var buttons = {
+                'Löschen': function() {
+                    entity.delete().done(function() {
+                        entity.cookie = false;
+                        vz.entities.saveCookie();
 
-								vz.entities.showTable();
-								vz.wui.drawPlot();
-								dialog.dialog('close');
-							});
+                        vz.entities.each(function(it, parent) { // remove from tree
+                            if (entity.uuid == it.uuid) {
+                                var array = (parent) ? parent.children : vz.entities;
+                                array.splice(array.indexOf(it), 1); // remove
+                            }
+                        }, true);
 
-							$(this).dialog('close');
-						},
-						'Abbrechen': function() {
-							$(this).dialog('close');
-						}
-					}
-				});
-			},
-			'Bearbeiten': function() {
-				$('#entity-edit form table .required').remove();
-				$('#entity-edit form table .optional').remove();
+                        vz.entities.showTable();
+                        vz.wui.drawPlot();
+                        
+                    });
+		    wui_dialog_close($(this));
+                    wui_dialog_close($('.wui_dialog_details'));
+                },
+                'Abbrechen': function() {
+                    wui_dialog_close($(this));
+                }
+            }
+	new wui_dialog('Löschen','Willst du mit Löschen fortfahren?',buttons,entity,'textalignc',true);
+    },
+    'Bearbeiten': function() {
+        $('.wui_dialog .dialog-content form table .required').remove();
+        $('.wui_dialog .dialog-content form table .optional').remove();
 
-				// add properties for entity
-				vz.capabilities.definitions.entities.some(function(definition) {
-					if (definition.name == entity.type) {
-						// fix https://github.com/volkszaehler/volkszaehler.org/pull/560
-						if (definition.optional.indexOf('active') >= 0) {
-							definition.optional.splice(definition.optional.indexOf('active'), 1);
-						}
-						var container = $('#entity-edit table');
-						vz.wui.dialogs.addProperties(container, definition.required, "required", entity);
-						vz.wui.dialogs.addProperties(container, definition.optional, "optional", entity);
-						return true;
-					}
-				});
+	var container = $('<table>');
+	container.addClass('tabledetails');
+        // add properties for entity
+        vz.capabilities.definitions.entities.some(function(definition) {
+            if (definition.name == entity.type) {
+                // fix https://github.com/volkszaehler/volkszaehler.org/pull/560
+                if (definition.optional.indexOf('active') >= 0) {
+                    definition.optional.splice(definition.optional.indexOf('active'), 1);
+                }
+                
+                vz.wui.dialogs.addProperties(container, definition.required, "required", entity);
+                vz.wui.dialogs.addProperties(container, definition.optional, "optional", entity);
+                return true;
+            }
+        });
 
-				$('#entity-edit').dialog({
-					resizable: false,
-					modal: true,
-					title: 'Bearbeiten von ' + entity.title,
-					width: 600,
-					buttons: {
-						'Speichern': function() { // adapted from #entity-create
-							var properties = {};
+	form = $('.wui_dialog .dialog-content form');
 
-							$(this).find('form').serializeArrayWithCheckBoxes().forEach(function(value) {
-								if (value.value !== '' || entity[value.name]) {
-									properties[value.name] = value.value;
-								}
-							});
+        var buttons_edit = {
+                'Speichern': function() { // adapted from #entity-create
+                    var properties = {};
+			form = $(this).parent().siblings('form');
+                    form.serializeArrayWithCheckBoxes().forEach(function(value) {
+                        if (value.value !== '' || entity[value.name]) {
+                            properties[value.name] = value.value;
+                        }
+                    });
 
-							vz.load({
-								controller: 'entity',
-								identifier: entity.uuid,
-								url: entity.middleware,
-								data: properties,
-								method: 'PATCH', // edit
-							}).done(function(json) {
-								entity.parseJSON(json.entity); // update entity
-								try {
-									vz.entities.showTable();
-									vz.entities.loadData().done(vz.wui.drawPlot);
-								}
-								catch (e) {
-									vz.wui.dialogs.exception(e);
-								}
-								finally {
-									$('#entity-edit').dialog('close');
-									dialog.dialog('close'); // close parent dialog
-								}
-							});
-						},
-						'Abbrechen': function() {
-							$(this).dialog('close');
-						}
-					}
-				})
-				.keypress(function(ev) {
-					// submit form on enter
-					if (ev.keyCode == $.ui.keyCode.ENTER) {
-						$('#entity-edit').siblings('.ui-dialog-buttonpane').find('button:eq(0)').click();
-					}
-				});
-			},
-			'Schließen': function() {
-				$(this).dialog('close');
-			}
-		},
-		open: function() {
-			$(this).siblings('.ui-dialog-buttonpane').find('button:eq(0)').focus();
-		}
-	});
+                    vz.load({
+                        controller: 'entity',
+                        identifier: entity.uuid,
+                        url: entity.middleware,
+                        data: properties,
+                        method: 'PATCH', // edit
+                    }).done(function(json) {
+                        entity.parseJSON(json.entity); // update entity
+                        try {
+                            vz.entities.showTable();
+                            vz.entities.loadData().done(vz.wui.drawPlot);
+                        }
+                        catch (e) {
+                            vz.wui.dialogs.exception(e);
+                        }
+                        finally {
+				wui_dialog_close($('.wui_dialog'));
+                        }
+                    });
+                },
+                'Abbrechen': function() {
+                    wui_dialog_close($('.wui_dialog'));
+                }
+            }
+	var content = $('<form>').append(container);
+	new wui_dialog('Bearbeiten von '+entity.title,content,buttons_edit,entity);
+    	var form = $('.wui_dialog .dialog-content form');
+          form.keypress(function(ev) {
+                // submit form on enter
+                if (ev.keyCode == $.ui.keyCode.ENTER) {
+                    form.siblings().find('button:eq(0)').click();
+                }
+            }); 
+    },
+    'Schließen': function() {
+        wui_dialog_close($(this));
+    }
+};
+
+var buttons_group = {
+    'Löschen' : function() {
+            var buttons = {
+                'Löschen': function() {
+                    entity.delete().done(function() {
+                        entity.cookie = false;
+                        vz.entities.saveCookie();
+
+                        vz.entities.each(function(it, parent) { // remove from tree
+                            if (entity.uuid == it.uuid) {
+                                var array = (parent) ? parent.children : vz.entities;
+                                array.splice(array.indexOf(it), 1); // remove
+                            }
+                        }, true);
+
+                        vz.entities.showTable();
+                        vz.wui.drawPlot();
+                        
+                    });
+		    wui_dialog_close($(this));
+                    wui_dialog_close($('.wui_dialog_details'));
+                },
+                'Abbrechen': function() {
+                    wui_dialog_close($(this));
+                }
+            }
+	var content_del = 'Wollen Sie dies Gruppe wirklich Löschen? </br> Dabei werden keine enthaltenen Kanäle oder Daten gelöscht.';
+	new wui_dialog('Löschen',content_del,buttons,entity,'textalignc',true);
+    },
+    'Bearbeiten': function() {
+        $('.wui_dialog .dialog-content form table .required').remove();
+        $('.wui_dialog .dialog-content form table .optional').remove();
+
+	var container = $('<table>');
+	container.addClass('tabledetails');
+        // add properties for entity
+        vz.capabilities.definitions.entities.some(function(definition) {
+            if (definition.name == entity.type) {
+                // fix https://github.com/volkszaehler/volkszaehler.org/pull/560
+                if (definition.optional.indexOf('active') >= 0) {
+                    definition.optional.splice(definition.optional.indexOf('active'), 1);
+                }
+                
+                vz.wui.dialogs.addProperties(container, definition.required, "required", entity);
+                vz.wui.dialogs.addProperties(container, definition.optional, "optional", entity);
+                return true;
+            }
+        });
+
+	form = $('.wui_dialog .dialog-content form');
+
+        var buttons_edit = {
+                'Speichern': function() { // adapted from #entity-create
+                    var properties = {};
+			form = $(this).parent().siblings('form');
+                    form.serializeArrayWithCheckBoxes().forEach(function(value) {
+                        if (value.value !== '' || entity[value.name]) {
+                            properties[value.name] = value.value;
+                        }
+                    });
+
+                    vz.load({
+                        controller: 'entity',
+                        identifier: entity.uuid,
+                        url: entity.middleware,
+                        data: properties,
+                        method: 'PATCH', // edit
+                    }).done(function(json) {
+                        entity.parseJSON(json.entity); // update entity
+                        try {
+                            vz.entities.showTable();
+                            vz.entities.loadData().done(vz.wui.drawPlot);
+                        }
+                        catch (e) {
+                            vz.wui.dialogs.exception(e);
+                        }
+                        finally {
+				wui_dialog_close($('.wui_dialog'));
+                        }
+                    });
+                },
+                'Abbrechen': function() {
+                    wui_dialog_close($('.wui_dialog'));
+                }
+            }
+	var content = $('<form>').append(container);
+	new wui_dialog('Bearbeiten von '+entity.title,content,buttons_edit,entity);
+    	var form = $('.wui_dialog .dialog-content form');
+          form.keypress(function(ev) {
+                // submit form on enter
+                if (ev.keyCode == $.ui.keyCode.ENTER) {
+                    form.siblings().find('button:eq(0)').click();
+                }
+            }); 
+    },
+    'Schließen': function() {
+        wui_dialog_close($(this));
+    }
+};
+
+var buttons = (this.isChannel()) ? buttons_channel : buttons_group;
+
+
+	new wui_dialog('Details für ' + this.title,this.getDOMDetails(),buttons,entity,'wui_dialog_details');
+
 };
 
 /**
  * Show channel details for info dialog
  */
 Entity.prototype.getDOMDetails = function(edit) {
-	var table = $('<table><thead><tr><th>Eigenschaft</th><th>Wert</th></tr></thead></table>');
+	var table = $('<table class="tabledetails"><thead><tr><th>Eigenschaft</th><th>Wert</th></tr></thead></table>');
 	var data = $('<tbody>');
 
 	// general properties
@@ -651,23 +744,30 @@ Entity.prototype.getDOMRow = function(parent) {
 		.attr('id', 'entity-' + this.uuid)
 		.append($('<td>')
 			.addClass('visibility')
-			.css('background-color', this.color)
-			.append($('<input>')
-				.attr('type', 'checkbox')
-				.attr('checked', this.active)
-				.bind('change', this, function(event) {
-					var entity = event.data;
-					entity.activate($(this).prop('checked'), null, true).done(vz.wui.drawPlot);
-					vz.entities.saveCookie();
-				})
+			.append($('<label>')
+				.addClass('container')
+				.append($('<input>')
+					.attr('type', 'checkbox')
+					.attr('checked', this.active)
+					.bind('change', this, function(event) {
+						var entity = event.data;
+						entity.activate($(this).prop('checked'), null, true).done(vz.wui.drawPlot);
+						vz.entities.saveCookie();
+					})
+				)
+				.append($('<span>')
+					.addClass('checkmark')
+					.css('background-color', this.color)
+				)	
 			)
 		)
-		.append($('<td>').addClass('expander'))
+		.append($('<td>')
+			.addClass('expander')
+			)
 		.append($('<td>')
 			.append($('<span>')
 				.addClass('indicator')
-				.append($('<img>')
-					.attr('src', 'img/blank.png')
+				.append($('<span>')
 					.addClass('icon-' + this.definition.icon.replace('.png', ''))
 				)
 				.append($('<span>')
@@ -689,7 +789,7 @@ Entity.prototype.getDOMRow = function(parent) {
 			.addClass('ops')
 			.append($('<input>')
 				.attr('type', 'image')
-				.attr('src', 'img/blank.png')
+				.attr('src', 'img/ic_more.png')
 				.addClass('icon-information')
 				.attr('alt', 'details')
 				.bind('click', this, function(event) {
@@ -702,7 +802,7 @@ Entity.prototype.getDOMRow = function(parent) {
 	if (this.cookie) {
 		$('td.ops', row).prepend($('<input>')
 			.attr('type', 'image')
-			.attr('src', 'img/blank.png')
+			.attr('src', 'img/ic_delete.png')
 			.addClass('icon-delete')
 			.attr('alt', 'delete')
 			.bind('click', this, function(event) {
