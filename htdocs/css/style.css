@@ -1,18 +1,20 @@
-html, body{
+html, body {
     width: 100%;
     height: 100%;
     margin: 0;
     font-family: Arial;
     background-color: #F5F9FD;
 }
-#header-site{
+
+#header-site {
     width: 100%;
     background-color: #3949AB;
     color: #fff;
     height: 50px;
     position: relative;
 }
-#header-titel{
+
+#header-titel {
     width: 300px;
     display: block;
     vertical-align: middle;
@@ -20,34 +22,37 @@ html, body{
     position: absolute;
     left: 60px;
 }
-#header-titel-img{
+
+#header-titel-img {
     vertical-align: middle;
 }
-#header-title-text{
+
+#header-title-text {
     line-height: 50px;
     font-size: 20px;
     margin-left: 10px;
     vertical-align: middle;
 }
-#header-export{
+
+#header-export {
     position: absolute;
     right: 60px;
     height: 50px;
 }
 
-#header-export-img{
+#header-export-img {
     height: 25px;
     display: inline-block;
 }
 
-#header-export-select{
+#header-export-select {
     width: 150px;
     display: inline-block;
 }
 
-#select-wrapper{
+#select-wrapper {
     background: url('../img/ic_dropdown.png') no-repeat 96% 0;
-    background-size: 30px, 29px ;
+    background-size: 30px, 29px;
     background-color: rgba(0, 0, 0, 0);
     height: 29px;
     overflow: hidden;
@@ -70,11 +75,11 @@ html, body{
     cursor: pointer;
 }
 
-select#export > option{
+select#export > option {
     background-color: #3F51B5;
 }
 
-section, dialog{
+section, dialog {
     position: relative;
     width: 97%;
     background-color: #fff;
@@ -90,7 +95,7 @@ section, dialog{
     box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.3);
 }
 
-dialog{
+dialog {
     display: none;
     position: fixed;
     top: 30%;
@@ -99,11 +104,11 @@ dialog{
     width: 600px;
 }
 
-section:last-child{
+section:last-child {
     margin-bottom: 70px;
 }
 
-.title{
+.title {
     font-size: 21px;
     color: #424242;
     margin-top: 15px;
@@ -111,12 +116,12 @@ section:last-child{
     margin-bottom: 15px;
 }
 
-#controls{
+#controls {
     display: block;
     text-align: center;
 }
 
-button, input[type=submit]{
+button, input[type=submit] {
     padding: 6px 40px;
     background-color: #3949AB;
     color: #fff;
@@ -127,16 +132,16 @@ button, input[type=submit]{
     vertical-align: middle;
 }
 
-button:hover, button:focus, input[type=submit]:hover, input[type=submit]:focus{
+button:hover, button:focus, input[type=submit]:hover, input[type=submit]:focus {
     background-color: #475AC9;
     cursor: pointer;
 }
 
-.icon-control{
+.icon-control {
     height: 24px;
 }
 
-.btn-icon{
+.btn-icon {
     padding: 1px 40px;
 }
 
@@ -152,7 +157,7 @@ button:hover, button:focus, input[type=submit]:hover, input[type=submit]:focus{
     margin-left: 5px;
 }
 
-.container input{
+.container input {
     position: absolute;
     opacity: 0;
     cursor: pointer;
@@ -201,64 +206,43 @@ button:hover, button:focus, input[type=submit]:hover, input[type=submit]:focus{
     transform: rotate(45deg);
 }
 
-.icon-eye{
-    height: 30px;
-}
-
-.icon-bolt {
-    background-image: url(../img/sprites.png);
-    background-position: 0px -594px;
-    width: 16px;
-    height: 16px;
-    display: inline-block;
-}
-
-.icon-add, .icon-save{
-    height: 15px;
-    vertical-align: bottom;
-    padding-right: 5px;
-}
-
-.icon-arrow_refresh{
-    height: 24px;
-    vertical-align: middle;
-}
-
 .indicator > span {
     margin-right: 6px;
 }
 
-th{
+th {
     text-align: left;
 }
 
-.min, .max, .average, .last, .consumption, .cost, .total, .ops{
+.min, .max, .average, .last, .consumption, .cost, .total, .ops {
     text-align: right;
 }
 
-.toggle{
+.toggle {
     width: 25px;
 }
 
-.table{
+.table {
     width: 100%;
     border-collapse: collapse;
     empty-cells: show;
 }
-.icon-delete, .icon-information{
+
+.icon-delete, .icon-information {
     height: 24px;
     vertical-align: middle;
 }
+
 .table > tbody > tr td, .table > thead > tr th {
     border-bottom: 1px solid #424242;
 }
 
-#btn_add, #btn_save{
+#btn_add, #btn_save {
     margin-top: 20px;
     margin-bottom: 15px;
 }
 
-#footer{
+#footer {
     position: fixed;
     display: block;
     bottom: 0;
@@ -271,18 +255,18 @@ th{
     color: #fff;
 }
 
-#overlay{
+#overlay {
     position: absolute;
     left: 50%;
     top: 50%;
     text-align: center;
 }
 
-#footer > a{
+#footer > a {
     color: #fff;
 }
 
-.dialog{
+.dialog {
     display: none;
 }
 
@@ -290,147 +274,11 @@ th{
     background: #8db6fb;
 }
 
-
-.icon-bolt {
-    background-image: url(../img/sprites.png);
-    background-position: 0px -594px;
-    width: 16px;
-    height: 16px;
-    display: inline-block;
-}
-.icon-clock {
-    background-image: url(../img/sprites.png);
-    background-position: 0px -612px;
-    width: 16px;
-    height: 16px;
-    display: inline-block;
-}
-.icon-cloud {
-    background-image: url(../img/sprites.png);
-    background-position: 0px -630px;
-    width: 16px;
-    height: 16px;
-    display: inline-block;
-}
-.icon-flame {
-    background-image: url(../img/sprites.png);
-    background-position: 0px -648px;
-    width: 16px;
-    height: 16px;
-    display: inline-block;
-}
-.icon-folder {
-    background-image: url(../img/sprites.png);
-    background-position: 0px -666px;
-    width: 16px;
-    height: 16px;
-    display: inline-block;
-}
-.icon-freq {
-    background-image: url(../img/sprites.png);
-    background-position: 0px -684px;
-    width: 16px;
-    height: 16px;
-    display: inline-block;
-}
-.icon-gauge {
-    background-image: url(../img/sprites.png);
-    background-position: 0px -702px;
-    width: 16px;
-    height: 16px;
-    display: inline-block;
-}
-.icon-house {
-    background-image: url(../img/sprites.png);
-    background-position: 0px -720px;
-    width: 16px;
-    height: 16px;
-    display: inline-block;
-}
-.icon-pipe {
-    background-image: url(../img/sprites.png);
-    background-position: 0px -738px;
-    width: 16px;
-    height: 16px;
-    display: inline-block;
-}
-.icon-propeller {
-    background-image: url(../img/sprites.png);
-    background-position: 0px -756px;
-    width: 16px;
-    height: 16px;
-    display: inline-block;
-}
-.icon-radioactivity {
-    background-image: url(../img/sprites.png);
-    background-position: 0px -774px;
-    width: 16px;
-    height: 16px;
-    display: inline-block;
-}
-.icon-rain {
-    background-image: url(../img/sprites.png);
-    background-position: 0px -792px;
-    width: 16px;
-    height: 16px;
-    display: inline-block;
-}
-.icon-sun {
-    background-image: url(../img/sprites.png);
-    background-position: 0px -810px;
-    width: 16px;
-    height: 16px;
-    display: inline-block;
-}
-.icon-thermometer {
-    background-image: url(../img/sprites.png);
-    background-position: 0px -828px;
-    width: 16px;
-    height: 16px;
-    display: inline-block;
-}
-.icon-user {
-    background-image: url(../img/sprites.png);
-    background-position: 0px -846px;
-    width: 16px;
-    height: 16px;
-    display: inline-block;
-}
-.icon-waterdrop {
-    background-image: url(../img/sprites.png);
-    background-position: 0px -864px;
-    width: 16px;
-    height: 16px;
-    display: inline-block;
-}
-.icon-wrench {
-    background-image: url(../img/sprites.png);
-    background-position: 0px -504px;
-    width: 16px;
-    height: 16px;
-    display: inline-block;
-}
-
-.icon-tick {
-    background-image: url(../img/sprites.png);
-    background-position: 0px -414px;
-    width: 16px;
-    height: 16px;
-    display: inline-block;
-}
-
-.icon-cross {
-    background-image: url(../img/sprites.png);
-    background-position: 0px -180px;
-    width: 16px;
-    height: 16px;
-}
-
-#plot{
+#plot {
     position: relative;
 }
 
-.dialog-titlebar{
+.dialog-titlebar {
     background: #3f51b5;
     color: #fff;
     padding: 0 20px;
@@ -440,30 +288,30 @@ th{
     line-height: 35px;
 }
 
-.dialog-content{
+.dialog-content {
     padding: 0 20px;
 }
 
-.dialog-close{
+.dialog-close {
     height: 24px;
     position: absolute;
     top: 16%;
     right: 20px;
 }
 
-.dialog-tab-close{
+.dialog-tab-close {
     height: 24px;
     position: absolute;
     top: 13%;
     right: 5px;
 }
 
-.dialog-tab{
+.dialog-tab {
     background: none;
     box-shadow: none;
 }
 
-.tablist > span{
+.tablist > span {
     height: 30px;
     display: inline-block;
     line-height: 30px;
@@ -475,77 +323,78 @@ th{
     color: #fff;
 }
 
-.tablist{
+.tablist {
     position: relative;
     background: #3f51b5;
 }
 
-.tabs{
+.tabs {
     margin-top: 6px;
     background-color: rgb(255, 255, 255);
     box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.3);
 }
 
-.tablist > span:hover{
+.tablist > span:hover {
     background: #3949ab;
 }
 
-.tablist > span > a{
+.tablist > span > a {
     color: #fff;
     text-decoration: none;
 }
 
-.tabcontent{
+.tabcontent {
     padding: 10px;
 }
 
-.tabcontent > div > p{
+.tabcontent > div > p {
     margin: 0;
 }
 
-.invisible{
+.invisible {
     display: none;
 }
 
-.visible{
+.visible {
     display: block;
 }
 
-.tab-link:hover{
+.tab-link:hover {
     cursor: pointer;
     background-color: #3949ab;
 }
 
-.tab-selected{
+.tab-selected {
     background-color: #3949ab !important;
 }
 
-.textalignc{
+.textalignc {
     text-align: center;
 }
 
-.tabledetails{
+.tabledetails {
     border-spacing: 0;
     margin: 5px;
     width: 100%;
 }
 
-.tabledetails > tbody > tr > td{
+.tabledetails > tbody > tr > td {
     border-bottom: 1px solid;
     height: 25px;
     padding-right: 20px;
 }
-.tabledetails > thead > tr > th{
+
+.tabledetails > thead > tr > th {
     border-bottom: 2px solid;
     padding: 10px 0;
     padding-right: 18px;
 }
 
-.expander{
+.expander {
     width: 20px;
 }
 
-span.expander{
+span.expander {
     background-position: left center;
     background-repeat: no-repeat;
     margin: 0;
@@ -555,13 +404,14 @@ span.expander{
     padding-left: 2px !important;
 }
 
-tr.collapsed.selected td .expander{
+tr.collapsed.selected td .expander {
     background-image: url(../img/toggle-expand-light.png);
 }
 
-tr.collapsed td .expander{
+tr.collapsed td .expander {
     background-image: url(../img/toggle-expand-dark.png);
 }
+
 tr.expanded.selected td .expander {
     background-image: url(../img/toggle-collapse-light.png);
 }
@@ -574,7 +424,7 @@ tr.expanded td .expander {
     display: none;
 }
 
-tr.optional{
+tr.optional {
     color: #4f4f4f;
 }
 
@@ -604,19 +454,19 @@ tr.optional{
     background: #4489fd;
 }
 
-.legendColorBox div{
+.legendColorBox div {
     height: 15px;
     width: 15px;
     margin-left: 2px;
 }
 
-#fullscreen{
+#fullscreen {
     position: absolute;
     right: 0;
     top: 0;
 }
 
-#fullscreen img{
+#fullscreen img {
     height: 24px;
     transform: rotateY(180deg);
     width: 24px;
