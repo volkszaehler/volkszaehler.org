@@ -86,9 +86,9 @@ class SensorInterpreter extends Interpreter {
 	 * @return float total consumption in Wh
 	 */
 	public function getConsumption() {
-		// convert to Wh
+		// convert to hourly values (Wh, m³)
 		// @TODO check if resolution is needed here
-		return $this->channel->getDefinition()->hasConsumption ? $this->consumption / (3.6e3 * $this->scale) : NULL;
+		return $this->channel->getDefinition()->hasConsumption ? $this->consumption / 3.6e6 : NULL;
 	}
 
 	/**
