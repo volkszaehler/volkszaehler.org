@@ -29,7 +29,7 @@ vz.options = {
 	maxPrecision: {						// override precision for certain units
 		'°C': 1
 	},
-	tuples: null,							// automatically determined by plot size
+	tuples: null,							// automatically determined by plot size // set to null to get all available tuples
 	refresh: true,						// update chart if zoomed to current timestamp
 	interval: 24*60*60*1000,	// 1 day default time interval to show
 	totalsInterval: 300,			// update interval for total consumption in s (only channels where initialconsumption > 0)
@@ -59,7 +59,7 @@ vz.options = {
 	hiddenProperties: ['link', 'tolerance', 'local', 'owner', 'description', 'gap', 'active'], // hide less commonly used properties
 	fullscreen: true,
 	followingLegend: true,
-	siteTitle: 'Volkszaehler.org'
+	title: 'Volkszaehler.org'
 };
 
 /**

@@ -409,14 +409,14 @@ var buttons_channel = {
                         vz.wui.drawPlot();
                         
                     });
-		    wui_dialog_close($(this));
-                    wui_dialog_close($('.wui_dialog_details'));
+		    vz.wui_dialog.closeCreated($(this));
+                    vz.wui_dialog.closeCreated($('.wui_dialog_details'));
                 },
                 'Abbrechen': function() {
-                    wui_dialog_close($(this));
+                    vz.wui_dialog.closeCreated($(this));
                 }
             }
-	new wui_dialog('Löschen','Willst du mit Löschen fortfahren?',buttons,entity,'textalignc',true);
+	new vz.wui_dialog.create('Löschen','Willst du mit Löschen fortfahren?',buttons,entity,'textalignc',true);
     },
     'Bearbeiten': function() {
         $('.wui_dialog .dialog-content form table .required').remove();
@@ -466,16 +466,16 @@ var buttons_channel = {
                             vz.wui.dialogs.exception(e);
                         }
                         finally {
-				wui_dialog_close($('.wui_dialog'));
+				vz.wui_dialog.closeCreated($('.wui_dialog'));
                         }
                     });
                 },
                 'Abbrechen': function() {
-                    wui_dialog_close($('.wui_dialog'));
+                    vz.wui_dialog.closeCreated($('.wui_dialog'));
                 }
             }
 	var content = $('<form>').append(container);
-	new wui_dialog('Bearbeiten von '+entity.title,content,buttons_edit,entity);
+	new vz.wui_dialog.create('Bearbeiten von '+entity.title,content,buttons_edit,entity);
     	var form = $('.wui_dialog .dialog-content form');
           form.keypress(function(ev) {
                 // submit form on enter
@@ -485,7 +485,7 @@ var buttons_channel = {
             }); 
     },
     'Schließen': function() {
-        wui_dialog_close($(this));
+        vz.wui_dialog.closeCreated($(this));
     }
 };
 
@@ -508,15 +508,15 @@ var buttons_group = {
                         vz.wui.drawPlot();
                         
                     });
-		    wui_dialog_close($(this));
-                    wui_dialog_close($('.wui_dialog_details'));
+		    vz.wui_dialog.closeCreated($(this));
+                    vz.wui_dialog.closeCreated($('.wui_dialog_details'));
                 },
                 'Abbrechen': function() {
-                    wui_dialog_close($(this));
+                    vz.wui_dialog.closeCreated($(this));
                 }
             }
 	var content_del = 'Wollen Sie dies Gruppe wirklich Löschen? </br> Dabei werden keine enthaltenen Kanäle oder Daten gelöscht.';
-	new wui_dialog('Löschen',content_del,buttons,entity,'textalignc',true);
+	new vz.wui_dialog.create('Löschen',content_del,buttons,entity,'textalignc',true);
     },
     'Bearbeiten': function() {
         $('.wui_dialog .dialog-content form table .required').remove();
@@ -566,16 +566,16 @@ var buttons_group = {
                             vz.wui.dialogs.exception(e);
                         }
                         finally {
-				wui_dialog_close($('.wui_dialog'));
+				vz.wui_dialog.closeCreated($('.wui_dialog'));
                         }
                     });
                 },
                 'Abbrechen': function() {
-                    wui_dialog_close($('.wui_dialog'));
+                    vz.wui_dialog.closeCreated($('.wui_dialog'));
                 }
             }
 	var content = $('<form>').append(container);
-	new wui_dialog('Bearbeiten von '+entity.title,content,buttons_edit,entity);
+	new vz.wui_dialog.create('Bearbeiten von '+entity.title,content,buttons_edit,entity);
     	var form = $('.wui_dialog .dialog-content form');
           form.keypress(function(ev) {
                 // submit form on enter
@@ -585,14 +585,14 @@ var buttons_group = {
             }); 
     },
     'Schließen': function() {
-        wui_dialog_close($(this));
+        vz.wui_dialog.closeCreated($(this));
     }
 };
 
 var buttons = (this.isChannel()) ? buttons_channel : buttons_group;
 
 
-	new wui_dialog('Details für ' + this.title,this.getDOMDetails(),buttons,entity,'wui_dialog_details');
+	new vz.wui_dialog.create('Details für ' + this.title,this.getDOMDetails(),buttons,entity,'wui_dialog_details');
 
 };
 

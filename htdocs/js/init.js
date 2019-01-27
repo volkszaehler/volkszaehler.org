@@ -42,7 +42,7 @@ var vz = {
 	},
 	plot: { },				// flot instance
 	options: { },			// options loaded from cookies in options.js
-	dialog: { }
+	wui_dialog: { }
 };
 
 /**

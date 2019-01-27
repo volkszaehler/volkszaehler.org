@@ -88,7 +88,12 @@ vz.wui.resizePlot = function(evt, windowHeight) {
 	// resize container depending on window vs. content height
 	var delta = (windowHeight || $(window).height()) - $('html').height();
 	$('#flot').height(Math.max($('#flot').height() + delta, vz.options.plot.minHeight || 300));
-	vz.options.tuples = Math.round($('#flot').width() / 3);
+
+	if(vz.options.tuples == undefined || vz.options.tuples == null){
+        vz.options.tuples = undefined
+	}else {
+        vz.options.tuples = Math.round($('#flot').width() / 3);
+    }
 
 	if (vz.plot && vz.plot.resize) {
 		vz.plot.resize();
@@ -164,7 +169,7 @@ vz.wui.dialogs.init = function() {
 		$('#entity-public-middleware, #entity-create-middleware').append($('<option>').val(middleware.url).text(middleware.title));
 	});
 
-	vz.dialog.open($('#entity-add'));
+	vz.wui_dialog.open($('#entity-add'));
 	// populate and refresh public entities
 	var middleware = vz.middleware.find($('#entity-public-middleware option:selected').val());
 	populateEntities(middleware);
@@ -214,7 +219,7 @@ vz.wui.dialogs.init = function() {
 			vz.wui.dialogs.exception(e);
 		}
 		finally {
-			vz.dialog.close($('#entity-add'));
+			vz.wui_dialog.close($('#entity-add'));
 		}
 
 		return false;
@@ -233,7 +238,7 @@ vz.wui.dialogs.init = function() {
 			vz.wui.dialogs.exception(e);
 		}
 		finally {
-			vz.dialog.close($('#entity-add'));
+			vz.wui_dialog.close($('#entity-add'));
 		}
 
 		return false;
@@ -291,12 +296,12 @@ vz.wui.dialogs.init = function() {
 				vz.wui.dialogs.exception(e);
 			}
 			finally {
-				wui_dialog_close($('#entity-create'));
+				vz.wui_dialog.closeCreated($('#entity-create'));
 				
 				var btnok = function() {
-					wui_dialog_close($(this));
+					vz.wui_dialog.closeCreated($(this));
 				}				
-				new wui_dialog('Kanal UUID',$('<p>').html(entity.uuid),btnok);			
+				new vz.wui_dialog.create('Kanal UUID',$('<p>').html(entity.uuid),btnok);
 
 				
 			}
@@ -308,7 +313,7 @@ vz.wui.dialogs.init = function() {
 	// update event handler after lazy loading
 	$('button[name=entity-add]').unbind('click', this.init);
 	$('button[name=entity-add]').click(function() {
-		vz.dialog.open($('#entity-add'))
+		vz.wui_dialog.open($('#entity-add'))
 	});
 };
 
@@ -956,11 +961,11 @@ vz.wui.dialogs.error = function(error, description, code) {
 
 	var buttons = {
 			Ok: function() {
-				wui_dialog_close($(this));
+				vz.wui_dialog.closeCreated($(this));
 			}
 		};
 
-	new wui_dialog('Error!',content,buttons);
+	new vz.wui_dialog.create('Error!',content,buttons);
 
 };
 

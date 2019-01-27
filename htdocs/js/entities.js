@@ -260,18 +260,18 @@ vz.entities.showTable = function() {
 				var buttons_verschieben = {
 						'Verschieben': function() {
 							vz.entities.dropTableHandler(from, to, child, false);
-							wui_dialog_close($(this));
+							vz.wui_dialog.closeCreated($(this));
 						},
 						'Kopieren': function() {
 							vz.entities.dropTableHandler(from, to, child, true);
-							wui_dialog_close($(this));
+							vz.wui_dialog.closeCreated($(this));
 						},
 						'Abbrechen': function() {
-							wui_dialog_close($(this));
+							vz.wui_dialog.closeCreated($(this));
 						}
 					};
 
-				new wui_dialog('Verschieben','',buttons_verschieben);
+				new vz.wui_dialog.create('Verschieben','',buttons_verschieben);
 
 			},
 			hoverClass: 'accept',

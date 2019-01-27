@@ -1,9 +1,9 @@
-vz.dialog.open = function (e) {
+vz.wui_dialog.open = function (e) {
     e.addClass('visible');
-    wui_dialog_setpostion($(e));
+    vz.wui_dialog.setPosition($(e));
 };
 
-vz.dialog.close = function (e) {
+vz.wui_dialog.close = function (e) {
     if(e.attr('id') === 'entity-add') {
         e.removeClass('visible');
     }else {
@@ -12,27 +12,26 @@ vz.dialog.close = function (e) {
     vz.wui.errorDialog = false;
 };
 
-vz.dialog.btnclose = function (e) {
+vz.wui_dialog.btnclose = function (e) {
     var y = e.parentElement.parentElement;
     this.close($(y));
 };
 
-function wui_dialog_close(item) {
+vz.wui_dialog.closeCreated = function(item){
     item.closest('dialog').remove();
     vz.wui.errorDialog = false;
-}
+};
 
 
-function wui_dialog(title, content, buttons, entity, css, newwindow = false) {
+vz.wui_dialog.create = function(title, content, buttons, entity, css, newwindow = false) {
 
     if (buttons.toString() !== "") {
         var btn_div = getButtons(buttons);
     }
 
-    winheight = window.innerHeight;
-
+    var dialog;
     if ($('.wui_dialog').length > 0 && !newwindow) {
-        var dialog = $('.wui_dialog')
+        dialog = $('.wui_dialog')
             .empty()
             .addClass('visible')
             .append(
@@ -45,7 +44,7 @@ function wui_dialog(title, content, buttons, entity, css, newwindow = false) {
                             .attr('type', 'image')
                             .attr('src', 'img/ic_close_white.png')
                             .click(function () {
-                                vz.dialog.btnclose(this)
+                                vz.wui_dialog.btnclose(this)
                             })
                     ),
                 $('<div>')
@@ -53,12 +52,9 @@ function wui_dialog(title, content, buttons, entity, css, newwindow = false) {
                     .addClass(css)
                     .append(content)
                     .append(btn_div)
-            )
-        var height = dialog.height();
-        var topheight = (winheight - height) / 2;
-        dialog.css('top', topheight);
+            );
     } else {
-        var dialog = $('<dialog>')
+        dialog = $('<dialog>')
             .addClass('wui_dialog')
             .addClass('visible')
             .append(
@@ -71,7 +67,7 @@ function wui_dialog(title, content, buttons, entity, css, newwindow = false) {
                             .attr('type', 'image')
                             .attr('src', 'img/ic_close_white.png')
                             .click(function () {
-                                vz.dialog.btnclose(this)
+                                vz.wui_dialog.btnclose(this)
                             })
                     ),
                 $('<div>')
@@ -83,36 +79,35 @@ function wui_dialog(title, content, buttons, entity, css, newwindow = false) {
         $('body')
             .append(
                 dialog
-            )
-
-        var height = dialog.height();
-        var topheight = (winheight - height) / 2;
-        dialog.css('top', topheight);
-
+            );
     }
-}
 
-function wui_dialog_setpostion(dialog){
+    vz.wui_dialog.setPosition(dialog);
+
+
+    function getButtons(buttons) {
+        var div = $('<div>');
+        for (var m in buttons) {
+            if (typeof buttons[m] == "function") {
+                div.append(
+                    $('<button>')
+                        .html(m)
+                        .click(buttons[m])
+                );
+            }
+        }
+        return div;
+    }
+};
+
+vz.wui_dialog.setPosition = function(dialog){
     var winheight = window.innerHeight;
     var height = dialog.height();
     var topheight = (winheight - height) / 2;
     dialog.css('top', topheight);
-}
+};
 
 
-function getButtons(buttons) {
-    var div = $('<div>');
-    for (var m in buttons) {
-        if (typeof buttons[m] == "function") {
-            div.append(
-                $('<button>')
-                    .html(m)
-                    .click(buttons[m])
-            );
-        }
-    }
-    return div;
-}
 
 
 $(function () {
@@ -135,7 +130,7 @@ $(function () {
                 $('#entity-public').attr("class", "invisible");
                 $('#entity-subscribe').attr("class", "invisible");
                 $('#entity-create').attr("class", "visible");
-                wui_dialog_setpostion($('#entity-create').closest('dialog'));
+                vz.wui_dialog.setPosition($('#entity-create').closest('dialog'));
                 break;
         }
     });
@@ -197,14 +192,17 @@ function closeFullscreen(elem){
     }
 }
 
-
-
-function setSiteTitle(){
-    var title = vz.options.siteTitle;
-    if(title !== null){
-        document.title = title;
-        $('#header-title-text').html(title);
+function setSiteTitle() {
+    var title = vz.options.title;
+    if (title === null) {
+        title = "Volkszaehler.org";
+        if (navigator.userAgent.match(/(iPhone|iPod|iPad)/i)) {
+            title = "Volkszaehler";
+        }
     }
+
+    document.title = title;
+    $('#header-title-text').html(title);
 }
 
 

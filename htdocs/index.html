@@ -68,16 +68,8 @@
     <script type="text/javascript" src="js/wui.js"></script>
     <script type="text/javascript" src="js/entity.js"></script>
     <script type="text/javascript" src="js/options.js"></script>
-    <script type="text/javascript" src="js/dialog.js"></script>
+    <script type="text/javascript" src="js/wui_design.js"></script>
 
-    <script type="text/javascript">
-        if (vz.options.title) {
-            document.title = vz.options.title;
-        }
-        else if (navigator.userAgent.match(/(iPhone|iPod|iPad)/i)) {
-            document.title = "Volkszaehler";
-        }
-    </script>
 </head>
 <body>
 <div id="header-site">
@@ -219,7 +211,7 @@
 <dialog id="entity-delete-group">
     <div class="dialog-titlebar">
         <span>Bearbeiten</span>
-        <input onclick="vz.dialog.btnclose(this);" class="dialog-close" type="image" src="img/ic_close_white.png" alt="Close"/>
+        <input onclick="vz.wui_dialog.btnclose(this);" class="dialog-close" type="image" src="img/ic_close_white.png" alt="Close"/>
     </div>
     <div class="dialog-content">
         <p>
@@ -239,7 +231,7 @@
                 <span id="tab_entity-public" class="tab-link tab-selected">Öffentliche Kanäle</span><span id="tab_entity-subscribe" class="tab-link">
                 Private Kanäle</span><span id="tab_entity-create" class="tab-link">
                 Kanal erstellen</span>
-                <input onclick="vz.dialog.btnclose(this.parentElement.parentElement);" class="dialog-tab-close" type="image" src="img/ic_close_white.png" alt="Close"/>
+                <input onclick="vz.wui_dialog.btnclose(this.parentElement.parentElement);" class="dialog-tab-close" type="image" src="img/ic_close_white.png" alt="Close"/>
             </div>
             <div class="tabcontent">
                 <div id="entity-public">
@@ -293,7 +285,7 @@
 <dialog id="entity-edit">
     <div class="dialog-titlebar">
         <span>Bearbeiten</span>
-        <input onclick="vz.dialog.btnclose(this);" class="dialog-close" type="image" src="img/ic_close_white.png" alt="Close"/>
+        <input onclick="vz.wui_dialog.btnclose(this);" class="dialog-close" type="image" src="img/ic_close_white.png" alt="Close"/>
     </div>
     <div class="dialog-content">
         <form method="get" target="_blank">
@@ -308,7 +300,7 @@
 <dialog id="chart-export" >
     <div class="dialog-titlebar">
         <span>Chart Export</span>
-        <input onclick="vz.dialog.btnclose(this);" class="dialog-close" type="image" src="img/ic_close_white.png" alt="Close"/>
+        <input onclick="vz.wui_dialog.btnclose(this);" class="dialog-close" type="image" src="img/ic_close_white.png" alt="Close"/>
     </div>
     <div class="dialog-content">
         <form method="get" target="_blank">
@@ -318,6 +310,5 @@
 </dialog>
 
 
-<script type="text/javascript" src="js/cursor_popup.js"></script>
 </body>
 </html>
