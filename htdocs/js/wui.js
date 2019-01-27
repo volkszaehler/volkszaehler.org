@@ -90,7 +90,7 @@ vz.wui.resizePlot = function(evt, windowHeight) {
 	$('#flot').height(Math.max($('#flot').height() + delta, vz.options.plot.minHeight || 300));
 
 	if(vz.options.tuples == undefined || vz.options.tuples == null){
-        vz.options.tuples = undefined
+        vz.options.tuples = undefined;
 	}else {
         vz.options.tuples = Math.round($('#flot').width() / 3);
     }
