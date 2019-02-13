@@ -78,13 +78,22 @@ class VirtualInterpreter extends Interpreter {
 	 * Create static, non-data context functions
 	 */
 	protected function createStaticContextFunctions() {
-		// php function wrappers
-		$this->ctx->def('abs');
-		$this->ctx->def('min');
-		$this->ctx->def('max');
-		$this->ctx->def('sin');
-		$this->ctx->def('cos');
-		$this->ctx->def('rand'); // random(lower bound, upper bound)
+		// php function wrappers (see php manual for arguments)
+		$this->ctx->def('abs');           //Absolute value
+		$this->ctx->def('ceil');          //Round fractions up
+		$this->ctx->def('exp');           //Calculates the exponent of e
+		$this->ctx->def('floor');         //Round fractions down
+		$this->ctx->def('fmod');          //Returns the floating point remainder (modulo) of the division of the arguments
+		$this->ctx->def('log10');         //Base-10 logarithm
+		$this->ctx->def('log');           //Natural logarithm
+		$this->ctx->def('max');           //Find highest value
+		$this->ctx->def('min');           //Find lowest value
+		$this->ctx->def('pow');           //Exponential expression
+		$this->ctx->def('round');         //Rounds a float
+		$this->ctx->def('sqrt');          //Square root
+		$this->ctx->def('sin');           //Sine parameter in radians
+		$this->ctx->def('cos');           //Cosine parameter in radians
+		$this->ctx->def('rand');          //Random(lower bound, upper bound)
 
 		// non-php mathematical functions
 		$this->ctx->def('sgn', function($v) { if ($v == 0) return 0; return ($v > 0) ? 1 : -1; }); // signum
@@ -93,6 +102,8 @@ class VirtualInterpreter extends Interpreter {
 		// logical functions
 		$this->ctx->def('if', function($if, $then, $else = 0) { return $if ? $then : $else; });
 		$this->ctx->def('ifnull', function($if, $then) { return $if ?: $then; });
+		$this->ctx->def('or', function() { $res=false; foreach ( func_get_args() as $v ) $res = $res || $v; return $res; });
+		$this->ctx->def('and', function() { $res=true; foreach ( func_get_args() as $v ) $res = $res && $v; return $res; });
 
 		// date/time functions
 		$this->ctx->def('year', function($ts) { return (int) date('Y', (int) $ts); });
@@ -101,6 +112,7 @@ class VirtualInterpreter extends Interpreter {
 		$this->ctx->def('hour', function($ts) { return (int) date('H', (int) $ts); });
 		$this->ctx->def('minutes', function($ts) { return (int) date('i', (int) $ts); });
 		$this->ctx->def('seconds', function($ts) { return (int) date('s', (int) $ts); });
+		$this->ctx->def('weekday', function($ts) { return (int) date('N', (int) $ts); }); //1=Monday 7=Sunday
 	}
 
 	/**
