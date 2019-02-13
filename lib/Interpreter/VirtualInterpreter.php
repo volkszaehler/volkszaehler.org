@@ -274,7 +274,7 @@ class VirtualInterpreter extends Interpreter {
 			return $this->getConsumption() / $this->rowCount;
 		}
 		else {
-			$delta = $this->getTo() - $this->getFrom();
+			$delta = ($this->getTo() - $this->getFrom()) / 3.6e6;
 			return $this->consumption / $delta;
 		}
 	}

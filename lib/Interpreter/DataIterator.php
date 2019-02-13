@@ -70,7 +70,7 @@ class DataIterator implements \IteratorAggregate, \Countable {
 		}
 
 		// skipping first reading, just for getting first timestamp, value is remembered
- 		list($this->from, $this->firstValue, $foo) = $this->stmt->fetch();
+		list($this->from, $this->firstValue, $foo) = $this->stmt->fetch();
 
 		// ensure valid data range if we have 1 row only (not using iterator then)
 		if ($this->from) $this->to = $this->from;

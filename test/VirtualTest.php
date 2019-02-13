@@ -200,6 +200,69 @@ class VirtualTest extends Middleware
 
 		// expected timestamps
 		$timestamps = $this->extractUniqueTimestamps($data);
+		$from = array_shift($timestamps); // first timestamp
+
+		// expected values
+		$values = array();
+		foreach ($timestamps as $ts) {
+			$func = array($this, $styles[0] == 'states' ? 'getValueBefore' : 'getValueAfter');
+			$in1v = $func($data[$in1], $ts);
+
+			$func = array($this, $styles[1] == 'states' ? 'getValueBefore' : 'getValueAfter');
+			$in2v = $func($data[$in2], $ts);
+
+			$values[] = array($ts, $in1v - $in2v, 1);
+		}
+		$to = $values[count($values)-1][0]; // last timestamp
+
+		// add input values
+		$this->addData($data);
+
+		// get result
+		$vi = $this->createInterpreter($out, 1, 'now', null, null);
+		$tuples = $this->getInterpreterResult($vi);
+
+		// omit first 2 timestamps from assertion since VirtualInterpreter
+		// has no access to very first database row consumed by DataIterator
+		$this->assertEquals(array_splice($values, 2), array_splice($tuples, 2));
+		$this->assertEquals($from, $vi->getFrom());
+        $this->assertEquals($to, $vi->getTo());
+
+		// delete
+		foreach ([$in1, $in2, $out] as $uuid) {
+			// $url = '/channel/' . $uuid . '.json?operation=delete';
+			// $this->getJson($url);
+			$this->deleteChannel($uuid);
+		}
+	}
+
+	/**
+	 * Identical test as before but checks for consumption and average values
+	 *
+	 * @dataProvider virtualInputProvider
+	 * @depends testVirtualChannel
+	 */
+	function testVirtualChannelConsumption($styles, $inputs) {
+		// create channel, style=lines forces STRATEGY_TS_AFTER
+		$in1 = $this->createChannel('Sensor', 'powersensor', ['style' => $styles[0]]);
+		$in2 = $this->createChannel('Sensor', 'powersensor', ['style' => $styles[1]]);
+		$out = $this->createChannel('Virtual', 'virtualconsumption', [
+			'unit' => 'foo',
+			'in1' => $in1,
+			'in2' => $in2,
+			'rule' => 'in1()-in2()'
+		]);
+
+		$this->assertTrue(isset($this->json->entity), "Expected <entity> got none.");
+		$this->assertTrue(isset($this->json->entity->uuid));
+
+		$data = [
+			$in1 => $this->getSeriesData($inputs[0]),
+			$in2 => $this->getSeriesData($inputs[1])
+		];
+
+		// expected timestamps
+		$timestamps = $this->extractUniqueTimestamps($data);
 		$from = array_shift($timestamps);
 
 		// expected values
@@ -213,6 +276,7 @@ class VirtualTest extends Middleware
 
 			$values[] = array($ts, $in1v - $in2v, 1);
 		}
+        $to = $values[count($values)-1][0]; // last timestamp
 
 		// add input values
 		$this->addData($data);
@@ -221,10 +285,28 @@ class VirtualTest extends Middleware
 		$vi = $this->createInterpreter($out, 1, 'now', null, null);
 		$tuples = $this->getInterpreterResult($vi);
 
+		// weighed average
+		$last_ts = $from;
+        $consumption = (array_reduce($values, function ($carry, $tuple) use (&$last_ts) {
+			if ($tuple[0] > $last_ts) {
+				$carry += $tuple[1] * ($tuple[0] - $last_ts) / 3.6e6;
+				$last_ts = $tuple[0];
+			}
+            return $carry;
+        }));
+
+        // weighed average
+        $average = $consumption / ($to - $from) * 3.6e6;
+
 		// omit first 2 timestamps from assertion since VirtualInterpreter
 		// has no access to very first database row consumed by DataIterator
 		$this->assertEquals(array_splice($values, 2), array_splice($tuples, 2));
-		$this->assertEquals($from, $vi->getFrom());
+
+		// @todo verify consumption calculation for 'states'
+		if ($styles[0] != 'states') {
+			$this->assertEquals($consumption, $vi->getConsumption(), "Consumption mismatch");
+			$this->assertEquals($average, $vi->getAverage(), "Average mismatch");
+		}
 
 		// delete
 		foreach ([$in1, $in2, $out] as $uuid) {
@@ -234,7 +316,7 @@ class VirtualTest extends Middleware
 		}
 	}
 
-	function testVirtualChannelConsumption() {
+	function testVirtualChannelGroupedConsumption() {
 		// create
 		$in1 = $this->createChannel('Sensor', 'powersensor');
 		$out = $this->createChannel('Virtual', 'virtualconsumption', [
@@ -271,12 +353,17 @@ class VirtualTest extends Middleware
 		}, array_keys($data[$in1]));
 		array_shift($values);
 
+        // in consumption mode the total consumption is the sum of period consumptions
 		$consumption = (array_reduce($values, function($carry, $tuple) {
 			return $carry + $tuple[1];
 		}));
 
+		// in consumption mode the average is the total divided by number of periods
+		$average = $consumption / (count($series) - 1);
+
 		$this->assertEquals(array_splice($values, 0), array_splice($tuples, 0));
-		$this->assertEquals($consumption, $vi->getConsumption());
+		$this->assertEquals($consumption, $vi->getConsumption(), "Consumption mismatch");
+		$this->assertEquals($average, $vi->getAverage(), "Average mismatch");
 
 		// partial consumption
 		$vi = $this->createInterpreter($out, 0, 2 * 3600 * 1000, null, 'hour', ['consumption']);
