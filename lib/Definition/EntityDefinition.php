@@ -1,8 +1,7 @@
 <?php
 /**
- * @package default
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @license http://www.gnu.org/licenses/gpl.txt GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org

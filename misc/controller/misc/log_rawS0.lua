@@ -2,10 +2,9 @@
 --
 -- This is a lua bash script to log S0-Hutschienenzähler, directly connected to an RS232 port
 --
--- @copyright Copyright (c) 2011, The volkszaehler.org project
--- @package controller
--- @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
 -- @author Harald Koenig <koenig@tat.physik.uni-tuebingen.de>
+-- @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+-- @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
 --
 ---
 -- This file is part of volkzaehler.org
@@ -28,14 +27,14 @@ require "vz_conf"
 
 url_fmt = "http://volkszaehler.org/demo/middleware/data/%s.json?ts=%s&value=1"
 
-uuids = { 
+uuids = {
       U = "434c8580-dafa-11df-b69a-c7234ef37399" ,
       A = "56fafaa0-dafa-11df-ae15-199b2a8a5b54" ,
       B = "de672180-c231-11df-a546-eda234e5b7dd" ,
       C = "de653180-c631-11df-a546-edadbae5b7dd" ,
       D = "df223480-c631-11df-a546-edadb23427dd" ,
       default = "00000000-0000-0000-0000-000000000000"
-}     
+}
 
 ttys = {   "/dev/ttyACM0" ,  "/dev/ttyUSB0", "/dev/ttyS0" , "/dev/tty" ,  }
 
@@ -75,7 +74,7 @@ if ( (t1-math.floor(t1)) + (t2-math.floor(t2)) == 0) then
 else
 
   function time_get()
-    return socket.gettime()    
+    return socket.gettime()
   end
 
   function time_diff(t1,t2)
@@ -107,7 +106,7 @@ for k,v in pairs( ttys ) do
     if not (rserial == nil) then break ; end
 end
 
-os.execute("baud=" .. baud .. " ; stty -a < " .. tty .. " | grep -q $baud.baud || stty " .. baud .. " time 1 min 1 -icanon -echo < " .. tty )                      
+os.execute("baud=" .. baud .. " ; stty -a < " .. tty .. " | grep -q $baud.baud || stty " .. baud .. " time 1 min 1 -icanon -echo < " .. tty )
 
 
 -- now let's start processing the input...
@@ -116,16 +115,16 @@ t1 = t0
 while true do
         inchar = rserial:read(1)
 	t = time_get()
-	if not (string.match(inchar, "[a-z]")) then 
-	   if uuids[inchar] then 
+	if not (string.match(inchar, "[a-z]")) then
+	   if uuids[inchar] then
 	      uuid =  uuids[inchar]
-	   else	
+	   else
 	      uuid = uuids.default;
 	   end
 	   url = string.format(url_fmt, uuid, time_mstr(t))
 	   dt0 = time_diff(t,t0)
 	   dt1 = time_diff(t,t1)
-	   p = 3600e3 / dt1 / 2000. 
+	   p = 3600e3 / dt1 / 2000.
 	   print (time_str(t), string.format("%10.6f", dt0), string.format("%10.6f", dt1), string.format("%10.6f", p), url)
 	   http.request(url)
 	   t1 = t

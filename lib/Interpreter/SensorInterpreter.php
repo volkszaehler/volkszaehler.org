@@ -1,8 +1,7 @@
 <?php
 /**
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -26,7 +25,6 @@ namespace Volkszaehler\Interpreter;
 /**
  * Sensor interpreter
  *
- * @package default
  * @author Steffen Vogel <info@steffenvogel.de>
  * @author Andreas Götz <cpuidle@gmx.de>
  */
@@ -88,9 +86,9 @@ class SensorInterpreter extends Interpreter {
 	 * @return float total consumption in Wh
 	 */
 	public function getConsumption() {
-		// convert to Wh
+		// convert to hourly values (Wh, m³)
 		// @TODO check if resolution is needed here
-		return $this->channel->getDefinition()->hasConsumption ? $this->consumption / (3.6e3 * $this->scale) : NULL;
+		return $this->channel->getDefinition()->hasConsumption ? $this->consumption / 3.6e6 : NULL;
 	}
 
 	/**

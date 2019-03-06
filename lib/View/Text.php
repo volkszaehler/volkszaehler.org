@@ -1,8 +1,7 @@
 <?php
 /**
- * @copyright Copyright (c) 2016, The volkszaehler.org project
- * @package default
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -33,7 +32,6 @@ use Volkszaehler\Interpreter;
  * Plain text view
  *
  * @author Andreas Götz <cpuidle@gmx.de>
- * @package default
  */
 class Text extends CSV {
 
@@ -69,10 +67,11 @@ class Text extends CSV {
 	 * @param Util\Debug $debug
 	 */
 	protected function addDebug(Util\Debug $debug) {
+		echo PHP_EOL;
 		echo "database:\t" . Util\Configuration::read('db.driver') . PHP_EOL;
 		echo "time:\t" . $debug->getExecutionTime() . PHP_EOL;
 
-		if ($uptime = Util\Debug::getUptime()) echo "uptime:\t" . $uptime*1000;
+		if ($uptime = Util\Debug::getUptime()) echo "uptime:\t" . $uptime*1000 . PHP_EOL;
 		if ($load = Util\Debug::getLoadAvg()) echo "load:\t" . implode(', ', $load) . PHP_EOL;
 		if ($commit = Util\Debug::getCurrentCommit()) echo "commit-hash:\t" . $commit . PHP_EOL;
 		if ($version = phpversion()) echo "php-version:\t" . $version . PHP_EOL;
@@ -81,11 +80,10 @@ class Text extends CSV {
 			echo "message:\t" . $message['message'] . PHP_EOL;	// TODO add more information
 		}
 
+		echo "sql:\t" . PHP_EOL;
 		foreach ($debug->getQueries() as $query) {
-			echo "query:\t" . $query['sql'] . PHP_EOL;
-			if (isset($query['parameters'])) {
-				echo "\tparameters:\t" . implode(', ', $query['parameters']) . PHP_EOL;
-			}
+			$parameters = isset($query['params']) ? $query['params'] : [];
+			echo Util\Debug::getParametrizedQuery($query['sql'], $parameters) . PHP_EOL;
 		}
 	}
 

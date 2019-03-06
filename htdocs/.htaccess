@@ -8,6 +8,11 @@
 	Require all granted
 </IfModule>
 
+# disable negotiation to avoid rewrite rule conflicts
+<IfModule mod_negotiation.c>
+#    Options -MultiViews
+</IfModule>
+
 # enable this rule if using ppm middleware
 <IfModule mod_proxy.c>
 	# RewriteEngine On
@@ -23,5 +28,5 @@
 </IfModule>
 
 <IfModule mod_headers.c>
-    Header set Content-Security-Policy "default-src 'self'; connect-src * ws: wss: http: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';"
+    Header set Content-Security-Policy "default-src 'self'; connect-src * ws: wss: http: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;"
 </IfModule>

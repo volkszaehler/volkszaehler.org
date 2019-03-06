@@ -3,9 +3,8 @@
 #
 # @author Peer Janssen
 # @author Justin Otherguy <justin@justinotherguy.org>
-# @copyright Copyright (c) 2011, The volkszaehler.org project
-# @package default
-# @license http://opensource.org/licenses/gpl-license.php GNU Public License
+# @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+# @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
 #
 #/*
 #* This file is part of volkzaehler.org
@@ -24,7 +23,7 @@
 #* along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
 #*/
 
-# vzmonitor operates as a cronjob and monitors whether data for a particular UUID 
+# vzmonitor operates as a cronjob and monitors whether data for a particular UUID
 #  a) keeps arriving (or - to be precise: has been arriving recently)
 #  b) its value is within a certain corridor (minimum_value, maximum_value)
 
@@ -97,7 +96,7 @@ if number_of_values == 0:
   print 'Alarm! The interval ranging from %s until now (%s) contains only no readings for uuid %s. You might want to check the sensor.' % (str(past)[:19], str(now)[:19], uuidstring)
 elif number_of_values < minimum_number_of_values:
   print 'Alarm! The interval ranging from %s until now (%s) contains only %s reading(s) (<%d) for uuid %s. You might want to check the sensor' % (str(past)[:19], str(now)[:19], number_of_values, minimum_number_of_values, uuidstring)
-  
+
 if average < minimum_value:
   print 'Alarm! The average value in the interval between %s and now (%s) for channel %s is below the minimum value. It is currently at %d (<%d).' % (str(past)[:19], str(now)[:19], uuidstring, average, minimum_value)
 

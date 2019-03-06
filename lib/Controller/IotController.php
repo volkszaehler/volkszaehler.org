@@ -1,8 +1,7 @@
 <?php
 /**
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -31,26 +30,8 @@ use Volkszaehler\View\View;
  * Controller for mapping external identifiers to entity uuids
  *
  * @author Andreas Goetz <cpuidle@gmx.de>
- * @package default
  */
 class IotController extends Controller {
-
-	/**
-	 * @var Volkszaehler\Controller\EntityController
-	 */
-	protected $ec;
-
-	/**
-	 * IotController constructor
-	 *
-	 * @param Request $request
-	 * @param EntityManager $em
-	 * @param View $view
-	 */
-	public function __construct(Request $request, EntityManager $em, View $view) {
-		parent::__construct($request, $em, $view);
-		$this->ec = new EntityController($request, $em);
-	}
 
 	/**
 	 * Run operation
@@ -59,13 +40,13 @@ class IotController extends Controller {
 	 * @return array
 	 * @throws \Exception
 	 */
-	public function get($uuid = null) {
-		if ($uuid === null || is_array($uuid) || strlen($uuid) < 32) {
+	public function get($secret) {
+		if ($secret === null || is_array($secret) || strlen($secret) < 32) {
 			throw new \Exception('Invalid identifier');
 		}
 
-		// treat uuid as identifier stored in (hidden) owner parameter
-		return array('entities' => $this->ec->filter(array('owner' => $uuid)));
+		// treat secret as identifier stored in (hidden) owner parameter
+		return array('entities' => $this->ef->getByProperties(array('owner' => $secret)));
 	}
 }
 

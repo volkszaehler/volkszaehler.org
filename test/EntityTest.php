@@ -2,11 +2,14 @@
 /**
  * Entity tests
  *
- * @package Test
  * @author Andreas Götz <cpuidle@gmx.de>
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 
 namespace Tests;
+
+use Volkszaehler\Util;
 
 class EntityTest extends Middleware
 {
@@ -17,7 +20,7 @@ class EntityTest extends Middleware
 		$this->assertInternalType('array', $this->getJson('/entity.json')->entities);
 	}
 
-	function testCreateEntity() {
+	function testCannotCreateEntity() {
 		// entities cannot be created - expect json exception
 		$this->getJson('/entity.json', array(
 			'operation' => 'add',
@@ -25,9 +28,10 @@ class EntityTest extends Middleware
 			'type' => 'power',
 			'resolution' => 1
 		), 'GET', true);
+		$this->assertStringStartsWith('Invalid context operation', $this->json->exception->message);
 	}
 
-	function testEditEntity() {
+	function testCreateAndEditEntity() {
 		self::$uuid = Data::createChannel('Power', 'power', 1);
 
 		// expect title updated
@@ -38,6 +42,9 @@ class EntityTest extends Middleware
 		))->entity->title);
 	}
 
+	/**
+	 * @depends testCreateAndEditEntity
+	 */
 	function testPublicEntity() {
 		// make sure the channel is NOT returned in the list of public entities
 		$this->assertEquals(0, count(array_filter($this->getJson('/entity.json')->entities, function($entity) {
@@ -56,6 +63,9 @@ class EntityTest extends Middleware
 		})));
 	}
 
+	/**
+	 * @depends testCreateAndEditEntity
+	 */
 	function testDeleteEntity() {
 		// expect no exception
 		$this->getJson('/entity/' . self::$uuid . '.json', array(
@@ -63,7 +73,7 @@ class EntityTest extends Middleware
 		));
 	}
 
-	function testEditEntityInvalidProperties() {
+	function testEditEntityWithInvalidProperties() {
 		self::$uuid = Data::createChannel('Power', 'power', 1);
 		$uri = '/entity/' . self::$uuid . '.json';
 
@@ -80,20 +90,48 @@ class EntityTest extends Middleware
 			'active' => 'wahr'
 		), 'GET', true);
 		$this->assertStringStartsWith('Invalid property value', $this->json->exception->message);
-
-		// expect boolean type exception - property currently not supported
-		// $this->getJson($uri, array(
-		// 	'operation' => 'edit',
-		// 	'active' => true
-		// ), 'GET', true);
-		// $this->assertStringStartsWith('Invalid property value', $this->json->exception->message);
 	}
 
-	function testDeleteInvalidValidEntity() {
+	/**
+	 * @depends testEditEntityWithInvalidProperties
+	 */
+	function testDeleteEntityAfterEditErrors() {
 		// expect no exception
 		$this->getJson('/entity/' . self::$uuid . '.json', array(
 			'operation' => 'delete'
 		));
+	}
+
+	function testGetInvalidEntity() {
+		// malformed uuid
+		$this->getJson('/entity/foo.json', array(), 'GET', true);
+		$this->assertStringStartsWith('Invalid UUID', $this->json->exception->message);
+
+		// non-existing uuid
+		$uuid = Util\UUID::mint();
+		$this->getJson('/entity/' . $uuid . '.json', array(), 'GET', true);
+		$this->assertStringStartsWith('No entity with UUID', $this->json->exception->message);
+	}
+
+	function testEditInvalidEntity() {
+		// missing uuid
+		$this->getJson('/entity.json', array(
+			'operation' => 'edit'
+		), 'GET', true);
+		$this->assertStringStartsWith('Missing UUID', $this->json->exception->message);
+
+		// malformed uuid
+		$this->getJson('/entity/foo.json', array(
+			'operation' => 'edit'
+		), 'GET', true);
+		$this->assertStringStartsWith('Invalid UUID', $this->json->exception->message);
+
+		// non-existing uuid
+		$uuid = Util\UUID::mint();
+		$this->getJson('/entity/' . $uuid . '.json', array(
+			'operation' => 'edit'
+		), 'GET', true);
+		$this->assertStringStartsWith('No entity with UUID', $this->json->exception->message);
 	}
 }
 

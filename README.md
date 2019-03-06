@@ -15,10 +15,35 @@ http://demo.volkszaehler.org
 
 ## Quickstart
 
+The easiest way to run volkszaehler is using Docker.
+
+### Preparation
+
+Start database server and create the database:
+
+    docker run --name db -e MYSQL_ROOT_PASSWORD=R00t+ mysql
+    docker run --link db mysql -u root -pR00t+ -h db -e "CREATE DATABASE volkszaehler;"
+
+Create `docker.conf.php`, mount into the volkszaehler container and initialize the database schema:
+
+    docker run --link db -v $(pwd)/etc/docker.conf.php:/vz/etc/volkszaehler.conf.php volkszaehler/volkszaehler /vz/bin/doctrine orm:schema-tool:create
+
+### Running
+
+Start the application:
+
+    docker run -p 8080:8080 --link db -v $(pwd)/etc/docker.conf.php:/vz/etc/volkszaehler.conf.php volkszaehler/volkszaehler
+
+Run data aggregation:
+
+    docker run --link db -v $(pwd)/etc/docker.conf.php:/vz/etc/volkszaehler.conf.php volkszaehler/volkszaehler /vz/bin/aggregate run -l day -l hour
+
+## Local Installation
+
 From the shell:
 
-    wget https://raw.github.com/volkszaehler/volkszaehler.org/master/misc/tools/install.sh
-    sudo bash install.sh
+    wget https://raw.github.com/volkszaehler/volkszaehler.org/master/bin/install.sh
+    bash install.sh
 
 Or follow the detailed installation instructions at http://wiki.volkszaehler.org/software/middleware/installation
 
@@ -39,27 +64,21 @@ Or follow the detailed installation instructions at http://wiki.volkszaehler.org
 
     volkszaehler.org/
      |_ etc/                    configuration files
-     |_ htdocs/                 public web files
-     |   |_ middleware.php      middleware
-     |   \_ frontend            web ui
+     |_ bin/                    scripts for imports, installation etc.
+     |_ htdocs/                 web UI
+     |   \_ middleware.php      middleware
      |
      |_ lib/                    middleware libraries
+     |_ test/                   unit tests
      \_ misc/
-         |_ controller/
-         |   |_ vzlogger/       command line tool to log meters/sensors
-         |   \_ mbus/           a controller for mbus/messbus
-         |
+         |_ controller/         various logging tools, e.g. for mbus/messbus
          |_ docs/               documentation
-         |_ frontend/           alternative frontends
-         |_ graphics/           several graphics for docs, etc.
-         |_ sql/                database schema dumps
-         |   \_ demo/           demo data
-         |
-         |_ tools/              scripts for imports, installation etc.
-         \_ tests/              simple tests for middleware classes
+         |_ graphics/           graphics for docs, etc.
+         \_ sql/                database schema dumps
+             \_ demo/           demo data
 
 
 ## Copyright
 
-Copyright © 2015 volkszaehler.org  
-Licensed under the GNU Public License (http://opensource.org/licenses/gpl-license.php).
+Copyright © 2011-2018 volkszaehler.org
+Licensed under the GNU General Public License Version 3 (https://opensource.org/licenses/GPL-3.0).

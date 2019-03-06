@@ -1,8 +1,7 @@
 <?php
 /**
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -24,13 +23,14 @@
 namespace Volkszaehler\Model;
 
 use Volkszaehler\Util;
+use Volkszaehler\Interpreter\SQL;
+use Doctrine\DBAL;
 use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * Channel entity
  *
  * @author Steffen Vogel <info@steffenvogel.de>
- * @package default
  *
  * @Entity
  */
@@ -63,27 +63,23 @@ class Channel extends Entity {
 	 *
 	 * prevents doctrine of using single delete statements
 	 */
-	public function clearData(\Doctrine\DBAL\Connection $conn, $from = null, $to = null) {
-		$conn->transactional(function() use ($conn, $from, $to, &$res) {
+	public function clearData(DBAL\Connection $conn, $from = null, $to = null, $filters = []) {
+		$conn->transactional(function() use ($conn, $from, $to, $filters, &$res) {
 			$params = array($this->id);
 
 			$sql = 'WHERE channel_id = ?';
-			if (isset($from)) {
-				$params[] = $from;
-				$sql .= ' AND timestamp >= ?';
-
-				if (isset($to)) {
-					$params[] = $to;
-					$sql .= ' AND timestamp <= ?';
-				}
-			}
-
-			$res = $conn->executeUpdate('DELETE FROM data ' . $sql, $params);
+			$sql .= SQL\SQLOptimizer::buildDateTimeFilterSQL($from, $to, $params);
 
 			// clean aggregation table as well
 			if (Util\Configuration::read('aggregation')) {
 				$conn->executeUpdate('DELETE FROM aggregate ' . $sql, $params);
 			}
+
+			if ($filter = SQL\SQLOptimizer::buildValueFilterSQL($filters, $params)) {
+				$sql .= $filter;
+			}
+
+			$res = $conn->executeUpdate('DELETE FROM data ' . $sql, $params);
 		});
 
 		return $res;

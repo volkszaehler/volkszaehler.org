@@ -1,8 +1,7 @@
 <?php
 /**
- * @package default
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @license http://www.gnu.org/licenses/gpl.txt GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -41,7 +40,6 @@ use Volkszaehler\Util;
  *
  * This class routes incoming requests to controllers
  *
- * @package default
  * @author Steffen Vogel <info@steffenvogel.de>
  * @author Andreas Götz <cpuidle@gmx.de>
  */
@@ -124,10 +122,14 @@ class Router implements HttpKernelInterface {
 			if (null == $this->em || !$this->em->isOpen() || $this->em->getConnection()->ping() === false) {
 				$this->em = self::createEntityManager();
 			}
+			else {
+				// clear to make sure it doesn't use its cache
+				$this->em->clear();
+			}
 
 			return $this->handleRaw($request, $type);
 		}
-		catch (\Exception $e) {
+		catch (\Throwable $e) {
 			if (false === $catch) {
 				throw $e;
 			}
@@ -219,7 +221,7 @@ class Router implements HttpKernelInterface {
 	 * @param Request $request A Request instance
 	 * @return Response A Response instance
 	 */
-	private function handleException(\Exception $e, Request $request) {
+	private function handleException(\Throwable $e, Request $request) {
 		if (null === $this->view) {
 			$this->view = new View\JSON($request); // fallback view instantiates error handler
 		}
@@ -233,13 +235,13 @@ class Router implements HttpKernelInterface {
 	 * @param bool $admin
 	 * @return ORM\EntityManager
 	 */
-	public static function createEntityManager($admin = FALSE) {
+	public static function createEntityManager($admin = false) {
 		$config = new ORM\Configuration;
 
-		if (Util\Configuration::read('devmode') == FALSE) {
+		if (Util\Configuration::read('devmode') == false) {
 			$cache = null;
 			if (extension_loaded('apcu'))
-				$cache = new Cache\ApcuCache;
+				$cache = new Cache\ApcuCache();
 			if ($cache) {
 				$config->setMetadataCacheImpl($cache);
 				$config->setQueryCacheImpl($cache);
@@ -261,6 +263,9 @@ class Router implements HttpKernelInterface {
 		if ($admin && isset($dbConfig['admin'])) {
 			$dbConfig = array_merge($dbConfig, $dbConfig['admin']);
 		}
+
+		// reset singleton to use new entity manager
+		Util\EntityFactory::reset();
 
 		return ORM\EntityManager::create($dbConfig, $config);
 	}

@@ -2,8 +2,9 @@
 /**
  * Aggregation tests
  *
- * @package Test
  * @author Andreas Götz <cpuidle@gmx.de>
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 
 namespace Tests;
@@ -40,7 +41,9 @@ class AggregationTest extends DataPerformance
 	 * @group aggregation
 	 */
 	function testConfiguration() {
-		$this->assertTrue(Util\Configuration::read('aggregation'), 'data aggregation not enabled in config file, set $config[\'aggregation\'] = true');
+		if (!Util\Configuration::read('aggregation')) {
+			$this->markTestSkipped('data aggregation not enabled');
+		}
 	}
 
 	/**
@@ -187,6 +190,8 @@ class AggregationTest extends DataPerformance
 	}
 
 	/**
+	 * Test aggregate queries of type group=<group> & tuples=NULL
+	 *
 	 * @depends testGetBaseline
 	 * @group aggregation
 	 */
@@ -230,12 +235,21 @@ class AggregationTest extends DataPerformance
 	}
 
 	/**
-	 * @depends testConfiguration
+	 * Test aggregate queries of type group=NULL & tuples=1
+	 *
+	 * @depends testAggregateOptimizer
 	 * @group aggregation
 	 */
-	function testFullAggregation() {
-		// currently not implemented for performance reasons
-		echo('not implemented');
+	function testAggregateOptimizerUngroupedSingleTuple() {
+		$from = strtotime('3 days ago 00:00') * 1000;
+		$to = strtotime('today 0:00') * 1000;
+
+		$this->getTuples(1, strtotime('today 0:00') * 1000, null, 1);
+
+		$this->assertEquals($from, $this->json->data->from, '<from> mismatch');
+		$this->assertEquals($to, $this->json->data->to, '<to> mismatch');
+		$this->assertEquals(1, count($this->json->data->tuples));
+		$this->assertEquals($to, $this->json->data->tuples[0][0]);
 	}
 }
 

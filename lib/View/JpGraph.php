@@ -1,8 +1,7 @@
 <?php
 /**
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -34,7 +33,6 @@ use Volkszaehler\Util;
  *
  * This view uses the JpGraph PHP5 plotting library
  *
- * @package default
  * @author Steffen Vogel <info@steffenvogel.de>
  * @link http://jpgraph.net/
  */
@@ -127,7 +125,7 @@ class JpGraph extends View {
 	 *
 	 * @param \Exception $exception
 	 */
-	public function getExceptionResponse(\Exception $exception) {
+	public function getExceptionResponse(\Throwable $exception) {
 		if (!($exception instanceof \JpGraphException)) {
 			$exception = new \JpGraphException($exception->getMessage(), $exception->getCode());
 		}

@@ -4,9 +4,8 @@
  * Format is specified in EntityDefinition model
  *
  * @author Steffen Vogel <info@steffenvogel.de>
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -54,6 +53,17 @@
 			"de" : "Gebäude",
 			"en" : "Building",
 			"fr" : "Immeuble"
+		}
+	},
+	{
+		"name"			: "user",
+		"icon"			: "user.png",
+		"interpreter"		: "Volkszaehler\\Interpreter\\AggregatorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Aggregator",
+		"translation"		: {
+			"de" : "Nutzer",
+			"en" : "User",
+			"fr" : "Usager"
 		}
 	},
 	{
@@ -170,9 +180,9 @@
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
-			"de" : "Wärmemengenzähler",
-			"en" : "Heat Meter",
-			"fr" : "Capteur d' énergie thermique"
+			"de" : "Wärme (S0-Impulse)",
+			"en" : "Heat (S0-pulses)",
+			"fr" : "Énergie thermique (S0)"
 		}
 	},
 	{
@@ -185,8 +195,25 @@
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
-			"de" : "Wärmemengensensor",
-			"en" : "Heat Sensor"
+			"de" : "Wärme (Leistungswerte)",
+			"en" : "Heat (power readings)",
+			"fr" : "Énergie thermique (puissance)"
+		}
+	},
+	{
+		"name"			: "heattotal",
+		"required"		: ["resolution"],
+		"optional"		: ["tolerance", "cost", "local", "initialconsumption"],
+		"icon"			: "flame.png",
+		"unit"			: "W",
+		"scale"			: 1000,
+		"interpreter"		: "Volkszaehler\\Interpreter\\AccumulatorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
+		"translation"		: {
+			"de" : "Wärme (Zählerstände)",
+			"en" : "Heat (absolute meter readings)",
+			"fr" : "Énergie thermique (consommation compteur)"
 		}
 	},
 	{
@@ -212,23 +239,38 @@
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
-			"de" : "Wassermengenzähler",
-			"en" : "Water",
-			"fr" : "Eau"
+			"de" : "Wasser (S0-Impulse)",
+			"en" : "Water (S0-pulses)",
+			"fr" : "Eau (S0)"
 		}
 	},
 	{
 		"name"			: "flow",
 		"optional"		: ["resolution", "tolerance", "local", "gap", "initialconsumption"],
 		"icon"			: "waterdrop.png",
-		"unit"			: "m^3/h",
+		"unit"			: "m³/h",
 		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
 		"model"			: "Volkszaehler\\Model\\Channel",
 		"hasConsumption"	: true,
 		"translation"		: {
-			"de" : "Wassermengensensor",
-			"en" : "Flow rate",
-			"fr" : "Vitesse d'écoulement"
+			"de" : "Wasser (Durchflusswerte)",
+			"en" : "Water (flow rate readings)",
+			"fr" : "Eau (vitesse d'écoulement)"
+		}
+	},
+	{
+		"name"			: "watertotal",
+		"required"		: ["resolution"],
+		"optional"		: ["tolerance", "cost", "local", "initialconsumption"],
+		"icon"			: "waterdrop.png",
+		"unit"			: "l/h",
+		"interpreter"		: "Volkszaehler\\Interpreter\\AccumulatorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
+		"translation"		: {
+			"de" : "Wasser (Zählerstände)",
+			"en" : "Water (absolute meter readings)",
+			"fr" : "Eau (consommation compteur)"
 		}
 	},
 	{
@@ -363,17 +405,6 @@
 		"translation"		: {
 			"de" : "Sensor",
 			"en" : "Sensor"
-		}
-	},
-	{
-		"name"			: "user",
-		"icon"			: "user.png",
-		"interpreter"		: "Volkszaehler\\Interpreter\\AggregatorInterpreter",
-		"model"			: "Volkszaehler\\Model\\Aggregator",
-		"translation"		: {
-			"de" : "Nutzer",
-			"en" : "User",
-			"fr" : "Usager"
 		}
 	},
 	{

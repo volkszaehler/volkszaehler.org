@@ -4,9 +4,8 @@
  * @author Florian Ziegler <fz@f10-home.de>
  * @author Justin Otherguy <justin@justinotherguy.org>
  * @author Steffen Vogel <info@steffenvogel.de>
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -41,7 +40,7 @@ vz.getLink = function(format) {
 	var entities = [];
 	var middleware = '';
 	vz.entities.each(function(entity, parent) {
-		if (entity.active && entity.definition.model != 'Volkszaehler\\Model\\Aggregator') {
+		if (entity.isChannel() && entity.active) {
 			if (entities.length === 0) {
 				middleware = entity.middleware;
 			}
@@ -115,6 +114,11 @@ vz.load = function(args, skipDefaultErrorHandling) {
 	}
 
 	args.url += '.json';
+
+	// workaround Safari 11 cache bug
+	if (args.method === undefined || args.method == 'GET') {
+		args.url += '?unique=' + Date.now();
+	}
 
 	if (args.data === undefined) {
 		args.data = { };
@@ -298,5 +302,60 @@ vz.capabilities.definitions.get = function(section, name) {
 			}).get()
 		);
 	};
+
+  var slice = [].slice;
+
+  // https://gist.github.com/fearphage/4341799
+  $.whenAll = function(array) {
+    var
+			/* jshint laxbreak: true */
+      resolveValues = arguments.length == 1 && $.isArray(array)
+        ? array
+        : slice.call(arguments),
+      length = resolveValues.length,
+      remaining = length,
+      deferred = $.Deferred(),
+      i = 0,
+      failed = 0,
+      rejectContexts = Array(length),
+      rejectValues = Array(length),
+      resolveContexts = Array(length),
+      value
+    ;
+
+    function updateFunc (index, contexts, values) {
+      return function() {
+        if (values !== resolveValues) {
+          failed++;
+        }
+        deferred.notifyWith(
+         contexts[index] = this,
+         values[index] = slice.call(arguments)
+        );
+        if (!(--remaining)) {
+          deferred[(!failed ? 'resolve' : 'reject') + 'With'](contexts, values);
+        }
+      };
+    }
+
+    for (; i < length; i++) {
+      if ((value = resolveValues[i]) && $.isFunction(value.promise)) {
+        value.promise()
+          .done(updateFunc(i, resolveContexts, resolveValues))
+          .fail(updateFunc(i, rejectContexts, rejectValues))
+        ;
+      }
+      else {
+        deferred.notifyWith(this, value);
+        --remaining;
+      }
+    }
+
+    if (!remaining) {
+      deferred.resolveWith(resolveContexts, resolveValues);
+    }
+
+    return deferred.promise();
+  };
 
 })(jQuery);

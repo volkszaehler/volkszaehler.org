@@ -2,8 +2,9 @@
 /**
  * Data tests
  *
- * @package Test
  * @author Andreas Götz <cpuidle@gmx.de>
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 
 namespace Tests;
@@ -129,12 +130,14 @@ abstract class Data extends Middleware
 	 * Helper assertion to validate header min/max fields
 	 */
 	protected function assertMinMax($min, $max = null) {
-		$this->assertTuple($min, $this->json->data->min, "<min> tuple mismatch");
-		$this->assertTuple($max ?: $min, $this->json->data->max, "<max> tuple mismatch");
+		$this->assertTuple($this->json->data->min, $min, "<min> tuple mismatch");
+		$this->assertTuple($this->json->data->max, $max ?: $min, "<max> tuple mismatch");
 	}
 
 	/**
-	 * Helper assertion to validate correct tuple- either by value only or (sub)tuple as array
+	 * Helper assertion to validate correct tuple- either by value only or
+	 * (sub)tuple as array
+	 * This is the only assertion that has swapped expectation/ actual parameters
 	 */
 	protected function assertTuple($realTuple, $tuple, $msg = "Tuple mismatch") {
 		// got index? retrieve data from tuples
@@ -157,6 +160,20 @@ abstract class Data extends Middleware
 					$msg . ". Got value " . $realTuple[1] .
 							", expected " . $tuple,
 					self::$precision);
+		}
+	}
+
+	protected function executeForDB($dbs) {
+		$db = \Volkszaehler\Util\Configuration::read('db.driver');
+		if (!in_array($db, $dbs)) {
+			$this->markTestSkipped('not implemented for ' . $db);
+		}
+	}
+
+	protected function skipForDB($dbs) {
+		$db = \Volkszaehler\Util\Configuration::read('db.driver');
+		if (in_array($db, $dbs)) {
+			$this->markTestSkipped('not implemented for ' . $db);
 		}
 	}
 }

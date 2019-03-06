@@ -1,12 +1,12 @@
 #!/usr/bin/perl -w
 #
 # Messbus-perl library (c) by Sven Anders <mbus@sven.anders.im> 2011
-#  @copyright Copyright (c) 2011, The volkszaehler.org project
-#  @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+#  @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+#  @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
 
 #
 #  This file is part of volkzaehler.org
-# 
+#
 #  volkzaehler.org is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,7 +16,7 @@
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-# 
+#
 #  You should have received a copy of the GNU General Public License
 #  along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
 #
@@ -44,7 +44,7 @@ my $verbose=0;
 my $printmbusconf=0;
 my $help=0;
 my $cmd="mbus-cmd";
-GetOptions ('debug' => \$debug, 
+GetOptions ('debug' => \$debug,
 	    'help' => \$help,
 	    'sqlout' => \$sqlout,
 	    'sqlrawout' => \$sqlrawout,
@@ -107,7 +107,7 @@ open(FILE,$mbusserial) or die;
 my @serials=<FILE>;
 close(FILE);
 
-foreach my $serial (@serials) 
+foreach my $serial (@serials)
 {
  my $PortObj=&initPort($mbusPort,$mbusBaudrate,$debug);
  my $cfield=0x53;
@@ -133,7 +133,7 @@ foreach my $serial (@serials)
      foreach (@chars) {
  	 print "\\" ;
 	 print ord($_);
-	 
+
      }
      print "\";\n";
  }
@@ -143,7 +143,7 @@ foreach my $serial (@serials)
  my $pos=0;
  my %foundZaehlerStr;
  foreach my $arr (@datarr)
- { 
+ {
      my ($vif,$dif,$value,$unit,$zweck,$serial,$valArt,$count)=@$arr;
      my $zaehlerStr=$serial."-".$zweck;
      my $zcount="";
@@ -165,7 +165,7 @@ foreach my $serial (@serials)
 		     if ($sendval<0.001) {
 			 $sendval=undef;
 		     }
-		 } 
+		 }
 		 $vzOld{$uuid}=$value;
 	     } else {
 		 $sendval=$value;
@@ -189,8 +189,8 @@ foreach my $serial (@serials)
      print "INSERT INTO zaehler SET pos=\"$pos\"," if $sqlout;
      my $i=0;
      foreach (@$arr) {
-     	if ($i>0) 
-	{ 
+     	if ($i>0)
+	{
 	  print "," if $sqlout;
 	}
      	print "$labels[$i]=\"$_\"" if $sqlout;

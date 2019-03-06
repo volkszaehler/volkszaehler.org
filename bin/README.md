@@ -208,7 +208,7 @@ To install `push-server` as a service create the service using `sudo nano /etc/s
     Requires=
 
     [Service]
-    ExecStart=/usr/bin/php /var/www/volkszaehler.org/misc/tools/push-server.php
+    ExecStart=/usr/bin/php /var/www/volkszaehler.org/bin/push-server
     ExecReload=/bin/kill -HUP $MAINPID
     StandardOutput=null
     Restart=always
@@ -239,15 +239,21 @@ Also make sure that `mod_proxy` and `mod_proxy_http` are enabled:
 
     sudo a2enmod proxy proxy_http
 
-In `php.ini` make sure that the `disable_functions` are commented out and the `pcntl*` functions therefore usable by ppm.
+In `php.ini` make sure that the `disable_functions` are commented out and the `pcntl*` functions therefore usable by ppm. This change must be made in *both* `php.ini`s of PHP cli as well as PHP cgi.
 
-To use the high performance middleware either modify the middleware address in `options.js` or update the Apache configuration to proxy middleware requests transparently.
+To use the high performance middleware either modify the middleware address in `htdocs/js/options.js` or update the Apache configuration to proxy middleware requests transparently.
 The second approach is recommended. Edit `htdocs/.htaccess` like this:
 
     <IfModule mod_proxy.c>
       RewriteEngine On
       RewriteRule ^middleware(.php)?/(.*) http://localhost:8080/$2 [P]
     </IfModule>
+
+and ensure the Apache config is updated to allow `.htaccess` taking effect:
+
+    Options Indexes FollowSymLinks -MultiViews
+    AllowOverride FileInfo Limit Options Indexes Authconfig
+    AddType application/x-httpd-php .php
 
 ### Usage
 
@@ -259,23 +265,37 @@ This will start a middleware on port 8080 and spawn 8 worker processes. If the m
 
 To monitor status use:
 
-    vendor/bin/ppm status
+    vendor/bin/ppm status -c etc/middleware.json
+
+### Testing
 
 For a quick test retrieve the list of public entities from the middleware by opening this url in the browser:
 
     http://<ip>:8080/entity.json
 
+If browser is not able to connect to the performance mittdleware when it is running, ensure that the performance middleware is accessible locally:
+
+    wget http://<ip>:8080/entity.json
+
+In case of error check if ppm is running.
+
+Then verify that the Apache rewrite rule is working:
+
+    wget http://<ip>/middleware/entity.json
+
+In case of error check the Apache log file to ensure the rewrite is actually active and double-check apache configuration.
+
 ### Production Setup
 
-On Raspbian (Debian Jessie), which uses systemd to control services, create a new service for httpd: `sudo nano /etc/systemd/system/vzhttpd.service` and add the following contents:
+On Raspbian (Debian Jessie), which uses systemd to control services, create a new service for httpd: `sudo nano /etc/systemd/system/middleware.service` and add the following contents:
 
     [Unit]
-    Description=vzhttpd
+    Description=middleware
     After=syslog.target network.target
     Requires=
 
     [Service]
-    ExecStart=/usr/bin/php /var/www/volkszaehler.org/vendor/bin/ppm start -c /var/www/volkszaehler.org/etc/ppm.json
+    ExecStart=/usr/bin/php /var/www/volkszaehler.org/vendor/bin/ppm start -c /var/www/volkszaehler.org/etc/middleware.json
     ExecReload=/bin/kill -HUP $MAINPID
     StandardOutput=null
     Restart=always

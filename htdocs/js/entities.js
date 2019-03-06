@@ -5,9 +5,8 @@
  * @author Justin Otherguy <justin@justinotherguy.org>
  * @author Steffen Vogel <info@steffenvogel.de>
  * @author Andreas Götz <cpuidle@gmx.de>
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -77,17 +76,19 @@ vz.entities.loadDetails = function() {
 			},
 			function(xhr) {
 				var exception = (xhr.responseJSON || {}).exception;
+				// remove problematic entity
+				vz.entities.splice(vz.entities.indexOf(entity), 1); // remove
 				// default error handling is skipped - be careful
-				if (exception && exception.message.match(/^Invalid UUID|^No entity found with UUID/)) {
-					vz.entities.splice(vz.entities.indexOf(entity), 1); // remove
-					return $.Deferred().resolveWith(this, [xhr.responseJSON]);
+				if (exception && exception.message.match(/^Invalid UUID|^No entity/)) {
+					// return new resolved deferred
+					return $.Deferred().resolveWith(this, [xhr]);
 				}
 				vz.wui.dialogs.middlewareException(xhr);
 				return vz.load.errorHandler(xhr);
 			}
 		));
 	}, true); // recursive
-	return $.when.apply($, queue);
+	return $.whenAll.apply($, queue);
 };
 
 /**
@@ -249,7 +250,7 @@ vz.entities.showTable = function() {
 					return; // drop on itself -> do nothing
 				if (from === to)
 					return; // drop into same group -> do nothing
-				if (to && to.definition.model == 'Volkszaehler\\Model\\Aggregator' && $.inArray(child, to.children) >= 0)
+				if (to && !to.isChannel() && $.inArray(child, to.children) >= 0)
 					return;
 				if (to && child.middleware !== to.middleware) {
 					vz.wui.dialogs.error("Fehler", "Kanäle können nur in Gruppen der gleichen Middleware verschoben werden.");
@@ -322,14 +323,14 @@ vz.entities.showTable = function() {
 vz.entities.inheritVisibility = function() {
 	vz.entities.each(function(entity, parent) {
 		// inherit active state if parent
-		if (entity.definition.model !== 'Volkszaehler\\Model\\Aggregator' && entity.parent !== undefined) {
+		if (entity.isChannel() && entity.parent !== undefined) {
 			if (entity.active !== entity.parent.active) {
 				entity.activate(entity.parent.active);
 			}
 		}
 
 		// collapse aggregators if inactive
-		if (entity.definition.model == 'Volkszaehler\\Model\\Aggregator' && entity.active === false) {
+		if (!entity.isChannel() && entity.active === false) {
 			entity.activate(false, entity.parent, true);
 			$('#entity-' + entity.uuid + '.aggregator').removeClass('expanded').collapse();
 		}

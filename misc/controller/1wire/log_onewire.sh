@@ -7,10 +7,9 @@
 #
 # */5 * * * *   ~/bin/log_onewire.sh
 #
-# @copyright Copyright (c) 2011, The volkszaehler.org project
-# @package controller
-# @license http://www.gnu.org/licenses/gpl.txt GNU Public License
 # @author Steffen Vogel <info@steffenvogel.de>
+# @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+# @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
 #
 ##
 # This file is part of volkzaehler.org

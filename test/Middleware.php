@@ -2,8 +2,9 @@
 /**
  * Basic test functionality
  *
- * @package Test
  * @author Andreas Götz <cpuidle@gmx.de>
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 
 namespace Tests;
@@ -14,13 +15,12 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
-use Proxy\Adapter\Guzzle\GuzzleAdapter;
 use Symfony\Bridge\PsrHttpMessage\Factory;
 use Zend\Diactoros\Uri;
 
 use Volkszaehler\Router;
 
-abstract class Middleware extends \PHPUnit_Framework_TestCase
+abstract class Middleware extends \PHPUnit\Framework\TestCase
 {
 	/**
 	 * @var Volkszaehler\Router
@@ -31,9 +31,9 @@ abstract class Middleware extends \PHPUnit_Framework_TestCase
 	static $psrFoundationFactory;
 
 	/**
-	 * @var Proxy\Adapter\Guzzle\GuzzleAdapter
+	 * @var GuzzleHttp\Client
 	 */
-	static $adapter;
+	static $client;
 
 	/**
 	 * @var Request memory consumption
@@ -57,14 +57,12 @@ abstract class Middleware extends \PHPUnit_Framework_TestCase
 		parent::setupBeforeClass();
 
 		if (testAdapter == 'HTTP') {
-			// echo("Test using HTTP adapter\n");
-			static::$adapter = new GuzzleAdapter(new Client());
+			static::$client = new Client();
 			static::$httpFoundationFactory = new Factory\HttpFoundationFactory();
 			static::$psrFoundationFactory = new Factory\DiactorosFactory();
 		}
 		// cache entity manager
 		else if (null == self::$app) {
-			// echo("Test using built-in Router\n");
 			self::$app = new Router();
 		}
 	}
@@ -89,7 +87,7 @@ abstract class Middleware extends \PHPUnit_Framework_TestCase
 		$psrRequest = $psrRequest->withUri(new Uri($uri));
 
 		try {
-			$psrResponse = static::$adapter->send($psrRequest);
+			$psrResponse = static::$client->send($psrRequest);
 		}
 		catch (GuzzleException $e) {
 			$psrResponse = $e->getResponse();

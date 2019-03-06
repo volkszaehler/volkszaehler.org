@@ -3,10 +3,9 @@
 # This is a simple bash script to log data from a fluksousb adapter
 #
 # @link http://developer.mysmartgrid.de/doku.php?id=fluksousb
-# @copyright Copyright (c) 2011, The volkszaehler.org project
-# @package controller
-# @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
 # @author Harald Koenig <koenig@tat.physik.uni-tuebingen.de>
+# @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+# @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
 #
 ##
 # This file is part of volkzaehler.org
@@ -30,8 +29,8 @@ stty 4800  < /dev/ttyUSB1
 while read pwr r ; do
     [[ "$pwr" == *pwr* ]] || continue
     [[ "$r"   == 0111156789abcdef0123456789abcde0* ]] || continue
-    p="${r#0111156789abcdef0123456789abcde0:}" 
+    p="${r#0111156789abcdef0123456789abcde0:}"
 
-    wget -O-  "http://volkszaehler.org/demo/middleware/data/80ec28a0-6881-11e0-9d05-653120632357.json?operation=add&value=$p" 
+    wget -O-  "http://volkszaehler.org/demo/middleware/data/80ec28a0-6881-11e0-9d05-653120632357.json?operation=add&value=$p"
 done < /dev/ttyUSB1
 

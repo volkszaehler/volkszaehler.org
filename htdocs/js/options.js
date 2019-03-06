@@ -4,9 +4,8 @@
  * @author Florian Ziegler <fz@f10-home.de>
  * @author Justin Otherguy <justin@justinotherguy.org>
  * @author Steffen Vogel <info@steffenvogel.de>
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -55,6 +54,7 @@ vz.options = {
 	dayNames: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
 	lineWidthDefault: 2,
 	lineWidthSelected: 4,
+	gap: 3600, // chart gap if no tuples for specified number of seconds
 	speedupFactor: 2,   // higher values give higher speedup but can produce chunky display
 	hiddenProperties: ['link', 'tolerance', 'local', 'owner', 'description', 'gap', 'active'] // hide less commonly used properties
 };

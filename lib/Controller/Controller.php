@@ -1,8 +1,7 @@
 <?php
 /**
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -26,6 +25,8 @@ namespace Volkszaehler\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Doctrine\ORM\EntityManager;
+
+use Volkszaehler\Util\EntityFactory;
 use Volkszaehler\View\View;
 
 /**
@@ -33,7 +34,6 @@ use Volkszaehler\View\View;
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @author Andreas Goetz <cpuidle@gmx.de>
- * @package default
  */
 abstract class Controller {
 
@@ -58,6 +58,11 @@ abstract class Controller {
 	protected $view;
 
 	/**
+	 * @var EntityFactory
+	 */
+	protected $ef;
+
+	/**
 	 * Constructor
 	 *
 	 * @param Request $request
@@ -68,6 +73,7 @@ abstract class Controller {
 		$this->request = $request;
 		$this->em = $em;
 		$this->view = $view;
+		$this->ef = EntityFactory::getInstance($em);
 	}
 
 	/**
@@ -92,7 +98,7 @@ abstract class Controller {
 	 * @return operation result
 	 * @throws \Exception
 	 */
-	public function run($op, $uuid = null) {
+	public function run($op, $uuid) {
 		if (!method_exists($this, $op)) {
 			throw new \Exception('Invalid context operation: \'' . $op . '\'');
 		}
@@ -104,18 +110,6 @@ abstract class Controller {
 
 		// call the operation
 		return $this->{$op}($uuid);
-	}
-
-	/**
-	 * Helper function to convert single/multiple parameters to array format
-	 * @param $data
-	 * @return array
-	 */
-	protected static function makeArray($data) {
-		if (!is_array($data)) {
-			$data = isset($data) ? array($data) : array();
-		}
-		return $data;
 	}
 }
 

@@ -5,9 +5,8 @@
  * @author Justin Otherguy <justin@justinotherguy.org>
  * @author Steffen Vogel <info@steffenvogel.de>
  * @author Andreas Götz <cpuidle@gmx.de>
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -179,7 +178,19 @@ vz.wui.dialogs.init = function() {
 			});
 		}
 	});
-	$('#entity-add.dialog > div').tabs();
+	$('#entity-add.dialog > div').tabs({
+		create: function(ev, ui) {
+			$(ui.panel).find('.defaultfocus').focus();
+		},
+		activate: function(ev, ui) {
+			if (ui.newPanel.attr('id') == 'entity-create') {
+				$(ui.newPanel).find('input[name=title]').focus();
+			}
+			else {
+				$(ui.newPanel).find('.defaultfocus').focus();
+			}
+		}
+	});
 
 	// show available entity types
 	vz.capabilities.definitions.entities.forEach(function(def) {
@@ -203,7 +214,11 @@ vz.wui.dialogs.init = function() {
 		populateEntities(vz.middleware.find($('#entity-public-middleware option:selected').val()));
 	});
 
-	$('#entity-subscribe input[type=button]').click(function() {
+	$('#entity-subscribe form').submit(function() {
+		if (!$('#entity-subscribe-uuid').val()) {
+			return false;
+		}
+
 		try {
 			var entity = new Entity({
 				uuid: $('#entity-subscribe-uuid').val(),
@@ -221,9 +236,11 @@ vz.wui.dialogs.init = function() {
 		finally {
 			$('#entity-add').dialog('close');
 		}
+
+		return false;
 	});
 
-	$('#entity-public input[type=button]').click(function() {
+	$('#entity-public form').submit(function() {
 		// clone entity from data attribute and activate it
 		var entity = $.extend({}, $('#entity-public-entity option:selected').data('entity'));
 		if ($.isEmptyObject(entity)) return;
@@ -238,6 +255,8 @@ vz.wui.dialogs.init = function() {
 		finally {
 			$('#entity-add').dialog('close');
 		}
+
+		return false;
 	});
 
 	function populateEntities(middleware) {
@@ -452,7 +471,9 @@ vz.wui.zoomToPartialUpdate = function(to) {
 		// draw after timeout
 		vz.wui.pushRedrawTimeout = window.setTimeout(function() {
 			vz.wui.pushRedrawTimeout = null;
-			vz.wui.drawPlot();
+			if (!vz.wui.plotSelectionActive) {
+				vz.wui.drawPlot();
+			}
 		}, vz.options.pushRedrawTimeout);
 	}
 	else {
@@ -465,6 +486,12 @@ vz.wui.zoomToPartialUpdate = function(to) {
  */
 vz.wui.initEvents = function() {
 	$('#plot')
+		.bind('mousedown', function(event) {
+			vz.wui.plotSelectionActive = true;
+		})
+		.bind('mouseup', function(event) {
+			vz.wui.plotSelectionActive = false;
+		})
 		.bind("plotselected", function (event, ranges) {
 			vz.wui.period = null;
 			vz.wui.zoom(ranges.xaxis.from, ranges.xaxis.to);
@@ -869,33 +896,22 @@ vz.wui.drawPlot = function () {
 
 	var series = [];
 	vz.entities.each(function(entity) {
-		if (entity.active && entity.definition && entity.definition.model == 'Volkszaehler\\Model\\Channel' &&
-				entity.data && entity.data.tuples && entity.data.tuples.length > 0) {
-			var i, maxTuples = 0;
-
-			// work on copy here to be able to redraw
-			var tuples = entity.data.tuples.map(function(t) {
-				return t.slice(0);
+		if (entity.isChannel() && entity.active && entity.data && entity.data.tuples && entity.data.tuples.length > 0) {
+			// work on deep copy here to be able to redraw
+			var i, tuples = entity.data.tuples.map(function(t) {
+				return t.slice(0, 2);
 			});
-
 
 			var style = vz.options.style || entity.style;
 			var fillstyle = parseFloat(vz.options.fillstyle || entity.fillstyle);
 			var linewidth = parseFloat(vz.options.linewidth || vz.options[entity.uuid == vz.wui.selectedChannel ? 'lineWidthSelected' : 'lineWidthDefault']);
+			var gap = vz.options.gap || entity.gap;
 
 			// mangle data for "steps" curves by shifting one ts left ("step-before")
 			if (style == "steps") {
 				tuples.unshift([entity.data.from, 1, 1]); // add new first ts
 				for (i=0; i<tuples.length-1; i++) {
 					tuples[i][1] = tuples[i+1][1];
-				}
-			}
-
-			// remove number of datapoints from each tuple to avoid flot fill error
-			if (fillstyle || entity.gap) {
-				for (i=0; i<tuples.length; i++) {
-					maxTuples = Math.max(maxTuples, tuples[i][2]);
-					delete tuples[i][2];
 				}
 			}
 
@@ -920,7 +936,7 @@ vz.wui.drawPlot = function () {
 			// disable interpolation when data has gaps
 			if (entity.gap) {
 				var minGapWidth = (entity.data.to - entity.data.from) / tuples.length;
-				serie.xGapThresh = Math.max(entity.gap * 1000 * maxTuples, minGapWidth);
+				serie.xGapThresh = Math.max(entity.gap * 1000, 2 * minGapWidth);
 				vz.options.plot.xaxis.insertGaps = true;
 			}
 
@@ -980,6 +996,9 @@ vz.wui.dialogs.error = function(error, description, code) {
 			Ok: function() {
 				$(this).dialog('close');
 			}
+		},
+		open: function() {
+			$(this).next().find('button:eq(0)').focus();
 		}
 	});
 };

@@ -34,6 +34,7 @@
 	<link rel="stylesheet" type="text/css" href="vendor/jquery-ui/jquery-ui.min.css" />
 	<link rel="stylesheet" type="text/css" href="css/style.css" />
 	<link rel="stylesheet" type="text/css" href="css/sprites.css" />
+	<link rel="stylesheet" type="text/css" href="css/print.css" media="print" />
 
 	<!-- jQuery -->
 	<script type="text/javascript" src="vendor/jquery/jquery-2.1.3.min.js"></script>
@@ -128,7 +129,7 @@
 				</thead>
 				<tbody></tbody>
 			</table>
-			<div><button name="entity-add"><img src="img/blank.png" class="icon-add" alt="add" /> Kanal hinzuf&uuml;gen</button></div>
+			<div><button name="entity-add"><img src="img/blank.png" class="icon-add" alt="add" /> Kanal hinzufügen</button></div>
 		</div>
 		<h3><img src="img/blank.png" class="icon-wrench" alt="" /> Optionen</h3>
 		<div id="options">
@@ -151,7 +152,7 @@
 	</div>
 </div>
 <div id="footer">
-	&copy; 2011 - <a href="http://volkszaehler.org/">volkszaehler.org</a> - the open smartmeter platform
+	&copy; 2011-2018 - <a href="http://volkszaehler.org/">volkszaehler.org</a> - the open smartmeter platform
 </div>
 
 <!-- dialogs -->
@@ -165,8 +166,16 @@
 <div id="entity-delete" class="dialog">
 	<p>
 		<span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>
-		Wollen Sie diesen Kanal wirklich L&ouml;schen?<br />
-		Dabei werden auch alle Daten gel&ouml;scht!
+		Wollen Sie diesen Kanal wirklich Löschen?<br />
+		Dabei werden auch alle Daten gelöscht!
+	</p>
+</div>
+
+<div id="entity-delete-group" class="dialog">
+	<p>
+		<span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>
+		Wollen Sie diese Gruppe wirklich Löschen?<br />
+		Dabei werden keine enthaltenen Kanäle oder Daten gelöscht.
 	</p>
 </div>
 
@@ -177,21 +186,33 @@
 			<li><a href="#entity-subscribe">Private Kanäle</a></li>
 			<li><a href="#entity-create">Kanal erstellen</a></li>
 		</ul>
-		<div id="entity-subscribe">
-			<p>Private Kanäle und Kanäle anderer Middlewares mittels UUID hinzufügen:</p>
-			<table>
-				<tr><td><label for="entity-subscribe-middleware">Middleware:</label></td><td><input id="entity-subscribe-middleware" type="text" size="36" /></td></tr>
-				<tr><td><label for="entity-subscribe-uuid">UUID:</label></td><td><input id="entity-subscribe-uuid" type="text" size="36" maxlength="36" /></td></tr>
-			</table>
-			<p><input type="button" value="Abonnieren" /> <label for="entity-subscribe-cookie">Cookie:</label> <input id="entity-subscribe-cookie" type="checkbox" checked="checked" /></p>
-		</div>
 		<div id="entity-public">
 			<p>Öffentliche Kanäle abonnieren:</p>
-			<table>
-				<tr><td><label for="entity-public-middleware">Middleware:</label></td><td><select id="entity-public-middleware"></select></td></tr>
-				<tr><td><label for="entity-public-entity">Kanal:</label></td><td><select id="entity-public-entity" size="1"></select></td></tr>
-			</table>
-			<p><input type="button" value="Abonnieren" /> <label for="entity-public-cookie">Cookie:</label> <input id="entity-public-cookie" type="checkbox" checked="checked" /></p>
+			<form>
+				<table>
+					<tr><td><label for="entity-public-middleware">Middleware:</label></td><td><select id="entity-public-middleware"></select></td></tr>
+					<tr><td><label for="entity-public-entity">Kanal:</label></td><td><select id="entity-public-entity" class="defaultfocus"></select></td></tr>
+				</table>
+				<p>
+					<input type="submit" value="Abonnieren" />
+					<label for="entity-public-cookie">Cookie:</label>
+					<input id="entity-public-cookie" type="checkbox" checked="checked" />
+				</p>
+			</form>
+		</div>
+		<div id="entity-subscribe">
+			<p>Private Kanäle und Kanäle anderer Middlewares mittels UUID hinzufügen:</p>
+			<form>
+				<table>
+					<tr><td><label for="entity-subscribe-middleware">Middleware:</label></td><td><input id="entity-subscribe-middleware" type="text" /></td></tr>
+					<tr><td><label for="entity-subscribe-uuid">UUID:</label></td><td><input id="entity-subscribe-uuid" type="text" class="defaultfocus" maxlength="36" /></td></tr>
+				</table>
+				<p>
+					<input type="submit" value="Abonnieren" />
+					<label for="entity-subscribe-cookie">Cookie:</label>
+					<input id="entity-subscribe-cookie" type="checkbox" checked="checked" />
+				</p>
+			</form>
 		</div>
 		<div id="entity-create">
 			<form method="get" target="_blank">
@@ -200,7 +221,11 @@
 					<tr class="property"><td>Middleware:</td><td><select id="entity-create-middleware"></select></td></tr>
 					<tr class="property"><td>Typ:</td><td><select class="icons" name="type" size="1"></select></td></tr>
 				</table>
-				<p><input type="submit" value="Erstellen" />  <label for="entity-create-cookie">Cookie:</label> <input id="entity-create-cookie" type="checkbox" checked="checked" /></p>
+				<p>
+					<input type="submit" value="Erstellen" />
+					<label for="entity-create-cookie">Cookie:</label>
+					<input id="entity-create-cookie" type="checkbox" checked="checked" />
+				</p>
 			</form>
 		</div>
 	</div>

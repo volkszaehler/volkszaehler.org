@@ -1,9 +1,8 @@
 <?php
 /**
- * @copyright Copyright (c) 2016, The volkszaehler.org project
  * @author Andreas Goetz <cpuidle@gmx.de>
- * @package util
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -26,7 +25,7 @@ namespace Volkszaehler\Server;
 
 use Volkszaehler\Router;
 use Volkszaehler\Interpreter;
-use Volkszaehler\Controller\EntityController;
+use Volkszaehler\Util\EntityFactory;
 
 use Symfony\Component\HttpFoundation\Request;
 
@@ -72,7 +71,7 @@ class MiddlewareAdapter {
 		try {
 			$this->openController();
 
-			$entity = EntityController::factory($this->em, $uuid);
+			$entity = EntityFactory::getInstance($this->em)->getByUuid($uuid);
 			$class = $entity->getDefinition()->getInterpreter();
 			$interpreter = new $class($entity, $this->em, null, null);
 

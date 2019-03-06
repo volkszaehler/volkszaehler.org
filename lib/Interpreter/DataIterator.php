@@ -1,8 +1,7 @@
 <?php
 /**
- * @package default
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @license http://www.gnu.org/licenses/gpl.txt GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -28,10 +27,10 @@ use Doctrine\DBAL;
 
 /**
  * @author Steffen Vogel <info@steffenvogel.de>
- * @package default
+ * @author Andreas Goetz <cpuidle@gmx.de>
  */
 class DataIterator implements \IteratorAggregate, \Countable {
-	protected $stmt;	// PDO statement
+	protected $stmt;		// PDO statement
 
 	protected $rowCount;	// num of readings in PDOStatement
 	protected $tupleCount;	// num of requested tuples
@@ -40,7 +39,7 @@ class DataIterator implements \IteratorAggregate, \Countable {
 
 	protected $from;		// exact timestamps based on on query results
 	protected $to;			// from/to of Interpreter are based on the request parameters!
-	protected $firstValue; 	// value parameter of first database tuple
+	protected $firstValue;	// value parameter of first database tuple
 
 	/**
 	 * Constructor
@@ -49,16 +48,17 @@ class DataIterator implements \IteratorAggregate, \Countable {
 	 * @param integer $rowCount total num of rows in $stmt
 	 * @param integer $tupleCount set to NULL to get all rows
 	 */
-	public function __construct(\PDOStatement $stmt, $rowCount, $tupleCount) {
+	public function __construct(\Traversable $stmt, $rowCount, $tupleCount) {
 		$this->rowCount = $rowCount;
 		$this->tupleCount = $tupleCount;
 
 		$this->stmt = $stmt;
 		$this->stmt->setFetchMode(\PDO::FETCH_NUM);
 
-		if (empty($this->tupleCount) || $this->rowCount < $this->tupleCount) { // get all rows
-			 $this->packageSize = 1;
-			 $this->tupleCount = $this->rowCount;
+		if (empty($this->tupleCount) || $this->rowCount <= $this->tupleCount + 1) {
+			// get all rows
+			$this->packageSize = 1;
+			$this->tupleCount = $this->rowCount;
 		}
 		else { // summarize
 			$this->packageSize = floor($this->rowCount / $this->tupleCount);

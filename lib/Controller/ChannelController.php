@@ -1,8 +1,7 @@
 <?php
 /**
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -29,29 +28,32 @@ use Volkszaehler\Model;
  * Channel controller
  *
  * @author Steffen Vogel <info@steffenvogel.de>
- * @package default
  */
 class ChannelController extends EntityController {
 
 	/**
-	 * Get channel
-	 * @param null $identifier
+	 * Get one or more channels.
+	 * If uuid is empty, list of public channels is returned.
+	 *
+	 * @param $identifier
 	 * @return array
 	 * @throws \Exception
 	 */
-	public function get($identifier = NULL) {
-		$channel = parent::get($identifier);
+	public function get($uuid = NULL) {
+		$channel = parent::get($uuid);
 
-		if (is_array($channel)) { // filter public entities
-			return array('channels' => array_values(array_filter($channel['entities'], function($ch) {
-				return ($ch instanceof Model\Channel);
-			})));
+		if (is_array($channel)) { // filter channels
+			return array('channels' => array_values(
+				array_filter($channel['entities'], function($ch) {
+					return ($ch instanceof Model\Channel);
+				})
+			));
 		}
 		else if ($channel instanceof Model\Channel) {
 			return $channel;
 		}
 		else {
-			throw new \Exception('Entity is not a channel: \'' . $identifier . '\'');
+			throw new \Exception('Entity is not a channel: \'' . $uuid . '\'');
 		}
 	}
 
