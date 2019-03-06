@@ -17,6 +17,11 @@ env:
   global:
     - DEPENDENCIES=standard
     - TRAVIS_TEST_EXCLUDES="--exclude-group slow,jpgraph,pushserver"
+    # docker credentials
+    - secure: "j3ss+fkR/BCZuqZP0YUliq7+BUW26k7JdzMlPLwkKuvRJMWY24uizluy+2hsS9amM56wFgwTlTFa2gX2GO9VF4P6b6qIJ7ao0lii9LEowHTeZhfuaWvIdpFCvRyMUsDA/k5z4tqwECWhSTVbkEQica3p0JZYDzSDhsCkvPnSTpw="
+    - secure: "e5qxaqWLnohr4At0ZW/yT/2i6Q9g2OVRwk0trqr13A0J7SeHN6Mxdc9H0U3KdLE4KkPa2pW52sYuLPAOCSfZFYae8q8HzIyAsWVSQQGBoEuSWVCfCu4Q4I2rydrSAYzadBPVm6MOoNsym/+fVb2sHTG8mX6nd/kf7AcWqb8AerM="
+    - COMMIT=${TRAVIS_COMMIT::8}
+
   matrix:
     - DB=mysql
 
@@ -35,6 +40,9 @@ matrix:
     # push-server
     - php: 7.0
       env: DB=mysql COMPONENT=PUSHD
+    # docker
+    - php: 7.0
+      env: DB=mysql COMPONENT=DOCKER
     # from..to
     - php: 7.0
       env: DB=mysql DEPENDENCIES=lowest
@@ -133,3 +141,13 @@ script:
     # jslint javascript sources
     - if [ "$JSLINT" = true ]; then gulp jshint; fi
 
+after_success:
+    - |
+      if [ "$COMPONENT" == "DOCKER" ] && [ "$TRAVIS_BRANCH" == "master" ] && [ "$DOCKER_USER" != "" ]; then
+        docker login -u $DOCKER_USER -p $DOCKER_PASS
+        export REPO=volkszaehler/volkszaehler
+        docker pull $REPO:latest
+        docker build --cache-from $REPO:latest -f Dockerfile -t $REPO:$COMMIT .
+        docker tag $REPO:$COMMIT $REPO:latest
+        docker push $REPO
+      fi
