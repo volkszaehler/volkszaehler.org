@@ -15,6 +15,31 @@ http://demo.volkszaehler.org
 
 ## Quickstart
 
+The easiest way to run volkszaehler is using Docker.
+
+### Preparation
+
+Start database server and create the database:
+
+    docker run --name db -e MYSQL_ROOT_PASSWORD=R00t+ mysql
+    docker run --link db mysql -u root -pR00t+ -h db -e "CREATE DATABASE volkszaehler;"
+
+Create `docker.conf.php`, mount into the volkszaehler container and initialize the database schema:
+
+    docker run --link db -v $(pwd)/etc/docker.conf.php:/vz/etc/volkszaehler.conf.php volkszaehler/volkszaehler /vz/bin/doctrine orm:schema-tool:create
+
+### Running
+
+Start the application:
+
+    docker run -p 8080:8080 --link db -v $(pwd)/etc/docker.conf.php:/vz/etc/volkszaehler.conf.php volkszaehler/volkszaehler
+
+Run data aggregation:
+
+    docker run --link db -v $(pwd)/etc/docker.conf.php:/vz/etc/volkszaehler.conf.php volkszaehler/volkszaehler /vz/bin/aggregate run -l day -l hour
+
+## Local Installation
+
 From the shell:
 
     wget https://raw.github.com/volkszaehler/volkszaehler.org/master/bin/install.sh
