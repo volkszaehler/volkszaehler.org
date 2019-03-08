@@ -15,16 +15,13 @@ sudo: false
 env:
   # run composer by default
   global:
-    - DEPENDENCIES=standard
-    - TRAVIS_TEST_EXCLUDES="--exclude-group slow,jpgraph,pushserver"
-    # docker credentials
-    - secure: "j3ss+fkR/BCZuqZP0YUliq7+BUW26k7JdzMlPLwkKuvRJMWY24uizluy+2hsS9amM56wFgwTlTFa2gX2GO9VF4P6b6qIJ7ao0lii9LEowHTeZhfuaWvIdpFCvRyMUsDA/k5z4tqwECWhSTVbkEQica3p0JZYDzSDhsCkvPnSTpw="
-    - secure: "e5qxaqWLnohr4At0ZW/yT/2i6Q9g2OVRwk0trqr13A0J7SeHN6Mxdc9H0U3KdLE4KkPa2pW52sYuLPAOCSfZFYae8q8HzIyAsWVSQQGBoEuSWVCfCu4Q4I2rydrSAYzadBPVm6MOoNsym/+fVb2sHTG8mX6nd/kf7AcWqb8AerM="
-    - COMMIT=${TRAVIS_COMMIT::8}
-
+  - DEPENDENCIES=standard
+  - TRAVIS_TEST_EXCLUDES="--exclude-group slow,jpgraph,pushserver"
+  - COMMIT=${TRAVIS_COMMIT::8}
   matrix:
-    - DB=mysql
-
+  - DB=mysql
+  - secure: JxyXH2fb2l7uWsZxe23rSxYYvylu/DRm9bV6gaowxvmXzqLzEtIsI1aOeP4gJiZGOOUzlCsOhNgKs/bFJsn2SRe0IE60w+eZ3kOxfBfqbr4yop5qYL5YNWJX25LeshBBJLi6vTsEJiLNRuFFZrynNcU+Q2GxrZ+HNi7Tn4KCD523wwKDGdf4sEc+0GRPVMJB2FBxHrVIVRolxISGRVV67owEuiN2COzk8vnt5q6SH692CWZJPvnIDeassPOMALNNPG8sjsWfBim5+2pemHopnnk6dSLlyIO2s3uHnlF7z+5P2/V8xxRfTEHbgMu1p23NYUjyTbGPA4H6bfL5bHjcHm8KsruIxKrsXkTNs0o8ltiqpYhDvDVdHgO7KLwMeaA38ZmX6UBVHrgsW46tp7w0wFlYY6yti0bOKLIbH2JK+GFH3+vUpGSM2uQPvWnPG77mQO5eNKQ/IxDMdRVgZUr11FfaRjPJ3KVOaWF9pc3irnVCkO1ssHpUdnJnJ0hqXT9isZBcoVXBt0oUFRtkeolt5kG3Q/R7189GfezIi1qOSNY/+So845f5ota2Q+GNYb2qUgT8Hh+C8OPWXBrReoJ0nCaF305q0pCbcHJjA9QwO4WKe8RZLnODeOvwjquqnPQ5I+c4aVwvucheaMMiTTLRTBqRxXgY83/83Vc+a219wP8=
+  - secure: S+sP0mQ06XZilxkSkqZIns0OKe7JlThLQfAoYqY87D3vyYQT8PVMslbHTQxrun+Sx2lQvP6x76JpBP3e5aDgd29qXONg8LeI68CnDxJ2rijJzZ2qSAagHOXaTDjUIP+1SdZkmDiv7rodAJbcD8WkqwtPnEfX64WbkScLJk0ZFc8UjJHkGqlXqLJGbGMygETGEjeqAh5mzeRq6AXAnPPRwRcYP0J9Z7B95rpaSNNvrKkodvXdnCaqJaSOQ3BiP9K+5uIja1S+4jucJAX17M0T57pgFbMBv9+XmtQfOqTeqkjRXABp2E5K8f52/afILm1Db5EMQ9K9PW6VnImk05a6Fn1YT7ccLQnvScIuRXWd0/liRrl5dIm0R71l6U3KhflsZjrg7vHV4aK/6YtlwF0vgXqtw3VkeCVKmICY01VjGgVSxUKnXbTmFrL640FDlPSPD9X+NVgb6ZzNv3hOFC+xhDR1k8yU8m1WtBr25o2enYKSJTGW8kNIlFbGnCp5MKVrmKuGk1PLA6UDZt9AiSsSLKJ/S9MlOapq4OIO+imf9EhnImpbT9f9fAc5d1UE6B/8ix/DLKDzuHV4n/oDz0kfELwV+GZwx4GkEjq+r/Yuld8dL+0Af1T2NDYA2rEjiuBwyb3sKADRHJuWWT1O64E+wqV1/87KvIdlBkBKbs9PCVs=
 matrix:
   include:
     # postgres
@@ -142,12 +139,14 @@ script:
     - if [ "$JSLINT" = true ]; then gulp jshint; fi
 
 after_success:
-    - |
-      if [ "$COMPONENT" == "DOCKER" ] && [ "$TRAVIS_BRANCH" == "master" ] && [ "$DOCKER_USER" != "" ]; then
-        docker login -u $DOCKER_USER -p $DOCKER_PASS
-        export REPO=volkszaehler/volkszaehler
-        docker pull $REPO:latest
-        docker build --cache-from $REPO:latest -f Dockerfile -t $REPO:$COMMIT .
-        docker tag $REPO:$COMMIT $REPO:latest
-        docker push $REPO
-      fi
+- echo $DOCKER_USER
+- echo $DOCKER_PASSWORD
+- |
+  if [ "$COMPONENT" == "DOCKER" ] && [ "$TRAVIS_BRANCH" == "master" ] && [ "$DOCKER_USER" != "" ]; then
+    docker login -u $DOCKER_USER -p $DOCKER_PASS
+    export REPO=volkszaehler/volkszaehler
+    docker pull $REPO:latest
+    docker build --cache-from $REPO:latest -f Dockerfile -t $REPO:$COMMIT .
+    docker tag $REPO:$COMMIT $REPO:latest
+    docker push $REPO
+  fi
