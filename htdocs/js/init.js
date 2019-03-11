@@ -35,6 +35,10 @@ var vz = {
 	middleware: [],		// array of all known middlewares
 	wui: {						// web user interface
 		dialogs: { },
+		requests: {
+			issued: 0,
+			completed: 0
+		},
 		timeout: null
 	},
 	capabilities: {		// debugging and runtime information from middleware
@@ -52,6 +56,8 @@ $(document).ready(function() {
 	window.onerror = function(errorMsg, url, lineNumber) {
 		vz.wui.dialogs.error('Javascript Runtime Error', errorMsg);
 	};
+
+	NProgress.configure({ showSpinner: false });
 
 	// add timezone-js support
 	if (timezoneJS !== undefined && timezoneJS.Date !== undefined) {
@@ -73,10 +79,6 @@ $(document).ready(function() {
 	var params = $.getUrlParams();
 	if (params.hasOwnProperty('reset') && params.reset) {
 		$.setCookie('vz_entities', null);
-		try {
-			localStorage.removeItem('vz.capabilities');
-		}
-		catch (e) { }
 	}
 
 	// start loading cookies/url params
@@ -104,6 +106,8 @@ $(document).ready(function() {
 			vz.entities.showTable();
 			vz.entities.inheritVisibility();
 
+			// set global parameters for display mode, then load data accordingly
+			vz.wui.changeDisplayMode(vz.options.mode || "current");
 			vz.entities.loadData().done(function() {
 				// vz.wui.resizePlot();
 				vz.wui.drawPlot();

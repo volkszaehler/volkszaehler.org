@@ -57,7 +57,7 @@ class Configuration {
 	}
 
 	/**
-	 * loading configuration from fule
+	 * loading configuration from file
 	 *
 	 * @param string $filename A string pointing to a file on the filesystem
 	 */

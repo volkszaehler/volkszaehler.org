@@ -68,9 +68,14 @@ vz.options.plot = {
 		shadowSize: 0,
 		points: {
 			radius: 3
+		},
+		bars: {
+			fill:      0.8,
+			lineWidth: 0,
+			usedSpace: 0.8 // percent of available space that bars should occupy
 		}
 	},
- 	legend: {
+	legend: {
 		show: true,
 		position: 'nw',
 		backgroundOpacity: 0.80,
@@ -88,18 +93,31 @@ vz.options.plot = {
 			tickFormatter: vz.wui.tickFormatter		// show axis label
 		},
 		{
+			axisLabel: '°C', // assign el. energy to first axis- remove if not used
+			tickFormatter: vz.wui.tickFormatter		// show axis label
+		},
+		{
 			// alignTicksWithAxis: 1,
 			position: 'right',
 			tickFormatter: vz.wui.tickFormatter		// show axis label
 		}
 	],
 	selection: { mode: 'x' },
-	crosshair: { mode: 'x' },
+	crosshair: {
+		mode: 'x',
+		leaveCallback: vz.wui.plotLeave
+	},
 	grid: {
 		hoverable: true,
-		autoHighlight: false
+		autoHighlight: true,
+		borderWidth:  1,
+		borderColor: '#bbb',
+		margin: 0
 	}
 };
+
+// minimum displayable value
+vz.options.minNumber = Math.pow(10, -(vz.options.precision + 1));
 
 vz.options.saveCookies = function() {
 	var expires = new Date(2038, 0, 1); // some days before y2k38 problem

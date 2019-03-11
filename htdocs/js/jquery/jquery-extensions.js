@@ -4,6 +4,7 @@
  * @author Florian Ziegler <fz@f10-home.de>
  * @author Justin Otherguy <justin@justinotherguy.org>
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @author Andreas Goetz <cpuidle@gmx.de>
  * @copyright Copyright (c) 2011, The volkszaehler.org project
  * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
@@ -29,9 +30,10 @@
  */
 $.extend( {
 	getUrlParams : function() {
-		var vars = {};
-		var hashes = decodeURIComponent(window.location.href).slice(window.location.href.indexOf('?') + 1).split('&');
-
+		var vars = {}, paramOffset = window.location.href.indexOf('?');
+		if (paramOffset < 0)
+			return vars;
+		var hashes = decodeURIComponent(window.location.href).slice(paramOffset + 1).split('&');
 		for (var i = 0; i < hashes.length; i++) {
 			var hash = hashes[i].split('=');
 			var key = hash[0];
@@ -40,7 +42,7 @@ $.extend( {
 			if (key.substr(key.length-2) == '[]') { // Array
 				key = key.substr(0, key.length-2);
 				if (vars[key] === undefined) {
-					vars[key] = new Array;
+					vars[key] = [];
 				}
 
 				vars[key].push(value);
@@ -81,8 +83,7 @@ $.extend({
 			var date;
 			if (typeof options.expires == 'number') { // expires x seconds in the future
 				date = new Date();
-				date.setTime(date.getTime()
-						+ (options.expires * 24 * 60 * 60 * 1000));
+				date.setTime(date.getTime() + (options.expires * 24 * 60 * 60 * 1000));
 			} else {
 				date = options.expires;
 			}
@@ -99,7 +100,7 @@ $.extend({
 		document.cookie = name + '=' + encodeURIComponent(value) + expires + path + domain + secure;
 	},
 	getCookie: function(name) {
-		if (document.cookie && document.cookie != '') {
+		if (document.cookie && document.cookie !== '') {
 			var cookies = document.cookie.split(';');
 			for (var i = 0; i < cookies.length; i++) {
 				var cookie = $.trim(cookies[i]);

@@ -45,8 +45,8 @@ class ImpulseInterpreter extends Interpreter {
 		$this->ts_last = $this->getFrom();
 
 		foreach ($this->rows as $row) {
-			if ($this->raw) {
-				// raw database values
+			// raw database values
+			if ($this->output == self::RAW_VALUES) {
 				yield array_slice($row, 0, 3);
 			}
 			else {
@@ -54,7 +54,6 @@ class ImpulseInterpreter extends Interpreter {
 				$this->pulseCount += $row[1];
 
 				$this->updateMinMax($tuple);
-
 				yield $tuple;
 			}
 		}
@@ -64,14 +63,27 @@ class ImpulseInterpreter extends Interpreter {
 	 * Convert raw meter readings
 	 */
 	public function convertRawTuple($row) {
-		$delta = $row[0] - $this->ts_last;
+		if ($this->output == self::ACTUAL_VALUES) {
+			// actual values
+			$delta_ts = $row[0] - $this->ts_last;
 
-		// (1 imp * 60 min/h * 60 s/min * 1000 ms/s * scale) / (1 imp/kWh * 1ms) = 3.6e6 kW
-		$tuple = array(
-			(float) ($this->ts_last = $row[0]), // timestamp of interval end
-			(float) ($row[1] * 3.6e6 * $this->scale) / ($this->resolution * $delta), // doing df/dt
-			(int) $row[2] // num of rows
-		);
+			// (1 imp * 60 min/h * 60 s/min * 1000 ms/s * scale) / (1 imp/kWh * 1ms) = 3.6e6 kW
+			$tuple = array(
+				(float) $row[0], // timestamp of interval end
+				(float) ($row[1] * 3.6e6 * $this->scale) / ($this->resolution * $delta_ts), // doing df/dt
+				(int) $row[2] // num of rows
+			);
+		}
+		else {
+			// consumption values
+			$tuple = array(
+				(float) $row[0], // timestamp of interval end
+				(float) ($row[1] * $this->scale) / $this->resolution,
+				(int) $row[2] // num of rows
+			);
+		}
+
+		$this->ts_last = $row[0];
 
 		return $tuple;
 	}
@@ -82,16 +94,19 @@ class ImpulseInterpreter extends Interpreter {
 	 * @return float total consumption in Wh
 	 */
 	public function getConsumption() {
-		return $this->channel->getDefinition()->hasConsumption ? $this->scale * $this->pulseCount / $this->resolution : NULL;
+		return $this->definition->hasConsumption ? $this->scale * $this->pulseCount / $this->resolution : NULL;
 	}
 
 	/**
-	 * Get Average
+	 * Get average
 	 *
 	 * @return float average in W
 	 */
 	public function getAverage() {
-		if ($this->pulseCount) {
+		if ($this->output == self::CONSUMPTION_VALUES) {
+			return $this->getAverageConsumption();
+		}
+		elseif ($this->pulseCount) {
 			$delta = $this->getTo() - $this->getFrom();
 			// 60 s/min * 60 min/h * 1.000 ms/s * 1.000 W/kW = 3.6e9 (Units: s/h*ms/s*W/KW = s/3.600s*.001s/s*W/1.000W = 1)
 			return (3.6e6 * $this->scale * $this->pulseCount) / ($this->resolution * $delta);

@@ -68,7 +68,7 @@
 
       $(this).addClass('ui-helper-hidden');
 
-      if($.isFunction(options.onNodeHide)) {
+      if(typeof options.onNodeHide === "function") {
         options.onNodeHide.call(this);
       }
 
@@ -90,7 +90,7 @@
 
       $(this).removeClass('ui-helper-hidden');
 
-      if($.isFunction(options.onNodeShow)) {
+      if(typeof options.onNodeShow === "function") {
         options.onNodeShow.call(this);
       }
     });
@@ -205,8 +205,8 @@
 
         if(options.expandable) {
           cell.prepend('<span style="margin-left: -' + options.indent + 'px; padding-left: ' + options.indent + 'px" class="expander"></span>');
-          $(cell[0].firstChild).click(function(e) { 
-            node.toggleBranch(); 
+          $(cell[0].firstChild).click(function(e) {
+            node.toggleBranch();
             e.stopPropagation();
           });
 

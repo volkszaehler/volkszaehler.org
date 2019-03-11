@@ -25,10 +25,9 @@
 	<meta name="msapplication-config" content="ico/browserconfig.xml">
 	<meta name="theme-color" content="#ffffff">
 
-	<meta name="apple-mobile-web-app-capable" content="yes" />
-	<meta name="apple-mobile-web-app-status-bar-style" content="black" />
-	<!-- to support IE 9+ in intranet environments -->
-	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<!-- <meta name="viewport" content="width=device-width, initial-scale=1"> -->
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
 
 	<!-- CSS before JS -->
 	<link rel="stylesheet" type="text/css" href="vendor/jquery-ui/jquery-ui.min.css" />
@@ -37,7 +36,7 @@
 	<link rel="stylesheet" type="text/css" href="css/print.css" media="print" />
 
 	<!-- jQuery -->
-	<script type="text/javascript" src="vendor/jquery/jquery-2.1.3.min.js"></script>
+	<script type="text/javascript" src="vendor/jquery/jquery-3.3.1.min.js"></script>
 	<script type="text/javascript" src="vendor/jquery-ui/jquery-ui.min.js"></script>
 
 	<script type="text/javascript" src="js/jquery/jquery-ext.min.js"></script>
@@ -47,6 +46,7 @@
 	-->
 
 	<script type="text/javascript" src="vendor/moment.min.js"></script>
+	<script type="text/javascript" src="vendor/nprogress.min.js"></script>
 	<script type="text/javascript" src="vendor/flot/flot.min.js"></script>
 	<!-- debug: uncomment scripts below -->	<!--
 	<script type="text/javascript" src="vendor/flot/jquery.flot.js"></script>
@@ -55,6 +55,7 @@
 	<script type="text/javascript" src="vendor/flot/jquery.flot.time.js"></script>
 	<script type="text/javascript" src="vendor/flot/jquery.flot.canvas.js"></script>
 	<script type="text/javascript" src="vendor/flot/jquery.flot.axislabels.js"></script>
+	<script type="text/javascript" src="vendor/flot/jquery.flot.orderBars.js"></script>
 	<script type="text/javascript" src="vendor/flot/jquery.flot.xgap.js"></script>
 	<script type="text/javascript" src="vendor/flot/date.js"></script>
 	-->
@@ -66,6 +67,7 @@
 	<script type="text/javascript" src="js/functions.js"></script>
 	<script type="text/javascript" src="js/entities.js"></script>
 	<script type="text/javascript" src="js/wui.js"></script>
+	<script type="text/javascript" src="js/plot.js"></script>
 	<script type="text/javascript" src="js/entity.js"></script>
 	<script type="text/javascript" src="js/options.js"></script>
 
@@ -82,12 +84,12 @@
 <!--[if lt IE 8]>
 <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
 <![endif]-->
+<div id="time"></div>
 <div id="content">
 	<div id="header">
 		<h2 id="title"></h2>
 
 		<div id="export">
-			<img alt="export" src="img/blank.png" class="icon-export" />
 			<select class="icons">
 				<option value="default" selected="selected" class="icon-export">Export...</option>
 				<option value="permalink" class="icon-link">Permalink</option>
@@ -96,11 +98,26 @@
 				<option value="json" class="icon-json">JSON</option>
 			</select>
 		</div>
+		<div id="display">
+			<select class="icons">
+				<option value="current" selected="selected" class="icon-chart_line">Current</option>
+				<option>--</option>
+				<option value="hour" class="icon-chart_bar">Hourly</option>
+				<option value="day" class="icon-chart_bar">Daily</option>
+				<option value="month" class="icon-chart_bar">Monthly</option>
+				<option value="year" class="icon-chart_bar">Yearly</option>
+				<option>--</option>
+				<option value="year-month" class="icon-chart_bar">Year by month</option>
+				<option value="year-day" class="icon-chart_bar">Year by day</option>
+				<option value="month-day" class="icon-chart_bar">Month by day</option>
+				<option value="month-hour" class="icon-chart_bar">Month by hour</option>
+				<option value="day-hour" class="icon-chart_bar">Day by hour</option>
+			</select>
+		</div>
 		<br style="clear: both" />
 	</div>
 	<div id="plot">
 		<div id="flot"></div>
-		<div id="overlay"></div>
 	</div>
 
 	<div id="controls">
@@ -110,7 +127,7 @@
 	<div id="accordion">
 		<h3><img src="img/blank.png" class="icon-table" alt="" /> Kanäle</h3>
 		<div id="entity-list">
-			<table>
+			<table class="properties">
 				<thead>
 					<tr>
 						<th><img src="img/blank.png" class="icon-eye" alt="Anzeige" id="entity-toggle" title="Toggle entitites" /></th>
@@ -215,11 +232,15 @@
 			</form>
 		</div>
 		<div id="entity-create">
-			<form method="get" target="_blank">
-				<table>
-					<tr class="property"><th>Eigenschaft</th><th>Wert</th></tr>
-					<tr class="property"><td>Middleware:</td><td><select id="entity-create-middleware"></select></td></tr>
-					<tr class="property"><td>Typ:</td><td><select class="icons" name="type" size="1"></select></td></tr>
+			<form>
+				<table class="properties">
+					<thead>
+						<tr><th>Eigenschaft</th><th>Wert</th></tr>
+					</thead>
+					<tbody>
+						<tr><td>Middleware:</td><td><select id="entity-create-middleware" /></select></td></tr>
+						<tr><td>Typ:</td><td><select class="icons" name="type"></select></td></tr>
+					</tbody>
 				</table>
 				<p>
 					<input type="submit" value="Erstellen" />
@@ -232,9 +253,23 @@
 </div>
 
 <div id="entity-edit" class="dialog">
-	<form method="get" target="_blank">
-		<table>
-			<tr class="property"><th>Eigenschaft</th><th>Wert</th></tr>
+	<form>
+		<table class="properties">
+			<thead>
+				<tr><th>Eigenschaft</th><th>Wert</th></tr>
+			</thead>
+			<tbody></tbody>
+		</table>
+	</form>
+</div>
+
+<div id="entity-info" class="dialog">
+	<form>
+		<table class="properties">
+			<thead>
+				<tr><th>Eigenschaft</th><th>Wert</th></tr>
+			</thead>
+			<tbody></tbody>
 		</table>
 	</form>
 </div>
