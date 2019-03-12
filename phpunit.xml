@@ -8,13 +8,12 @@
   </testsuites>
 
   <!-- exclude performance tests by default -->
-    <groups>
-      <exclude>
-        <group>slow</group>
-        <group>jpgraph</group>
-        <group>pushserver</group>
-      </exclude>
-    </groups>
+  <groups>
+    <exclude>
+      <group>slow</group>
+      <group>pushserver</group>
+    </exclude>
+  </groups>
 
   <!-- configure code coverage -->
   <filter>

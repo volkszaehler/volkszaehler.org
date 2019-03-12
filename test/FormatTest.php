@@ -32,32 +32,6 @@ class FormatTest extends Data
 		));
 	}
 
-	/**
-	 * @group jpgraph
-	 */
-	function testImage() {
-		$response = $this->getResponse(Request::create('/data/' . static::$uuid . '.png', 'GET',
-			array('from' => 0, 'to' => 'now')
-		));
-
-		$this->assertEquals(200, $response->getStatusCode());
-		$this->assertEquals('image/png', $response->headers->get('Content-Type'));
-	}
-
-	/**
-	 * @group jpgraph
-	 *
-	 * NOTE: this cannot be tested due to JpGraph design issues
-	 */
-	// function testImageInvalidUuidException() {
-	// 	$response = $this->getResponse(Request::create('/data/' . self::INVALID_UUID . '.png', 'GET',
-	// 		array('from' => 0, 'to' => 'now')
-	// 	));
-
-	// 	$this->assertEquals(200, $response->getStatusCode());
-	// 	$this->assertEquals('image/png', $response->headers->get('Content-Type'));
-	// }
-
 	function testCSV() {
 		$response = $this->getResponse(Request::create('/data/' . static::$uuid . '.csv', 'GET',
 			array('from' => 0, 'to' => 'now')
