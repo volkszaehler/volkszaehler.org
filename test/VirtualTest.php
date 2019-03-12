@@ -251,7 +251,7 @@ class VirtualTest extends Middleware
 		$data = [
 			$in1 => array_combine(
 				array_map(function($key) use ($series) {
-					return ($key * 3600) * 1000;
+					return ($key * 3600) * 1000; // convert to hours
 				}, array_keys($series)),
 				array_values($series)
 			)
@@ -304,12 +304,11 @@ class VirtualTest extends Middleware
 
 		// convert hours to milliseconds
 		$series = $this->getGroupSeriesData('in1');
+		// array 0..120: [idx * 60s => 1]
 		$data = [
-			$in1 => array_combine(
-				array_map(function($key) use ($series) {
-					return ($key * 60) * 1000;
-				}, range(0, 2*60)),
-				array_fill(0, 2*60+1, 1)
+			$in1 => array_fill_keys(
+				range(0, 2*3600*1000, 60*1000),
+				1
 			)
 		];
 
