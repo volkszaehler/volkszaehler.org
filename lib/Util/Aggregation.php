@@ -40,12 +40,12 @@ class Aggregation {
 	const MODE_DELTA = 'delta';
 
 	/**
-	 * @var \Doctrine\DBAL\Connection Database connection
+	 * @var DBAL\Connection Database connection
 	 */
 	protected $conn;
 
 	/**
-	 * @var SQL aggregation types and assorted date formats
+	 * @var array SQL aggregation types and assorted date formats
 	 */
 	protected static $aggregationLevels = array();
 

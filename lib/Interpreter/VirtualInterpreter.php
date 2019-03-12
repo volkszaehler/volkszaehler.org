@@ -43,7 +43,7 @@ class VirtualInterpreter extends Interpreter {
 	const PRIMARY = 'in1';
 
 	/**
-	 * @var Doctrine\ORM\EntityManager
+	 * @var ORM\EntityManager
 	 */
 	protected $em;
 

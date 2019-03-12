@@ -40,7 +40,7 @@ abstract class Interpreter implements \IteratorAggregate {
 	const CONSUMPTION_VALUES = 2;
 
 	/**
-	 * @var Database connection
+	 * @var \Doctrine\DBAL\Connection Database connection
 	 */
 	protected $conn;		// PDO connection handle
 
@@ -315,6 +315,13 @@ abstract class Interpreter implements \IteratorAggregate {
 			throw new \Exception('Invalid time format: \'' . $string . '\'');
 		}
 	}
+
+	/**
+	 * Calculates the consumption
+	 *
+	 * @return float total consumption in Wh
+	 */
+	public abstract function getConsumption();
 
 	/**
 	 * Calculates the average consumption

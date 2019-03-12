@@ -44,12 +44,12 @@ abstract class View {
 	const PRECISION = 3;
 
 	/**
-	 * @var HTTP\Request
+	 * @var Request
 	 */
 	protected $request;
 
 	/**
-	 * @var HTTP\Response
+	 * @var Response
 	 */
 	protected $response;
 

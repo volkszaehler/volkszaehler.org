@@ -79,7 +79,7 @@ class PropertyDefinition extends Definition {
 	/**
 	 * Validate value according to $this->type
 	 *
-	 * @param string|numeric $value
+	 * @param string|number $value
 	 * @return boolean
 	 */
 	public function validateValue($value) {

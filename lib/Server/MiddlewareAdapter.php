@@ -35,12 +35,12 @@ use Symfony\Component\HttpFoundation\Request;
 class MiddlewareAdapter {
 
 	/**
-	 * @var interpreters per subscribed topic
+	 * @var Interpreter\Interpreter[] per subscribed topic
 	 */
 	protected $interpreters = array();
 
 	/**
-	 * @var Doctrine\ORM\EntityManager
+	 * @var \Doctrine\ORM\EntityManager
 	 */
 	protected $em;
 

@@ -116,13 +116,13 @@ abstract class SQLOptimizer {
 	 * @return string the sql part
 	 */
 	public static function buildDeleteFromJoinSQL($table, $join, $id = 'id') {
-		$sql = sprintf("DELETE FROM %s WHERE %s.%s in (SELECT %s FROM %s)", [
+		$sql = sprintf("DELETE FROM %s WHERE %s.%s in (SELECT %s FROM %s)",
 			$table,
 			$table,
 			$id,
 			$id,
 			$join
-		]);
+		);
 		return $sql;
 	}
 

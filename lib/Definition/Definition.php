@@ -63,7 +63,7 @@ abstract class Definition {
 	 * Factory method for creating new instances
 	 *
 	 * @param string $name
-	 * @return Util\Definition|array
+	 * @return Definition|array
 	 */
 	public static function get($name = NULL) {
 		if (is_null(static::$definitions)) {

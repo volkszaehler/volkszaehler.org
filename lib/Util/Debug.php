@@ -32,10 +32,18 @@ use Doctrine\DBAL\Logging;
  * @author Andreas Goetz <cpuidle@gmx.de>
  */
 class Debug {
+    /**
+     * @var Debug|null
+     */
 	protected static $instance = NULL;
 
 	/**
-	 * @var array Array of logged messages
+	 * @var ORM\EntityManager
+	 */
+	protected $em;
+
+	/**
+	 * @var string[] Array of logged messages
 	 */
 	protected $messages;
 
@@ -145,7 +153,7 @@ class Debug {
 	}
 
 	/**
-	 * @return format SQL string with parameters
+	 * @return string format SQL string with parameters
 	 * @author Andreas Goetz <cpuidle@gmx.de>
 	 */
 	public static function getParametrizedQuery($sql, $sqlParameters) {

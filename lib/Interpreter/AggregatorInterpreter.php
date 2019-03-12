@@ -49,14 +49,20 @@ class AggregatorInterpreter extends Interpreter {
 	}
 
 	/**
-	 * Generate database tuples
+	 * @inheritDoc
 	 */
 	public function getIterator() {
 	}
 
 	/**
-	 * Convert raw meter readings
+	 * @inheritDoc
 	 */
 	public function convertRawTuple($row) {
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function getConsumption() {
 	}
 }

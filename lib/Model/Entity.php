@@ -152,7 +152,7 @@ abstract class Entity {
 	 * Find property by key
 	 *
 	 * @param string $key
-	 * @return Model\Property
+	 * @return Property
 	 */
 	protected function findProperty($key) {
 		foreach ($this->properties as $property) {
