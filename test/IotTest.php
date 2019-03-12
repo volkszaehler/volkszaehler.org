@@ -9,14 +9,14 @@
 
 namespace Tests;
 
-use Volkszaehler\Util;
+use Webpatser\Uuid\UUID;
 
 class IotTest extends Middleware
 {
 	protected $uuid;
 
 	function testRetrievel() {
-		$secret = str_replace('-', '', Util\UUID::mint());
+		$secret = str_replace('-', '', UUID::generate());
 		$this->getJson('/channel.json', array(
 			'operation' => 'add',
 			'title' => 'Power',

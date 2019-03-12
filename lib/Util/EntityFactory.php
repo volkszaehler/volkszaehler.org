@@ -24,6 +24,7 @@ namespace Volkszaehler\Util;
 
 use Doctrine\ORM;
 use Doctrine\Common\Cache;
+use Webpatser\Uuid\UUID;
 
 use Volkszaehler\Util;
 use Volkszaehler\Definition\PropertyDefinition;
@@ -87,7 +88,7 @@ class EntityFactory {
 
 	/**
 	 * Return a single entity by identifier, either UUID or name
-	 * @param $uuid
+	 * @param string $uuid
 	 * @param bool $cache Use cache
 	 * @throws Exception on empty result
 	 * @return Entity
