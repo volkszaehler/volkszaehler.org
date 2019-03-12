@@ -51,7 +51,7 @@ class WsClientAdapter implements MessageComponentInterface, PushTransportInterfa
 	 */
 
     function onMessage(ConnectionInterface $from, $msg) {
-    	$conn->close();
+    	$from->close();
     }
 
 	/*

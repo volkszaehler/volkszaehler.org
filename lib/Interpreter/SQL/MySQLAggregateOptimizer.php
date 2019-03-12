@@ -248,7 +248,7 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 	 *     table:   --data-- -----aggregate----- -data-
 	 * timestamp:   from ... aggFrom ..... aggTo ... to
 	 *
-	 * @param string $type aggregation level (e.g. 'day')
+	 * @param string $aggFromDelta
 	 * @return boolean true: aggregate table contains data, aggFrom/aggTo contains valid range
 	 * @author Andreas Goetz <cpuidle@gmx.de>
 	 */

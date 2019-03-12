@@ -39,10 +39,12 @@ class AggregatorInterpreter extends Interpreter {
 	/**
 	 * Constructor
 	 *
-	 * @param Model\Aggregator $group should only contain channels of the same indicator
+	 * @param Model\Aggregator $aggregator should only contain channels of the same indicator
 	 * @param ORM\EntityManager $em
-	 * @param integer $from timestamp in ms since 1970
-	 * @param integer $to timestamp in ms since 1970
+	 * @param int|null $from timestamp in ms since 1970
+	 * @param int|null $to timestamp in ms since 1970
+	 * @param int|null $tupleCount
+	 * @param string|null $groupBy
 	 */
 	public function __construct(Model\Aggregator $aggregator, ORM\EntityManager $em, $from, $to, $tupleCount = null, $groupBy = null) {
 		throw new \Exception('Getting data is not supported for groups');
@@ -64,5 +66,11 @@ class AggregatorInterpreter extends Interpreter {
 	 * @inheritDoc
 	 */
 	public function getConsumption() {
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function getAverage() {
 	}
 }

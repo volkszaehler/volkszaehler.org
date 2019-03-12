@@ -39,7 +39,7 @@ class SQLiteOptimizer extends SQLOptimizer {
 	 * DB-specific data grouping by date functions
 	 *
 	 * @param string $groupBy
-	 * @return string the sql part
+	 * @return string|bool the sql part
 	 */
 	public static function buildGroupBySQL($groupBy) {
 		$ts = ', timestamp/1000, "unixepoch"'; // just for saving space

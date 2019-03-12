@@ -1,0 +1,10 @@
+parameters:
+    ignoreErrors:
+    - '#Function sys_getloadvg not found#'
+    - '#Volkszaehler.View.Text.* does not call parent constructor#'
+    - '#Volkszaehler.Interpreter.AggregatorInterpreter.* does not call parent constructor#'
+    - '#Constructor of class Volkszaehler.Interpreter.AggregatorInterpreter has an unused parameter#'
+    - '#Constant VZ_DIR not found#'
+    - '#Variable .config in isset.. is never defined#'
+    - '#Variable .average in isset.. always exists and is not nullable#'
+    - '#Access to an undefined property Doctrine.DBAL.Logging.SQLLogger::.queries#'

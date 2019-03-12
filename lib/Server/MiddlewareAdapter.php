@@ -45,7 +45,7 @@ class MiddlewareAdapter {
 	protected $em;
 
 	/**
-	 * @var array
+	 * @var \SplObjectStorage
 	 */
 	protected $adapters;
 
@@ -121,7 +121,7 @@ class MiddlewareAdapter {
 	/**
 	 * Handle vzlogger push request
 	 *
-	 * @param string JSON'ified string we'll receive from publisher
+	 * @param string $json JSON'ified string we'll receive from publisher
 	 * @return null|string Returns null on invalid request
 	 */
 	public function handlePushMessage($json) {

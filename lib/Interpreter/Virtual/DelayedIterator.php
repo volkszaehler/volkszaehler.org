@@ -28,6 +28,10 @@ namespace Volkszaehler\Interpreter\Virtual;
  */
 class DelayedIterator extends \IteratorIterator
 {
+	protected $valid;
+	protected $key;
+	protected $current;
+
 	public function peek() {
 		return parent::current();
 	}

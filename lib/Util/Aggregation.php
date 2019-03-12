@@ -50,7 +50,7 @@ class Aggregation {
 	protected static $aggregationLevels = array();
 
 	/**
-	 * @var Aggregation target
+	 * @var string target
 	 */
 	protected $targetTable = 'aggregate';
 
@@ -78,8 +78,7 @@ class Aggregation {
 	/**
 	 * Get list of aggregation levels
 	 *
-	 * @param  string  $level aggregation level (e.g. 'day')
-	 * @return boolean        validity
+	 * @return array
 	 */
 	public static function getAggregationLevels() {
 		return array_keys(self::$aggregationLevels);
@@ -89,7 +88,7 @@ class Aggregation {
 	 * Test if aggregation level is valid and implemented
 	 *
 	 * @param  string  $level aggregation level (e.g. 'day')
-	 * @return boolean        validity
+	 * @return boolean
 	 */
 	public static function isValidAggregationLevel($level) {
 		return in_array($level, self::getAggregationLevels())
@@ -374,6 +373,7 @@ class Aggregation {
 
 		// aggregate each channel
 		foreach ($this->getAggregatableEntitiesArray($uuid) as $row) {
+			/** @var Definition\EntityDefinition */
 			$entity = Definition\EntityDefinition::get($row['type']);
 			$interpreter = $entity->getInterpreter();
 

@@ -93,7 +93,7 @@ abstract class Controller {
 	/**
 	 * Run operation
 	 *
-	 * @param $op Operation to run
+	 * @param string $op Operation to run
 	 * @param string|array|null $uuid Uuid to operate on
 	 * @return mixed operation result
 	 * @throws \Exception

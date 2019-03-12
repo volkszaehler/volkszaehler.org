@@ -38,8 +38,14 @@ class Channel extends Entity {
 	/**
 	 * @OneToMany(targetEntity="Data", mappedBy="channel", cascade={"persist"}, orphanRemoval=true)
 	 * @OrderBy({"timestamp" = "ASC"})
+	 * @var ArrayCollection|null
 	 */
 	protected $data = NULL;
+
+	/**
+	 * @var ArrayCollection|null
+	 */
+	protected $groups = NULL;
 
 	/**
 	 * Constructor

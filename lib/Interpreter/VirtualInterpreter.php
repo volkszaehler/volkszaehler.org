@@ -52,13 +52,14 @@ class VirtualInterpreter extends Interpreter {
 
 	protected $count; 			// number of rows
 	protected $consumption; 	// in Wms (Watt milliseconds)
+	protected $ts; 				// current tuple timestamp
 	protected $ts_last; 		// previous tuple timestamp
 
 	/**
 	 * Constructor
 	 *
-	 * @param Channel $channel
-	 * @param EntityManager $em
+	 * @param Model\Channel $channel
+	 * @param ORM\EntityManager $em
 	 */
 	public function __construct(Model\Channel $channel, ORM\EntityManager $em, $from, $to, $tupleCount = null, $groupBy = null, $options = array()) {
 		parent::__construct($channel, $em, $from, $to, $tupleCount, $groupBy, $options);
@@ -196,7 +197,7 @@ class VirtualInterpreter extends Interpreter {
 			return 0;
 		}
 
-		$period = $this->ts() - $prev;
+		$period = $this->_ts() - $prev;
 		$consumption = $value * $period / 3.6e6;
 		return $consumption;
 	}
@@ -248,7 +249,7 @@ class VirtualInterpreter extends Interpreter {
 	 * Convert raw meter readings
 	 */
 	public function convertRawTuple($row) {
-		return $this->current = $row;
+		return $row; // not implemented
 	}
 
 	/*

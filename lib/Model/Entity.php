@@ -152,7 +152,7 @@ abstract class Entity {
 	 * Find property by key
 	 *
 	 * @param string $key
-	 * @return Property
+	 * @return Property|bool
 	 */
 	protected function findProperty($key) {
 		foreach ($this->properties as $property) {
@@ -200,8 +200,7 @@ abstract class Entity {
 	/**
 	 * Unset property
 	 *
-	 * @param string $name of the property
-	 * @param Doctrine\EntityManager $em
+	 * @param string $key name of the property
 	 */
 	public function deleteProperty($key) {
 		$property = $this->findProperty($key);

@@ -88,7 +88,7 @@ class EntityFactory {
 
 	/**
 	 * Return a single entity by identifier, either UUID or name
-	 * @param string $uuid
+	 * @param string|null $uuid
 	 * @param bool $cache Use cache
 	 * @throws \Exception on empty result
 	 * @return Model\Entity
@@ -106,7 +106,7 @@ class EntityFactory {
 	/**
 	 * Return a single entity by UUID, potentially from cache
 	 *
-	 * @param $uuid
+	 * @param string $uuid
 	 * @param bool $cache Use cache
 	 * @throws \Exception on empty result
 	 * @return Model\Entity
@@ -122,7 +122,7 @@ class EntityFactory {
 	 * Return a single entity by UUID, potentially from cache.
 	 * Does not validate UUID.
 	 *
-	 * @param $uuid
+	 * @param string $uuid
 	 * @param bool $cache Use cache
 	 * @throws \Exception on empty result
 	 * @return Model\Entity
@@ -149,7 +149,7 @@ class EntityFactory {
 	/**
 	 * Return a single public entity by name, potentially from cache
 	 *
-	 * @param $name
+	 * @param string $name
 	 * @param bool $cache Use cache
 	 * @throws \Exception on empty or multiple results
 	 * @return Model\Entity
@@ -172,7 +172,7 @@ class EntityFactory {
 	/**
 	 * Return multiple entities by properties
 	 *
-	 * @param array of property => value filters
+	 * @param array $properties array of property => value filters
 	 * @return Model\Entity[] array of entities
 	 */
 	public function getByProperties(array $properties) {
@@ -184,6 +184,7 @@ class EntityFactory {
 		$where = array();
 		$params = array();
 		foreach ($properties as $key => $value) {
+			/** @var PropertyDefinition */
 			if (PropertyDefinition::get($key)->getType() == 'boolean') {
 				$value = (int) $value;
 			}
@@ -206,7 +207,7 @@ class EntityFactory {
 	/**
 	 * Remove an entity by key from cache
 	 *
-	 * @param $key
+	 * @param string|null $key
 	 */
 	public function remove($key) {
 		if (isset($key)) {

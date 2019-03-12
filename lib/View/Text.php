@@ -50,7 +50,6 @@ class Text extends CSV {
 	 * Add exception to output queue
 	 *
 	 * @param \Exception $exception
-	 * @param boolean $debug
 	 */
 	protected function addException(\Exception $exception) {
 		echo get_class($exception) . '# [' . $exception->getCode() . ']' . ':' . $exception->getMessage() . PHP_EOL;
@@ -90,8 +89,7 @@ class Text extends CSV {
 	/**
 	 * Add data to output queue
 	 *
-	 * @param Interpreter\InterpreterInterface $interpreter
-	 * @param boolean $children
+	 * @param Interpreter\Interpreter $interpreter
 	 * @todo  Aggregate first is assumed- this deviates from json view behaviour
 	 */
 	protected function addData(Interpreter\Interpreter $interpreter) {

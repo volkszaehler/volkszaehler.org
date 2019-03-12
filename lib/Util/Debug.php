@@ -59,8 +59,6 @@ class Debug {
 
 	/**
 	 * Constructor
-	 *
-	 * @param integer $level the debug level
 	 */
 	protected function __construct(ORM\EntityManager $em) {
 		$this->messages = array();
@@ -136,7 +134,7 @@ class Debug {
 	}
 
 	/**
-	 * @return 2 dimensional array with sql queries and parameters
+	 * @return array two-dimensional array with sql queries and parameters
 	 */
 	public function getQueries() {
 		return ($this->sqlLogger) ? $this->sqlLogger->queries : array();
@@ -167,7 +165,7 @@ class Debug {
 	}
 
 	/**
-	 * @return 2 dimensional array with messages
+	 * @return array two-dimensional array with messages
 	 */
 	public function getMessages() { return $this->messages; }
 

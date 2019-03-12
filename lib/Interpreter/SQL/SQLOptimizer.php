@@ -81,7 +81,7 @@ abstract class SQLOptimizer {
 	/**
 	 * Constructor
 	 *
-	 * @param  Interpreter      $interpreter
+	 * @param  Interpreter\Interpreter      $interpreter
 	 */
 	public function __construct(Interpreter\Interpreter $interpreter) {
 		$this->interpreter = $interpreter;
@@ -154,7 +154,7 @@ abstract class SQLOptimizer {
 	/**
 	 * Combine operation => value array into SQL filter
 	 *
-	 * @param array $filter associative array of filters
+	 * @param array $filters associative array of filters
 	 * @param array $params output prarameter array
 	 * @param string $valueParam name of value column
 	 * @return string sql part including leading operator (' AND ')
@@ -188,7 +188,7 @@ abstract class SQLOptimizer {
 	 * Updates tupleCount to prevent double packaging
 	 *
 	 * @param  string $rowCount 	 actual number of rows expected from count sql
-	 * @return array [$bitshift,$timestampOffset] parameters for binary tuple packaging
+	 * @return array|bool [$bitshift,$timestampOffset] parameters for binary tuple packaging
 	 */
 	protected function applyBinaryTuplePackaging($rowCount) {
 		if ($this->tupleCount && ($rowCount > $this->tupleCount)) {
@@ -215,9 +215,9 @@ abstract class SQLOptimizer {
 	 * Called by interpreter before retrieving result rows
 	 *
 	 * @param  string $sql  		 initial SQL query
-	 * @param  string $sqlParameters initial SQL parameters
+	 * @param  array  $sqlParameters initial SQL parameters
 	 * @param  string $rowCount 	 actual number of rows expected from count sql
-	 * @return boolean               optimization result
+	 * @return boolean
 	 */
 	public function optimizeDataSQL(&$sql, &$sqlParameters, $rowCount) {
 		// potential to reduce result set - can't do this for already grouped SQL
