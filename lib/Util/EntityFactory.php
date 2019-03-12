@@ -24,7 +24,7 @@ namespace Volkszaehler\Util;
 
 use Doctrine\ORM;
 use Doctrine\Common\Cache;
-use Webpatser\Uuid\UUID;
+use Webpatser\Uuid\Uuid as UUID;
 
 use Volkszaehler\Util;
 use Volkszaehler\Definition\PropertyDefinition;

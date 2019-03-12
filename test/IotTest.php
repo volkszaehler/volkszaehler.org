@@ -9,7 +9,7 @@
 
 namespace Tests;
 
-use Webpatser\Uuid\UUID;
+use Webpatser\Uuid\Uuid as UUID;
 
 class IotTest extends Middleware
 {
