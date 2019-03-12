@@ -37,8 +37,5 @@
             "Volkszaehler\\": "lib/",
             "Tests\\": "test/"
         }
-    },
-    "suggest": {
-        "jpgraph/jpgraph": "Server-side chart generation for volkszaehler"
     }
 }

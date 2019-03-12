@@ -232,12 +232,6 @@ echo "installing dependencies..."
 
 pushd "$vz_dir"
 	"$COMPOSER" install --no-dev
-
-	echo
-	ask "install server-side graph generation (jpgraph, not required for frontend)?" n
-	if [ "$REPLY" == "y" ]; then
-		"$COMPOSER" require --update-no-dev jpgraph/jpgraph:^4.0
-	fi
 popd
 
 ###############################

@@ -132,13 +132,6 @@ $config['security']['maxbodysize'] = false;	// limit maximum POST body size, e.g
 $config['locale']				= array('de_DE', 'en_US', 'C');
 
 /**
- * Array of colors for plot series
- *
- * @attention Only used by jpGraph for server-side plotting!
- */
-$config['colors'] = array('#83CAFF', '#7E0021', '#579D1C', '#FFD320', '#FF420E', '#004586', '#0084D1', '#C5000B', '#FF950E', '#4B1F6F', '#AECF00', '#314004');
-
-/**
  * Developer mode
  *
  * This disables all caching mechanisms and enabled debugging by default
