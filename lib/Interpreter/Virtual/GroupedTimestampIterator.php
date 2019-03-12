@@ -69,7 +69,9 @@ class GroupedTimestampIterator extends \IteratorIterator {
 
 		if ($this->valid()) {
 			$period = $this->timestampToPeriod($this->current());
-			$peekPeriod = $this->timestampToPeriod($this->getInnerIterator()->peek());
+			/** @var DelayedIterator */
+			$inner = $this->getInnerIterator();
+			$peekPeriod = $this->timestampToPeriod($inner->peek());
 
 			if ($period == $peekPeriod) {
 				$this->next();
@@ -78,6 +80,9 @@ class GroupedTimestampIterator extends \IteratorIterator {
 	}
 
 	public function next() {
+		/** @var DelayedIterator */
+		$inner = $this->getInnerIterator();
+
 		do {
 			parent::next();
 
@@ -86,7 +91,7 @@ class GroupedTimestampIterator extends \IteratorIterator {
 				if (!isset($period)) {
 					$period = $this->timestampToPeriod($this->current());
 				}
-				$peekPeriod = $this->timestampToPeriod($this->getInnerIterator()->peek());
+				$peekPeriod = $this->timestampToPeriod($inner->peek());
 				$continue = $period === $peekPeriod;
 			}
 		}

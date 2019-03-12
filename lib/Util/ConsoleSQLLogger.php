@@ -32,6 +32,11 @@ use SqlFormatter;
  */
 class ConsoleSQLLogger implements SQLLogger
 {
+	/**
+	 * @var OutputInterface
+	 */
+	protected $output;
+
 	private $queryStarted;
 
 	public function __construct(OutputInterface $output) {

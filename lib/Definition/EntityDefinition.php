@@ -95,14 +95,11 @@ class EntityDefinition extends Definition {
 	/**
 	 * Scaler for unit values
 	 * E.g. $scale = 1000 means entity definition is in impulses per 1000 units (same for initialconsumption and cost)
- 	 * @var boolean
+ 	 * @var float
 	 */
 	public $scale = 1;
 
-	/**
-	 * @var array holds definitions
-	 */
-	protected static $definitions = NULL;
+    protected static $definitions = NULL;
 
 	/**
 	 * Properties required/optional by default for all Entity types

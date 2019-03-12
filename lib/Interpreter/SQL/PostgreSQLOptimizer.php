@@ -36,7 +36,7 @@ class PostgreSQLOptimizer extends SQLOptimizer {
 	 * DB-specific data grouping by date functions
 	 *
 	 * @param string $groupBy
-	 * @return string the sql part
+	 * @return string|bool the sql part
 	 */
 	public static function buildGroupBySQL($groupBy) {
 		$ts = "TIMESTAMP 'epoch' + timestamp * INTERVAL '1 millisecond'"; // just for saving space

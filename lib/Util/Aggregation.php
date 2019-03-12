@@ -40,17 +40,17 @@ class Aggregation {
 	const MODE_DELTA = 'delta';
 
 	/**
-	 * @var \Doctrine\DBAL\Connection Database connection
+	 * @var DBAL\Connection Database connection
 	 */
 	protected $conn;
 
 	/**
-	 * @var SQL aggregation types and assorted date formats
+	 * @var array SQL aggregation types and assorted date formats
 	 */
 	protected static $aggregationLevels = array();
 
 	/**
-	 * @var Aggregation target
+	 * @var string target
 	 */
 	protected $targetTable = 'aggregate';
 
@@ -78,8 +78,7 @@ class Aggregation {
 	/**
 	 * Get list of aggregation levels
 	 *
-	 * @param  string  $level aggregation level (e.g. 'day')
-	 * @return boolean        validity
+	 * @return array
 	 */
 	public static function getAggregationLevels() {
 		return array_keys(self::$aggregationLevels);
@@ -89,7 +88,7 @@ class Aggregation {
 	 * Test if aggregation level is valid and implemented
 	 *
 	 * @param  string  $level aggregation level (e.g. 'day')
-	 * @return boolean        validity
+	 * @return boolean
 	 */
 	public static function isValidAggregationLevel($level) {
 		return in_array($level, self::getAggregationLevels())
@@ -374,6 +373,7 @@ class Aggregation {
 
 		// aggregate each channel
 		foreach ($this->getAggregatableEntitiesArray($uuid) as $row) {
+			/** @var Definition\EntityDefinition */
 			$entity = Definition\EntityDefinition::get($row['type']);
 			$interpreter = $entity->getInterpreter();
 

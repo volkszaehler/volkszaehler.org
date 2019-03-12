@@ -82,6 +82,7 @@ class DataIterator implements \IteratorAggregate, \Countable {
 	public function getIterator() {
 		$this->lastTimestamp = $this->from;
 
+		$tuple = false;
 		do {
 			$firstTimestamp = $this->lastTimestamp; // SensorInterpreter
 

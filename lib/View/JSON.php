@@ -232,8 +232,8 @@ class JSON extends View {
 
 		$header = array();
 		$header['uuid'] = $interpreter->getEntity()->getUuid();
-		if (isset($from)) $header['from'] = $from;
-		if (isset($to)) $header['to'] = $to;
+		$header['from'] = $from;
+		$header['to'] = $to;
 		if (isset($min)) $header['min'] = $min;
 		if (isset($max)) $header['max'] = $max;
 		if (isset($average)) $header['average'] = View::formatNumber($average);
@@ -366,7 +366,6 @@ class JSON extends View {
 	 * Add exception to output queue
 	 *
 	 * @param \Exception $exception
-	 * @param boolean $debug
 	 */
 	protected function addException(\Throwable $exception) {
 		$exceptionType = explode('\\', get_class($exception));

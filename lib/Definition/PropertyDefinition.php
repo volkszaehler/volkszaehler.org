@@ -71,15 +71,12 @@ class PropertyDefinition extends Definition {
 	 */
 	public $options = array();
 
-	/**
-	 * @var array holds definitions
-	 */
-	protected static $definitions = NULL;
+    protected static $definitions = NULL;
 
 	/**
 	 * Validate value according to $this->type
 	 *
-	 * @param string|numeric $value
+	 * @param string|number $value
 	 * @return boolean
 	 */
 	public function validateValue($value) {
@@ -112,7 +109,7 @@ class PropertyDefinition extends Definition {
 				break;
 
 			default:
-				throw new \Exception('Unknown property type: \'' . $type . '\'');
+				throw new \Exception('Unknown property type: \'' . $this->type . '\'');
 		}
 
 		if ($this->type == 'integer' || $this->type == 'float') {

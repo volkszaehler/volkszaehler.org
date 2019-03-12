@@ -32,12 +32,12 @@ use Ratchet\Wamp\WampServerInterface;
 class WampClientAdapter implements WampServerInterface, PushTransportInterface {
 
 	/**
-	 * @var lookup of all the topics clients have subscribed to
+	 * @var array lookup of all the topics clients have subscribed to
 	 */
 	protected $subscribedTopics = array();
 
 	/**
-	 * @var count of open connections
+	 * @var int count of open connections
 	 */
 	protected $connections = 0;
 

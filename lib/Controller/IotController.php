@@ -36,7 +36,7 @@ class IotController extends Controller {
 	/**
 	 * Run operation
 	 *
-	 * @param null $uuid
+	 * @param string|array|null $secret
 	 * @return array
 	 * @throws \Exception
 	 */

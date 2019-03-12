@@ -51,7 +51,7 @@ class DataController extends Controller {
 	/**
 	 * Query for data by given channel or group or multiple channels
 	 *
-	 * @param string|array uuid
+	 * @param string|array $uuid
 	 * @return array
 	 */
 	public function get($uuid) {
@@ -80,7 +80,7 @@ class DataController extends Controller {
 	 * Add single or multiple tuples
 	 *
 	 * @todo deduplicate Model\Channel code
-	 * @param string|array uuid
+	 * @param string|array $uuid
 	 * @return array
 	 * @throws \Exception
 	 */

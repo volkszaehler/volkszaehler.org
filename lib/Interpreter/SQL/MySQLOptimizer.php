@@ -45,7 +45,7 @@ class MySQLOptimizer extends SQLOptimizer {
 	 * DB-specific data grouping by date functions
 	 *
 	 * @param string $groupBy
-	 * @return string the sql part
+	 * @return string|bool the sql part
 	 */
 	public static function buildGroupBySQL($groupBy) {
 		$ts = 'FROM_UNIXTIME(timestamp/1000)'; // just for saving space
@@ -126,15 +126,15 @@ class MySQLOptimizer extends SQLOptimizer {
 
 		// calculate weighed average on aggregate data
 		if ($aggregateQuery) {
-			$sql .= 
+			$sql .=
 				'FROM (' . $aggregateQuery . ') AS inner_query ' .
 				'CROSS JOIN (SELECT @prev_timestamp := NULL) AS vars ' .
 				'ORDER BY timestamp ASC' .
 		   ') AS agg ';
 		}
 		else {
-			$sql .= 
-				'FROM data ' . 
+			$sql .=
+				'FROM data ' .
 				'CROSS JOIN (SELECT @prev_timestamp := NULL) AS vars ' .
 				'WHERE channel_id=? ' . $sqlTimeFilter . ' ' .
 				'ORDER BY timestamp ASC' .

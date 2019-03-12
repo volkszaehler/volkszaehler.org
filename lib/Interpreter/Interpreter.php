@@ -40,7 +40,7 @@ abstract class Interpreter implements \IteratorAggregate {
 	const CONSUMPTION_VALUES = 2;
 
 	/**
-	 * @var Database connection
+	 * @var \Doctrine\DBAL\Connection Database connection
 	 */
 	protected $conn;		// PDO connection handle
 
@@ -74,10 +74,10 @@ abstract class Interpreter implements \IteratorAggregate {
 	 *
 	 * @param Model\Channel $channel
 	 * @param ORM\EntityManager $em
-	 * @param integer $from timestamp in ms since 1970
-	 * @param integer $to timestamp in ms since 1970
-	 * @param null $tupleCount
-	 * @param null $groupBy
+	 * @param int|null $from timestamp in ms since 1970
+	 * @param int|null $to timestamp in ms since 1970
+	 * @param int|null $tupleCount
+	 * @param string|null $groupBy
 	 * @param array $options
 	 * @param array $filters SQL value filters
 	 * @throws \Exception
@@ -184,7 +184,7 @@ abstract class Interpreter implements \IteratorAggregate {
 	/**
 	 * Get minimum
 	 *
-	 * @return array (0 => timestamp, 1 => value)
+	 * @return array|null (0 => timestamp, 1 => value)
 	 */
 	public function getMin() {
 		return ($this->min) ? array_map('floatval', array_slice($this->min, 0, 2)) : NULL;
@@ -193,7 +193,7 @@ abstract class Interpreter implements \IteratorAggregate {
 	/**
 	 * Get maximum
 	 *
-	 * @return array (0 => timestamp, 1 => value)
+	 * @return array|null (0 => timestamp, 1 => value)
 	 */
 	public function getMax() {
 		return ($this->max) ? array_map('floatval', array_slice($this->max, 0, 2)) : NULL;
@@ -202,7 +202,7 @@ abstract class Interpreter implements \IteratorAggregate {
 	/**
 	 * Get raw data from database
 	 *
-	 * @return DataIterator
+	 * @return DataIterator|\EmptyIterator
 	 * @throws \Exception
 	 */
 	protected function getData() {
@@ -315,6 +315,20 @@ abstract class Interpreter implements \IteratorAggregate {
 			throw new \Exception('Invalid time format: \'' . $string . '\'');
 		}
 	}
+
+	/**
+	 * Calculates the consumption
+	 *
+	 * @return float|null total consumption in Wh
+	 */
+	public abstract function getConsumption();
+
+		/**
+	 * Get Average
+	 *
+	 * @return float average
+	 */
+	public abstract function getAverage();
 
 	/**
 	 * Calculates the average consumption

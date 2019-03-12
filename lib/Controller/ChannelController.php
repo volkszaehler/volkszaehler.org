@@ -35,7 +35,7 @@ class ChannelController extends EntityController {
 	 * Get one or more channels.
 	 * If uuid is empty, list of public channels is returned.
 	 *
-	 * @param $identifier
+	 * @param string|array|null $uuid
 	 * @return array
 	 * @throws \Exception
 	 */

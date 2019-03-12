@@ -35,17 +35,17 @@ use Symfony\Component\HttpFoundation\Request;
 class MiddlewareAdapter {
 
 	/**
-	 * @var interpreters per subscribed topic
+	 * @var Interpreter\Interpreter[] per subscribed topic
 	 */
 	protected $interpreters = array();
 
 	/**
-	 * @var Doctrine\ORM\EntityManager
+	 * @var \Doctrine\ORM\EntityManager
 	 */
 	protected $em;
 
 	/**
-	 * @var array
+	 * @var \SplObjectStorage
 	 */
 	protected $adapters;
 
@@ -121,7 +121,7 @@ class MiddlewareAdapter {
 	/**
 	 * Handle vzlogger push request
 	 *
-	 * @param string JSON'ified string we'll receive from publisher
+	 * @param string $json JSON'ified string we'll receive from publisher
 	 * @return null|string Returns null on invalid request
 	 */
 	public function handlePushMessage($json) {

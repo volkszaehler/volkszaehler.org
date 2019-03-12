@@ -40,7 +40,7 @@ class EntityController extends Controller {
 	 * Get one or more entities.
 	 * If uuid is empty, list of public entities is returned.
 	 *
-	 * @param $uuid
+	 * @param string|array|null $uuid
 	 * @return array
 	 * @throws \Exception
 	 */
@@ -73,13 +73,14 @@ class EntityController extends Controller {
 
 	/**
 	 * Delete entity by uuid
-	 * @param $uuid
+	 * @param string $uuid
 	 * @throws \Exception
 	 */
 	public function delete($uuid) {
 		$entity = $this->ef->get($uuid);
 
 		if ($entity instanceof Model\Channel) {
+			/** @var Model\Channel */
 			$entity->clearData($this->em->getConnection());
 		}
 
@@ -90,7 +91,7 @@ class EntityController extends Controller {
 
 	/**
 	 * Edit entity properties
-	 * @param $uuid
+	 * @param string|null $uuid
 	 * @return array
 	 * @throws \Exception
 	 */
@@ -110,7 +111,7 @@ class EntityController extends Controller {
 	/**
 	 * Update/set/delete properties of entities
 	 * @param Model\Entity $entity
-	 * @param $parameters
+	 * @param array $parameters
 	 * @throws \Exception
 	 */
 	protected function setProperties(Model\Entity $entity, $parameters) {

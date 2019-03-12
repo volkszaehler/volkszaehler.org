@@ -37,6 +37,14 @@ class InterpreterProxy implements \IteratorAggregate {
 
 	private $strategy = self::STRATEGY_TS_AFTER;
 
+	/**
+	 * @var Interpreter
+	 */
+	private $interpreter;
+
+	/**
+	 * @var LookbackIterator
+	 */
 	private $iterator;
 
 	function __construct(Interpreter $interpreter) {

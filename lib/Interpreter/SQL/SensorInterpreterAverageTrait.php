@@ -45,7 +45,8 @@ trait SensorInterpreterAverageTrait {
 	 *
 	 * @param  string $sql           SQL statement to modify
 	 * @param  array  $sqlParameters Parameters list
-	 * @return boolean               Success
+	 * @param  int    $rowCount		 Desired number of result rows
+	 * @return boolean
 	 */
 	public function optimizeDataSQL(&$sql, &$sqlParameters, $rowCount) {
 		// additional optimizations for SensorInterpreter only

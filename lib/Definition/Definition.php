@@ -34,6 +34,11 @@ abstract class Definition {
 	const CACHE_KEY = 'VZ_';
 
 	/**
+	 * @var string filename to load definitions from
+	 */
+	const FILE = null;
+
+	/**
 	 * @var string discriminator for database column
 	 */
 	public $name;
@@ -42,6 +47,11 @@ abstract class Definition {
 	 * @var string title for UI
 	 */
 	public $translation;
+
+	/**
+	 * @var array|null holds definitions
+	 */
+	protected static $definitions = NULL;
 
 	/**
 	 * Hide default constructor
@@ -63,7 +73,7 @@ abstract class Definition {
 	 * Factory method for creating new instances
 	 *
 	 * @param string $name
-	 * @return Util\Definition|array
+	 * @return Definition|array
 	 */
 	public static function get($name = NULL) {
 		if (is_null(static::$definitions)) {

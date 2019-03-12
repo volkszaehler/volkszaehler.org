@@ -51,7 +51,7 @@ class Router implements HttpKernelInterface {
 	public $em;
 
 	/**
-	 * @var View\View output view
+	 * @var View\View|null output view
 	 */
 	public $view;
 
@@ -187,8 +187,8 @@ class Router implements HttpKernelInterface {
 	 *
 	 * Example: http://sub.domain.local/middleware.php/channel/550e8400-e29b-11d4-a716-446655440000/data.json?operation=edit&title=New Title
 	 * @param Request $request
-	 * @param $context
-	 * @param $uuid
+	 * @param string $context
+	 * @param string|array|null $uuid
 	 * @return Response
 	 */
 	function handler(Request $request, $context, $uuid) {

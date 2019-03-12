@@ -38,22 +38,22 @@ use Volkszaehler\View\View;
 abstract class Controller {
 
 	/**
-	 * @var Doctrine\ORM\EntityManager
+	 * @var EntityManager
 	 */
 	protected $em;
 
 	/**
-	 * @var Symfony\Component\HttpFoundation\Request
+	 * @var Request
 	 */
 	protected $request;
 
 	/**
-	 * @var Symfony\Component\HttpFoundation\ParameterBag
+	 * @var ParameterBag
 	 */
 	protected $parameters;
 
 	/**
-	 * @var Volkszaehler\View
+	 * @var View
 	 */
 	protected $view;
 
@@ -93,9 +93,9 @@ abstract class Controller {
 	/**
 	 * Run operation
 	 *
-	 * @param $op Operation to run
-	 * @param null $uuid Uuid to operate on
-	 * @return operation result
+	 * @param string $op Operation to run
+	 * @param string|array|null $uuid Uuid to operate on
+	 * @return mixed operation result
 	 * @throws \Exception
 	 */
 	public function run($op, $uuid) {
