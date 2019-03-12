@@ -9,7 +9,7 @@
 
 namespace Tests;
 
-use Volkszaehler\Util;
+use Webpatser\Uuid\Uuid as UUID;
 
 class EntityTest extends Middleware
 {
@@ -108,7 +108,7 @@ class EntityTest extends Middleware
 		$this->assertStringStartsWith('Invalid UUID', $this->json->exception->message);
 
 		// non-existing uuid
-		$uuid = Util\UUID::mint();
+		$uuid = UUID::generate();
 		$this->getJson('/entity/' . $uuid . '.json', array(), 'GET', true);
 		$this->assertStringStartsWith('No entity with UUID', $this->json->exception->message);
 	}
@@ -127,7 +127,7 @@ class EntityTest extends Middleware
 		$this->assertStringStartsWith('Invalid UUID', $this->json->exception->message);
 
 		// non-existing uuid
-		$uuid = Util\UUID::mint();
+		$uuid = UUID::generate();
 		$this->getJson('/entity/' . $uuid . '.json', array(
 			'operation' => 'edit'
 		), 'GET', true);

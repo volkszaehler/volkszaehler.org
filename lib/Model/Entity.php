@@ -24,7 +24,8 @@ namespace Volkszaehler\Model;
 
 use Doctrine\ORM;
 use Doctrine\Common\Collections;
-use Volkszaehler\Util;
+use Webpatser\Uuid\Uuid as UUID;
+
 use Volkszaehler\Definition;
 
 /**
@@ -78,7 +79,7 @@ abstract class Entity {
 		}
 
 		$this->type = $type;
-		$this->uuid = (string) Util\UUID::mint(); // generate random UUID
+		$this->uuid = (string) UUID::generate(); // generate random UUID
 
 		$this->properties = new Collections\ArrayCollection();
 		$this->parents = new Collections\ArrayCollection();

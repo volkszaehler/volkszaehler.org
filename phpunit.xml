@@ -15,13 +15,6 @@
     </exclude>
   </groups>
 
-  <!-- configure code coverage -->
-  <filter>
-    <blacklist>
-      <directory suffix=".php">../vendor</directory>
-    </blacklist>
-  </filter>
-
   <php>
     <!-- use HTTP to access middleware via HTTP -->
     <const name="testAdapter" value="DIRECT" />
