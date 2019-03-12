@@ -69,7 +69,7 @@
 	{
 		"name"			: "power",
 		"required"		: ["resolution"],
-		"optional"		: ["tolerance", "cost", "local", "initialconsumption"],
+		"optional"		: ["tolerance", "cost", "local", "gap", "initialconsumption"],
 		"icon"			: "bolt.png",
 		"unit"			: "W",
 		"scale"			: 1000,
@@ -99,7 +99,7 @@
 	{
 		"name" : "electric meter",
 		"required"		: ["resolution"],
-		"optional" : ["tolerance", "cost", "local", "initialconsumption"],
+		"optional" : ["tolerance", "cost", "local", "gap", "initialconsumption"],
 		"icon"			: "bolt.png",
 		"unit"			: "W",
 		"scale"			: 1000,
@@ -141,7 +141,7 @@
 	{
 		"name"			: "gas",
 		"required"		: ["resolution"],
-		"optional"		: ["tolerance", "cost", "local", "initialconsumption"],
+		"optional"		: ["tolerance", "cost", "local", "gap", "initialconsumption"],
 		"icon"			: "flame.png",
 		"unit"			: "m³/h",
 		"interpreter"		: "Volkszaehler\\Interpreter\\ImpulseInterpreter",
@@ -157,7 +157,7 @@
 	{
 		"name"			: "gas meter",
 		"required"		: ["resolution"],
-		"optional"		: ["tolerance", "cost", "local", "initialconsumption"],
+		"optional"		: ["tolerance", "cost", "local", "gap", "initialconsumption"],
 		"icon"			: "flame.png",
 		"unit"			: "m³/h",
 		"interpreter"		: "Volkszaehler\\Interpreter\\AccumulatorInterpreter",
@@ -172,7 +172,7 @@
 	{
 		"name"			: "heat",
 		"required"		: ["resolution"],
-		"optional"		: ["tolerance", "cost", "local", "initialconsumption"],
+		"optional"		: ["tolerance", "cost", "local", "gap", "initialconsumption"],
 		"icon"			: "flame.png",
 		"unit"			: "W",
 		"scale"			: 1000,
@@ -203,7 +203,7 @@
 	{
 		"name"			: "heattotal",
 		"required"		: ["resolution"],
-		"optional"		: ["tolerance", "cost", "local", "initialconsumption"],
+		"optional"		: ["tolerance", "cost", "local", "gap", "initialconsumption"],
 		"icon"			: "flame.png",
 		"unit"			: "W",
 		"scale"			: 1000,
@@ -232,7 +232,7 @@
 	{
 		"name"			: "water",
 		"required"		: ["resolution"],
-		"optional"		: ["tolerance", "cost", "local", "initialconsumption"],
+		"optional"		: ["tolerance", "cost", "local", "gap", "initialconsumption"],
 		"icon"			: "waterdrop.png",
 		"unit"			: "l/h",
 		"interpreter"		: "Volkszaehler\\Interpreter\\ImpulseInterpreter",
@@ -261,7 +261,7 @@
 	{
 		"name"			: "watertotal",
 		"required"		: ["resolution"],
-		"optional"		: ["tolerance", "cost", "local", "initialconsumption"],
+		"optional"		: ["tolerance", "cost", "local", "gap", "initialconsumption"],
 		"icon"			: "waterdrop.png",
 		"unit"			: "l/h",
 		"interpreter"		: "Volkszaehler\\Interpreter\\AccumulatorInterpreter",
@@ -289,7 +289,7 @@
 	{
 		"name"			: "workinghours",
 		"required"		: ["resolution"],
-		"optional"		: ["tolerance", "local", "initialconsumption"],
+		"optional"		: ["tolerance", "local", "gap", "initialconsumption"],
 		"icon"			: "clock.png",
 		"unit"			: "",
 		"interpreter"		: "Volkszaehler\\Interpreter\\ImpulseInterpreter",
@@ -304,7 +304,7 @@
 	{
 		"name"			: "workinghourstotal",
 		"required"		: ["resolution"],
-		"optional"		: ["tolerance", "local", "initialconsumption"],
+		"optional"		: ["tolerance", "local", "gap", "initialconsumption"],
 		"icon"			: "clock.png",
 		"unit"			: "",
 		"interpreter"		: "Volkszaehler\\Interpreter\\AccumulatorInterpreter",
@@ -444,6 +444,31 @@
 		"translation"		: {
 			"de" : "Verbrauchssensor",
 			"en" : "Consumption Sensor"
+		}
+	},
+	{
+		"name"			: "virtualsensor",
+		"required"		: ["unit", "rule", "in1"],
+		"optional"		: ["in2", "in3", "in4", "tolerance", "cost", "local", "gap"],
+		"icon"			: "bolt.png",
+		"interpreter"		: "Volkszaehler\\Interpreter\\VirtualInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"		: {
+			"de" : "Sensor (virt.)",
+			"en" : "Sensor (virt.)"
+		}
+	},
+	{
+		"name"			: "virtualconsumption",
+		"required"		: ["unit", "rule", "in1"],
+		"optional"		: ["in2", "in3", "in4", "tolerance", "cost", "local", "gap", "initialconsumption"],
+		"icon"			: "bolt.png",
+		"interpreter"		: "Volkszaehler\\Interpreter\\VirtualInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
+		"translation"		: {
+			"de" : "Verbrauchssensor (virt.)",
+			"en" : "Consumption Sensor (virt.)"
 		}
 	}
 ]
