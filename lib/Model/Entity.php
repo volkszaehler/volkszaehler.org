@@ -212,7 +212,6 @@ abstract class Entity {
 		$this->properties->removeElement($property);
 	}
 
-
 	/**
 	 * HACK - Cast properties to internal state
 	 * see https://github.com/doctrine/doctrine2/pull/382

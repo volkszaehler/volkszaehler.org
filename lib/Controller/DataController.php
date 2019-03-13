@@ -174,6 +174,7 @@ class DataController extends Controller {
 		$filters = $this->parseValueParamFilter('value'); // parse value filters
 
 		foreach ((array) $uuids as $uuid) {
+			/** @var Model\Channel */
 			$channel = $this->ef->get($uuid, true);
 			$rows += $channel->clearData($this->em->getConnection(), $from, $to, $filters);
 		}

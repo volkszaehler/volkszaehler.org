@@ -41,7 +41,7 @@ class EntityController extends Controller {
 	 * If uuid is empty, list of public entities is returned.
 	 *
 	 * @param string|array|null $uuid
-	 * @return array
+	 * @return array|Model\Entity
 	 * @throws \Exception
 	 */
 	public function get($uuid) {
@@ -92,7 +92,7 @@ class EntityController extends Controller {
 	/**
 	 * Edit entity properties
 	 * @param string|null $uuid
-	 * @return array
+	 * @return Model\Entity
 	 * @throws \Exception
 	 */
 	public function edit($uuid) {
