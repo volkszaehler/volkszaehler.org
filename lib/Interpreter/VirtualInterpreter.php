@@ -224,14 +224,13 @@ class VirtualInterpreter extends Interpreter {
 				throw new \Exception("Virtual channel rule must yield numeric value.");
 			}
 
-			// if ($this->output == self::CONSUMPTION_VALUES) {
-			// 	$value *= ($this->ts - $this->ts_last) / 3.6e6;
-			// 	$this->consumption += $value;
-			// }
-			// else {
-			// 	$this->consumption += $value * ($this->ts - $this->ts_last) / 3.6e6;
-			// }
-			$this->consumption += $value * ($this->ts - $this->ts_last) / 3.6e6;
+			if ($this->output == self::ACTUAL_VALUES) {
+				$this->consumption += $value * ($this->ts - $this->ts_last) / 3.6e6;
+			}
+			else {
+                $value *= ($this->ts - $this->ts_last) / 3.6e6;
+                $this->consumption += $value;
+			}
 
 			$tuple = array($this->ts, $value, 1);
 			$this->ts_last = $this->ts;
@@ -283,12 +282,12 @@ class VirtualInterpreter extends Interpreter {
 			return 0;
 		}
 
-		if ($this->output == self::CONSUMPTION_VALUES) {
-			return $this->getConsumption() / $this->rowCount;
+		if ($this->output == self::ACTUAL_VALUES) {
+            $delta = ($this->getTo() - $this->getFrom()) / 3.6e6;
+            return $this->consumption / $delta;
 		}
 		else {
-			$delta = $this->getTo() - $this->getFrom();
-			return $this->consumption / $delta;
+            return $this->getConsumption() / $this->rowCount;
 		}
 	}
 
