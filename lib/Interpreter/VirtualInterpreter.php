@@ -283,7 +283,7 @@ class VirtualInterpreter extends Interpreter {
 		}
 
 		if ($this->output == self::ACTUAL_VALUES) {
-            $delta = $this->getTo() - $this->getFrom();
+            $delta = ($this->getTo() - $this->getFrom()) / 3.6e6;
             return $this->consumption / $delta;
 		}
 		else {
