@@ -34,7 +34,7 @@ class AggregatorController extends EntityController {
 	/**
 	 * Get aggregator
 	 * @param string|array|null $uuid
-	 * @return array
+	 * @return array|Model\Aggregator
 	 * @throws \Exception
 	 */
 	public function get($uuid) {

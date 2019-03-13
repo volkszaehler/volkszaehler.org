@@ -216,7 +216,7 @@ abstract class SQLOptimizer {
 	 *
 	 * @param  string $sql  		 initial SQL query
 	 * @param  array  $sqlParameters initial SQL parameters
-	 * @param  string $rowCount 	 actual number of rows expected from count sql
+	 * @param  int    $rowCount 	 actual number of rows expected from count sql
 	 * @return boolean
 	 */
 	public function optimizeDataSQL(&$sql, &$sqlParameters, $rowCount) {

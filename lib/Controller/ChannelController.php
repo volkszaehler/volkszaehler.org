@@ -36,7 +36,7 @@ class ChannelController extends EntityController {
 	 * If uuid is empty, list of public channels is returned.
 	 *
 	 * @param string|array|null $uuid
-	 * @return array
+	 * @return array|Model\Channel
 	 * @throws \Exception
 	 */
 	public function get($uuid = NULL) {

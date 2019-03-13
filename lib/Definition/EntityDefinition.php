@@ -28,7 +28,6 @@ use Volkszaehler\Model\Aggregator;
 /**
  * @author Steffen Vogel <info@steffenvogel.de>
  * @author Andreas Goetz <cpuidle@gmx.de>
- * @package default
  */
 class EntityDefinition extends Definition {
 	/**

@@ -38,7 +38,7 @@ class JSON {
 	/**
 	 * OOP wrapper and factory
 	 * @param string $json
-	 * @return JSON
+	 * @return array
 	 */
 	public static function decode($json, $assoc = FALSE, $depth = 512) {
 		$data = json_decode(self::strip($json), $assoc, $depth);

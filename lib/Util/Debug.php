@@ -43,7 +43,7 @@ class Debug {
 	protected $em;
 
 	/**
-	 * @var string[] Array of logged messages
+	 * @var mixed[] Array of logged messages
 	 */
 	protected $messages;
 
@@ -227,7 +227,7 @@ class Debug {
 	/**
 	 * Get server uptime
 	 *
-	 * @return integer server uptime in seconds
+	 * @return number|bool server uptime in seconds
 	 */
 	public static function getUptime() {
 		if (@is_readable("/proc/uptime")) {

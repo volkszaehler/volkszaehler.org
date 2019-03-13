@@ -185,7 +185,8 @@ class EntityFactory {
 		$params = array();
 		foreach ($properties as $key => $value) {
 			/** @var PropertyDefinition */
-			if (PropertyDefinition::get($key)->getType() == 'boolean') {
+			$propDef = PropertyDefinition::get($key);
+			if ($propDef->getType() == 'boolean') {
 				$value = (int) $value;
 			}
 
