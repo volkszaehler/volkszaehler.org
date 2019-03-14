@@ -233,15 +233,9 @@ class Router implements HttpKernelInterface {
 	public static function createEntityManager($admin = false) {
 		$config = new ORM\Configuration;
 
-		if (Util\Configuration::read('devmode') == false) {
-			$cache = null;
-			if (extension_loaded('apcu'))
-				$cache = new Cache\ApcuCache();
-			if ($cache) {
-				$config->setMetadataCacheImpl($cache);
-				$config->setQueryCacheImpl($cache);
-			}
-		}
+		$cache = new Cache\ArrayCache;
+		$config->setMetadataCacheImpl($cache);
+		$config->setQueryCacheImpl($cache);
 
 		$driverImpl = $config->newDefaultAnnotationDriver(VZ_DIR . '/lib/Model');
 		$config->setMetadataDriverImpl($driverImpl);
@@ -251,6 +245,7 @@ class Router implements HttpKernelInterface {
 		$config->setAutoGenerateProxyClasses(Util\Configuration::read('devmode'));
 
 		$dbConfig = Util\Configuration::read('db');
+
 		if ($admin && isset($dbConfig['admin'])) {
 			$dbConfig = array_merge($dbConfig, $dbConfig['admin']);
 		}
