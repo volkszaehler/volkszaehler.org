@@ -125,7 +125,7 @@ class Aggregation {
 	 * Simple optimizer - choose aggregation level with most data available
 	 *
 	 * @param  string  $targetLevel desired highest level (e.g. 'day')
-	 * @return boolean list of valid aggregation levels
+	 * @return array|boolean list of valid aggregation levels
 	 */
 	public function getOptimalAggregationLevel($uuid, $targetLevel = null) {
 		$levels = self::getAggregationLevels();
