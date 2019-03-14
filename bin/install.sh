@@ -34,7 +34,7 @@ shopt -s nocasematch
 # some configuration
 
 # minimum php version required
-php_ver_min=7.0
+php_ver_min=7.1
 
 # git url
 vz_git=https://github.com/volkszaehler/volkszaehler.org
@@ -75,8 +75,8 @@ get_db_name() {
 	test -n "$db_name" && return
 	ask "mysql database?" volkszaehler
 	db_name="$REPLY"
-	sed	-i \
-		-e "s|^\/*\(\$config\['db'\]\['dbname'\]\).*|\1 = '$db_name';|" \
+	sed	-i '' \
+		-e "/db:/,/admin:/ s/\(\s*\)dbname:.*/\1dbname: $db_name/" \
 	"$config"
 }
 
@@ -84,11 +84,12 @@ get_db_admin_pass() {
 	test -n "$db_admin_user" && return
 	ask "mysql admin to $db_name database?" vz-admin
 	db_admin_user="$REPLY"
-	ask "mysql admin password?" secure
+	ask "mysql admin password?"
 	db_admin_pass="$REPLY"
-	sed -i \
-		-e "s/^\/*\(\$config\['db'\]\['admin'\]\['password'\]\).*/\1 = '$db_admin_pass';/" \
-		-e "s/^\/*\(\$config\['db'\]\['admin'\]\['user'\]\).*/\1 = '$db_admin_user';/" \
+	# note: use sed ranges to limit to admin section
+	sed -i '' \
+		-e "/admin:/,/push:/ s/\(\s*\)user:.*/\1user: $db_admin_user/" \
+		-e "/admin:/,/push:/ s/\(\s*\)password:.*/\1password: $db_admin_pass/" \
 	"$config"
 }
 
@@ -98,10 +99,10 @@ get_db_user_pass() {
 	db_user="$REPLY"
 	ask "mysql password?" demo
 	db_pass="$REPLY"
-	# we are using "|" as delimiter for sed to avoid escaped sequences
-	sed	-i \
-		-e "s|^\(\$config\['db'\]\['user'\]\).*|\1 = '$db_user';|" \
-		-e "s|^\/*\(\$config\['db'\]\['password'\]\).*|\1 = '$db_pass';|" \
+	# note: use sed ranges to limit to db section
+	sed	-i '' \
+		-e "/db:/,/admin:/ s/\(\s*\)user:.*/\1user: $db_user/" \
+		-e "/db:/,/admin:/ s/\(\s*\)password:.*/\1password: $db_pass/" \
 	"$config"
 }
 
@@ -145,7 +146,7 @@ fi
 echo
 echo "volkszaehler setup..."
 
-if [ -e './etc/volkszaehler.conf.template.php' ]; then
+if [ -e './etc/config.dist.yaml' ]; then
 	vz_dir="."
 
 	ask "volkszaehler.org already exists in the current directory. Update git repository?" y
@@ -204,7 +205,7 @@ else
 
 fi
 
-config="$vz_dir/etc/volkszaehler.conf.php"
+config="$vz_dir/etc/config.yaml"
 
 ###############################
 echo
@@ -231,14 +232,18 @@ echo
 echo "installing dependencies..."
 
 pushd "$vz_dir"
-	"$COMPOSER" install --no-dev
+	if [ -e "composer.lock" ]; then
+		"$COMPOSER" update
+	else
+		"$COMPOSER" install --no-dev
+	fi
 popd
 
 ###############################
 echo
 if [ ! -e "$config" ]; then
 	echo "volkszaehler.org is not configured yet. creating new config from sample config file."
-	cp "$vz_dir/etc/volkszaehler.conf.template.php" "$config"
+	cp "$vz_dir/etc/config.dist.yaml" "$config"
 	REPLY=y
 else
 	ask "configure volkszaehler.org database access?" y

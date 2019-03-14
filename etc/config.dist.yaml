@@ -17,7 +17,7 @@ db:
 
   # db admin credentials (used by doctrine cli and setup script)
   admin:
-    username: vz_admin
+    user: vz_admin
     password: admin_demo
 
   # database optimizer - leave empty for automatic

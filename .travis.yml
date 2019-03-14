@@ -80,10 +80,10 @@ before_script:
     - if [ "$DB" = "pgsql" ]; then USER=postgres; fi
 
     # create config file
-    - sed -i "s/'pdo_mysql'/'pdo_$DB'/" etc/config.yaml
-    - sed -i "s/'vz'/'$USER'/" etc/config.yaml
-    - sed -i "s/'demo'/'$PASSWORD'/" etc/config.yaml
-    - sed -i "s/'volkszaehler'/'$DATABASE'/" etc/config.yaml
+    - sed -i "s/driver: .*/driver: pdo_$DB/" etc/config.yaml
+    - sed -i "s/user: .*/user: $USER/" etc/config.yaml
+    - sed -i "s/password: .*/password: $PASSWORD/" etc/config.yaml
+    - sed -i "s/dbname: .*/dbname: $DATABASE/" etc/config.yaml
     - cat etc/config.yaml
 
     # create database

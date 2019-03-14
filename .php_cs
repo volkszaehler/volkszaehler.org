@@ -9,6 +9,7 @@ return PhpCsFixer\Config::create()
     ->setRules([
         '@PSR2' => true,
         '@PhpCsFixer' => true,
+        'strict_param' => false,
         'array_syntax' => ['syntax' => 'short'],
         'single_line_comment_style' => [
             'comment_types' => [], // don't fix comment style
