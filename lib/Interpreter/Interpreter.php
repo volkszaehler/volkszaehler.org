@@ -210,20 +210,14 @@ abstract class Interpreter implements \IteratorAggregate {
 			// get timestamps of preceding and following data points as a graciousness
 			// for the frontend to be able to draw graphs to the left and right borders
 			if (isset($this->from)) {
-				$sql = 'SELECT MAX(timestamp) FROM data WHERE channel_id=? AND timestamp < (SELECT MAX(timestamp) FROM data WHERE channel_id=? AND timestamp<?)';
-
-				// if not second-highest timestamp take highest before $this->from
-				if (null === $from = $this->conn->fetchColumn($sql, array($this->channel->getId(), $this->channel->getId(), $this->from), 0)) {
-					$sql = 'SELECT MAX(timestamp) FROM data WHERE channel_id=? AND timestamp<?';
-					$from = $this->conn->fetchColumn($sql, array($this->channel->getId(), $this->from), 0);
-				}
+                $sql = 'SELECT MAX(timestamp) FROM data WHERE channel_id=? AND timestamp < ?';
+                $from = $this->conn->fetchColumn($sql, [$this->channel->getId(), $this->from], 0);
 
 				if ($from)
 					$this->from = (double)$from; // bigint conversion
 			}
 
 			if (isset($this->to)) {
-                // $sql = 'SELECT MIN(timestamp) FROM data WHERE channel_id=? AND timestamp>?';
 				// avoid generating timestamps outside the requested range for consumption
 				// the "consumptionto" option may be set internally by virtual interpreters for their children
 				$sql = $this->hasOption('consumption') || $this->hasOption('consumptionto')
@@ -232,6 +226,16 @@ abstract class Interpreter implements \IteratorAggregate {
 				$to = $this->conn->fetchColumn($sql, array($this->channel->getId(), $this->to), 0);
 				if ($to)
 					$this->to = (double)$to; // bigint conversion
+			}
+			elseif (isset($this->from)) {
+				// special case: when asking for from=now the _last_ tuple should be returned,
+				// even if it is before now
+				$sql = 'SELECT MAX(timestamp) FROM data WHERE channel_id=? AND timestamp<?';
+                $to = $this->conn->fetchColumn($sql, [$this->channel->getId(), $this->from], 0);
+                if ($to) {
+                    $this->to = $this->from; // bigint conversion
+                    $this->from = (double)$to; // bigint conversion
+                }
 			}
 		}
 
