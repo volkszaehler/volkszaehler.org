@@ -332,7 +332,7 @@ class VirtualTest extends Middleware
 		$series = $this->getGroupSeriesData('in1');
 		$data = [
 			$in1 => array_combine(
-				array_map(function($key) use ($series) {
+				array_map(function($key) {
 					return ($key * 3600) * 1000; // convert to hours
 				}, array_keys($series)),
 				array_values($series)

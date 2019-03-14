@@ -66,7 +66,7 @@ class WampClientAdapter implements WampServerInterface, PushTransportInterface {
 
 	public function onCall(ConnectionInterface $conn, $id, $topic, array $params) {
 		// In this application if clients send data it's because the user hacked around in console
-		$conn->callError($id, $topic, 'Calls not supported')->close();
+        $conn->close();
 	}
 
 	public function onPublish(ConnectionInterface $conn, $topic, $event, array $exclude, array $eligible) {

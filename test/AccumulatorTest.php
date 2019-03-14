@@ -108,6 +108,7 @@ class AccumulatorTest extends Data
 
 	/**
 	 * test if from=now gets exactly the last tuple
+	 * this should work even if last tuple is in the past
 	 *
 	 * @depends testGetMultiple
 	 */

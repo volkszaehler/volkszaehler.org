@@ -8,3 +8,6 @@ parameters:
     - '#Variable .config in isset.. is never defined#'
     - '#Variable .average in isset.. always exists and is not nullable#'
     - '#Access to an undefined property Doctrine.DBAL.Logging.SQLLogger::.queries#'
+    - '#Undefined variable: .reference_#'
+    - '#Constant test.*? not found.#'
+    - '#Access to an undefined property Volkszaehler.Interpreter.Interpreter::.push_#'

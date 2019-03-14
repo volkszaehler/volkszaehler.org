@@ -17,6 +17,7 @@ trait InterpreterTrait {
 
 	protected $em;
 	protected $ef;
+	protected $uuid;
 
 	function createChannel($title, $type, $other = []) {
 		$url = '/channel.json';

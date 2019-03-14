@@ -95,10 +95,6 @@ abstract class Data extends Middleware
 		return $this->getTuplesByUrl($url, $from, $to, $group, $tuples, $options);
 	}
 
-	protected function debug() {
-		echo('url: ' . $this->url . "<br/>\n" . print_r($this->json,1) . "<br/>\n");
-	}
-
 	/**
 	 * Helper assertion to validate correct UUID
 	 */
