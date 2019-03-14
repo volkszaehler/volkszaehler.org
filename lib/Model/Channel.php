@@ -77,9 +77,7 @@ class Channel extends Entity {
 			$sql .= SQL\SQLOptimizer::buildDateTimeFilterSQL($from, $to, $params);
 
 			// clean aggregation table as well
-			if (Util\Configuration::read('aggregation')) {
-				$conn->executeUpdate('DELETE FROM aggregate ' . $sql, $params);
-			}
+			$conn->executeUpdate('DELETE FROM aggregate ' . $sql, $params);
 
 			if ($filter = SQL\SQLOptimizer::buildValueFilterSQL($filters, $params)) {
 				$sql .= $filter;
