@@ -105,8 +105,8 @@ class EntityDefinition extends Definition {
 	 * @var array
 	 */
 	static protected $defaultRequired = array('title');
-	static protected $channelOptional = array('public', 'color', 'style', 'fillstyle', 'linestyle', 'linewidth', 'yaxis', 'description', 'owner', 'address:', 'link', 'gap');
-	static protected $groupOptional = array('public', 'color', 'description', 'owner', 'address:', 'link');
+	static protected $channelOptional = array('public', 'active', 'color', 'style', 'fillstyle', 'linestyle', 'linewidth', 'yaxis', 'description', 'owner', 'address:', 'link', 'gap');
+	static protected $groupOptional = array('public', 'active', 'color', 'description', 'owner', 'address:', 'link');
 	static protected $consumptionOptional = array('initialconsumption', 'cost');
 
 	/**
