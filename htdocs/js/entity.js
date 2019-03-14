@@ -378,7 +378,7 @@ Entity.prototype.loadData = function () {
 				: vz.options.tuples,
 			group: this.isConsumptionMode()
 				? vz.options.mode // mode contains the desired grouping
-				: vz.entities.speedupFactor(),
+				: vz.options.group,
 			options: this.isConsumptionMode()
 				? 'consumption'
 				: vz.options.options

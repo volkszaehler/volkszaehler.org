@@ -55,7 +55,6 @@ vz.options = {
 	lineWidthDefault: 2,
 	lineWidthSelected: 4,
 	gap: 3600, // chart gap if no tuples for specified number of seconds
-	speedupFactor: 2,   // higher values give higher speedup but can produce chunky display
 	hiddenProperties: ['link', 'tolerance', 'local', 'owner', 'description', 'gap', 'active'] // hide less commonly used properties
 };
 

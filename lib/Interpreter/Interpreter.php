@@ -23,6 +23,7 @@
 namespace Volkszaehler\Interpreter;
 
 use Volkszaehler\Model;
+use Volkszaehler\Util;
 use Volkszaehler\Interpreter\SQL;
 use Doctrine\ORM;
 
@@ -60,8 +61,8 @@ abstract class Interpreter implements \IteratorAggregate {
 	protected $tupleCount;	// number of requested tuples
 	protected $rows;		// DataIterator instance for aggregating rows
 
-	protected $min = NULL;
-	protected $max = NULL;
+	protected $min;			// min/max tuples
+	protected $max;
 
 	protected $scale;		// unit scale from entity definition
 	protected $resolution;	// interpreter resolution from entity definition
@@ -200,6 +201,26 @@ abstract class Interpreter implements \IteratorAggregate {
 	}
 
 	/**
+	 * Calculate group by clause to make efficient use of aggregation table
+	 */
+	private function calculateSpeedupGrouping(): void {
+		$speedupFactor = Util\Configuration::read('speedup', 2);
+
+		$delta = ($this->to - $this->from) / 3.6e6;
+		$period = $this->tupleCount / $speedupFactor;
+
+		if ($delta > 24 * $period) {
+			$this->groupBy = 'day';
+		}
+		elseif ($delta > $period) {
+			$this->groupBy = 'hour';
+		}
+		elseif ($delta > $period / 60) {
+			$this->groupBy = 'minute';
+		}
+	}
+
+	/**
 	 * Get raw data from database
 	 *
 	 * @return DataIterator|\EmptyIterator
@@ -238,6 +259,14 @@ abstract class Interpreter implements \IteratorAggregate {
                 }
 			}
 		}
+
+        // calculate speedup if desired number of tuples is set
+		if (isset($this->from) && isset($this->to) && $this->tupleCount
+			&! $this->groupBy
+			&! $this->hasOption('consumption'))
+		{
+            $this->calculateSpeedupGrouping();
+        }
 
 		// common conditions for following SQL queries
 		$sqlParameters = array($this->channel->getId());
