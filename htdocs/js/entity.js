@@ -30,7 +30,7 @@
  * @var data object properties etc.
  * @var middleware url (if not passed as data attribute)
  */
-var Entity = function(data, middleware) {
+var Entity = function (data, middleware) {
 	this.parseJSON($.extend({
 		middleware: middleware
 	}, data));
@@ -46,7 +46,7 @@ Entity.colors = 0;
  * Parse middleware response (recursive creation of children etc)
  * @var json object from middleware response
  */
-Entity.prototype.parseJSON = function(json) {
+Entity.prototype.parseJSON = function (json) {
 	$.extend(true, this, json);
 
 	// force axis assignment before plotting
@@ -99,21 +99,21 @@ Entity.prototype.parseJSON = function(json) {
 /**
  * Consumption mode is valid for entity
  */
-Entity.prototype.isConsumptionMode = function() {
+Entity.prototype.isConsumptionMode = function () {
 	return this.definition && this.definition.hasConsumption && vz.wui.isConsumptionMode();
 };
 
 /**
  * Get entity unit
  */
-Entity.prototype.getUnit = function() {
+Entity.prototype.getUnit = function () {
 	return this.definition.unit || this.unit || "";
 };
 
 /**
  * Get entity unit
  */
-Entity.prototype.getUnitForMode = function() {
+Entity.prototype.getUnitForMode = function () {
 	return this.isConsumptionMode()
 		? vz.wui.formatConsumptionUnit(this.getUnit())
 		: this.getUnit();
@@ -122,21 +122,22 @@ Entity.prototype.getUnitForMode = function() {
 /**
  * Helper function to manage yaxes array (last entry contains template)
  */
-function ensureAavailableAxis()  {
-	var length = vz.options.plot.yaxes.push($.extend({}, vz.options.plot.yaxes[vz.options.plot.yaxes.length-1])) - 1;
-	delete vz.options.plot.yaxes[length].axisLabel; // make sure new axis is neutral
+function ensureAavailableAxis() {
+	var length = vz.options.plot.yaxes.push($.extend({}, vz.options.plot.yaxes[1])) - 1;
+	// make sure new axis is neutral
+	delete vz.options.plot.yaxes[length].axisLabel;
 	return length;
 }
 
 /**
  * Assign entity an axis with matching unit
  */
-Entity.prototype.assignMatchingAxis = function() {
+Entity.prototype.assignMatchingAxis = function () {
 	if (this.definition) {
 		var unit = this.getUnitForMode();
 
 		// find axis with matching unit
-		if (vz.options.plot.yaxes.some(function(yaxis, idx) {
+		if (vz.options.plot.yaxes.some(function (yaxis, idx) {
 			if (yaxis.axisLabel === undefined || (unit == yaxis.axisLabel)) { // unoccupied or matching unit
 				// make sure we're not consuming the last yaxis
 				ensureAavailableAxis();
@@ -147,14 +148,14 @@ Entity.prototype.assignMatchingAxis = function() {
 			this.assignedYaxis = ensureAavailableAxis();
 		}
 
-		vz.options.plot.yaxes[this.assignedYaxis-1].axisLabel = unit;
+		vz.options.plot.yaxes[this.assignedYaxis - 1].axisLabel = unit;
 	}
 };
 
 /**
  * Allocate y-axis for entity
  */
-Entity.prototype.assignAxis = function() {
+Entity.prototype.assignAxis = function () {
 	// assign y-axis
 	if (this.yaxis === undefined || this.yaxis == 'auto') { // auto axis assignment
 		this.assignMatchingAxis();
@@ -168,14 +169,14 @@ Entity.prototype.assignAxis = function() {
 		}
 
 		// check if axis already has auto-allocated entities
-		var yaxis = vz.options.plot.yaxes[this.assignedYaxis-1],
+		var yaxis = vz.options.plot.yaxes[this.assignedYaxis - 1],
 			unit = this.getUnitForMode();
 
 		if (yaxis.forcedGroup === undefined) { // axis auto-assigned
 			if (yaxis.axisLabel !== undefined && unit !== yaxis.axisLabel) { // unit mismatch
 				// move previously auto-assigned entities to different axis
 				yaxis.axisLabel = 'andig'; // force unit mismatch
-				vz.entities.each((function(entity) {
+				vz.entities.each((function (entity) {
 					if (entity.assignedYaxis == this.yaxis && (entity.yaxis === undefined || entity.yaxis == 'auto')) {
 						entity.assignMatchingAxis();
 					}
@@ -204,9 +205,9 @@ Entity.prototype.assignAxis = function() {
  *         - 0:         min value assumed to be '0' as long as no entity with negative values is encountered
  * @todo ensure this does not override user-defined min setting with multiple axes
  */
-Entity.prototype.updateAxisScale = function() {
+Entity.prototype.updateAxisScale = function () {
 	if (this.assignedYaxis !== undefined && vz.options.plot.yaxes.length >= this.assignedYaxis) {
-		var axis = vz.options.plot.yaxes[this.assignedYaxis-1];
+		var axis = vz.options.plot.yaxes[this.assignedYaxis - 1];
 		if (axis.min === undefined) { // axis min still not set
 			// avoid overriding user-defined options
 			axis.min = 0;
@@ -230,14 +231,14 @@ Entity.prototype.updateAxisScale = function() {
 /**
  * WAMP session subscription and handler
  */
-Entity.prototype.subscribe = function(session) {
+Entity.prototype.subscribe = function (session) {
 	var mw = vz.middleware.find(this.middleware);
 	if (mw && mw.session) {
 		session = session || mw.session;
 	}
 	if (!session) return;
 
-	session.subscribe(this.uuid, (function(args, json) {
+	session.subscribe(this.uuid, (function (args, json) {
 		var push = JSON.parse(json);
 		if (!push.data || push.data.uuid !== this.uuid || !vz.wui.tmaxnow) {
 			return false;
@@ -254,21 +255,21 @@ Entity.prototype.subscribe = function(session) {
 	}).bind(this)); // bind to Entity
 };
 
-Entity.prototype.handlePushData = function(delta) {
+Entity.prototype.handlePushData = function (delta) {
 	// process updates only if newer than last known timestamp
-	var last_ts = (this.data.tuples.length) ? this.data.tuples[this.data.tuples.length-1][0] : 0;
-	for (var i=0; i<delta.tuples.length; i++) {
+	var last_ts = (this.data.tuples.length) ? this.data.tuples[this.data.tuples.length - 1][0] : 0;
+	for (var i = 0; i < delta.tuples.length; i++) {
 		// find first new timestamp
 		if (delta.tuples[i][0] > last_ts) {
 			// relevant slice
 			var consumption = 0, deltaTuples = delta.tuples.slice(i);
 			/* jshint loopfunc: true */
-			deltaTuples.forEach((function(el, idx) {
+			deltaTuples.forEach((function (el, idx) {
 				// min/max
 				if (this.data.min === undefined || el[1] < this.data.min[1]) this.data.min = el;
 				if (this.data.max === undefined || el[1] > this.data.max[1]) this.data.max = el;
 				// consumption
-				var tsdiff = (idx === 0) ? el[0] - last_ts : el[0] - deltaTuples[idx-1][0];
+				var tsdiff = (idx === 0) ? el[0] - last_ts : el[0] - deltaTuples[idx - 1][0];
 				consumption += el[1] * tsdiff;
 			}).bind(this)); // bind to entity
 
@@ -278,7 +279,7 @@ Entity.prototype.handlePushData = function(delta) {
 				this.data.consumption = (this.data.consumption || 0) + consumption;
 
 				// calculate new left plot border and remove outdated tuples and consumption
-				var left = deltaTuples[deltaTuples.length-1][0] - vz.options.plot.xaxis.max + vz.options.plot.xaxis.min;
+				var left = deltaTuples[deltaTuples.length - 1][0] - vz.options.plot.xaxis.max + vz.options.plot.xaxis.min;
 				while (this.data.tuples.length && this.data.tuples[0][0] < left) {
 					var first = this.data.tuples.shift();
 					this.data.consumption -= first[1] * (first[0] - this.data.from) / 3.6e6;
@@ -294,7 +295,7 @@ Entity.prototype.handlePushData = function(delta) {
 
 			// update UI without reloading totals
 			this.dataUpdated();
-			vz.wui.zoomToPartialUpdate(deltaTuples[deltaTuples.length-1][0]);
+			vz.wui.zoomToPartialUpdate(deltaTuples[deltaTuples.length - 1][0]);
 
 			break;
 		}
@@ -304,7 +305,7 @@ Entity.prototype.handlePushData = function(delta) {
 /**
  * Cancel live update subscription from WAMP server
  */
-Entity.prototype.unsubscribe = function() {
+Entity.prototype.unsubscribe = function () {
 	var mw = vz.middleware.find(this.middleware);
 	if (mw && mw.session) {
 		try {
@@ -313,7 +314,7 @@ Entity.prototype.unsubscribe = function() {
 		catch (e) {
 			// handle double unsubscribe, e.g. if channel in multiple groups
 			if (!e.match(/^not subscribed to topic/)) {
-				throw(e);
+				throw (e);
 			}
 		}
 	}
@@ -322,7 +323,7 @@ Entity.prototype.unsubscribe = function() {
 /**
  * Check if an entity a channel or group
  */
-Entity.prototype.isChannel = function() {
+Entity.prototype.isChannel = function () {
 	if (!this.definition) return null;
 	return this.definition.model == 'Volkszaehler\\Model\\Channel';
 };
@@ -330,7 +331,7 @@ Entity.prototype.isChannel = function() {
 /**
  * Update UI when data changes
  */
-Entity.prototype.dataUpdated = function(data) {
+Entity.prototype.dataUpdated = function (data) {
 	this.updateAxisScale();
 	this.updateDOMRow();
 };
@@ -339,18 +340,18 @@ Entity.prototype.dataUpdated = function(data) {
  * Query middleware for details
  * @return jQuery dereferred object
  */
-Entity.prototype.loadDetails = function(skipDefaultErrorHandling) {
+Entity.prototype.loadDetails = function (skipDefaultErrorHandling) {
 	delete this.children; // clear children first
 	return vz.load({
 		url: this.middleware,
 		controller: 'entity',
 		identifier: this.uuid,
 		context: this
-	}, skipDefaultErrorHandling).done(function(json) {
+	}, skipDefaultErrorHandling).done(function (json) {
 		// fix https://github.com/volkszaehler/volkszaehler.org/pull/560
 		delete json.entity.active;
 		this.parseJSON(json.entity);
-		this.eachChild(function(child) {
+		this.eachChild(function (child) {
 			child.active = true;
 		}, true); // recursive
 	});
@@ -360,7 +361,7 @@ Entity.prototype.loadDetails = function(skipDefaultErrorHandling) {
  * Load data for current view from middleware
  * @return jQuery dereferred object
  */
-Entity.prototype.loadData = function() {
+Entity.prototype.loadData = function () {
 	if (!(this.isChannel() && this.active)) {
 		return $.Deferred().resolve().promise();
 	}
@@ -382,7 +383,7 @@ Entity.prototype.loadData = function() {
 				? 'consumption'
 				: vz.options.options
 		}
-	}).done(function(json) {
+	}).done(function (json) {
 		this.data = json.data;
 		this.dataUpdated();
 	});
@@ -392,7 +393,7 @@ Entity.prototype.loadData = function() {
  * Load total consumption from middleware
  * @return jQuery dereferred object
  */
-Entity.prototype.loadTotalConsumption = function() {
+Entity.prototype.loadTotalConsumption = function () {
 	if (this.initialconsumption === undefined) {
 		return $.Deferred().resolve().promise();
 	}
@@ -406,7 +407,7 @@ Entity.prototype.loadTotalConsumption = function() {
 			tuples: 1,
 			group: 'day' // maximum sensible grouping level, first tuple dropped!
 		}
-	}).done(function(json) {
+	}).done(function (json) {
 		// total observed consumption plus initial consumption value
 		this.totalconsumption = (this.definition.scale || 1) * this.initialconsumption + json.data.consumption;
 		// show in UI
@@ -417,168 +418,171 @@ Entity.prototype.loadTotalConsumption = function() {
 /**
  * Show and edit entity details
  */
-Entity.prototype.showDetails = function() {
+Entity.prototype.showDetails = function () {
 	var entity = this;
 	var deleteDialog = this.isChannel() ? '#entity-delete' : '#entity-delete-group';
 
-	var dialog = $('#entity-info').dialog({
-		title: 'Details für ' + this.title,
-		width: 480,
-		resizable: false,
-		buttons : {
-			'Daten': function() {
-				var params = $.extend($.getUrlParams(), {
-					from: Math.floor(vz.options.plot.xaxis.min),
-					to: Math.ceil(vz.options.plot.xaxis.max)
-				});
-				window.open(entity.middleware + '/data/' + entity.uuid + '.json?' + $.param(params), '_blank');
-			},
-			'Löschen' : function() {
-				$(deleteDialog).dialog({ // confirm prompt
-					resizable: false,
-					modal: true,
-					title: 'Löschen',
-					width: 400,
-					buttons: {
-						'Löschen': function() {
-							entity.delete().done(function() {
-								entity.cookie = false;
-								vz.entities.saveCookie();
+	$('#entity-info table tr').remove();
+	var dialog = $('#entity-info')
+		.append(this.getDOMDetails())
+		.dialog({
+			title: 'Details für ' + this.title,
+			width: 480,
+			resizable: false,
+			buttons: {
+				'Daten': function () {
+					var params = $.extend($.getUrlParams(), {
+						from: Math.floor(vz.options.plot.xaxis.min),
+						to: Math.ceil(vz.options.plot.xaxis.max)
+					});
+					window.open(entity.middleware + '/data/' + entity.uuid + '.json?' + $.param(params), '_blank');
+				},
+				'Löschen': function () {
+					$(deleteDialog).dialog({ // confirm prompt
+						resizable: false,
+						modal: true,
+						title: 'Löschen',
+						width: 400,
+						buttons: {
+							'Löschen': function () {
+								entity.delete().done(function () {
+									entity.cookie = false;
+									vz.entities.saveCookie();
 
-								vz.entities.each(function(it, parent) { // remove from tree
-									if (entity.uuid == it.uuid) {
-										var array = (parent) ? parent.children : vz.entities;
-										array.splice(array.indexOf(it), 1); // remove
-									}
-								}, true);
+									vz.entities.each(function (it, parent) { // remove from tree
+										if (entity.uuid == it.uuid) {
+											var array = (parent) ? parent.children : vz.entities;
+											array.splice(array.indexOf(it), 1); // remove
+										}
+									}, true);
 
-								vz.entities.showTable();
-								vz.wui.drawPlot();
-								dialog.dialog('close');
-							});
-
-							$(this).dialog('close');
-						},
-						'Abbrechen': function() {
-							$(this).dialog('close');
-						}
-					}
-				});
-			},
-			'Bearbeiten': function() {
-				$('#entity-edit tbody tr').remove();
-
-				// add properties for entity
-				vz.capabilities.definitions.entities.some(function(definition) {
-					if (definition.name == entity.type) {
-						// fix https://github.com/volkszaehler/volkszaehler.org/pull/560
-						if (definition.optional.indexOf('active') >= 0) {
-							definition.optional.splice(definition.optional.indexOf('active'), 1);
-						}
-						var container = $('#entity-edit table');
-						vz.wui.dialogs.addProperties(container, definition.required, "required", entity);
-						vz.wui.dialogs.addProperties(container, definition.optional, "optional", entity);
-						return true;
-					}
-				});
-
-				$('#entity-edit').dialog({
-					resizable: false,
-					modal: true,
-					title: 'Bearbeiten von ' + entity.title,
-					width: 600,
-					buttons: {
-						'Speichern': function() { // adapted from #entity-create
-							var properties = {};
-
-							$(this).find('form').serializeArrayWithCheckBoxes().forEach(function(value) {
-								if (value.value !== '' || entity[value.name]) {
-									properties[value.name] = value.value;
-								}
-							});
-
-							vz.load({
-								controller: 'entity',
-								identifier: entity.uuid,
-								url: entity.middleware,
-								data: properties,
-								method: 'PATCH', // edit
-							}).done(function(json) {
-								entity.parseJSON(json.entity); // update entity
-								try {
 									vz.entities.showTable();
-									vz.entities.loadData().done(vz.wui.drawPlot);
-								}
-								catch (e) {
-									vz.wui.dialogs.exception(e);
-								}
-								finally {
-									$('#entity-edit').dialog('close');
-									dialog.dialog('close'); // close parent dialog
-								}
-							});
-						},
-						'Abbrechen': function() {
-							$(this).dialog('close');
+									vz.wui.drawPlot();
+									dialog.dialog('close');
+								});
+
+								$(this).dialog('close');
+							},
+							'Abbrechen': function () {
+								$(this).dialog('close');
+							}
 						}
-					}
-				})
-				.keypress(function(ev) {
-					// submit form on enter
-					if (ev.keyCode == $.ui.keyCode.ENTER) {
-						$('#entity-edit').siblings('.ui-dialog-buttonpane').find('button:eq(0)').click();
-					}
-				});
+					});
+				},
+				'Bearbeiten': function () {
+					$('#entity-edit tbody tr').remove();
+
+					// add properties for entity
+					vz.capabilities.definitions.entities.some(function (definition) {
+						if (definition.name == entity.type) {
+							// fix https://github.com/volkszaehler/volkszaehler.org/pull/560
+							if (definition.optional.indexOf('active') >= 0) {
+								definition.optional.splice(definition.optional.indexOf('active'), 1);
+							}
+							var container = $('#entity-edit table');
+							vz.wui.dialogs.addProperties(container, definition.required, "required", entity);
+							vz.wui.dialogs.addProperties(container, definition.optional, "optional", entity);
+							return true;
+						}
+					});
+
+					$('#entity-edit').dialog({
+						resizable: false,
+						modal: true,
+						title: 'Bearbeiten von ' + entity.title,
+						width: 600,
+						buttons: {
+							'Speichern': function () { // adapted from #entity-create
+								var properties = {};
+
+								$(this).find('form').serializeArrayWithCheckBoxes().forEach(function (value) {
+									if (value.value !== '' || entity[value.name]) {
+										properties[value.name] = value.value;
+									}
+								});
+
+								vz.load({
+									controller: 'entity',
+									identifier: entity.uuid,
+									url: entity.middleware,
+									data: properties,
+									method: 'PATCH', // edit
+								}).done(function (json) {
+									entity.parseJSON(json.entity); // update entity
+									try {
+										vz.entities.showTable();
+										vz.entities.loadData().done(vz.wui.drawPlot);
+									}
+									catch (e) {
+										vz.wui.dialogs.exception(e);
+									}
+									finally {
+										$('#entity-edit').dialog('close');
+										dialog.dialog('close'); // close parent dialog
+									}
+								});
+							},
+							'Abbrechen': function () {
+								$(this).dialog('close');
+							}
+						}
+					})
+						.keypress(function (ev) {
+							// submit form on enter
+							if (ev.keyCode == $.ui.keyCode.ENTER) {
+								$('#entity-edit').siblings('.ui-dialog-buttonpane').find('button:eq(0)').click();
+							}
+						});
+				},
+				'Schließen': function () {
+					$(this).dialog('close');
+				}
 			},
-			'Schließen': function() {
-				$(this).dialog('close');
+			open: function () {
+				$(this).siblings('.ui-dialog-buttonpane').find('button:eq(2)').focus();
+				if (entity.definition.model == 'Volkszaehler\\Model\\Aggregator') {
+					// disable data button for groups
+					$(this).siblings('.ui-dialog-buttonpane')
+						.find('button:contains("Daten")')
+						.button("option", "disabled", true);
+				}
 			}
-		},
-		open: function() {
-			$(this).siblings('.ui-dialog-buttonpane').find('button:eq(2)').focus();
-			if (entity.definition.model == 'Volkszaehler\\Model\\Aggregator') {
-				// disable data button for groups
-				$(this).siblings('.ui-dialog-buttonpane')
-					.find('button:contains("Daten")')
-					.button("option", "disabled", true);
-			}
-		}
-	}).select();
+		}).select();
 };
 
 /**
  * Show channel details for info dialog
  */
-Entity.prototype.getDOMDetails = function(edit) {
+Entity.prototype.getDOMDetails = function (edit) {
 	var table = $('<table><thead><tr><th>Eigenschaft</th><th>Wert</th></tr></thead></table>');
 	var data = $('<tbody>');
 
 	// general properties
 	var general = ['title', 'type', 'uuid', /*'middleware', 'color', 'style', 'active',*/ 'cookie'],
-			sections = ['required', 'optional'];
+		sections = ['required', 'optional'];
 
-	addRow = function(key, value) {
+	addRow = function (key, value) {
 		$('#entity-info table').append(
 			$('<tr>').addClass('general')
-			.append($('<td>').addClass('key').text(key))
-			.append($('<td>').addClass('value').append(value))
+				.append($('<td>').addClass('key').text(key))
+				.append($('<td>').addClass('value').append(value))
 		);
 	};
 
 	// general properties
-	general.forEach(function(property) {
+	general.forEach(function (property) {
 		var definition = vz.capabilities.definitions.get('properties', property),
-				title = definition ? definition.translation[vz.options.language] : property,
-				value = this[property];
+			title = definition ? definition.translation[vz.options.language] : property,
+			value = this[property];
 
 		switch (property) {
 			case 'type':
 				title = 'Typ';
 				var icon = this.definition.icon ? $('<img>')
-						// attr('src', 'img/types/' + this.definition.icon)
-						.attr('src', 'img/blank.png')
-						.addClass('icon-' + this.definition.icon.replace('.png', ''))
-						.css('margin-right', 4)
+					// attr('src', 'img/types/' + this.definition.icon)
+					.attr('src', 'img/blank.png')
+					.addClass('icon-' + this.definition.icon.replace('.png', ''))
+					.css('margin-right', 4)
 					: null;
 				break;
 
@@ -594,7 +598,7 @@ Entity.prototype.getDOMDetails = function(edit) {
 
 			case 'cookie':
 				title = 'Cookie';
-				/* falls through */
+			/* falls through */
 			case 'active':
 				value = '<img src="img/blank.png" class="icon-' + (value ? 'tick' : 'cross') + '" alt="' + (value ? 'ja' : 'nein') + '" />';
 				break;
@@ -603,13 +607,13 @@ Entity.prototype.getDOMDetails = function(edit) {
 		addRow(title, value);
 	}, this);
 
-	['required', 'optional'].forEach(function(section) {
-		this.definition[section].forEach(function(property) {
+	['required', 'optional'].forEach(function (section) {
+		this.definition[section].forEach(function (property) {
 			if (this.hasOwnProperty(property) && general.indexOf(property) < 0) {
 				var definition = vz.capabilities.definitions.get('properties', property),
-						title = definition.translation[vz.options.language],
-						value = this[property],
-						prefix; // unit prefix
+					title = definition.translation[vz.options.language],
+					value = this[property],
+					prefix; // unit prefix
 
 				switch (property) {
 					case 'cost':
@@ -660,7 +664,7 @@ Entity.prototype.getDOMDetails = function(edit) {
 /**
  * Get DOM for list of entities
  */
-Entity.prototype.getDOMRow = function(parent) {
+Entity.prototype.getDOMRow = function (parent) {
 	// full or shortened type name
 	var type = this.definition.translation[vz.options.language];
 	if (vz.options.shortenLongTypes) type = type.replace(/\s*\(.+?\)/, '');
@@ -676,7 +680,7 @@ Entity.prototype.getDOMRow = function(parent) {
 			.append($('<input>')
 				.attr('type', 'checkbox')
 				.attr('checked', this.active)
-				.bind('click', this, function(event) {
+				.bind('click', this, function (event) {
 					var entity = event.data;
 					entity.activate($(this).prop('checked'), null, true).done(vz.wui.drawPlot);
 					vz.entities.saveCookie();
@@ -714,7 +718,7 @@ Entity.prototype.getDOMRow = function(parent) {
 				.attr('src', 'img/blank.png')
 				.addClass('icon-information')
 				.attr('alt', 'details')
-				.bind('click', this, function(event) {
+				.bind('click', this, function (event) {
 					event.data.showDetails();
 					event.stopPropagation();
 				})
@@ -728,7 +732,7 @@ Entity.prototype.getDOMRow = function(parent) {
 			.attr('src', 'img/blank.png')
 			.addClass('icon-delete')
 			.attr('alt', 'delete')
-			.bind('click', this, function(event) {
+			.bind('click', this, function (event) {
 				vz.entities.splice(vz.entities.indexOf(event.data), 1); // remove
 				vz.entities.saveCookie();
 				vz.entities.showTable();
@@ -741,7 +745,7 @@ Entity.prototype.getDOMRow = function(parent) {
 	return row;
 };
 
-Entity.prototype.activate = function(state, parent, recursive) {
+Entity.prototype.activate = function (state, parent, recursive) {
 	this.active = state;
 	$('#entity-' + this.uuid + ((parent) ? '.child-of-entity-' + parent.uuid : '') + ' input[type=checkbox]').prop('checked', state);
 
@@ -760,14 +764,14 @@ Entity.prototype.activate = function(state, parent, recursive) {
 	}
 
 	if (recursive) {
-		this.eachChild(function(child, parent) {
+		this.eachChild(function (child, parent) {
 			queue.push(child.activate(state, parent, false));
 		}, true); // recursive!
 	}
 
 	// reset axis extrema (NOTE: this does not handle min/max=0 in options)
 	if (this.assignedYaxis !== undefined) {
-		var axis = vz.options.plot.yaxes[this.assignedYaxis-1];
+		var axis = vz.options.plot.yaxes[this.assignedYaxis - 1];
 		if (axis.min === 0 || axis.min === null) {
 			axis.min = undefined;
 		}
@@ -785,7 +789,7 @@ Entity.prototype.activate = function(state, parent, recursive) {
 /**
  * Update UI with current entity values
  */
-Entity.prototype.updateDOMRow = function() {
+Entity.prototype.updateDOMRow = function () {
 	var row = $('.entity-' + this.uuid);
 
 	// clear table first
@@ -793,7 +797,7 @@ Entity.prototype.updateDOMRow = function() {
 	$('.average, .last, .consumption, .cost', row).text('');
 
 	if (this.data && this.data.rows > 0) { // update statistics if data available
-		var yearMultiplier = 365*24*60*60*1000 / (this.data.to - this.data.from); // ms
+		var yearMultiplier = 365 * 24 * 60 * 60 * 1000 / (this.data.to - this.data.from); // ms
 		var unit = this.getUnitForMode();
 
 		// indicate stale data
@@ -802,18 +806,18 @@ Entity.prototype.updateDOMRow = function() {
 
 		if (this.data.min)
 			$('.min', row)
-			.text(vz.wui.formatNumber(this.data.min[1], unit))
-			.attr('title', $.plot.formatDate(new Date(this.data.min[0]), '%d. %b %y %H:%M:%S', vz.options.monthNames, vz.options.dayNames, true));
+				.text(vz.wui.formatNumber(this.data.min[1], unit))
+				.attr('title', $.plot.formatDate(new Date(this.data.min[0]), '%d. %b %y %H:%M:%S', vz.options.monthNames, vz.options.dayNames, true));
 		if (this.data.max)
 			$('.max', row)
-			.text(vz.wui.formatNumber(this.data.max[1], unit))
-			.attr('title', $.plot.formatDate(new Date(this.data.max[0]), '%d. %b %y %H:%M:%S', vz.options.monthNames, vz.options.dayNames, true));
+				.text(vz.wui.formatNumber(this.data.max[1], unit))
+				.attr('title', $.plot.formatDate(new Date(this.data.max[0]), '%d. %b %y %H:%M:%S', vz.options.monthNames, vz.options.dayNames, true));
 		if (this.data.average !== undefined)
 			$('.average', row)
-			.text(vz.wui.formatNumber(this.data.average, unit));
+				.text(vz.wui.formatNumber(this.data.average, unit));
 		if (this.data.tuples && this.data.tuples.length > 0)
 			$('.last', row)
-			.text(vz.wui.formatNumber(this.data.tuples[this.data.tuples.length-1][1], unit));
+				.text(vz.wui.formatNumber(this.data.tuples[this.data.tuples.length - 1][1], unit));
 
 		if (this.data.consumption !== undefined) {
 			var consumptionUnit = vz.wui.formatConsumptionUnit(this.getUnit());
@@ -845,7 +849,7 @@ Entity.prototype.updateDOMRow = function() {
  * Update totals column after async refresh
  * @param row optional dom row
  */
-Entity.prototype.updateDOMRowTotal = function(row) {
+Entity.prototype.updateDOMRowTotal = function (row) {
 	row = row || $('.entity-' + this.uuid);
 	if (this.active && this.totalconsumption) {
 		var unit = vz.wui.formatConsumptionUnit(this.getUnit());
@@ -862,7 +866,7 @@ Entity.prototype.updateDOMRowTotal = function(row) {
 /**
  * Permanently deletes this entity and its data from the middleware
  */
-Entity.prototype.delete = function() {
+Entity.prototype.delete = function () {
 	return vz.load({
 		controller: 'entity',
 		context: this,
@@ -875,7 +879,7 @@ Entity.prototype.delete = function() {
 /**
  * Add entity as child
  */
-Entity.prototype.addChild = function(child) {
+Entity.prototype.addChild = function (child) {
 	if (this.isChannel()) {
 		throw new Exception('EntityException', 'Entity is not an Aggregator');
 	}
@@ -894,7 +898,7 @@ Entity.prototype.addChild = function(child) {
 /**
  * Remove entity from children
  */
-Entity.prototype.removeChild = function(child) {
+Entity.prototype.removeChild = function (child) {
 	if (this.isChannel()) {
 		throw new Exception('EntityException', 'Entity is not an Aggregator');
 	}
@@ -917,7 +921,7 @@ Entity.prototype.removeChild = function(child) {
  *
  * @param cb callback function
  */
-Entity.prototype.eachChild = function(cb, recursive) {
+Entity.prototype.eachChild = function (cb, recursive) {
 	if (this.children) {
 		for (var i = 0; i < this.children.length; i++) {
 			cb(this.children[i], this);
@@ -936,7 +940,7 @@ Entity.prototype.eachChild = function(cb, recursive) {
  * @static
  * @todo Channels before Aggregators
  */
-Entity.compare = function(a, b) {
+Entity.compare = function (a, b) {
 	if (a.definition === undefined)
 		return -1;
 	if (b.definition === undefined)
