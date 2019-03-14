@@ -39,7 +39,7 @@ vz.options = {
 	middleware: [
 		{
 			title: 'Local (default)',
-			url: 'middleware.php'
+			url: 'api'
 			// live: 8082					// NOTE: live updates require
 														//    - push-server running and
 														//    - either apache proxy forwarding configured according to

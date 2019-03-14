@@ -22,6 +22,7 @@
 <IfModule mod_rewrite.c>
 	RewriteEngine On
 	RewriteRule ^middleware/(.*) middleware.php/$1 [L]
+	RewriteRule ^api/(.*) middleware.php/$1 [L]
 
 	# frontend alias
 	RewriteRule ^frontend/(.*) $1 [L]
