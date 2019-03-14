@@ -42,8 +42,8 @@ class DataPerformance extends Data
 	}
 
 	protected static function getChannelByUUID($uuid) {
-		$ec = new Controller\EntityController(null, self::$em);
-		return $ec->get($uuid);
+		$ef = Util\EntityFactory::getInstance(self::$em);
+		return $ef->get($uuid);
 	}
 
 	protected static function countRows($uuid, $table = 'data') {

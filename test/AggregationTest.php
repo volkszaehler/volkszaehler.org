@@ -37,7 +37,6 @@ class AggregationTest extends DataPerformance
 	}
 
 	/**
-	 * @depends testConfiguration
 	 * @group aggregation
 	 */
 	function testClearAggregation() {
@@ -106,7 +105,6 @@ class AggregationTest extends DataPerformance
 	/**
 	 * @depends testClearAggregation
 	 * @depends testDeltaAggregation
-	 * @depends testConfiguration
 	 * @group aggregation
 	 */
 	function testGetBaseline() {
