@@ -105,8 +105,9 @@ class EntityDefinition extends Definition {
 	 * @var array
 	 */
 	static protected $defaultRequired = array('title');
-	static protected $defaultOptional = array('public', 'color', 'style', 'fillstyle', 'yaxis', 'active', 'description', 'owner', 'address:', 'link');
-	static protected $groupOptional = array('public', 'color', 'active', 'description', 'owner', 'address:', 'link');
+	static protected $channelOptional = array('public', 'color', 'style', 'fillstyle', 'linestyle', 'linewidth', 'yaxis', 'description', 'owner', 'address:', 'link', 'gap');
+	static protected $groupOptional = array('public', 'color', 'description', 'owner', 'address:', 'link');
+	static protected $consumptionOptional = array('initialconsumption', 'cost');
 
 	/**
 	 * Constructor
@@ -118,9 +119,15 @@ class EntityDefinition extends Definition {
 
 	 	$this->required = array_merge(self::$defaultRequired, $this->required);
 
-	 	$optional = $this->getModel() == Aggregator::class
-	 		? self::$groupOptional
-	 		: self::$defaultOptional;
+	 	if ($this->getModel() == Aggregator::class) {
+			 $optional = self::$groupOptional;
+		}
+		else {
+			$optional = self::$channelOptional;
+			if ($this->hasConsumption) {
+				$optional = array_merge($optional, self::$consumptionOptional);
+			}
+		}
 		$this->optional = array_merge($optional, $this->optional);
 	 }
 

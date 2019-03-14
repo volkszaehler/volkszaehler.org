@@ -558,7 +558,7 @@ Entity.prototype.getDOMDetails = function (edit) {
 	var data = $('<tbody>');
 
 	// general properties
-	var general = ['title', 'type', 'uuid', /*'middleware', 'color', 'style', 'active',*/ 'cookie'],
+	var general = ['title', 'type', 'uuid', /*'middleware', 'color', 'style', 'active', 'cookie'*/],
 		sections = ['required', 'optional'];
 
 	addRow = function (key, value) {
