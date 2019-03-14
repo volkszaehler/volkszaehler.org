@@ -18,10 +18,6 @@ EXPOSE 8082
 EXPOSE 5582
 
 COPY --from=builder /vz /vz
-COPY etc/volkszaehler.conf.template.php /vz/etc/volkszaehler.conf.php
-
-# modify volkszaehler.conf
-RUN sed -i 's/?>//' /vz/etc/volkszaehler.conf.php
 
 # modify options.js
 RUN sed -i "s/url: 'middleware.php'/url: '',/" /vz/htdocs/js/options.js

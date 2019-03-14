@@ -22,6 +22,8 @@
 
 namespace Volkszaehler\Util;
 
+use Symfony\Component\Yaml\Yaml;
+
 /**
  * Static configuration class for loading and storing the configuration to the disk
  *
@@ -57,7 +59,7 @@ class Configuration {
 	}
 
 	/**
-	 * loading configuration from file
+	 * load configuration from file
 	 *
 	 * @param string $filename A string pointing to a file on the filesystem
 	 */
@@ -75,6 +77,15 @@ class Configuration {
 		}
 
 		self::$values = $config;
+	}
+
+	/**
+	 * load configuration from yaml file
+	 *
+	 * @param string $filename A string pointing to a file on the filesystem
+	 */
+	static public function loadYaml($filename) {
+		self::$values = Yaml::parseFile($filename);
 	}
 }
 

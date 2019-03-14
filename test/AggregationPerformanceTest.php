@@ -55,14 +55,6 @@ class AggregationPerformanceTest extends DataPerformance
 	}
 
 	/**
-	 * @group aggregation
-	 * @group slow
-	 */
-	function testConfiguration() {
-		$this->assertTrue(Util\Configuration::read('aggregation'), 'data aggregation not enabled in config file, set $config[\'aggregation\'] = true');
-	}
-
-	/**
 	 * @depends testConfiguration
 	 * @group aggregation
 	 * @group slow

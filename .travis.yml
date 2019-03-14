@@ -72,7 +72,7 @@ install:
 before_script:
     # enable shell errors
     - set -e
-    - cp etc/volkszaehler.conf.template.php etc/volkszaehler.conf.php
+    - cp etc/config.dist.yaml etc/config.yaml
 
     - DATABASE=volkszaehler
     - USER=root
@@ -80,12 +80,11 @@ before_script:
     - if [ "$DB" = "pgsql" ]; then USER=postgres; fi
 
     # create config file
-    - sed -i "s/'pdo_mysql'/'pdo_$DB'/" etc/volkszaehler.conf.php
-    - sed -i "s/'vz'/'$USER'/" etc/volkszaehler.conf.php
-    - sed -i "s/'demo'/'$PASSWORD'/" etc/volkszaehler.conf.php
-    - sed -i "s/'volkszaehler'/'$DATABASE'/" etc/volkszaehler.conf.php
-    - if [ "$DB" = "sqlite" ]; then sed -i "s/\?>/\$config['db']['path']\ =\ VZ_DIR.'\/sqlite.db3'\;\n?>/" etc/volkszaehler.conf.php; fi
-    - cat etc/volkszaehler.conf.php
+    - sed -i "s/driver: .*/driver: pdo_$DB/" etc/config.yaml
+    - sed -i "s/user: .*/user: $USER/" etc/config.yaml
+    - sed -i "s/password: .*/password: $PASSWORD/" etc/config.yaml
+    - sed -i "s/dbname: .*/dbname: $DATABASE/" etc/config.yaml
+    - cat etc/config.yaml
 
     # create database
     - if [ "$DB" = "mysql" ]; then mysql -e "CREATE DATABASE $DATABASE;" -u $USER; fi
@@ -104,7 +103,6 @@ before_script:
     # push server tests
     - |
       if [ "$COMPONENT" = "PUSHD" ]; then
-        sed -i "s/\?>/\$config['push']['enabled']\ =\ true\;\n?>/" etc/volkszaehler.conf.php
         php bin/push-server &
       fi
 
@@ -122,7 +120,6 @@ script:
     # run aggregation tests (mysql only)
     - |
       if [ "$DB" = "mysql" ]; then
-        sed -i "s/\?>/\$config['aggregation']\ =\ true;\n?>/" etc/volkszaehler.conf.php
         php bin/aggregate run -m delta -l hour
         vendor/bin/phpunit $TRAVIS_TEST_EXCLUDES
       fi

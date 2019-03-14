@@ -2,10 +2,10 @@
     "name": "volkszaehler/volkszaehler",
     "type": "project",
     "description": "volkszaehler is a free smart meter implementation with focus on data privacy",
-    "homepage": "http://www.volkszaehler.org/",
+    "homepage": "https://www.volkszaehler.org/",
     "license": "GPL-3.0",
     "support": {
-        "wiki": "http://wiki.volkszaehler.org/",
+        "wiki": "https://wiki.volkszaehler.org/",
         "email": "volkszaehler@lists.volkszaehler.org"
     },
     "require": {
@@ -19,6 +19,7 @@
         "symfony/http-kernel": "^4.0",
         "symfony/http-foundation": "^4.0",
         "symfony/routing": "^4.0",
+        "symfony/yaml": "^4.0",
         "cboden/ratchet": "^0.4",
         "react/http": "^0.8",
         "ringcentral/psr7": "^1.2",

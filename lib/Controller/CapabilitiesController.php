@@ -114,16 +114,14 @@ class CapabilitiesController extends Controller {
 			);
 
 			// aggregation table size
-			if (Util\Configuration::read('aggregation')) {
-				$agg_rows = $this->sqlCount($conn, 'aggregate');
-				$agg_size = $this->dbSize($conn, 'aggregate');
+			$agg_rows = $this->sqlCount($conn, 'aggregate');
+			$agg_size = $this->dbSize($conn, 'aggregate');
 
-				$capabilities['database']['aggregation'] = array(
-					'rows' => $agg_rows,
-					'size' => $agg_size,
-					'ratio' => ($agg_rows) ? $rows/$agg_rows : 0
-				);
-			}
+			$capabilities['database']['aggregation'] = array(
+				'rows' => $agg_rows,
+				'size' => $agg_size,
+				'ratio' => ($agg_rows) ? $rows/$agg_rows : 0
+			);
 		}
 
 		if (is_null($section) || $section == 'formats') {

@@ -52,14 +52,18 @@ if (!file_exists(VZ_DIR . '/vendor/autoload.php')) {
 	fail('Could not find autoloader. Check that dependencies have been installed via `composer install`.');
 }
 
-if (!file_exists(VZ_DIR . '/etc/volkszaehler.conf.php')) {
-	fail('Could not find config file. Check that etc/volkszaehler.conf.php exists.');
+if (!file_exists(VZ_DIR . '/etc/volkszaehler.conf.php') &! file_exists(VZ_DIR . '/etc/config.yaml')) {
+	fail('Could not find config file. Check that etc/config.yaml or etc/volkszaehler.conf.php exists.');
 }
 
 require_once VZ_DIR . '/vendor/autoload.php';
 
 // load configuration
-Util\Configuration::load(VZ_DIR . '/etc/volkszaehler.conf');
+try {
+	Util\Configuration::loadYaml(VZ_DIR . '/etc/config.yaml');
+} catch(\Exception $e) {
+	Util\Configuration::load(VZ_DIR . '/etc/volkszaehler.conf');
+}
 
 // set timezone
 $tz = (Util\Configuration::read('timezone')) ? Util\Configuration::read('timezone') : @date_default_timezone_get();

@@ -29,21 +29,11 @@ class AggregationTest extends DataPerformance
 	 * Cleanup aggregation
 	 */
 	static function tearDownAfterClass() {
-		if (self::$conn && self::$uuid && Util\Configuration::read('aggregation')) {
+		if (self::$conn && self::$uuid) {
 			$agg = new Util\Aggregation(self::$conn);
 			$agg->clear(self::$uuid);
 		}
 		parent::tearDownAfterClass();
-	}
-
-	/**
-	 * All tests depend on aggreation being enabled
-	 * @group aggregation
-	 */
-	function testConfiguration() {
-		if (!Util\Configuration::read('aggregation')) {
-			$this->markTestSkipped('data aggregation not enabled');
-		}
 	}
 
 	/**
