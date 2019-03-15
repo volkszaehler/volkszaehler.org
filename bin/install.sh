@@ -75,7 +75,7 @@ get_db_name() {
 	test -n "$db_name" && return
 	ask "mysql database?" volkszaehler
 	db_name="$REPLY"
-	sed	-i '' \
+	sed -i.bak \
 		-e "/db:/,/admin:/ s/\(\s*\)dbname:.*/\1dbname: $db_name/" \
 	"$config"
 }
@@ -87,7 +87,7 @@ get_db_admin_pass() {
 	ask "mysql admin password?"
 	db_admin_pass="$REPLY"
 	# note: use sed ranges to limit to admin section
-	sed -i '' \
+	sed -i.bak \
 		-e "/admin:/,/push:/ s/\(\s*\)user:.*/\1user: $db_admin_user/" \
 		-e "/admin:/,/push:/ s/\(\s*\)password:.*/\1password: $db_admin_pass/" \
 	"$config"
@@ -100,7 +100,7 @@ get_db_user_pass() {
 	ask "mysql password?" demo
 	db_pass="$REPLY"
 	# note: use sed ranges to limit to db section
-	sed	-i '' \
+	sed -i.bak \
 		-e "/db:/,/admin:/ s/\(\s*\)user:.*/\1user: $db_user/" \
 		-e "/db:/,/admin:/ s/\(\s*\)password:.*/\1password: $db_pass/" \
 	"$config"
