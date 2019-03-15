@@ -1,9 +1,4 @@
-# Apache 2.2
-<IfModule !mod_authz_core.c>
-	Allow from all
-</IfModule>
-
-# Apache 2.4
+# allow access
 <IfModule mod_authz_core.c>
 	Require all granted
 </IfModule>
@@ -16,13 +11,14 @@
 # enable this rule if using ppm middleware
 <IfModule mod_proxy.c>
 	# RewriteEngine On
-	# RewriteRule ^middleware(.php)?/(.*) http://localhost:8080/$2 [P]
+	# RewriteRule ^middleware(.php)?(/.*)? http://localhost:8080$2 [P]
+	# RewriteRule ^api(/.*)? http://localhost:8080$1 [P]
 </IfModule>
 
 <IfModule mod_rewrite.c>
 	RewriteEngine On
-	RewriteRule ^middleware/(.*) middleware.php/$1 [L]
-	RewriteRule ^api/(.*) middleware.php/$1 [L]
+	RewriteRule ^middleware(/.*)? middleware.php$1 [L]
+	RewriteRule ^api(/.*)? middleware.php$1 [L]
 
 	# frontend alias
 	RewriteRule ^frontend/(.*) $1 [L]
