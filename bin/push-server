@@ -65,10 +65,6 @@ function addRoute($path, HttpServerInterface $controller) {
 $output = new ConsoleOutput();
 $output->writeln("<info>Volkszaehler Push Server</info>");
 
-if (!Util\Configuration::read('push.enabled')) {
-	throw new \Exception("Push server is disabled in configuration", 1);
-}
-
 // read config
 $localPort = Util\Configuration::read('push.server');
 $remotePort = Util\Configuration::read('push.broadcast');
