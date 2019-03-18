@@ -47,12 +47,4 @@ class PPMBootstrapAdapter implements BootstrapInterface
         $app = new Router();
         return $app;
     }
-
-    /**
-     * Static directory - only used if frontend served via ppm httpd
-     */
-    public function getStaticDirectory()
-    {
-        return VZ_DIR . '/htdocs';
-    }
 }
