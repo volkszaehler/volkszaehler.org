@@ -55,8 +55,6 @@ class PushServerTest extends Data
 	 * @group pushserver
 	 */
 	function testPushMessage() {
-		$this->assertTrue(Util\Configuration::read('push.enabled'), 'Push server disabled');
-
 		// first message - no result tuples
 		$exitCode = $this->safeCurl([
 			'data' => [

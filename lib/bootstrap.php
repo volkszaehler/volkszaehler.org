@@ -25,7 +25,8 @@
 use Volkszaehler\Util;
 
 function fail($msg) {
-	if (preg_match('/\.json/', $_SERVER['REQUEST_URI'])) {
+	// JSON request?
+	if (preg_match('/\.json/', @$_SERVER['REQUEST_URI'])) {
 		header('Content-type: application/json');
 		echo json_encode([
 			'version' => VZ_VERSION,
@@ -33,8 +34,11 @@ function fail($msg) {
 				'message' => $msg
 			)
 		]);
+		die();
 	}
-	die();
+
+	// normal request or command line
+	throw new \Exception($msg);
 }
 
 // enable strict error reporting
@@ -52,18 +56,14 @@ if (!file_exists(VZ_DIR . '/vendor/autoload.php')) {
 	fail('Could not find autoloader. Check that dependencies have been installed via `composer install`.');
 }
 
-if (!file_exists(VZ_DIR . '/etc/volkszaehler.conf.php') &! file_exists(VZ_DIR . '/etc/config.yaml')) {
-	fail('Could not find config file. Check that etc/config.yaml or etc/volkszaehler.conf.php exists.');
+if (!file_exists(VZ_DIR . '/etc/config.yaml')) {
+	fail('Could not find config file. Check that etc/config.yaml exists.');
 }
 
 require_once VZ_DIR . '/vendor/autoload.php';
 
 // load configuration
-try {
-	Util\Configuration::loadYaml(VZ_DIR . '/etc/config.yaml');
-} catch(\Exception $e) {
-	Util\Configuration::load(VZ_DIR . '/etc/volkszaehler.conf');
-}
+Util\Configuration::load(VZ_DIR . '/etc/config.yaml');
 
 // set timezone
 $tz = (Util\Configuration::read('timezone')) ? Util\Configuration::read('timezone') : @date_default_timezone_get();

@@ -8,7 +8,7 @@ php:
 db:
   driver: pdo_mysql
   host: 127.0.0.1
-  port: 3306
+  # port: 3306
   user: vz
   password: demo
   charset: utf8
@@ -35,9 +35,9 @@ push:
   websocket:
     - /socket
 
-security:
+network:
   # limit maximum POST body size, e.g. 4096
-  maxbodysize: false
+  postlimit: false
 
 # enable debug messages by default if true
 debug: false

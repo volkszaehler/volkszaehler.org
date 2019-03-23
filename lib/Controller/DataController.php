@@ -95,7 +95,7 @@ class DataController extends Controller {
 			$rawPost = $this->request->getContent(); // file_get_contents('php://input')
 
 			// check maximum size allowed
-			if ($maxSize = Util\Configuration::read('security.maxbodysize')) {
+			if ($maxSize = Util\Configuration::read('network.postlimit')) {
 				if (strlen($rawPost) > $maxSize) {
 					throw new \Exception('Maximum message size exceeded');
 				}

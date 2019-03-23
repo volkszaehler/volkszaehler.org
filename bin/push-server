@@ -83,7 +83,7 @@ $routes = new RouteCollection;
 $router = new Router(new UrlMatcher($routes, new RequestContext));
 
 // WAMP adapter
-$wampRoutes = Util\Configuration::read('push.routes.wamp');
+$wampRoutes = Util\Configuration::read('push.wamp');
 if (is_array($wampRoutes) && count($wampRoutes)) {
 	$wampAdapter = new WampClientAdapter();
 	$wampServer = new WsServer(new WampServer($wampAdapter));
@@ -99,7 +99,7 @@ else {
 }
 
 // WebSocket adapter
-$wsRoutes = Util\Configuration::read('push.routes.websocket');
+$wsRoutes = Util\Configuration::read('push.websocket');
 if (is_array($wsRoutes) && count($wsRoutes)) {
 	$wsAdapter = new WsClientAdapter();
 	$wsServer = new WsServer($wsAdapter);
