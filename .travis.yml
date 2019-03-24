@@ -4,6 +4,7 @@ language: php
 php:
     - 7.1
     - 7.3
+    - 7.4snapshot
 
 services:
     - mysql
@@ -24,7 +25,7 @@ matrix:
   include:
     # postgres
     - php: 7.3
-      services: postresql
+      services: postgresql
       env: DB=pgsql
     # sqlite
     - php: 7.3
@@ -41,10 +42,6 @@ matrix:
     # jslint-only
     - php: 7.3
       env: DB= JSLINT=true
-
-notifications:
-    email: "volkszaehler-dev@lists.volkszaehler.org"
-    irc: "chat.freenode.net#volkszaehler.org"
 
 # speedup build
 cache:
@@ -80,10 +77,10 @@ before_script:
     - if [ "$DB" = "pgsql" ]; then USER=postgres; fi
 
     # create config file
-    - sed -i "s/driver: .*/driver: pdo_$DB/" etc/config.yaml
-    - sed -i "s/user: .*/user: $USER/" etc/config.yaml
-    - sed -i "s/password: .*/password: $PASSWORD/" etc/config.yaml
-    - sed -i "s/dbname: .*/dbname: $DATABASE/" etc/config.yaml
+    - "sed -i \"s/driver: .*/driver: pdo_$DB/\" etc/config.yaml"
+    - "sed -i \"s/user: .*/user: $USER/\" etc/config.yaml"
+    - "sed -i \"s/password: .*/password: $PASSWORD/\" etc/config.yaml"
+    - "sed -i \"s/dbname: .*/dbname: $DATABASE/\" etc/config.yaml"
     - cat etc/config.yaml
 
     # create database

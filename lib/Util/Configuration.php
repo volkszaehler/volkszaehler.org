@@ -59,32 +59,11 @@ class Configuration {
 	}
 
 	/**
-	 * load configuration from file
-	 *
-	 * @param string $filename A string pointing to a file on the filesystem
-	 */
-	static public function load($filename) {
-		$filename .= '.php';
-
-		if (!file_exists($filename)) {
-			throw new \Exception('Configuration file not found: \'' . $filename . '\'');
-		}
-
-		include $filename;
-
-		if (!isset($config)) {
-			throw new \Exception('No variable $config found in: \'' . $filename . '\'');
-		}
-
-		self::$values = $config;
-	}
-
-	/**
 	 * load configuration from yaml file
 	 *
 	 * @param string $filename A string pointing to a file on the filesystem
 	 */
-	static public function loadYaml($filename) {
+	static public function load($filename) {
 		self::$values = Yaml::parseFile($filename);
 	}
 }

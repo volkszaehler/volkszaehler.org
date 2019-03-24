@@ -175,10 +175,10 @@ Volkszaehler frontend will automatically try to connect to `ws/wss:<middleware u
 
 #### Routing
 
-In order to support both WAMP and plain web sockets over the same external port, `push-server` has an integrated routing capability. For backwards compatibility with existing frontends the following routes are configured by default as part of `volkszaehler.conf.php`:
+In order to support both WAMP and plain web sockets over the same external port, `push-server` has an integrated routing capability. For backwards compatibility with existing frontends the following routes are configured by default as part of `config.yaml`:
 
-  - `$config['push']['routes']['wamp']`: array of routes for WAMP. Default is both `/` and `/ws` for frontend compatibility.
-  - `$config['push']['routes']['websocket']`: array of routes for plain web sockets. Default is empty to prevent misuse. To enable chose e.g. `/socket` and make sure to read the chapter on security below.
+  - `push.wamp`: array of routes for WAMP. Default is both `/` and `/ws` for frontend compatibility.
+  - `push.websocket`: array of routes for plain web sockets. Default is empty to prevent misuse. To enable chose e.g. `/socket` and make sure to read the chapter on security below.
 
 To disable a protocol it is sufficient to declare an empty array of routes.
 

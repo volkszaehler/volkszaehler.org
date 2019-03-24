@@ -5,7 +5,7 @@ Database Setup
 
 To setup your database follow these steps:
 
-1. Make sure you have a proper configuration file (etc/volkszaehler.conf.php)
+1. Make sure you have a proper configuration file (etc/config.yaml)
 2. Adjust the configuration to your database setup
 3. Call bin/doctrine orm:schema-tool:create --dump-sql > database.sql
 4. Import the resulting file using your favorite sql tool

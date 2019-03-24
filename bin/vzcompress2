@@ -26,8 +26,6 @@
  * database. If you often insert/import historic data you may want to turn
  * this off. Configuration can be found near the end of this file.
  *
- * Database parameters are read from ../etc/volkszaehler.conf.php
- *
  * @author Florian Knodt <adlerweb@adlerweb.info>
  * @author Andreas Goetz <cpuidle@gmx.de>
  * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
