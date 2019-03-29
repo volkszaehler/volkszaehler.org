@@ -121,27 +121,6 @@ vz.entities.loadTotalConsumption = function() {
 };
 
 /**
- * Speedup middleware queries, requires options[aggregate] enabled
- * @return {string} group option or undefined
- */
-vz.entities.speedupFactor = function() {
-	var	group = vz.options.group,
-		delta = (vz.options.plot.xaxis.max - vz.options.plot.xaxis.min) / 3.6e6;
-
-	// explicit group set via url?
-	if (group !== undefined)
-		return group;
-
-	if (delta > 24 * vz.options.tuples/vz.options.speedupFactor) {
-		group = 'day';
-	}
-	else if (delta > vz.options.tuples/vz.options.speedupFactor) {
-		group = 'hour';
-	}
-	return group;
-};
-
-/**
  * Overwritten each iterator to iterate recursively through all entities
  */
 vz.entities.each = function(cb, recursive) {
