@@ -207,7 +207,7 @@ class VirtualInterpreter extends Interpreter {
 	 *
 	 * @return \Generator
 	 */
-	public function getIterator() {
+	public function generateData() {
 		$this->rowCount = 0;
 		$this->ts_last = null;
 

@@ -39,23 +39,17 @@ class ImpulseInterpreter extends Interpreter {
 	 *
 	 * @return \Generator
 	 */
-	public function getIterator() {
+	public function generateData() {
 		$this->rows = $this->getData();
 		$this->pulseCount = 0;
 		$this->ts_last = $this->getFrom();
 
 		foreach ($this->rows as $row) {
-			// raw database values
-			if ($this->output == self::RAW_VALUES) {
-				yield array_slice($row, 0, 3);
-			}
-			else {
-				$tuple = $this->convertRawTuple($row);
-				$this->pulseCount += $row[1];
+			$tuple = $this->convertRawTuple($row);
+			$this->pulseCount += $row[1];
 
-				$this->updateMinMax($tuple);
-				yield $tuple;
-			}
+			$this->updateMinMax($tuple);
+			yield $tuple;
 		}
 	}
 

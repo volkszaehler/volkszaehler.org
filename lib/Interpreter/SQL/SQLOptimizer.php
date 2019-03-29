@@ -40,8 +40,6 @@ abstract class SQLOptimizer {
 	/** @var DBAL\Connection */
 	protected $conn;
 
-	protected $from;
-	protected $to;
 	protected $tupleCount;
 	protected $groupBy;
 
@@ -76,7 +74,7 @@ abstract class SQLOptimizer {
 	/**
 	 * Constructor
 	 *
-	 * @param  Interpreter\Interpreter      $interpreter
+	 * @param Interpreter\Interpreter $interpreter
 	 */
 	public function __construct(Interpreter\Interpreter $interpreter) {
 		$this->interpreter = $interpreter;
@@ -84,10 +82,26 @@ abstract class SQLOptimizer {
 		// get interpreter properties
 		$this->channel = $interpreter->getEntity();
 		$this->conn = $interpreter->getConnection();
-		$this->from = $interpreter->getOriginalFrom();
-		$this->to = $interpreter->getOriginalTo();
 		$this->tupleCount = $interpreter->getTupleCount();
 		$this->groupBy = $interpreter->getGroupBy();
+	}
+
+	/**
+	 * Dynamic access to interpreter properties
+	 * From/to cannot be initialized in constructor as they are updated in interpreter
+	 *
+	 * @param string $name
+	 * @return mixed
+	 */
+	public function __get(string $name) {
+		switch ($name) {
+			case 'from':
+				return $this->interpreter->getOriginalFrom();
+			case 'to':
+				return $this->interpreter->getOriginalTo();
+			default:
+				throw new \Exception('Property ' . $name . ' does not exist');
+		}
 	}
 
 	/**

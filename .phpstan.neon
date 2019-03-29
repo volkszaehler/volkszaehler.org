@@ -11,3 +11,5 @@ parameters:
     - '#Undefined variable: .reference_#'
     - '#Constant test.*? not found.#'
     - '#Access to an undefined property Volkszaehler.Interpreter.Interpreter::.push_#'
+    - '#Access to an undefined property Volkszaehler.Interpreter.SQL.*?Optimizer::.from#'
+    - '#Access to an undefined property Volkszaehler.Interpreter.SQL.*?Optimizer::.to#'
