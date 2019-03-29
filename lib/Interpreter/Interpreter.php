@@ -142,12 +142,30 @@ abstract class Interpreter implements \IteratorAggregate {
 	/**
 	 * Generate database tuples
 	 *
-	 * @todo with wide-spread availability of PHP7 consider moving the raw value iteration here:
-	 * 		yield from ($this->raw) ? $this->getRawIterator() : $this->getDefaultIterator();
+	 * Base class provides iterating raw, uninterpreted database values.
+	 * Child classes must provide specific data interpretation.
 	 *
 	 * @return \Generator
 	 */
-	abstract public function getIterator();
+	public function getIterator() {
+		if ($this->output == self::RAW_VALUES) {
+			$this->rows = $this->getData();
+
+			// raw database values interator
+			foreach ($this->rows as $row) {
+				yield array_slice($row, 0, 3);
+			}
+		} else {
+			yield from $this->generateData();
+		}
+	}
+
+	/**
+	 * Interpreter-specific generator
+	 *
+	 * @return \Generator
+	 */
+	abstract public function generateData();
 
 	/*
 	 * Convert raw meter readings

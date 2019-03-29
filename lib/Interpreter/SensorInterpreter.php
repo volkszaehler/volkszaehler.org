@@ -39,23 +39,17 @@ class SensorInterpreter extends Interpreter {
 	 *
 	 * @return \Generator
 	 */
-	public function getIterator() {
+	public function generateData() {
 		$this->rows = $this->getData();
 		$this->ts_last = $this->getFrom();
 
 		foreach ($this->rows as $row) {
-			// raw database values
-			if ($this->output == self::RAW_VALUES) {
-				yield array_slice($row, 0, 3);
-			}
-			else {
-				$delta_ts = $row[0] - $this->ts_last;
-				$tuple = $this->convertRawTuple($row);
-				$this->consumption += $tuple[1] * $delta_ts;
+			$delta_ts = $row[0] - $this->ts_last;
+			$tuple = $this->convertRawTuple($row);
+			$this->consumption += $tuple[1] * $delta_ts;
 
-				$this->updateMinMax($tuple);
-				yield $tuple;
-			}
+			$this->updateMinMax($tuple);
+			yield $tuple;
 		}
 	}
 

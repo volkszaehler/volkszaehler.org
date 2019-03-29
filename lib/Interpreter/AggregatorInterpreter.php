@@ -59,6 +59,12 @@ class AggregatorInterpreter extends Interpreter {
 	/**
 	 * @inheritDoc
 	 */
+	public function generateData() {
+	}
+
+	/**
+	 * @inheritDoc
+	 */
 	public function convertRawTuple($row) {
 	}
 

@@ -41,7 +41,7 @@ class AccumulatorInterpreter extends Interpreter {
 	 *
 	 * @return \Generator
 	 */
-	public function getIterator() {
+	public function generateData() {
 		$this->rows = $this->getData();
 		$this->valsum = 0;
 
@@ -52,17 +52,11 @@ class AccumulatorInterpreter extends Interpreter {
 		}
 
 		foreach ($this->rows as $row) {
-			// raw database values
-			if ($this->output == self::RAW_VALUES) {
-				yield array_slice($row, 0, 3);
-			}
-			else {
-				$tuple = $this->convertRawTuple($row);
-				$this->valsum += $this->delta_val;
+			$tuple = $this->convertRawTuple($row);
+			$this->valsum += $this->delta_val;
 
-				$this->updateMinMax($tuple);
-				yield $tuple;
-			}
+			$this->updateMinMax($tuple);
+			yield $tuple;
 		}
 	}
 
