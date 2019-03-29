@@ -9,3 +9,4 @@ htdocs/tz
 node_modules/
 vendor/
 lib/Model/Proxy
+dbcopy.yaml
