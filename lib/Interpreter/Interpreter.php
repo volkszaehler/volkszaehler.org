@@ -408,6 +408,7 @@ abstract class Interpreter implements \IteratorAggregate {
 	public function getFrom() { return ($this->rowCount > 0) ? $this->rows->getFrom() : NULL; }
 	public function getTo() { return ($this->rowCount > 0) ? $this->rows->getTo() : NULL; }
 	public function getGroupBy() { return $this->groupBy; }
+	public function getOutputType() { return $this->output; }
 }
 
 ?>
