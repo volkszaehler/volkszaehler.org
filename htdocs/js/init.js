@@ -59,8 +59,11 @@ $(document).ready(function() {
 
 	NProgress.configure({ showSpinner: false });
 
-	if (!(typeof vz.options === "object" && Array.isArray(vz.options.middleware))) {
-		throw ("Could not read config. Please check options.js");
+	if (typeof vz.options !== "object" ||
+		!Array.isArray(vz.options.middleware)
+	) {
+		vz.wui.dialogs.error("Fehler", "Could not read config. Please check options.js");
+		return;
 	}
 
 	// add timezone-js support
@@ -101,8 +104,11 @@ $(document).ready(function() {
 
 	// chaining ajax request with jquery deferred object
 	vz.capabilities.load().done(function() {
-		if (!(typeof vz.capabilities === "object" && Array.isArray(vz.capabilities.entities))) {
-			throw ("Could not read capabilities. Please check middleware is accessible.");
+		if (typeof vz.capabilities !== "object" ||
+			!Array.isArray(vz.capabilities.definitions.entities)
+		) {
+			vz.wui.dialogs.error("Fehler", "Could not read capabilities. Please check middleware is accessible.");
+			return;
 		}
 
 		vz.entities.loadDetails().always(function() {
