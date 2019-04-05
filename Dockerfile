@@ -18,6 +18,7 @@ EXPOSE 8082
 EXPOSE 5582
 
 COPY --from=builder /vz /vz
+COPY --from=builder /vz/etc/config.dist.yaml /vz/etc/config.yaml
 
 # modify options.js
 RUN sed -i "s/url: 'middleware.php'/url: '',/" /vz/htdocs/js/options.js
