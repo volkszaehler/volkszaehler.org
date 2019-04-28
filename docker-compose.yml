@@ -32,5 +32,21 @@ services:
     - volkszaehler
     restart: always
 
+  push-server:
+    image: volkszaehler/volkszaehler
+    ports:
+    - 5582:5582
+    - 8082:8082
+    command: sh -c "
+      sed -i s/127.0.0.1/database/ /vz/etc/config.yaml &&
+      /vz/bin/push-server"
+    links:
+    - database
+    depends_on:
+    - database
+    networks:
+    - volkszaehler
+    restart: always
+
 networks:
   volkszaehler:
