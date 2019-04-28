@@ -21,6 +21,6 @@ COPY --from=builder /vz /vz
 COPY --from=builder /vz/etc/config.dist.yaml /vz/etc/config.yaml
 
 # modify options.js
-RUN sed -i "s/url: 'middleware.php'/url: '',/" /vz/htdocs/js/options.js
+RUN sed -i "s/url: 'api'/url: '',/" /vz/htdocs/js/options.js
 
 CMD /vz/vendor/bin/ppm start -c /vz/etc/middleware.json --static-directory /vz/htdocs --cgi-path=/usr/bin/php
