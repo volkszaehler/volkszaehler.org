@@ -410,6 +410,18 @@
 		}
 	},
 	{
+		"name"			: "illumination",
+		"optional"		: ["resolution"],
+		"icon"			: "sun.png",
+		"unit"			: "lx",
+		"interpreter"		: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"		: {
+			"de" : "Beleuchtungsstärke",
+			"en" : "Illumination"
+		}
+	},
+	{
 		"name"			: "frequency",
 		"optional"		: ["resolution"],
 		"icon"			: "freq.png",
