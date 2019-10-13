@@ -13,7 +13,7 @@ html {
   --button-text-color: hsl(var(--hue), 90%, 10%);
   --button-background: hsl(var(--hue), 100%, 97%);
   
-  --slider-color: hsl(var(--hue), 100%, 100%); /* --background; */
+  --slider-color: var(--background);
   --slider-color-on: hsl(var(--hue), 100%, 77%); 
   --slider-color-off: hsl(var(--hue), 50%, 10%);  
   --slider-color-bg: hsl(var(--hue), 20%, 70%);  
@@ -30,17 +30,17 @@ html[data-theme='dark'] {
   --text-color-richer: hsl(var(--hue), 50%, 80%);
   --text-color-highlight: hsl(var(--accent-hue), 70%, 80%);
   --link-color: hsl(var(--hue), 90%, 70%);
-  --accent-color: hsl(var(--accent-hue), 100%, 70%);
+  --accent-color: hsl(var(--accent-hue), 100%, 20%);
   --h3-color: hsl(var(--hue), 66%, 28%);
   
   --button-border-color: hsl(var(--hue), 66%, 40%);
   --button-text-color: hsl(var(--hue), 10%, 90%);
   --button-background: hsl(var(--hue), 66%, 40%);
   
-  --slider-color: hsl(var(--hue), 10%, 10%); /* --background */
-  --slider-color-on: hsl(var(--hue), 66%, 40%); /* --button-background; */
+  --slider-color: var(--text-color-normal);
+  --slider-color-on: hsl(var(--hue), 66%, 40%); 
   --slider-color-off: hsl(var(--hue), 50%, 10%); 
-  --slider-color-bg: hsl(var(--hue), 30%, 10%);  
+  --slider-color-bg: hsl(var(--hue), 100%, 10%);  
 	
   --background: hsl(var(--hue), 10%, 10%);
   --background-vlight: hsl(var(--hue), 10%, 15%);;
@@ -48,52 +48,37 @@ html[data-theme='dark'] {
   --background-richer: hsl(var(--hue), 45%, 35%);
 }
 
-/* transition effect for theme toggling */
-html.color-theme-in-transition,
-html.color-theme-in-transition *,
-html.color-theme-in-transition *:before,
-html.color-theme-in-transition *:after {
-  transition: all 500ms !important;
-  transition-delay: 0 !important;
-}
-
-/* theming the scroll bar on mac */
-.docs-page__content {
-  background: var(--background);
-  overflow-y: auto;
-}
-
 body {
-  color: var(--text-color-normal);
-  background-color: var(--background);
-  margin: 0;
-  padding: 0;
-  font-family: sans-serif;
+	color: var(--text-color-normal);
+	background-color: var(--background);
+	margin: 0;
+	padding: 0;
+	font-family: sans-serif;
 }
 
 table {
-  background-color: var(--background-light);
-  border-collapse: collapse;
-  border-color: var(--backgroud-richer);
-  empty-cells: show;
-  width: 100%;
-  border: 0px solid;
+	background-color: var(--background-light);
+	border-collapse: collapse;
+	border-color: var(--backgroud-richer);
+	empty-cells: show;
+	width: 100%;
+	border: 0px solid;
 }
 
 thead tr {
-  color: var(--text-color-normal);
-  background-color: var(--background-richer);
-  text-align: left;
-  font-size: 0.9em;
+	color: var(--text-color-normal);
+	background-color: var(--background-richer);
+	text-align: left;
+	font-size: 0.9em;
 }
 
 tr, td, span, a, p, li {
-  color: var(--text-color-normal);
+	color: var(--text-color-normal);
 }
 
 input, select {
-  color: var(--button-text-color);
-  background-color: var(--background-vlight);
+	color: var(--button-text-color);
+	background-color: var(--background-vlight);
 }
 
 /* zebra style */
@@ -102,261 +87,264 @@ tr:nth-child(even) {background-color: var(--background-vlight);}
 tr.optional,
 tr.stale td.min, tr.stale td.max, tr.stale td.average, tr.stale td.last,
 tr.stale td.consumption, tr.stale td.cost, tr.stale td.total {
-  color: var(--text-color-light);
+	color: var(--text-color-light);
 }
 
 table.properties th:not(:first-child) {
-  border-bottom: 1px solid var(--background);
+	border-bottom: 1px solid var(--background);
 }
 
 table.properties tr:not(:first-child) {
-  border-top: 1px solid var(--background);
+	border-top: 1px solid var(--background);
 }
 
 td input:not([type=image]):not([type=checkbox]) {
-  width: 100%;
+	width: 100%;
 }
 
 #content {
-  padding: 10px;
+	padding: 10px;
 }
 
 #content div {
-  padding: 2px 0;
-  display: block;
+	padding: 2px 0;
+	display: block;
 }
 
 #content h3 {
-  background-color: var(--h3-color);
-  padding: 4px;
-  margin: 2px 0;
-  cursor: pointer;
-  font-size: 0.9em;
+	background-color: var(--h3-color);
+	padding: 4px;
+	margin: 2px 0;
+	cursor: pointer;
+	font-size: 0.9em;
 }
 
 #content h3 img {
-  vertical-align: bottom;
+	vertical-align: bottom;
 }
 
 #plot {
-  position: relative;
+	position: relative;
 }
 
 .legend {
-  background-color: var(--background); 
+	background-color: var(--background); 
 }
 
 .legend table {
-  width: auto;
+	width: auto;
 }
 
 .legend td {
-  color: var(--text-color-normal);
+	color: var(--text-color-normal);
 }
 
 .axisLabels { /* if axislabels plugin is used */
-  font-size: smaller;
-  color: var(--text-color-normal);
+	font-size: smaller;
+	color: var(--text-color-normal);
 }
 
 #flot {
-  height: 300px;
-  z-index: 1;
-  margin-bottom: 5px;
+	height: 300px;
+	z-index: 1;
+	margin-bottom: 5px;
 }
 
 #overlay {
-  position: absolute;
-  z-index: 3;
-  width: 100%;
-  top: 50%;
-  margin-top: -42px;
-  text-align: center;
+	position: absolute;
+	z-index: 3;
+	width: 100%;
+	top: 50%;
+	margin-top: -42px;
+	text-align: center;
 }
 
 #time {
-  position: absolute;
-  z-index: 2;
-  display: none;
-  color: var(--text-color-normal);
-  background-color: rgba(170, 0, 0, 0.80);
-  font-size: smaller;
-  padding: 2px 4px;
-  white-space: nowrap;
+	position: absolute;
+	z-index: 2;
+	display: none;
+	color: var(--text-color-normal);
+	background-color: var(--accent-color);
+	font-size: smaller;
+	padding: 2px 4px;
+	white-space: nowrap;
 }
 
 #footer {
-  text-align: right;
-  font-size: 0.7em;
-  padding: 10px;
+	text-align: right;
+	font-size: 0.7em;
+	padding: 10px;
 }
 
 #footer a, #footer a:visited {
-  color: var(--link-color);
+	color: var(--link-color);
 }
 
 #controls {
-  margin-right: 0px; /* override jquery ui */
-  padding: 0px!important;
+	margin-right: 0px; /* override jquery ui */
+	padding: 0px!important;
 }
 
 #controls button {
-  border-color: var(--button-border-color);
-  background-color: var(--button-background);
-  color: var(--button-text-color);
-  width: 9.75%;
-  height: 30px;
-  margin: 1px; 
-  font-size: 0.9em;
+	border-color: var(--button-border-color);
+	background-color: var(--button-background);
+	color: var(--button-text-color);
+	width: 9.75%;
+	height: 30px;
+	margin: 1px; 
+	font-size: 0.9em;
 }
 
 #controls button img {
-  vertical-align: text-bottom;
+	vertical-align: text-bottom;
 }
 
 #accordion button {
-  border-color: var(--button-border-color);
-  background-color: var(--button-background);
-  color: var(--button-text-color);
-  height: 30px;
-  margin: 1px;
+	border-color: var(--button-border-color);
+	background-color: var(--button-background);
+	color: var(--button-text-color);
+	height: 30px;
+	margin: 1px;
 }
 
 /* header */
 #title {
-  margin: 0 0 0.2em 0;
-  float: left;
+	margin: 0 0 0.2em 0;
+	float: left;
 }
 
 #export, #display {
-  float: right;
+	float: right;
 }
 
 select.icons option {
-  padding-left: 20px;
-  background-repeat: no-repeat;
+	padding-left: 20px;
+	background-repeat: no-repeat;
 }
 
 #entity-list, #entity-list > div {
-  padding: 2px 0 !important;
+	padding: 2px 0 !important;
 }
 
 /* treeTable for entities */
 #entity-list tbody img {
-  margin: 0.2em 0.4em 0 0; /* sprite image margin */
-  vertical-align: top;
+	margin: 0.2em 0.4em 0 0; /* sprite image margin */
+	vertical-align: top;
 }
 
 #entity-list tbody span {
-  background-position: left center;
-  background-repeat: no-repeat;
-  padding: 0 0 0.2em 0; /* 0.2em 0 0.2em 1.7em if not using sprite images */
-  margin: 0;
+	background-position: left center;
+	background-repeat: no-repeat;
+	padding: 0 0 0.2em 0; /* 0.2em 0 0.2em 1.7em if not using sprite images */
+	margin: 0;
 }
 
 .indicator {
-  height: 12px;
+	height: 12px;
 }
 
 .ops, .min, .max, .average, .last, .consumption, .total, .cost {
-  text-align: right;
+	text-align: right;
 }
 
 .visibility {
-  width: 18px;
+	width: 18px;
 }
 
 .expander {
-  width: 20px;
+	width: 20px;
 }
 
 /* dialogs */
+
 .dialog {
-  display: none;
-  padding: 10px;
+	display: none;
+	padding: 10px;
 }
 
 .dialog select {
-  width: 100%;
+	width: 100%;
 }
 
 .dialog input[type=text], .dialog input[type=password], .dialog textarea {
-  width: 100%;
-  box-sizing: border-box;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 .ui-dialog{
-  background-color: var(--background-light);
+	background-color: var(--background-light);
 }
 
 .ui-dialog-titlebar {
-  background-color: var(--background-richer);
-  border-color: var(--background);
+	background-color: var(--background-richer);
+	border-color: var(--background);
 }
 
 .ui-tabs, .ui-tabs-nav {
-  background-color: var(--background);
-  border-color: var(--background);
+	background-color: var(--background);
+	border-color: var(--background);
 }
 
 .ui-tabs-anchor {
-  color: var(--button-text-color);
-  background-color: var(--background-richer);
+	color: var(--button-text-color);
+	background-color: var(--background-richer);
 }
 
 .ui-slider {
-  color: var(--button-text-color);
-  background-color: var(--button-background);
+	color: var(--button-text-color);
+	background-color: var(--button-background);
 }
 
 /* mobile styles */
+
 @media only screen and (max-width: 40em) {
-  /* small */
-  table .min, table .max, table .average {
-    display: none;
-  }
-  tr td {
-    font-size: 0.9em;
-  }
-  #footer {
-    display: none;
-  }
+	/* small */
+	table .min, table .max, table .average {
+		display: none;
+	}
+	tr td {
+		font-size: 0.9em;
+	}
+	#footer {
+		display: none;
+	}
 }
 
 /*@media only screen and (min-width: 40.063em) and (max-width: 64em) {*/
 @media only screen and (max-width: 64em) {
-  /* medium */
-  table .type {
-    display: none;
-  }
-  h2 {
-    font-size: 1.2em;
-  }
-  #controls button {
-    font-size: 0.9em;
-  }
-  .ui-widget {
-    font-size: 1em;
-  }
-  .ui-widget .ui-widget {
-    font-size: 0.9em;
-  }
+	/* medium */
+	table .type {
+		display: none;
+	}
+	h2 {
+		font-size: 1.2em;
+	}
+	#controls button {
+		font-size: 0.9em;
+	}
+	.ui-widget {
+		font-size: 1em;
+	}
+	.ui-widget .ui-widget {
+		font-size: 0.9em;
+	}
 }
 
 /* jQuery UI customizations */
 input.ui-button, input.ui-button:hover, input.ui-button:active {
-  color: var(--button-text-color);
-  border-color: var(--button-border-color);
-  background-color: var(--button-background);
+	color: var(--button-text-color);
+	border-color: var(--button-border-color);
+	background-color: var(--button-background);
 }
 
 #entity-add.ui-dialog-content {
-  padding: 0.3em 0 0;
+	padding: 0.3em 0 0;
 }
 
 .ui-error .ui-widget-header { /* red header */
-  background-image: url("../img/ui-bg_gloss-wave_35_red_500x100.png");
+	background-image: url("../img/ui-bg_gloss-wave_35_red_500x100.png");
 }
+
 
 /* jQuery TreeTable Core 2.0 stylesheet
  *
@@ -537,4 +525,19 @@ input:checked + .slider:before {
 
 .slider.round:before {
   border-radius: 50%;
+}
+
+/* transition effect for theme toggling */
+html.color-theme-in-transition,
+html.color-theme-in-transition *,
+html.color-theme-in-transition *:before,
+html.color-theme-in-transition *:after {
+  transition: all 500ms !important;
+  transition-delay: 0 !important;
+}
+
+/* theming the scroll bar on mac */
+.docs-page__content {
+  background: var(--background);
+  overflow-y: auto;
 }

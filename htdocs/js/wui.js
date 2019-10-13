@@ -570,11 +570,19 @@ vz.wui.initEvents = function() {
  * @param ev either click event or literal button event value
  */
 vz.wui.handleControls = function(action, keepPeriodStartFixed) {
-	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min,
-			middle = vz.options.plot.xaxis.min + delta/2,
-			startOfPeriodLocale;
-
+	var delta   = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
+	var middle  = vz.options.plot.xaxis.min + delta/2;
+	var hover;
+	var startOfPeriodLocale;
 	var control = typeof action == 'string' ? action : $(this).val();
+	var axes    = vz.plot.getAxes();
+
+	if (vz.options.plot.hoverPos &&
+	    !(vz.options.plot.hoverPos.x < axes.xaxis.min || vz.options.plot.hoverPos.x > axes.xaxis.max ||
+	      vz.options.plot.hoverPos.y < axes.yaxis.min || vz.options.plot.hoverPos.y > axes.yaxis.max))
+	{
+		hover = vz.options.plot.hoverPos.x;
+	}
 
 	switch (control) {
 		case 'move-last':
@@ -633,17 +641,26 @@ vz.wui.handleControls = function(action, keepPeriodStartFixed) {
 			break;
 		case 'zoom-in':
 			vz.wui.period = null;
-			if (vz.wui.tmaxnow)
+			if (hover)
+				vz.wui.zoom(hover - delta/4, hover + delta/4);
+			else if (vz.wui.tmaxnow)
 				vz.wui.zoom(moment().valueOf() - delta/2, moment().valueOf());
 			else
 				vz.wui.zoom(middle - delta/4, middle + delta/4);
 			break;
 		case 'zoom-out':
 			vz.wui.period = null;
-			vz.wui.zoom(
-				middle - delta,
-				middle + delta
-			);
+			if (hover)
+				vz.wui.zoom(
+					hover - delta,
+					hover + delta
+				);
+			else
+				vz.wui.zoom(
+					middle - delta,
+					middle + delta
+				);
+
 			break;
 		case 'zoom-hour':
 		case 'zoom-day':
@@ -760,14 +777,14 @@ vz.wui.setTimeout = function() {
 	var t = Math.max((vz.options.plot.xaxis.max - vz.options.plot.xaxis.min) / vz.options.tuples, vz.options.minTimeout);
 	vz.wui.timeout = window.setTimeout(vz.wui.refresh, t);
 
-	$('#refresh-time').html(" in (" + Math.round(t / 1000) + "s)");
+	$('#refresh-time').html(' in (' + Math.round(t / 1000) + 's)');
 };
 
 /**
  * Stop auto-refresh of graphs
  */
 vz.wui.clearTimeout = function(text) {
-	$('#refresh-time').html("");
+	$('#refresh-time').html('');
 
 	var rc = window.clearTimeout(vz.wui.timeout);
 	vz.wui.timeout = null;
