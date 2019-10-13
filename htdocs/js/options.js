@@ -31,7 +31,7 @@ vz.options = {
 	},
 	tuples: null,							// automatically determined by plot size
 	refresh: true,						// update chart if zoomed to current timestamp
-	darkTheme: true,                // enable the dark theme
+	darkTheme: false,						// enable the dark theme
 	interval: 24*60*60*1000,	// 1 day default time interval to show
 	totalsInterval: 300,			// update interval for total consumption in s (only channels where initialconsumption > 0)
 	pushRedrawTimeout: 1000,	// ms delay for collecting push updates before redrawing

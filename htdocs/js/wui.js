@@ -93,7 +93,7 @@ vz.wui.init = function() {
 	if (vz.options.darkTheme) {
 		document.documentElement.classList.add('color-theme-in-transition');
 		document.documentElement.setAttribute('data-theme', "dark");
-		window.setTimeout(function() { document.documentElement.classList.remove('color-theme-in-transition') }, 500);
+		window.setTimeout(function() { document.documentElement.classList.remove('color-theme-in-transition'); }, 500);
 	}
 	$('#darkTheme').change(function() {
 		vz.options.darkTheme = $(this).prop('checked');
@@ -104,7 +104,7 @@ vz.wui.init = function() {
 		} else {
 			document.documentElement.setAttribute('data-theme', "light");
 		}
-		window.setTimeout(function() { document.documentElement.classList.remove('color-theme-in-transition') }, 500);
+		window.setTimeout(function() { document.documentElement.classList.remove('color-theme-in-transition'); }, 500);
 	});
 	
 	// toggle all channels
