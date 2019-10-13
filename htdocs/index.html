@@ -121,16 +121,25 @@
 	</div>
 
 	<div id="controls">
-		<button value="move-back" title="scroll backward"><img src="img/blank.png" class="icon-control_rewind_blue" alt="" /></button><button value="move-forward" title="scroll forward"><img src="img/blank.png" class="icon-control_fastforward_blue" alt="" /></button><button value="move-last" title="scroll to present"><img src="img/blank.png" class="icon-control_end_blue" alt="" /></button><button value="zoom-in" title="zoom in"><img src="img/blank.png" class="icon-zoom_in" alt="" /></button><button value="zoom-out" title="zoom out"><img src="img/blank.png" class="icon-zoom_out" alt="" /></button><button value="zoom-hour">Stunde</button><button value="zoom-day">Tag</button><button value="zoom-week">Woche</button><button value="zoom-month">Monat</button><button value="zoom-year">Jahr</button>
+		<button value="move-back" title="scroll backward"><img src="img/blank.png" class="icon-control_rewind_blue" alt="" /></button>
+		<button value="move-forward" title="scroll forward"><img src="img/blank.png" class="icon-control_fastforward_blue" alt="" /></button>
+		<button value="move-last" title="scroll to present"><img src="img/blank.png" class="icon-control_end_blue" alt="" /></button>
+		<button value="zoom-in" title="zoom in"><img src="img/blank.png" class="icon-zoom_in" alt="" /></button>
+		<button value="zoom-out" title="zoom out"><img src="img/blank.png" class="icon-zoom_out" alt="" /></button>
+		<button value="zoom-hour">Stunde</button>
+		<button value="zoom-day">Tag</button>
+		<button value="zoom-week">Woche</button>
+		<button value="zoom-month">Monat</button>
+		<button value="zoom-year">Jahr</button>
 	</div>
 
 	<div id="accordion">
-		<h3><img src="img/blank.png" class="icon-table" alt="" /> Kanäle</h3>
+		<h3>&#9776; Kanäle</h3>
 		<div id="entity-list">
 			<table class="properties">
 				<thead>
 					<tr>
-						<th><img src="img/blank.png" class="icon-eye" alt="Anzeige" id="entity-toggle" title="Toggle entitites" /></th>
+						<th></th>
 						<th></th>
 						<th>Titel</th>
 						<th class="type">Typ</th>
@@ -148,28 +157,27 @@
 			</table>
 			<div><button name="entity-add"><img src="img/blank.png" class="icon-add" alt="add" /> Kanal hinzufügen</button></div>
 		</div>
-		<h3><img src="img/blank.png" class="icon-wrench" alt="" /> Optionen</h3>
+	</div>
+	<div id="accordion">
+		<h3>&#9881; Einstellungen</h3>
 		<div id="options">
-			<table>
-				<thead>
-					<tr>
-						<th>Option</th>
-						<th>Wert</th>
-					</tr>
-				</thead>
+			<table class="properties">
 				<tbody>
 					<tr>
-						<td><label for="refresh"><img src="img/blank.png" class="icon-arrow_refresh" alt="" /> Automatisch aktualisieren</label></td>
-						<td><input type="checkbox" id="refresh" /> <span id="refresh-time"></span></td>
+						<td><label for="darkTheme">Dark Theme</label></td>
+						<td align="right"><label class="switch"><input type="checkbox" id="darkTheme"><span	class="slider round" id="dark-theme" /></label></td>
+					</tr>
+					<tr>
+						<td><label for="refresh">Automatisch aktualisieren</label><label id="refresh-time" /></td>
+						<td align="right"><label class="switch"><input type="checkbox" id="refresh"><span class="slider round" /></label></td>
 					</tr>
 				</tbody>
 			</table>
-			<div><button name="options-save"><img src="img/blank.png" class="icon-save" alt="save" /> Einstellungen speichern</button></div>
 		</div>
 	</div>
 </div>
 <div id="footer">
-	&copy; 2011-2018 - <a href="http://volkszaehler.org/">volkszaehler.org</a> - the open smartmeter platform
+		&copy; 2011-2019 - <a href="http://volkszaehler.org/">volkszaehler.org</a> - the open smartmeter platform
 </div>
 
 <!-- dialogs -->
@@ -234,9 +242,6 @@
 		<div id="entity-create">
 			<form>
 				<table class="properties">
-					<thead>
-						<tr><th>Eigenschaft</th><th>Wert</th></tr>
-					</thead>
 					<tbody>
 						<tr><td>Middleware:</td><td><select id="entity-create-middleware" /></select></td></tr>
 						<tr><td>Typ:</td><td><select class="icons" name="type"></select></td></tr>

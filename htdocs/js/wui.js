@@ -45,7 +45,6 @@ vz.wui.init = function() {
 
 	// buttons
 	$('button, input[type=button],[type=image],[type=submit]').button();
-	$('button[name=options-save]').click(vz.options.saveCookies);
 	$('button[name=entity-add]').click(this.dialogs.init);
 
 	$('#export select').change(function(event) {
@@ -80,6 +79,7 @@ vz.wui.init = function() {
 	}
 	$('#refresh').change(function() {
 		vz.options.refresh = $(this).prop('checked');
+		vz.options.saveCookies();
 		if (vz.options.refresh) {
 			vz.wui.refresh(); // refresh once
 			vz.wui.setTimeout();
@@ -88,6 +88,25 @@ vz.wui.init = function() {
 		}
 	});
 
+	// switch dark theme
+	$('#darkTheme').prop('checked', vz.options.darkTheme);
+	if (vz.options.darkTheme) {
+		document.documentElement.classList.add('color-theme-in-transition');
+		document.documentElement.setAttribute('data-theme', "dark");
+		window.setTimeout(function() { document.documentElement.classList.remove('color-theme-in-transition') }, 500);
+	}
+	$('#darkTheme').change(function() {
+		vz.options.darkTheme = $(this).prop('checked');
+		vz.options.saveCookies();
+		document.documentElement.classList.add('color-theme-in-transition');
+		if (vz.options.darkTheme) {
+			document.documentElement.setAttribute('data-theme', "dark");
+		} else {
+			document.documentElement.setAttribute('data-theme', "light");
+		}
+		window.setTimeout(function() { document.documentElement.classList.remove('color-theme-in-transition') }, 500);
+	});
+	
 	// toggle all channels
 	$('#entity-toggle').click(function() {
 		vz.entities.each(function(entity, parent) {
@@ -551,19 +570,11 @@ vz.wui.initEvents = function() {
  * @param ev either click event or literal button event value
  */
 vz.wui.handleControls = function(action, keepPeriodStartFixed) {
-	var delta   = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min;
-	var middle  = vz.options.plot.xaxis.min + delta/2;
-	var hover;
-	var startOfPeriodLocale;
-	var control = typeof action == 'string' ? action : $(this).val();
-	var axes    = vz.plot.getAxes();
+	var delta = vz.options.plot.xaxis.max - vz.options.plot.xaxis.min,
+			middle = vz.options.plot.xaxis.min + delta/2,
+			startOfPeriodLocale;
 
-	if (vz.options.plot.hoverPos &&
-	    !(vz.options.plot.hoverPos.x < axes.xaxis.min || vz.options.plot.hoverPos.x > axes.xaxis.max ||
-	      vz.options.plot.hoverPos.y < axes.yaxis.min || vz.options.plot.hoverPos.y > axes.yaxis.max))
-	{
-		hover = vz.options.plot.hoverPos.x;
-	}
+	var control = typeof action == 'string' ? action : $(this).val();
 
 	switch (control) {
 		case 'move-last':
@@ -622,26 +633,17 @@ vz.wui.handleControls = function(action, keepPeriodStartFixed) {
 			break;
 		case 'zoom-in':
 			vz.wui.period = null;
-			if (hover)
-				vz.wui.zoom(hover - delta/4, hover + delta/4);
-			else if (vz.wui.tmaxnow)
+			if (vz.wui.tmaxnow)
 				vz.wui.zoom(moment().valueOf() - delta/2, moment().valueOf());
 			else
 				vz.wui.zoom(middle - delta/4, middle + delta/4);
 			break;
 		case 'zoom-out':
 			vz.wui.period = null;
-			if (hover)
-				vz.wui.zoom(
-					hover - delta,
-					hover + delta
-				);
-			else
-				vz.wui.zoom(
-					middle - delta,
-					middle + delta
-				);
-
+			vz.wui.zoom(
+				middle - delta,
+				middle + delta
+			);
 			break;
 		case 'zoom-hour':
 		case 'zoom-day':
@@ -758,14 +760,14 @@ vz.wui.setTimeout = function() {
 	var t = Math.max((vz.options.plot.xaxis.max - vz.options.plot.xaxis.min) / vz.options.tuples, vz.options.minTimeout);
 	vz.wui.timeout = window.setTimeout(vz.wui.refresh, t);
 
-	$('#refresh-time').html('(' + Math.round(t / 1000) + ' s)');
+	$('#refresh-time').html(" in (" + Math.round(t / 1000) + "s)");
 };
 
 /**
  * Stop auto-refresh of graphs
  */
 vz.wui.clearTimeout = function(text) {
-	$('#refresh-time').html(text || '');
+	$('#refresh-time').html("");
 
 	var rc = window.clearTimeout(vz.wui.timeout);
 	vz.wui.timeout = null;

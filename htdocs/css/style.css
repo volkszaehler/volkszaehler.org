@@ -1,272 +1,362 @@
+html {
+  --hue: 210; /* Blue 210*/
+  --accent-hue: 25; /* Orange */
+  --text-color-normal: hsl(var(--hue), 100%, 0%);
+  --text-color-light: hsl(var(--hue), 80%, 20%);
+  --text-color-richer: hsl(var(--hue), 70%, 30%);
+  --text-color-highlight: hsl(var(--accent-hue), 70%, 50%);
+  --link-color: hsl(var(--hue), 90%, 70%);
+  --accent-color: hsl(var(--accent-hue), 100%, 70%);
+  --h3-color: hsl(var(--hue), 100%, 87%);
+  
+  --button-border-color: hsl(var(--hue), 80%, 75%);
+  --button-text-color: hsl(var(--hue), 90%, 10%);
+  --button-background: hsl(var(--hue), 100%, 97%);
+  
+  --slider-color: hsl(var(--hue), 100%, 100%); /* --background; */
+  --slider-color-on: hsl(var(--hue), 100%, 77%); 
+  --slider-color-off: hsl(var(--hue), 50%, 10%);  
+  --slider-color-bg: hsl(var(--hue), 20%, 70%);  
+  
+  --background: hsl(var(--hue), 100%, 100%);
+  --background-vlight: hsl(var(--hue), 100%, 97%);;
+  --background-light: hsl(var(--hue), 100%, 94%);;
+  --background-richer: hsl(var(--hue), 100%, 88%);
+}
+
+html[data-theme='dark'] {
+  --text-color-normal: hsl(var(--hue), 10%, 80%);
+  --text-color-light: hsl(var(--hue), 15%, 80%);
+  --text-color-richer: hsl(var(--hue), 50%, 80%);
+  --text-color-highlight: hsl(var(--accent-hue), 70%, 80%);
+  --link-color: hsl(var(--hue), 90%, 70%);
+  --accent-color: hsl(var(--accent-hue), 100%, 70%);
+  --h3-color: hsl(var(--hue), 66%, 28%);
+  
+  --button-border-color: hsl(var(--hue), 66%, 40%);
+  --button-text-color: hsl(var(--hue), 10%, 90%);
+  --button-background: hsl(var(--hue), 66%, 40%);
+  
+  --slider-color: hsl(var(--hue), 10%, 10%); /* --background */
+  --slider-color-on: hsl(var(--hue), 66%, 40%); /* --button-background; */
+  --slider-color-off: hsl(var(--hue), 50%, 10%); 
+  --slider-color-bg: hsl(var(--hue), 30%, 10%);  
+	
+  --background: hsl(var(--hue), 10%, 10%);
+  --background-vlight: hsl(var(--hue), 10%, 15%);;
+  --background-light: hsl(var(--hue), 10%, 20%);;
+  --background-richer: hsl(var(--hue), 45%, 35%);
+}
+
+/* transition effect for theme toggling */
+html.color-theme-in-transition,
+html.color-theme-in-transition *,
+html.color-theme-in-transition *:before,
+html.color-theme-in-transition *:after {
+  transition: all 500ms !important;
+  transition-delay: 0 !important;
+}
+
+/* theming the scroll bar on mac */
+.docs-page__content {
+  background: var(--background);
+  overflow-y: auto;
+}
+
 body {
-	margin: 0;
-	padding: 0;
-	background-color: white;
-	font-family: sans-serif;
+  color: var(--text-color-normal);
+  background-color: var(--background);
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
 }
 
 table {
-	border-collapse: collapse;
-	empty-cells: show;
-	width: 100%;
+  background-color: var(--background-light);
+  border-collapse: collapse;
+  border-color: var(--backgroud-richer);
+  empty-cells: show;
+  width: 100%;
+  border: 0px solid;
 }
 
 thead tr {
-	border-bottom: 2px solid grey;
-
-	text-align: left;
-	font-size: 0.9em;
+  color: var(--text-color-normal);
+  background-color: var(--background-richer);
+  text-align: left;
+  font-size: 0.9em;
 }
 
-tr {
-	font-size: 1em;
+tr, td, span, a, p, li {
+  color: var(--text-color-normal);
 }
+
+input, select {
+  color: var(--button-text-color);
+  background-color: var(--background-vlight);
+}
+
+/* zebra style */
+tr:nth-child(even) {background-color: var(--background-vlight);}
 
 tr.optional,
 tr.stale td.min, tr.stale td.max, tr.stale td.average, tr.stale td.last,
 tr.stale td.consumption, tr.stale td.cost, tr.stale td.total {
-  color: grey;
+  color: var(--text-color-light);
+}
+
+table.properties th:not(:first-child) {
+  border-bottom: 1px solid var(--background);
 }
 
 table.properties tr:not(:first-child) {
-	border-top: 1px solid #ddd;
+  border-top: 1px solid var(--background);
 }
 
 td input:not([type=image]):not([type=checkbox]) {
-	width: 100%;
+  width: 100%;
 }
 
 #content {
-	padding: 10px;
+  padding: 10px;
 }
 
 #content div {
-	padding: 2px 0;
-	display: block;
+  padding: 2px 0;
+  display: block;
 }
 
 #content h3 {
-	background-color: grey;
-	padding: 4px;
-	margin: 2px 0;
-	color: white;
-	cursor: pointer;
-	font-size: 0.9em;
+  background-color: var(--h3-color);
+  padding: 4px;
+  margin: 2px 0;
+  cursor: pointer;
+  font-size: 0.9em;
 }
 
 #content h3 img {
-	vertical-align: bottom;
+  vertical-align: bottom;
 }
 
 #plot {
-	position: relative;
-	background-color: white;
+  position: relative;
+}
+
+.legend {
+  background-color: var(--background); 
 }
 
 .legend table {
-	width: auto;
+  width: auto;
+}
+
+.legend td {
+  color: var(--text-color-normal);
 }
 
 .axisLabels { /* if axislabels plugin is used */
-	font-size: smaller;
-	color: #545454;
+  font-size: smaller;
+  color: var(--text-color-normal);
 }
 
 #flot {
-	height: 300px;
-	z-index: 1;
-	margin-bottom: 5px;
+  height: 300px;
+  z-index: 1;
+  margin-bottom: 5px;
 }
 
 #overlay {
-	position: absolute;
-	z-index: 3;
-	width: 100%;
-	top: 50%;
-	margin-top: -42px;
-	text-align: center;
-	text-shadow: 0 0 4px white;
-	color: grey;
+  position: absolute;
+  z-index: 3;
+  width: 100%;
+  top: 50%;
+  margin-top: -42px;
+  text-align: center;
 }
 
 #time {
-	position: absolute;
-	z-index: 2;
-	display: none;
-	color: white;
-	background-color: rgba(170, 0, 0, 0.80);
-	font-size: smaller;
-	padding: 2px 4px;
-	white-space: nowrap;
+  position: absolute;
+  z-index: 2;
+  display: none;
+  color: var(--text-color-normal);
+  background-color: rgba(170, 0, 0, 0.80);
+  font-size: smaller;
+  padding: 2px 4px;
+  white-space: nowrap;
 }
 
 #footer {
-	text-align: center;
-	font-size: 0.7em;
-	background-color: #0292C0;
-	color: white;
-	padding: 10px;
+  text-align: right;
+  font-size: 0.7em;
+  padding: 10px;
 }
 
 #footer a, #footer a:visited {
-	color: white;
+  color: var(--link-color);
 }
 
 #controls {
-	background-color: grey;
-	margin-right: 0px; /* override jquery ui */
-	padding: 2px!important;
+  margin-right: 0px; /* override jquery ui */
+  padding: 0px!important;
 }
 
 #controls button {
-	width: 10.0%;
-	height: 30px;
-	margin-right: 0px; /* override jquery ui */
-	font-size: 1em;
-	padding: 0;
+  border-color: var(--button-border-color);
+  background-color: var(--button-background);
+  color: var(--button-text-color);
+  width: 9.75%;
+  height: 30px;
+  margin: 1px; 
+  font-size: 0.9em;
 }
 
 #controls button img {
-	vertical-align: text-bottom;
+  vertical-align: text-bottom;
 }
 
 #accordion button {
-	margin-left: 0;
-	font-size: 0.9em;
-}
-
-#accordion button img {
-	vertical-align: text-top;
-}
-
-button {
-	background-color: silver;
-	border: 1px solid darkgrey;
-	-moz-border-radius: 3px;
-	-webkit-border-radius: 3px;
-	border-radius: 3px;
+  border-color: var(--button-border-color);
+  background-color: var(--button-background);
+  color: var(--button-text-color);
+  height: 30px;
+  margin: 1px;
 }
 
 /* header */
 #title {
-	margin: 0 0 0.2em 0;
-	float: left;
+  margin: 0 0 0.2em 0;
+  float: left;
 }
 
 #export, #display {
-	float: right;
+  float: right;
 }
 
 select.icons option {
-	padding-left: 20px;
-	background-repeat: no-repeat;
+  padding-left: 20px;
+  background-repeat: no-repeat;
 }
 
 #entity-list, #entity-list > div {
-	padding: 2px 0 !important;
+  padding: 2px 0 !important;
 }
 
 /* treeTable for entities */
 #entity-list tbody img {
-	margin: 0.2em 0.4em 0 0; /* sprite image margin */
-	vertical-align: top;
+  margin: 0.2em 0.4em 0 0; /* sprite image margin */
+  vertical-align: top;
 }
 
 #entity-list tbody span {
-	background-position: left center;
-	background-repeat: no-repeat;
-	padding: 0 0 0.2em 0; /* 0.2em 0 0.2em 1.7em if not using sprite images */
-	margin: 0;
+  background-position: left center;
+  background-repeat: no-repeat;
+  padding: 0 0 0.2em 0; /* 0.2em 0 0.2em 1.7em if not using sprite images */
+  margin: 0;
 }
 
 .indicator {
-	height: 12px;
+  height: 12px;
 }
 
 .ops, .min, .max, .average, .last, .consumption, .total, .cost {
-	text-align: right;
+  text-align: right;
 }
 
 .visibility {
-	width: 18px;
+  width: 18px;
 }
 
 .expander {
-	width: 20px;
+  width: 20px;
 }
 
 /* dialogs */
-
 .dialog {
-	display: none;
-	padding: 10px;
+  display: none;
+  padding: 10px;
 }
 
 .dialog select {
-	width: 100%;
+  width: 100%;
 }
 
 .dialog input[type=text], .dialog input[type=password], .dialog textarea {
-	width: 100%;
-	box-sizing: border-box;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.ui-dialog{
+  background-color: var(--background-light);
+}
+
+.ui-dialog-titlebar {
+  background-color: var(--background-richer);
+  border-color: var(--background);
+}
+
+.ui-tabs, .ui-tabs-nav {
+  background-color: var(--background);
+  border-color: var(--background);
+}
+
+.ui-tabs-anchor {
+  color: var(--button-text-color);
+  background-color: var(--background-richer);
+}
+
+.ui-slider {
+  color: var(--button-text-color);
+  background-color: var(--button-background);
 }
 
 /* mobile styles */
-
 @media only screen and (max-width: 40em) {
-	/* small */
-	table .min, table .max, table .average {
-		display: none;
-	}
-	tr td {
-		font-size: 0.9em;
-	}
-	#footer {
-		display: none;
-	}
+  /* small */
+  table .min, table .max, table .average {
+    display: none;
+  }
+  tr td {
+    font-size: 0.9em;
+  }
+  #footer {
+    display: none;
+  }
 }
 
 /*@media only screen and (min-width: 40.063em) and (max-width: 64em) {*/
 @media only screen and (max-width: 64em) {
-	/* medium */
-	table .type {
-		display: none;
-	}
-	h2 {
-		font-size: 1.2em;
-	}
-	#controls button {
-		font-size: 0.9em;
-	}
-	.ui-widget {
-		font-size: 1em;
-	}
-	.ui-widget .ui-widget {
-		font-size: 0.9em;
-	}
+  /* medium */
+  table .type {
+    display: none;
+  }
+  h2 {
+    font-size: 1.2em;
+  }
+  #controls button {
+    font-size: 0.9em;
+  }
+  .ui-widget {
+    font-size: 1em;
+  }
+  .ui-widget .ui-widget {
+    font-size: 0.9em;
+  }
 }
 
 /* jQuery UI customizations */
-input.ui-button {
-	padding: 0.1em 0.5em;
-}
-
-.ui-button-text-only .ui-button-text {
-	padding: 0.1em 0.5em;
+input.ui-button, input.ui-button:hover, input.ui-button:active {
+  color: var(--button-text-color);
+  border-color: var(--button-border-color);
+  background-color: var(--button-background);
 }
 
 #entity-add.ui-dialog-content {
-	padding: 0.3em 0 0;
-}
-
-.ui-tabs .ui-tabs-nav li a {
-  padding: 0.1em 0.5em !important;
+  padding: 0.3em 0 0;
 }
 
 .ui-error .ui-widget-header { /* red header */
-	background-image: url("../img/ui-bg_gloss-wave_35_red_500x100.png");
+  background-image: url("../img/ui-bg_gloss-wave_35_red_500x100.png");
 }
-
 
 /* jQuery TreeTable Core 2.0 stylesheet
  *
@@ -295,8 +385,8 @@ input.ui-button {
 /* jquery.treeTable.sortable
  * ------------------------------------------------------------------------- */
 .treeTable tr.selected, .treeTable tr.accept {
-  background-color: #3875d7;
-  color: #fff;
+  background-color: var(--background);
+  color: var(--text-color-normal);;
 }
 
 .treeTable tr.collapsed.selected td .expander, .treeTable tr.collapsed.accept td .expander {
@@ -308,7 +398,7 @@ input.ui-button {
 }
 
 .treeTable .ui-draggable-dragging {
-  color: #000;
+  color: var(--background);
   z-index: 1;
 }
 
@@ -318,7 +408,7 @@ input.ui-button {
 }
 
 #nprogress .bar {
-  background: #29d;
+  background: var(--text-color-highlight);
 
   position: fixed;
   z-index: 1031;
@@ -384,4 +474,67 @@ input.ui-button {
 @keyframes nprogress-spinner {
   0%   { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* The switch - the box around the slider */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--slider-color-bg);
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: var(--slider-color);
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: var(--slider-color-on);
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px var(--slider-color-on);
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
 }

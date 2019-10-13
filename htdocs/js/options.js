@@ -25,21 +25,22 @@
 
 vz.options = {
 	language: 'de',
-	precision: 2,							// TODO update from middleware capabilities?
-	maxPrecision: {						// override precision for certain units
+	precision: 2,			// TODO update from middleware capabilities?
+	maxPrecision: {			// override precision for certain units
 		'°C': 1
 	},
-	tuples: null,							// automatically determined by plot size
-	refresh: true,						// update chart if zoomed to current timestamp
+	tuples: null,			// automatically determined by plot size
+	refresh: true,			// update chart if zoomed to current timestamp
+	darkTheme: true,                // enable the dark theme
 	interval: 24*60*60*1000,	// 1 day default time interval to show
-	totalsInterval: 300,			// update interval for total consumption in s (only channels where initialconsumption > 0)
+	totalsInterval: 300,		// update interval for total consumption in s (only channels where initialconsumption > 0)
 	pushRedrawTimeout: 1000,	// ms delay for collecting push updates before redrawing
-	minTimeout: 2000,					// minimum refresh time in ms
+	minTimeout: 2000,		// minimum refresh time in ms
 	shortenLongTypes: false,	// show shorter type names in table
 	middleware: [
 		{
 			title: 'Local (default)',
-			url: 'api'
+			url: ''
 			// live: 8082					// NOTE: live updates require
 														//    - push-server running and
 														//    - either apache proxy forwarding configured according to
