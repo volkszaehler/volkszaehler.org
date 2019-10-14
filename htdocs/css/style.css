@@ -1,53 +1,54 @@
 html {
-  --hue: 210; /* Blue 210*/
-  --accent-hue: 25; /* Orange */
-  --text-color-normal: hsl(var(--hue), 100%, 0%);
-  --text-color-light: hsl(var(--hue), 80%, 20%);
-  --text-color-richer: hsl(var(--hue), 70%, 30%);
-  --text-color-highlight: hsl(var(--accent-hue), 70%, 50%);
-  --link-color: hsl(var(--hue), 90%, 70%);
-  --accent-color: hsl(var(--accent-hue), 100%, 70%);
-  --h3-color: hsl(var(--hue), 100%, 87%);
-  
-  --button-border-color: hsl(var(--hue), 80%, 75%);
-  --button-text-color: hsl(var(--hue), 90%, 10%);
-  --button-background: hsl(var(--hue), 100%, 97%);
-  
-  --slider-color: var(--background);
-  --slider-color-on: hsl(var(--hue), 100%, 77%); 
-  --slider-color-off: hsl(var(--hue), 50%, 10%);  
-  --slider-color-bg: hsl(var(--hue), 20%, 70%);  
-  
-  --background: hsl(var(--hue), 100%, 100%);
-  --background-vlight: hsl(var(--hue), 100%, 97%);;
-  --background-light: hsl(var(--hue), 100%, 94%);;
-  --background-richer: hsl(var(--hue), 100%, 88%);
-}
-
-html[data-theme='dark'] {
-  --text-color-normal: hsl(var(--hue), 10%, 80%);
-  --text-color-light: hsl(var(--hue), 15%, 80%);
-  --text-color-richer: hsl(var(--hue), 50%, 80%);
-  --text-color-highlight: hsl(var(--accent-hue), 70%, 80%);
-  --link-color: hsl(var(--hue), 90%, 70%);
-  --accent-color: hsl(var(--accent-hue), 100%, 20%);
-  --h3-color: hsl(var(--hue), 66%, 28%);
-  
-  --button-border-color: hsl(var(--hue), 66%, 40%);
-  --button-text-color: hsl(var(--hue), 10%, 90%);
-  --button-background: hsl(var(--hue), 66%, 40%);
-  
-  --slider-color: var(--text-color-normal);
-  --slider-color-on: hsl(var(--hue), 66%, 40%); 
-  --slider-color-off: hsl(var(--hue), 50%, 10%); 
-  --slider-color-bg: hsl(var(--hue), 100%, 10%);  
+	--hue: 210; /* Blue 210*/
+	--accent-hue: 25; /* Orange */
+	--text-color-normal: hsl(var(--hue), 100%, 0%);
+	--text-color-light: hsl(var(--hue), 80%, 20%);
+	--text-color-richer: hsl(var(--hue), 70%, 30%);
+	--text-color-highlight: hsl(var(--accent-hue), 70%, 50%);
+	--link-color: hsl(var(--hue), 90%, 70%);
+	--accent-color: hsl(var(--accent-hue), 100%, 70%);
+	--h3-color: hsl(var(--hue), 100%, 87%);
 	
-  --background: hsl(var(--hue), 10%, 10%);
-  --background-vlight: hsl(var(--hue), 10%, 15%);;
-  --background-light: hsl(var(--hue), 10%, 20%);;
-  --background-richer: hsl(var(--hue), 45%, 35%);
+	--button-border-color: hsl(var(--hue), 80%, 75%);
+	--button-text-color: hsl(var(--hue), 90%, 10%);
+	--button-background: hsl(var(--hue), 100%, 97%);
+	
+	--slider-color: var(--background);
+	--slider-color-on: hsl(var(--hue), 100%, 77%); 
+	--slider-color-off: hsl(var(--hue), 50%, 10%);  
+	--slider-color-bg: hsl(var(--hue), 20%, 70%);  
+	
+	--background: hsl(var(--hue), 100%, 100%);
+	--background-vlight: hsl(var(--hue), 100%, 97%);;
+	--background-light: hsl(var(--hue), 100%, 94%);;
+	--background-richer: hsl(var(--hue), 100%, 88%);
 }
 
+@media (prefers-color-scheme: dark){
+	html[data-theme='dark'] {
+		--text-color-normal: hsl(var(--hue), 10%, 80%);
+		--text-color-light: hsl(var(--hue), 15%, 80%);
+		--text-color-richer: hsl(var(--hue), 50%, 80%);
+		--text-color-highlight: hsl(var(--accent-hue), 70%, 80%);
+		--link-color: hsl(var(--hue), 90%, 70%);
+		--accent-color: hsl(var(--accent-hue), 100%, 20%);
+		--h3-color: hsl(var(--hue), 66%, 28%);
+		
+		--button-border-color: hsl(var(--hue), 66%, 40%);
+		--button-text-color: hsl(var(--hue), 10%, 90%);
+		--button-background: hsl(var(--hue), 66%, 40%);
+		
+		--slider-color: var(--text-color-normal);
+		--slider-color-on: hsl(var(--hue), 66%, 40%); 
+		--slider-color-off: hsl(var(--hue), 50%, 10%); 
+		--slider-color-bg: hsl(var(--hue), 100%, 10%);  
+		
+		--background: hsl(var(--hue), 10%, 10%);
+		--background-vlight: hsl(var(--hue), 10%, 15%);;
+		--background-light: hsl(var(--hue), 10%, 20%);;
+		--background-richer: hsl(var(--hue), 45%, 35%);
+	}
+}
 body {
 	color: var(--text-color-normal);
 	background-color: var(--background);
