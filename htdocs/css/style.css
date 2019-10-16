@@ -9,9 +9,9 @@ html {
 	--accent-color: hsl(var(--accent-hue), 100%, 70%);
 	--h3-color: hsl(var(--hue), 100%, 87%);
 	
-	--button-border-color: hsl(var(--hue), 80%, 75%);
-	--button-text-color: hsl(var(--hue), 90%, 10%);
-	--button-background: hsl(var(--hue), 100%, 97%);
+	--button-color-text: hsl(var(--hue), 90%, 10%);
+	--button-color-background: hsl(var(--hue), 100%, 80%);
+	--button-color-hover: var(--background-richer);
 	
 	--slider-color: var(--background);
 	--slider-color-on: hsl(var(--hue), 100%, 77%); 
@@ -19,8 +19,8 @@ html {
 	--slider-color-bg: hsl(var(--hue), 20%, 70%);  
 	
 	--background: hsl(var(--hue), 100%, 100%);
-	--background-vlight: hsl(var(--hue), 100%, 97%);;
-	--background-light: hsl(var(--hue), 100%, 94%);;
+	--background-vlight: hsl(var(--hue), 90%, 98%);;
+	--background-light: hsl(var(--hue), 90%, 95%);;
 	--background-richer: hsl(var(--hue), 100%, 88%);
 }
 
@@ -34,9 +34,9 @@ html {
 		--accent-color: hsl(var(--accent-hue), 100%, 20%);
 		--h3-color: hsl(var(--hue), 66%, 28%);
 		
-		--button-border-color: hsl(var(--hue), 66%, 40%);
-		--button-text-color: hsl(var(--hue), 10%, 90%);
-		--button-background: hsl(var(--hue), 66%, 40%);
+		--button-color-text: hsl(var(--hue), 10%, 90%);
+		--button-color-background: hsl(var(--hue), 66%, 40%);
+		--button-color-hover: var(--background-richer);		
 		
 		--slider-color: var(--text-color-normal);
 		--slider-color-on: hsl(var(--hue), 66%, 40%); 
@@ -49,6 +49,7 @@ html {
 		--background-richer: hsl(var(--hue), 45%, 35%);
 	}
 }
+
 body {
 	color: var(--text-color-normal);
 	background-color: var(--background);
@@ -78,7 +79,7 @@ tr, td, span, a, p, li {
 }
 
 input, select {
-	color: var(--button-text-color);
+	color: var(--button-color-text);
 	background-color: var(--background-vlight);
 }
 
@@ -187,13 +188,16 @@ td input:not([type=image]):not([type=checkbox]) {
 }
 
 #controls button {
-	border-color: var(--button-border-color);
-	background-color: var(--button-background);
-	color: var(--button-text-color);
-	width: 9.75%;
-	height: 30px;
-	margin: 1px; 
+	border-color: var(--background);
+	background-color: var(--button-color-background);
+	color: var(--button-color-text);
+	width: 10%; /* 10 buttons */
+	margin: 0px; 
 	font-size: 0.9em;
+}
+
+#controls button:hover {
+	background-color: var(--button-color-hover);
 }
 
 #controls button img {
@@ -201,11 +205,15 @@ td input:not([type=image]):not([type=checkbox]) {
 }
 
 #accordion button {
-	border-color: var(--button-border-color);
-	background-color: var(--button-background);
-	color: var(--button-text-color);
-	height: 30px;
-	margin: 1px;
+	border-color: var(--background);
+	background-color: var(--button-color-background);
+	color: var(--button-color-text);
+	margin-right: 1px; 
+	margin-bottom: 1px; 
+}
+
+#accordion button:hover {
+	background-color: var(--button-color-hover);
 }
 
 /* header */
@@ -272,6 +280,32 @@ select.icons option {
 	box-sizing: border-box;
 }
 
+/* jQuery UI customizations */
+
+.ui-corner-all {
+	border-radius: 0px;
+}
+
+.ui-corner-right {
+	border-bottom-right-radius: 0px; 
+}
+
+.ui-corner-left {
+	border-bottom-left-radius: 0px; 
+}
+
+.ui-corner-right{
+	border-top-right-radius: 0px; 
+}
+
+.ui-corner-left {
+	border-top-left-radius: 0px; 
+}
+
+.ui-widget-header {
+	border: 0px;
+}
+
 .ui-dialog{
 	background-color: var(--background-light);
 }
@@ -287,13 +321,63 @@ select.icons option {
 }
 
 .ui-tabs-anchor {
-	color: var(--button-text-color);
 	background-color: var(--background-richer);
 }
 
+.ui-tabs-anchor:hover {
+	background-color: var(--background-highlight);
+}
+
+.ui-state-active a{
+	color: var(--button-color-text);
+}
+
+.ui-state-active, .ui-widget-content .ui-state-active {
+	border: 0px;
+	border-radius: 0px;
+}
+
+.ui-state-default, .ui-widget-content .ui-state-default {
+	border: 0px;
+	border-radius: 0px;
+}
+
+.ui-state-hover, .ui-widget-content .ui-state-hover {
+	border: 0px;
+	border-radius: 0px;
+}
+	
+.ui-state-default a:link {
+	color: var(--button-color-text);
+}
+
+.ui-state-focus a {
+	background: var(--background-richer);
+}
+
+.ui-widget-header .ui-state-default {
+	background: var(--background-light);
+}
+
 .ui-slider {
-	color: var(--button-text-color);
-	background-color: var(--button-background);
+	color: var(--button-color-text);
+	background-color: var(--button-color-background);
+}
+
+.ui-widget-content {
+	background: var(--background);	
+}
+
+.ui-dialog-buttonpane button {
+	border-color: var(--background);
+	background-color: var(--button-color-background);
+	color: var(--button-color-text);
+}
+
+.ui-dialog-buttonpane button:hover {
+	border-color: var(--background);
+	background-color: var(--button-color-hover);
+	color: var(--button-color-text);
 }
 
 /* mobile styles */
@@ -333,9 +417,13 @@ select.icons option {
 
 /* jQuery UI customizations */
 input.ui-button, input.ui-button:hover, input.ui-button:active {
-	color: var(--button-text-color);
-	border-color: var(--button-border-color);
-	background-color: var(--button-background);
+	color: var(--button-color-text);
+	border-color: var(--background);
+	background-color: var(--button-color-background);
+}
+
+input.ui-button:hover {
+	background-color: var(--button-color-hover);
 }
 
 #entity-add.ui-dialog-content {
@@ -344,8 +432,7 @@ input.ui-button, input.ui-button:hover, input.ui-button:active {
 
 .ui-error .ui-widget-header { /* red header */
 	background-image: url("../img/ui-bg_gloss-wave_35_red_500x100.png");
-}
-
+}	
 
 /* jQuery TreeTable Core 2.0 stylesheet
  *
