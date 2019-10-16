@@ -78,6 +78,10 @@ tr, td, span, a, p, li {
 	color: var(--text-color-normal);
 }
 
+a:link, a:visited, a:hover, a:active {
+	color: var(--link-color);
+}
+	
 input, select {
 	color: var(--button-color-text);
 	background-color: var(--background-vlight);
