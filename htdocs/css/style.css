@@ -85,10 +85,8 @@ a:link, a:visited, a:hover, a:active {
 input, select {
 	color: var(--button-color-text);
 	background-color: var(--background-vlight);
+	border: 1px solid var(--background-light);		
 }
-
-/* zebra style */
-tr:nth-child(even) {background-color: var(--background-vlight);}
 
 tr.optional,
 tr.stale td.min, tr.stale td.max, tr.stale td.average, tr.stale td.last,
@@ -96,16 +94,13 @@ tr.stale td.consumption, tr.stale td.cost, tr.stale td.total {
 	color: var(--text-color-light);
 }
 
-table.properties th:not(:first-child) {
-	border-bottom: 1px solid var(--background);
-}
-
-table.properties tr:not(:first-child) {
-	border-top: 1px solid var(--background);
+table {
+	background-color: var(--background);	
 }
 
 td input:not([type=image]):not([type=checkbox]) {
 	width: 100%;
+	border: 1px solid var(--background-light);	
 }
 
 #content {

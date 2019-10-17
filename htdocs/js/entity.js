@@ -669,7 +669,7 @@ Entity.prototype.getDOMRow = function (parent) {
 	var type = this.definition.translation[vz.options.language];
 	if (vz.options.shortenLongTypes) type = type.replace(/\s*\(.+?\)/, '');
 
-	var row = $('<tr>')
+	var row = $('<tr style="border: 1px solid var(--background-light);">')
 		.addClass((parent) ? 'child-of-entity-' + parent.uuid : '')
 		.addClass(this.isChannel() ? 'channel' : 'aggregator')
 		.addClass('entity-' + this.uuid)
