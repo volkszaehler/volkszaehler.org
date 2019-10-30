@@ -17,8 +17,10 @@
 
 <IfModule mod_rewrite.c>
 	RewriteEngine On
-	RewriteRule ^middleware(/.*)? middleware.php$1 [L]
-	RewriteRule ^api(/.*)? middleware.php$1 [L]
+	RewriteBase /
+	RewriteCond %{REQUEST_FILENAME} !-f 
+	RewriteRule ^middleware(/.*)? middleware.php$1 [R,L]
+	RewriteRule ^api(/.*)? middleware.php$1 [R,L]
 
 	# frontend alias
 	RewriteRule ^frontend/(.*) $1 [L]
