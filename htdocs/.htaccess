@@ -19,8 +19,7 @@
 	RewriteEngine On
 	RewriteBase /
 	RewriteCond %{REQUEST_FILENAME} !-f 
-	RewriteRule ^middleware(/.*)? middleware.php$1 [R,L]
-	RewriteRule ^api(/.*)? middleware.php$1 [R,L]
+	RewriteRule ^(?:middleware|api)(/.*)? middleware.php$1 [L]
 
 	# frontend alias
 	RewriteRule ^frontend/(.*) $1 [L]
