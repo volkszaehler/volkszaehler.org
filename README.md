@@ -38,8 +38,9 @@ Or follow the detailed installation instructions at http://wiki.volkszaehler.org
 
 ## Support
 
-* Users mailing list: volkszaehler@lists.volkszaehler.org
-* Developers mailing list: volkszaehler-dev@lists.volkszaehler.org
+* Users mailing list: https://demo.volkszaehler.org/mailman/listinfo/volkszaehler-users
+* Developers mailing list: https://demo.volkszaehler.org/mailman/listinfo/volkszaehler-dev
+
 
 
 ## Repository structure
