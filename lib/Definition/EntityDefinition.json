@@ -155,6 +155,21 @@
 		}
 	},
 	{
+		"name"			: "gas flow",
+		"required"			: ["resolution"],
+		"optional"			: [],
+		"icon"			: "flame.png",
+		"unit"			: "m³/h",
+		"interpreter"			: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
+		"translation"	: {
+			"de" : "Gas (Durchflusswerte)",
+			"en" : "Gas (flow rate readings)",
+			"fr" : "Gaz (vitesse d'écoulement)"
+		}
+	},
+	{
 		"name"			: "gas meter",
 		"required"		: ["resolution"],
 		"optional"		: [],
