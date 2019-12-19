@@ -1,8 +1,7 @@
 <?php
 /**
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -25,14 +24,14 @@ namespace Volkszaehler\Model;
 
 use Doctrine\ORM;
 use Doctrine\Common\Collections;
-use Volkszaehler\Util;
+use Webpatser\Uuid\Uuid as UUID;
+
 use Volkszaehler\Definition;
 
 /**
  * Entity superclass for all objects referenced by a UUID
  *
  * @author Steffen Vogel <info@steffenvogel.de>
- * @package default
  *
  * @Entity
  * @Table(name="entities")
@@ -80,7 +79,7 @@ abstract class Entity {
 		}
 
 		$this->type = $type;
-		$this->uuid = (string) Util\UUID::mint(); // generate random UUID
+		$this->uuid = (string) UUID::generate(); // generate random UUID
 
 		$this->properties = new Collections\ArrayCollection();
 		$this->parents = new Collections\ArrayCollection();
@@ -133,10 +132,27 @@ abstract class Entity {
 	}
 
 	/**
+	 * Get properties by regexp pattern
+	 *
+	 * @param string $regex
+	 * @return array
+	 */
+	public function getPropertiesByRegex($regex) {
+		$properties = array();
+		foreach ($this->properties as $property) {
+			if (preg_match($regex, $property->getKey())) {
+				$properties[$property->getKey()] = $property->getValue();
+			}
+		}
+
+		return $properties;
+	}
+
+	/**
 	 * Find property by key
 	 *
 	 * @param string $key
-	 * @return Model\Property
+	 * @return Property|bool
 	 */
 	protected function findProperty($key) {
 		foreach ($this->properties as $property) {
@@ -184,8 +200,7 @@ abstract class Entity {
 	/**
 	 * Unset property
 	 *
-	 * @param string $name of the property
-	 * @param Doctrine\EntityManager $em
+	 * @param string $key name of the property
 	 */
 	public function deleteProperty($key) {
 		$property = $this->findProperty($key);
@@ -196,7 +211,6 @@ abstract class Entity {
 
 		$this->properties->removeElement($property);
 	}
-
 
 	/**
 	 * HACK - Cast properties to internal state

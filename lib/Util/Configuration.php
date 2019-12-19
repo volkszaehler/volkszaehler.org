@@ -1,8 +1,7 @@
 <?php
 /**
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package util
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -23,10 +22,11 @@
 
 namespace Volkszaehler\Util;
 
+use Symfony\Component\Yaml\Yaml;
+
 /**
  * Static configuration class for loading and storing the configuration to the disk
  *
- * @package util
  * @author Steffen Vogel <info@steffenvogel.de>
  * @todo why not with json?
  */
@@ -59,24 +59,12 @@ class Configuration {
 	}
 
 	/**
-	 * loading configuration from fule
+	 * load configuration from yaml file
 	 *
 	 * @param string $filename A string pointing to a file on the filesystem
 	 */
 	static public function load($filename) {
-		$filename .= '.php';
-
-		if (!file_exists($filename)) {
-			throw new \Exception('Configuration file not found: \'' . $filename . '\'');
-		}
-
-		include $filename;
-
-		if (!isset($config)) {
-			throw new \Exception('No variable $config found in: \'' . $filename . '\'');
-		}
-
-		self::$values = $config;
+		self::$values = Yaml::parseFile($filename);
 	}
 }
 

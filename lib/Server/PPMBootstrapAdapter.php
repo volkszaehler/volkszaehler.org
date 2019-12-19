@@ -1,9 +1,8 @@
 <?php
 /**
- * @copyright Copyright (c) 2016, The volkszaehler.org project
  * @author Andreas Goetz <cpuidle@gmx.de>
- * @package util
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -29,6 +28,7 @@ use PHPPM\Bootstraps\BootstrapInterface;
 
 // move out of lib/server
 define('VZ_DIR', realpath(__DIR__ . '/../..'));
+
 require_once(VZ_DIR . '/lib/bootstrap.php');
 
 /**
@@ -43,13 +43,5 @@ class PPMBootstrapAdapter implements BootstrapInterface
     {
         $app = new Router();
         return $app;
-    }
-
-    /**
-     * Static directory - only used if frontend served via ppm httpd
-     */
-    public function getStaticDirectory()
-    {
-        return VZ_DIR . '/htdocs/frontend';
     }
 }

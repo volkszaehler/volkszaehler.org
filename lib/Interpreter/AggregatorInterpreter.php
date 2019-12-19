@@ -1,8 +1,7 @@
 <?php
 /**
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -34,31 +33,50 @@ use Volkszaehler\Util;
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @author Andreas Goetz <cpuidle@gmx.de>
- * @package default
  */
 class AggregatorInterpreter extends Interpreter {
 
 	/**
 	 * Constructor
 	 *
-	 * @param Model\Aggregator $group should only contain channels of the same indicator
+	 * @param Model\Aggregator $aggregator should only contain channels of the same indicator
 	 * @param ORM\EntityManager $em
-	 * @param integer $from timestamp in ms since 1970
-	 * @param integer $to timestamp in ms since 1970
+	 * @param int|null $from timestamp in ms since 1970
+	 * @param int|null $to timestamp in ms since 1970
+	 * @param int|null $tupleCount
+	 * @param string|null $groupBy
 	 */
 	public function __construct(Model\Aggregator $aggregator, ORM\EntityManager $em, $from, $to, $tupleCount = null, $groupBy = null) {
 		throw new \Exception('Getting data is not supported for groups');
 	}
 
 	/**
-	 * Generate database tuples
+	 * @inheritDoc
 	 */
 	public function getIterator() {
 	}
 
 	/**
-	 * Convert raw meter readings
+	 * @inheritDoc
+	 */
+	public function generateData() {
+	}
+
+	/**
+	 * @inheritDoc
 	 */
 	public function convertRawTuple($row) {
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function getConsumption() {
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function getAverage() {
 	}
 }

@@ -1,8 +1,7 @@
 <?php
 /**
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -34,145 +33,74 @@ use Volkszaehler\Definition;
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @author Andreas Götz <cpuidle@gmx.de>
- * @package default
  */
 class EntityController extends Controller {
 
 	/**
-	 * Memory cache instance, e.g. APC
-	 */
-	protected static $cache;
-
-	/**
-	 * Get entity
+	 * Get one or more entities.
+	 * If uuid is empty, list of public entities is returned.
 	 *
-	 * @param $uuids
-	 * @return array
+	 * @param string|array|null $uuid
+	 * @return array|Model\Entity
 	 * @throws \Exception
 	 */
-	public function get($uuids) {
-		if (is_string($uuids)) { // single entity
-			return $this->getSingleEntity($uuids);
+	public function get($uuid) {
+		if (is_string($uuid)) { // single entity
+			return $this->ef->get($uuid, true);
 		}
-		elseif (is_array($uuids)) { // multiple entities
-			$entities = array();
-			$allowInvalidUuid = $this->getParameters()->get('nostrict');
 
-			foreach ($uuids as $uuid) {
+		if (is_array($uuid)) { // multiple entities
+			$entities = array();
+			$strict = !$this->getParameters()->get('nostrict');
+
+			foreach ($uuid as $_uuid) {
 				try {
-					$entities[] = $this->getSingleEntity($uuid);
+					$entities[] = $this->ef->get($_uuid, true);
 				}
 				catch (\Exception $e) {
-					if ($allowInvalidUuid) {
-						// return empty entity
-						$entities[] = array('uuid' => $uuid);
-					}
-					else {
+					if ($strict) {
 						throw $e;
 					}
 				}
 			}
-
-			return array('entities' => $entities);
 		}
 		else { // public entities
-			return array('entities' => $this->filter(array('public' => TRUE)));
-		}
-	}
-
-	/**
-	 * Return a single entity, potentially from cache
-	 * @param $uuid
-	 * @param bool $allowCache
-	 * @return mixed
-	 */
-	public function getSingleEntity($uuid, $allowCache = false) {
-		return self::factory($this->em, $uuid, $allowCache);
-	}
-
-	/**
-	 * Static entity factory- usable for scripting
-	 *
-	 * @param EntityManager $em
-	 * @param $uuid
-	 * @param bool $allowCache
-	 * @return mixed
-	 * @throws \Exception
-	 */
-	static function factory(EntityManager $em, $uuid, $allowCache = false) {
-		if (!Util\UUID::validate($uuid)) {
-			throw new \Exception('Invalid UUID: \'' . $uuid . '\'');
+			$entities = $this->ef->getByProperties(array('public' => true));
 		}
 
-		if (!self::$cache) {
-			self::$cache = $em->getConfiguration()->getQueryCacheImpl();
-		}
-
-		if ($allowCache && self::$cache && self::$cache->contains($uuid)) {
-			// used hydrated cache result
-			return self::$cache->fetch($uuid);
-		}
-
-		$dql = 'SELECT a, p
-			FROM Volkszaehler\Model\Entity a
-			LEFT JOIN a.properties p
-			WHERE a.uuid = :uuid';
-
-		$q = $em->createQuery($dql)
-			->setParameter('uuid', $uuid);
-
-		try {
-			$entity = $q->getSingleResult();
-
-			if ($allowCache && self::$cache) {
-				self::$cache->save($uuid, $entity, Util\Configuration::read('cache.ttl'));
-			}
-
-			return $entity;
-		} catch (\Doctrine\ORM\NoResultException $e) {
-			throw new \Exception('No entity found with UUID: \'' . $uuid . '\'');
-		}
+		return array('entities' => $entities);
 	}
 
 	/**
 	 * Delete entity by uuid
-	 * @param $identifier
+	 * @param string $uuid
 	 * @throws \Exception
 	 */
-	public function delete($identifier) {
-		if (!($entity = $this->get($identifier)) instanceof Model\Entity) {
-			throw new \Exception('Invalid operation - missing entity.');
-		}
+	public function delete($uuid) {
+		$entity = $this->ef->get($uuid);
 
 		if ($entity instanceof Model\Channel) {
+			/** @var Model\Channel */
 			$entity->clearData($this->em->getConnection());
 		}
 
 		$this->em->remove($entity);
 		$this->em->flush();
-
-		if (self::$cache) {
-			self::$cache->delete($identifier);
-		}
+		$this->ef->remove($uuid);
 	}
 
 	/**
 	 * Edit entity properties
-	 * @param $identifier
-	 * @return array
+	 * @param string|null $uuid
+	 * @return Model\Entity
 	 * @throws \Exception
 	 */
-	public function edit($identifier) {
-		if (!($entity = $this->get($identifier)) instanceof Model\Entity) {
-			throw new \Exception('Invalid operation - missing entity.');
-		}
+	public function edit($uuid) {
+		$entity = $this->ef->get($uuid);
 
 		$this->setProperties($entity, $this->getParameters()->all());
 		$this->em->flush();
-
-		if (self::$cache) {
-			self::$cache->delete($identifier);
-		}
+		$this->ef->remove($uuid);
 
 		// HACK - see https://github.com/doctrine/doctrine2/pull/382
 		$entity->castProperties();
@@ -183,7 +111,7 @@ class EntityController extends Controller {
 	/**
 	 * Update/set/delete properties of entities
 	 * @param Model\Entity $entity
-	 * @param $parameters
+	 * @param array $parameters
 	 * @throws \Exception
 	 */
 	protected function setProperties(Model\Entity $entity, $parameters) {
@@ -204,40 +132,6 @@ class EntityController extends Controller {
 		}
 
 		$entity->checkProperties();
-	}
-
-	/**
-	 * Filter entities by properties
-	 *
-	 * @param array of property => value filters
-	 * @return array of entities
-	 */
-	public function filter(array $properties) {
-		$dql = 'SELECT e, p
-			FROM Volkszaehler\Model\Entity e
-			LEFT JOIN e.properties p';
-
-		$i = 0;
-		$sqlWhere = array();
-		$sqlParams = array();
-		foreach ($properties as $key => $value) {
-			if (Definition\PropertyDefinition::get($key)->getType() == 'boolean') {
-				$value = (int) $value;
-			}
-			$sqlWhere[] = 'EXISTS (SELECT p' . $i . ' FROM \Volkszaehler\Model\Property p' . $i . ' WHERE p' . $i . '.key = :key' . $i . ' AND p' . $i . '.value = :value' . $i . ' AND p' . $i . '.entity = e)';
-			$sqlParams += array(
-				'key' . $i => $key,
-				'value' . $i => $value
-			);
-			$i++;
-		}
-
-		if (count($sqlWhere) > 0) {
-			$dql .= ' WHERE ' . implode(' AND ', $sqlWhere);
-		}
-
-		$q = $this->em->createQuery($dql);
-		return $q->execute($sqlParams);
 	}
 }
 

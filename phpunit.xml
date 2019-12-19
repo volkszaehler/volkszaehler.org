@@ -8,20 +8,12 @@
   </testsuites>
 
   <!-- exclude performance tests by default -->
-    <groups>
-      <exclude>
-        <group>slow</group>
-        <group>jpgraph</group>
-        <group>pushserver</group>
-      </exclude>
-    </groups>
-
-  <!-- configure code coverage -->
-  <filter>
-    <blacklist>
-      <directory suffix=".php">../vendor</directory>
-    </blacklist>
-  </filter>
+  <groups>
+    <exclude>
+      <group>slow</group>
+      <group>pushserver</group>
+    </exclude>
+  </groups>
 
   <php>
     <!-- use HTTP to access middleware via HTTP -->

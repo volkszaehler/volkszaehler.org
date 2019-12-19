@@ -1,8 +1,7 @@
 <?php
 /**
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -32,7 +31,6 @@ use Volkszaehler\Interpreter;
  * CSV view
  *
  * @author Steffen Vogel <info@steffenvogel.de>
- * @package default
  */
 class CSV extends View {
 	const DELIMITER = ';';
@@ -112,7 +110,6 @@ class CSV extends View {
 	 * Add exception to output queue
 	 *
 	 * @param \Exception $exception
-	 * @param boolean $debug
 	 */
 	protected function addException(\Exception $exception) {
 		echo get_class($exception) . '# [' . $exception->getCode() . ']' . ':' . $exception->getMessage() . PHP_EOL;
@@ -126,8 +123,7 @@ class CSV extends View {
 	/**
 	 * Add data to output queue
 	 *
-	 * @param Interpreter\InterpreterInterface $interpreter
-	 * @param boolean $children
+	 * @param Interpreter\Interpreter $interpreter
 	 * @todo  Aggregate first is assumed- this deviates from json view behaviour
 	 */
 	protected function addData(Interpreter\Interpreter $interpreter) {
@@ -170,11 +166,9 @@ class CSV extends View {
 
 		echo '# rows:' . CSV::DELIMITER . $interpreter->getRowCount() . PHP_EOL;
 
-		if (isset($data)) {
-			// Aggregators don't return data
-			foreach ($data as $tuple) {
-				echo $this->formatTimestamp($tuple[0]) . CSV::DELIMITER . View::formatNumber($tuple[1]) . CSV::DELIMITER . $tuple[2] . PHP_EOL;
-			}
+		// Aggregators don't return data
+		foreach ($data as $tuple) {
+			echo $this->formatTimestamp($tuple[0]) . CSV::DELIMITER . View::formatNumber($tuple[1]) . CSV::DELIMITER . $tuple[2] . PHP_EOL;
 		}
 	}
 
@@ -191,7 +185,7 @@ class CSV extends View {
 	/**
 	 * Escape data according to CSV format
 	 *
-	 * @param $value to be escaped
+	 * @param mixed $value to be escaped
 	 * @return string escaped data
 	 */
 	protected function escape($value) {

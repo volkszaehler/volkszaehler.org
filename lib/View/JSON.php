@@ -1,8 +1,7 @@
 <?php
 /**
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -34,7 +33,6 @@ use Volkszaehler\Model;
 /**
  * JSON view
  *
- * @package default
  * @author Steffen Vogel <info@steffenvogel.de>
  * @author Andreas Goetz <cpuidle@gmx.de>
  */
@@ -234,8 +232,8 @@ class JSON extends View {
 
 		$header = array();
 		$header['uuid'] = $interpreter->getEntity()->getUuid();
-		if (isset($from)) $header['from'] = $from;
-		if (isset($to)) $header['to'] = $to;
+		$header['from'] = $from;
+		$header['to'] = $to;
 		if (isset($min)) $header['min'] = $min;
 		if (isset($max)) $header['max'] = $max;
 		if (isset($average)) $header['average'] = View::formatNumber($average);
@@ -260,7 +258,7 @@ class JSON extends View {
 		elseif ($data instanceof Util\Debug) {
 			$this->json['debug'] = $data;
 		}
-		elseif ($data instanceof \Exception) {
+		elseif ($data instanceof \Throwable) {
 			$this->addException($data);
 		}
 		elseif (is_array($data)) {
@@ -368,9 +366,8 @@ class JSON extends View {
 	 * Add exception to output queue
 	 *
 	 * @param \Exception $exception
-	 * @param boolean $debug
 	 */
-	protected function addException(\Exception $exception) {
+	protected function addException(\Throwable $exception) {
 		$exceptionType = explode('\\', get_class($exception));
 		$exceptionInfo = array(
 			'message' => $exception->getMessage(),

@@ -4,9 +4,8 @@
  * @author Florian Ziegler <fz@f10-home.de>
  * @author Justin Otherguy <justin@justinotherguy.org>
  * @author Steffen Vogel <info@steffenvogel.de>
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -40,7 +39,7 @@ vz.options = {
 	middleware: [
 		{
 			title: 'Local (default)',
-			url: 'middleware.php'
+			url: 'api'
 			// live: 8082					// NOTE: live updates require
 														//    - push-server running and
 														//    - either apache proxy forwarding configured according to
@@ -55,7 +54,7 @@ vz.options = {
 	dayNames: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
 	lineWidthDefault: 2,
 	lineWidthSelected: 4,
-	speedupFactor: 2,   // higher values give higher speedup but can produce chunky display
+	gap: 3600, // chart gap if no tuples for specified number of seconds
 	hiddenProperties: ['link', 'tolerance', 'local', 'owner', 'description', 'gap', 'active'] // hide less commonly used properties
 };
 
@@ -68,9 +67,14 @@ vz.options.plot = {
 		shadowSize: 0,
 		points: {
 			radius: 3
+		},
+		bars: {
+			fill:      0.8,
+			lineWidth: 0,
+			usedSpace: 0.8 // percent of available space that bars should occupy
 		}
 	},
- 	legend: {
+	legend: {
 		show: true,
 		position: 'nw',
 		backgroundOpacity: 0.80,
@@ -88,18 +92,31 @@ vz.options.plot = {
 			tickFormatter: vz.wui.tickFormatter		// show axis label
 		},
 		{
+			axisLabel: '°C', // assign el. energy to first axis- remove if not used
+			tickFormatter: vz.wui.tickFormatter		// show axis label
+		},
+		{
 			// alignTicksWithAxis: 1,
 			position: 'right',
 			tickFormatter: vz.wui.tickFormatter		// show axis label
 		}
 	],
 	selection: { mode: 'x' },
-	crosshair: { mode: 'x' },
+	crosshair: {
+		mode: 'x',
+		leaveCallback: vz.wui.plotLeave
+	},
 	grid: {
 		hoverable: true,
-		autoHighlight: false
+		autoHighlight: true,
+		borderWidth:  1,
+		borderColor: '#bbb',
+		margin: 0
 	}
 };
+
+// minimum displayable value
+vz.options.minNumber = Math.pow(10, -(vz.options.precision + 1));
 
 vz.options.saveCookies = function() {
 	var expires = new Date(2038, 0, 1); // some days before y2k38 problem

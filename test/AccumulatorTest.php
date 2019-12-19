@@ -2,8 +2,9 @@
 /**
  * Meter tests
  *
- * @package Test
  * @author Andreas Götz <cpuidle@gmx.de>
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 
 namespace Tests;
@@ -107,6 +108,7 @@ class AccumulatorTest extends Data
 
 	/**
 	 * test if from=now gets exactly the last tuple
+	 * this should work even if last tuple is in the past
 	 *
 	 * @depends testGetMultiple
 	 */

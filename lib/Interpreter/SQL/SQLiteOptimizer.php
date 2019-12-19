@@ -1,9 +1,8 @@
 <?php
 /**
- * @copyright Copyright (c) 2013, The volkszaehler.org project
- * @package default
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
  * @author Andreas Goetz <cpuidle@gmx.de>
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -40,7 +39,7 @@ class SQLiteOptimizer extends SQLOptimizer {
 	 * DB-specific data grouping by date functions
 	 *
 	 * @param string $groupBy
-	 * @return string the sql part
+	 * @return string|bool the sql part
 	 */
 	public static function buildGroupBySQL($groupBy) {
 		$ts = ', timestamp/1000, "unixepoch"'; // just for saving space

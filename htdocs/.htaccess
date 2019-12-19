@@ -1,27 +1,30 @@
-# Apache 2.2
-<IfModule !mod_authz_core.c>
-	Allow from all
-</IfModule>
-
-# Apache 2.4
+# allow access
 <IfModule mod_authz_core.c>
 	Require all granted
+</IfModule>
+
+# disable negotiation to avoid rewrite rule conflicts
+<IfModule mod_negotiation.c>
+#    Options -MultiViews
 </IfModule>
 
 # enable this rule if using ppm middleware
 <IfModule mod_proxy.c>
 	# RewriteEngine On
-	# RewriteRule ^middleware(.php)?/(.*) http://localhost:8080/$2 [P]
+	# RewriteRule ^middleware(.php)?(/.*)? http://localhost:8080$2 [P]
+	# RewriteRule ^api(/.*)? http://localhost:8080$1 [P]
 </IfModule>
 
 <IfModule mod_rewrite.c>
 	RewriteEngine On
-	RewriteRule ^middleware/(.*) middleware.php/$1 [L]
+	RewriteBase /
+	RewriteCond %{REQUEST_FILENAME} !-f 
+	RewriteRule ^(?:middleware|api)(/.*)? middleware.php$1 [L]
 
 	# frontend alias
 	RewriteRule ^frontend/(.*) $1 [L]
 </IfModule>
 
 <IfModule mod_headers.c>
-    Header set Content-Security-Policy "default-src 'self'; connect-src * ws: wss: http: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';"
+    Header set Content-Security-Policy "default-src 'self'; connect-src * ws: wss: http: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;"
 </IfModule>

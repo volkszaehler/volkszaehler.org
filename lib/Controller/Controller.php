@@ -1,8 +1,7 @@
 <?php
 /**
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -26,6 +25,8 @@ namespace Volkszaehler\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Doctrine\ORM\EntityManager;
+
+use Volkszaehler\Util\EntityFactory;
 use Volkszaehler\View\View;
 
 /**
@@ -33,29 +34,33 @@ use Volkszaehler\View\View;
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @author Andreas Goetz <cpuidle@gmx.de>
- * @package default
  */
 abstract class Controller {
 
 	/**
-	 * @var Doctrine\ORM\EntityManager
+	 * @var EntityManager
 	 */
 	protected $em;
 
 	/**
-	 * @var Symfony\Component\HttpFoundation\Request
+	 * @var Request
 	 */
 	protected $request;
 
 	/**
-	 * @var Symfony\Component\HttpFoundation\ParameterBag
+	 * @var ParameterBag
 	 */
 	protected $parameters;
 
 	/**
-	 * @var Volkszaehler\View
+	 * @var View
 	 */
 	protected $view;
+
+	/**
+	 * @var EntityFactory
+	 */
+	protected $ef;
 
 	/**
 	 * Constructor
@@ -68,6 +73,7 @@ abstract class Controller {
 		$this->request = $request;
 		$this->em = $em;
 		$this->view = $view;
+		$this->ef = EntityFactory::getInstance($em);
 	}
 
 	/**
@@ -87,12 +93,12 @@ abstract class Controller {
 	/**
 	 * Run operation
 	 *
-	 * @param $op Operation to run
-	 * @param null $uuid Uuid to operate on
-	 * @return operation result
+	 * @param string $op Operation to run
+	 * @param string|array|null $uuid Uuid to operate on
+	 * @return mixed operation result
 	 * @throws \Exception
 	 */
-	public function run($op, $uuid = null) {
+	public function run($op, $uuid) {
 		if (!method_exists($this, $op)) {
 			throw new \Exception('Invalid context operation: \'' . $op . '\'');
 		}
@@ -104,18 +110,6 @@ abstract class Controller {
 
 		// call the operation
 		return $this->{$op}($uuid);
-	}
-
-	/**
-	 * Helper function to convert single/multiple parameters to array format
-	 * @param $data
-	 * @return array
-	 */
-	protected static function makeArray($data) {
-		if (!is_array($data)) {
-			$data = isset($data) ? array($data) : array();
-		}
-		return $data;
 	}
 }
 

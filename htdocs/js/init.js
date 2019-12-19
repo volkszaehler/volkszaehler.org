@@ -4,9 +4,8 @@
  * @author Florian Ziegler <fz@f10-home.de>
  * @author Justin Otherguy <justin@justinotherguy.org>
  * @author Steffen Vogel <info@steffenvogel.de>
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -36,6 +35,10 @@ var vz = {
 	middleware: [],		// array of all known middlewares
 	wui: {						// web user interface
 		dialogs: { },
+		requests: {
+			issued: 0,
+			completed: 0
+		},
 		timeout: null
 	},
 	capabilities: {		// debugging and runtime information from middleware
@@ -53,6 +56,15 @@ $(document).ready(function() {
 	window.onerror = function(errorMsg, url, lineNumber) {
 		vz.wui.dialogs.error('Javascript Runtime Error', errorMsg);
 	};
+
+	NProgress.configure({ showSpinner: false });
+
+	if (typeof vz.options !== "object" ||
+		!Array.isArray(vz.options.middleware)
+	) {
+		vz.wui.dialogs.error("Fehler", "Could not read config. Please check options.js");
+		return;
+	}
 
 	// add timezone-js support
 	if (timezoneJS !== undefined && timezoneJS.Date !== undefined) {
@@ -74,10 +86,6 @@ $(document).ready(function() {
 	var params = $.getUrlParams();
 	if (params.hasOwnProperty('reset') && params.reset) {
 		$.setCookie('vz_entities', null);
-		try {
-			localStorage.removeItem('vz.capabilities');
-		}
-		catch (e) { }
 	}
 
 	// start loading cookies/url params
@@ -96,7 +104,14 @@ $(document).ready(function() {
 
 	// chaining ajax request with jquery deferred object
 	vz.capabilities.load().done(function() {
-		vz.entities.loadDetails().done(function() {
+		if (typeof vz.capabilities !== "object" ||
+			!Array.isArray(vz.capabilities.definitions.entities)
+		) {
+			vz.wui.dialogs.error("Fehler", "Could not read capabilities. Please check middleware is accessible.");
+			return;
+		}
+
+		vz.entities.loadDetails().always(function() {
 			if (vz.entities.length === 0) {
 				vz.wui.dialogs.init();
 			}
@@ -105,6 +120,8 @@ $(document).ready(function() {
 			vz.entities.showTable();
 			vz.entities.inheritVisibility();
 
+			// set global parameters for display mode, then load data accordingly
+			vz.wui.changeDisplayMode(vz.options.mode || "current");
 			vz.entities.loadData().done(function() {
 				// vz.wui.resizePlot();
 				vz.wui.drawPlot();

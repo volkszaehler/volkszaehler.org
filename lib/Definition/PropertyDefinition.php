@@ -1,8 +1,7 @@
 <?php
 /**
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -25,7 +24,6 @@ namespace Volkszaehler\Definition;
 
 /**
  * @author Steffen Vogel <info@steffenvogel.de>
- * @package default
  */
 class PropertyDefinition extends Definition {
 	/**
@@ -73,15 +71,12 @@ class PropertyDefinition extends Definition {
 	 */
 	public $options = array();
 
-	/**
-	 * @var array holds definitions
-	 */
-	protected static $definitions = NULL;
+    protected static $definitions = NULL;
 
 	/**
 	 * Validate value according to $this->type
 	 *
-	 * @param string|numeric $value
+	 * @param string|number $value
 	 * @return boolean
 	 */
 	public function validateValue($value) {
@@ -114,7 +109,7 @@ class PropertyDefinition extends Definition {
 				break;
 
 			default:
-				throw new \Exception('Unknown property type: \'' . $type . '\'');
+				throw new \Exception('Unknown property type: \'' . $this->type . '\'');
 		}
 
 		if ($this->type == 'integer' || $this->type == 'float') {

@@ -2,8 +2,9 @@
 /**
  * Meter tests
  *
- * @package Test
  * @author Andreas Götz <cpuidle@gmx.de>
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 
 namespace Tests;
@@ -22,10 +23,6 @@ class RawTest extends Data
      * @dataProvider channelDataProvider
      */
 	function testAddAndGetRawTuples($type, $resolution) {
-		// PHP_MAX_INT to float not portable
-		if (($db = \Volkszaehler\Util\Configuration::read('db.driver')) === 'pdo_pgsql')
-			$this->markTestSkipped('not implemented for ' . $db);
-
 		self::$uuid = self::createChannel('Test', $type, $resolution);
 
 		$data = array(

@@ -1,0 +1,138 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+#  @author Andreas Götz <cpuidle@gmx.de>
+#  @author Sven Anders <volkszaehler2011@sven.anders.im> 2011
+#  @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+#  @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
+
+#
+#  This file is part of volkzaehler.org
+#
+#  volkzaehler.org is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  any later version.
+#
+#  volkzaehler.org is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
+#
+
+
+import argparse
+import ConfigParser
+import urllib
+import urllib2
+import os
+import json
+
+Config = ConfigParser.ConfigParser()
+version="1.0";
+
+parser = argparse.ArgumentParser(description='A python client for volkszaehler.org',
+  formatter_class=argparse.RawDescriptionHelpFormatter,
+  epilog="""
+
+Example request
+---------------
+To get the titles of all public channels use:
+
+  vzclient --url demo.volkszaehler.org/middleware.php -f json -e channels,...title get channel
+
+Note that the ... operator will build an array containing the following child property, in this case `title`.
+
+Syntax of /etc/vzclient.conf or ~/.vzclient.conf
+------------------------------------------------
+[default]
+url:http://www.example.org/subdir/volkszaehler/middleware.php
+format:json""")
+parser.add_argument("operation",choices=["add","get","edit","delete"],help="what to do");
+parser.add_argument('context',choices=["data","channel","group","capabilities"],help="the context of the operation");
+parser.add_argument('--url',action='store',help="url to the volkszaehler.org middleware.php (tip: put this in config file, see below)");
+parser.add_argument('-u', '--uuid',action='append',help="the uuid to edit, get or delete");
+parser.add_argument('-f', '--format',choices=["json","xml","csv","png","gif","jpg"],action='store',help="the format (Note: when requesting json format the response is pretty-printed)");
+parser.add_argument('-e', '--eval',action='store',help="get comma-separated attribute from json response (Example: entity,uuid will extract the uuid from a json string: {\"entity\":{\"uuid\":\"4...\"}})");
+parser.add_argument('-j', '--json',action='store',help="send json request");
+parser.add_argument('param',nargs='*',help="query parameter to add to the request in key=value syntax");
+args = parser.parse_args();
+
+Config.read(["/etc/vzclient.conf",os.path.expanduser('~/.vzclient.conf'),".vzclient.conf"]);
+url=args.url;
+if (url is None):
+  try:
+    url=Config.get("default", "url");
+  except:
+    print "ERROR: Please specify an url!";
+    exit(1);
+elif (url[:4].lower() != "http"):
+  url="http://"+url
+
+format=args.format;
+if (format is None):
+  try:
+    format=Config.get("default","format");
+  except:
+    format="json";
+
+context=args.context;
+url=url+"/"+context;
+uuid=args.uuid;
+if (uuid is not None) and len(uuid) == 1:
+  url=url+"/"+uuid[0];
+url=url+"."+format+"?operation="+args.operation
+if (uuid is not None) and len(uuid) > 1:
+  url=url+"&uuid[]="+"&uuid[]=".join(uuid);
+for p in args.param:
+  (key,value)=p.split("=");
+  url=url+"&"+urllib2.quote(key)+"="+urllib2.quote(value);
+# print url;
+
+req = urllib2.Request(url)
+req.add_header('User-Agent', 'vzclient/'+version)
+try:
+  if (args.json):
+    req.add_header('Content-Type', 'application/json');
+    f=urllib2.urlopen(req, args.json);
+  else:
+    f=urllib2.urlopen(req);
+  jsonstr=f.read();
+
+  # unparsed - json or other format
+  if (args.eval is None):
+    if (args.format == "json"):
+      print json.dumps(json.loads(jsonstr), indent=2)
+    else:
+      print jsonstr;
+    exit(0)
+
+  # parsed - only json
+  obj=json.loads(jsonstr);
+  for ev in args.eval.split(",") :
+    if (isinstance(obj,(list,tuple))):
+      if (ev[:3]=="..."):
+        ev=ev[3:] # child access key
+        children = []
+        for child in obj:
+          children.append(child[ev])
+        obj = children
+        ev = None
+      else:
+        try:
+          ev=int(ev) # array access
+        except: pass
+    if (ev != None):
+      try:
+        obj=obj[ev]
+      except KeyError:
+        print "Key: "+ev+" not found in str: "+jsonstr;
+
+  print json.dumps(obj, indent=None if args.format != "json" else 2);
+
+except urllib2.HTTPError,error:
+  print error.read();
+  exit(1);

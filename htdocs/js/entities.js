@@ -5,9 +5,8 @@
  * @author Justin Otherguy <justin@justinotherguy.org>
  * @author Steffen Vogel <info@steffenvogel.de>
  * @author Andreas Götz <cpuidle@gmx.de>
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -77,25 +76,25 @@ vz.entities.loadDetails = function() {
 			},
 			function(xhr) {
 				var exception = (xhr.responseJSON || {}).exception;
+				// remove problematic entity
+				vz.entities.splice(vz.entities.indexOf(entity), 1); // remove
 				// default error handling is skipped - be careful
-				if (exception && exception.message.match(/^Invalid UUID|^No entity found with UUID/)) {
-					vz.entities.splice(vz.entities.indexOf(entity), 1); // remove
-					return $.Deferred().resolveWith(this, [xhr.responseJSON]);
+				if (exception && exception.message.match(/^Invalid UUID|^No entity/)) {
+					// return new resolved deferred
+					return $.Deferred().resolveWith(this, [xhr]);
 				}
 				vz.wui.dialogs.middlewareException(xhr);
 				return vz.load.errorHandler(xhr);
 			}
 		));
 	}, true); // recursive
-	return $.when.apply($, queue);
+	return $.whenAll.apply($, queue);
 };
 
 /**
  * Load JSON data from the middleware
  */
 vz.entities.loadData = function() {
-	$('#overlay').html('<img src="img/loading.gif" alt="loading..." /><p>loading...</p>');
-
 	var queue = [];
 	vz.entities.each(function(entity) {
 		queue.push(entity.loadData());
@@ -122,27 +121,6 @@ vz.entities.loadTotalConsumption = function() {
 };
 
 /**
- * Speedup middleware queries, requires options[aggregate] enabled
- * @return {string} group option or undefined
- */
-vz.entities.speedupFactor = function() {
-	var	group = vz.options.group,
-			delta = (vz.options.plot.xaxis.max - vz.options.plot.xaxis.min) / 3.6e6;
-
-	// explicit group set via url?
-	if (group !== undefined)
-		return group;
-
-	if (delta > 24 * vz.options.tuples/vz.options.speedupFactor) {
-		group = 'day';
-	}
-	else if (delta > vz.options.tuples/vz.options.speedupFactor) {
-		group = 'hour';
-	}
-	return group;
-};
-
-/**
  * Overwritten each iterator to iterate recursively through all entities
  */
 vz.entities.each = function(cb, recursive) {
@@ -153,6 +131,17 @@ vz.entities.each = function(cb, recursive) {
 			this[i].eachChild(cb, true);
 		}
 	}
+};
+
+/**
+ * Iterate each active channel containing data
+ */
+vz.entities.eachActiveChannel = function(cb) {
+	this.each(function(entity) {
+		if (entity.isChannel() && entity.active && entity.data && entity.data.tuples && entity.data.tuples.length > 0) {
+			cb(entity);
+		}
+	}, true);
 };
 
 /**
@@ -192,14 +181,30 @@ vz.entities.dropTableHandler = function(from, to, child, clone) {
 		vz.wui.dialogs.exception(e);
 	}
 	finally {
-		$.when.apply($, queue).done(function() { // wait for middleware
-			var q = [];
-			if (from)
-				q.push(from.loadDetails());
-			if (to)
-				q.push(to.loadDetails());
+		// ...after updating entities
+		$.when.apply($, queue).done(function() {
+			var q = [], p = [];
+			if (from) {
+				// ...load new entity details
+				q.push(from.loadDetails().done(function() {
+					// ...and finally refresh data
+					p.push(from.eachChild(function(child) {
+						p.push(child.loadData());
+					}, true).loadData());
+				}));
+			}
+			if (to) {
+				q.push(to.loadDetails().done(function() {
+					p.push(to.eachChild(function(child) {
+						p.push(child.loadData());
+					}, true).loadData());
+				}));
+			}
 
-			$.when.apply($, q).done(vz.entities.showTable);
+			$.when.apply($, q).done(function() {
+				vz.entities.showTable();
+				$.when.apply($, p).done(vz.wui.drawPlot);
+			});
 		});
 	}
 };
@@ -249,7 +254,7 @@ vz.entities.showTable = function() {
 					return; // drop on itself -> do nothing
 				if (from === to)
 					return; // drop into same group -> do nothing
-				if (to && to.definition.model == 'Volkszaehler\\Model\\Aggregator' && $.inArray(child, to.children) >= 0)
+				if (to && !to.isChannel() && $.inArray(child, to.children) >= 0)
 					return;
 				if (to && child.middleware !== to.middleware) {
 					vz.wui.dialogs.error("Fehler", "Kanäle können nur in Gruppen der gleichen Middleware verschoben werden.");
@@ -287,17 +292,34 @@ vz.entities.showTable = function() {
 	});
 
 	// make visible that a row is clicked
-	$('#entity-list table tbody tr').mousedown(function() {
-		var entity = $(this).data('entity');
-		var selected = $('tr.selected');
+	$('#entity-list table tbody tr').click(function(ev) {
+		var selected = $(this).data('entity').selected;
 
-		selected.removeClass('selected'); // deselect currently selected rows
-		vz.wui.selectedChannel = null;
-
-		if (entity !== selected.data('entity') && entity.active) {
-			$(this).addClass('selected');
-			vz.wui.selectedChannel = entity.uuid;
+		if (ev.ctrlKey) {
+			// partially remove previous selection
+			if (selected) {
+				$(this).removeClass('selected');
+				$(this).data('entity').selected = false;
+			}
 		}
+		else {
+			// remove previous selection
+			$('tr.selected').each(function(idx, el) {
+				$(el).removeClass('selected');
+				$(el).data('entity').selected = false;
+			});
+		}
+
+		// add new selection
+		if (!selected) {
+			$(this).addClass('selected');
+			$(this).data('entity').eachChild(function(child) {
+				$('#entity-' + child.uuid).addClass('selected');
+				// $('#entity-' + child.uuid + '.child-of-entity-' + child.parent.uuid).addClass('selected');
+				child.selected = true;
+			}, true).selected = true;
+		}
+
 		vz.wui.drawPlot();
 	});
 
@@ -322,14 +344,14 @@ vz.entities.showTable = function() {
 vz.entities.inheritVisibility = function() {
 	vz.entities.each(function(entity, parent) {
 		// inherit active state if parent
-		if (entity.definition.model !== 'Volkszaehler\\Model\\Aggregator' && entity.parent !== undefined) {
+		if (entity.isChannel() && entity.parent !== undefined) {
 			if (entity.active !== entity.parent.active) {
 				entity.activate(entity.parent.active);
 			}
 		}
 
 		// collapse aggregators if inactive
-		if (entity.definition.model == 'Volkszaehler\\Model\\Aggregator' && entity.active === false) {
+		if (!entity.isChannel() && entity.active === false) {
 			entity.activate(false, entity.parent, true);
 			$('#entity-' + entity.uuid + '.aggregator').removeClass('expanded').collapse();
 		}
@@ -342,16 +364,12 @@ vz.entities.inheritVisibility = function() {
  * @todo move to Entity class
  */
 vz.entities.updateTableColumnVisibility = function() {
-	// hide costs if empty for all rows
-	$('.cost').css({
-		display: ($('tbody .cost').filter(function() {
-								return (+$(this).data('cost') || 0) > 0;
-						 }).get().length === 0) ? 'none' : ''
-	});
-	// hide total consumption if empty for all rows
-	$('.total').css({
-		display: ($('tbody .total').filter(function() {
-								return (+$(this).data('total') || 0) > 0;
-						 }).get().length === 0) ? 'none' : ''
+	// show/hide empty columns
+	['consumption', 'cost', 'total'].forEach(function(column) {
+		$('.' + column).css({
+			display: ($('tbody .' + column).filter(function() {
+									return (+$(this).data(column) || 0) > 0;
+							 }).get().length === 0) ? 'none' : ''
+		});
 	});
 };

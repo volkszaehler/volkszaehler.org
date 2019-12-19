@@ -1,0 +1,20 @@
+#content {
+	padding: 0px;
+}
+
+#content h3 {
+	display: none;
+}
+
+#controls, #display, #export {
+	display: none!important;
+}
+
+#entity-list button {
+	display: none;
+}
+
+#footer, #footer a, #footer a:visited {
+	color: gray;
+	background-color: white;
+}

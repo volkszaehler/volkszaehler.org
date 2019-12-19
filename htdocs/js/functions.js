@@ -4,9 +4,8 @@
  * @author Florian Ziegler <fz@f10-home.de>
  * @author Justin Otherguy <justin@justinotherguy.org>
  * @author Steffen Vogel <info@steffenvogel.de>
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -41,7 +40,7 @@ vz.getLink = function(format) {
 	var entities = [];
 	var middleware = '';
 	vz.entities.each(function(entity, parent) {
-		if (entity.active && entity.definition.model != 'Volkszaehler\\Model\\Aggregator') {
+		if (entity.isChannel() && entity.active) {
 			if (entities.length === 0) {
 				middleware = entity.middleware;
 			}
@@ -54,13 +53,15 @@ vz.getLink = function(format) {
 		}
 	}, true); // recursive!
 
-	return entities[0].middleware + '/data.' + format + '?' + $.param({
+	var params = $.extend($.getUrlParams(), {
 		from: Math.floor(vz.options.plot.xaxis.min),
 		to: Math.ceil(vz.options.plot.xaxis.max),
 		uuid: entities.map(function(entity) {
 			return entity.uuid;
 		})
 	});
+
+	return entities[0].middleware + '/data.' + format + '?' + $.param(params);
 };
 
 /**
@@ -79,11 +80,12 @@ vz.getPermalink = function() {
 		}
 	});
 
-	var params = {
+	var params = $.extend($.getUrlParams(), {
 		from: Math.floor(vz.options.plot.xaxis.min),
 		to: Math.ceil(vz.options.plot.xaxis.max),
-		uuid: uuids
-	};
+		uuid: uuids,
+		mode: vz.options.mode
+	});
 
 	return window.location.protocol + '//' + window.location.host + window.location.pathname + '?' + $.param(params);
 };
@@ -94,8 +96,14 @@ vz.getPermalink = function() {
  * @param skipDefaultErrorHandling according to http://stackoverflow.com/questions/19101670/provide-a-default-fail-method-for-a-jquery-deferred-object
  */
 vz.load = function(args, skipDefaultErrorHandling) {
+	if (vz.wui.requests.issued++ === 0) {
+		NProgress.start();
+	}
+
 	$.extend(args, {
-		accepts: 'application/json',
+		accepts: {
+			'json': 'application/json'
+		},
 		beforeSend: function (xhr, settings) {
 			// remember URL for potential error messages
 			xhr.requestUrl = settings.url;
@@ -116,13 +124,30 @@ vz.load = function(args, skipDefaultErrorHandling) {
 
 	args.url += '.json';
 
+	// workaround Safari 11 cache bug
+	if (args.method === undefined || args.method == 'GET') {
+		args.url += '?unique=' + Date.now();
+	}
+
 	if (args.data === undefined) {
 		args.data = { };
 	}
 
-	return $.ajax(args).then(
+	return vz.load.loadHandler(args, skipDefaultErrorHandling);
+};
+
+/**
+ * Reusable ajax request sender with error handling
+ */
+vz.load.loadHandler = function (args, skipDefaultErrorHandling) {
+	return $.ajax(args).always(function (res) {
+		NProgress.set(++vz.wui.requests.completed / vz.wui.requests.issued);
+		if (vz.wui.requests.completed == vz.wui.requests.issued) {
+			vz.wui.requests.issued = vz.wui.requests.completed = 0;
+		}
+	}).then(
 		// success
-		function(json, error, xhr) {
+		function (json, error, xhr) {
 			// ensure json response - might still be server error
 			if (!xhr.responseJSON) {
 				vz.load.errorHandler(xhr);
@@ -131,7 +156,7 @@ vz.load = function(args, skipDefaultErrorHandling) {
 			return $.Deferred().resolveWith(this, [json]);
 		},
 		// error
-		function(xhr) {
+		function (xhr) {
 			return vz.load.errorHandler(xhr, skipDefaultErrorHandling);
 		}
 	);
@@ -172,12 +197,15 @@ vz.parseUrlParams = function() {
 					vz.options.refresh = false;
 					// ms or speaking timestamp
 					var ts = (/^-?[0-9]+$/.test(vars[key])) ? parseInt(vars[key]) : new Date(vars[key]).getTime();
-					if (key == 'from')
-						vz.options.plot.xaxis.min = ts;
-					else
-						vz.options.plot.xaxis.max = ts;
+					if (!isNaN(ts)) {
+						if (key == 'from')
+							vz.options.plot.xaxis.min = ts;
+						else
+							vz.options.plot.xaxis.max = ts;
+					}
 					break;
 
+				case 'mode': // explicitly set display mode
 				case 'style': // explicitly set display style
 				case 'fillstyle': // explicitly set fill style
 				case 'linewidth': // explicitly set line width
@@ -226,29 +254,11 @@ vz.parseUrlParams = function() {
  * Load capabilities from middleware
  */
 vz.capabilities.load = function() {
-	// execute query asynchronously to refresh from middleware
-	var deferred = vz.load({
-		controller: 'capabilities'
+	return vz.load({
+		controller: 'capabilities/definitions'
 	}).done(function(json) {
-		$.extend(true, vz.capabilities, json.capabilities);
-		try {
-			localStorage.setItem('vz.capabilities', JSON.stringify(json)); // cache it
-		}
-		catch (e) { }
+		$.extend(vz.capabilities.definitions, json.capabilities.definitions);
 	});
-
-	// get cached value to avoid blocking frontend startup
-	try {
-		var json = localStorage.getItem('vz.capabilities');
-		if (json !== false) {
-			// use cached value and return immediately
-			$.extend(true, vz.capabilities, JSON.parse(json).capabilities);
-			return $.Deferred().resolve();
-		}
-	}
-	catch (e) {	}
-
-	return deferred;
 };
 
 /**
@@ -298,5 +308,60 @@ vz.capabilities.definitions.get = function(section, name) {
 			}).get()
 		);
 	};
+
+  var slice = [].slice;
+
+  // https://gist.github.com/fearphage/4341799
+  $.whenAll = function(array) {
+    var
+			/* jshint laxbreak: true */
+      resolveValues = arguments.length == 1 && Array.isArray(array)
+        ? array
+        : slice.call(arguments),
+      length = resolveValues.length,
+      remaining = length,
+      deferred = $.Deferred(),
+      i = 0,
+      failed = 0,
+      rejectContexts = Array(length),
+      rejectValues = Array(length),
+      resolveContexts = Array(length),
+      value
+    ;
+
+    function updateFunc (index, contexts, values) {
+      return function() {
+        if (values !== resolveValues) {
+          failed++;
+        }
+        deferred.notifyWith(
+         contexts[index] = this,
+         values[index] = slice.call(arguments)
+        );
+        if (!(--remaining)) {
+          deferred[(!failed ? 'resolve' : 'reject') + 'With'](contexts, values);
+        }
+      };
+    }
+
+    for (; i < length; i++) {
+      if ((value = resolveValues[i]) && (typeof value.promise === "function")) {
+        value.promise()
+          .done(updateFunc(i, resolveContexts, resolveValues))
+          .fail(updateFunc(i, rejectContexts, rejectValues))
+        ;
+      }
+      else {
+        deferred.notifyWith(this, value);
+        --remaining;
+      }
+    }
+
+    if (!remaining) {
+      deferred.resolveWith(resolveContexts, resolveValues);
+    }
+
+    return deferred.promise();
+  };
 
 })(jQuery);

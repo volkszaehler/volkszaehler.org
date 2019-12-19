@@ -2,9 +2,8 @@
 /**
  * Common loader code
  *
- * @copyright Copyright (c) 2013, The volkszaehler.org project
- * @package default
- * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -25,6 +24,23 @@
 
 use Volkszaehler\Util;
 
+function fail($msg) {
+	// JSON request?
+	if (preg_match('/\.json/', @$_SERVER['REQUEST_URI'])) {
+		header('Content-type: application/json');
+		echo json_encode([
+			'version' => VZ_VERSION,
+			'exception' => array(
+				'message' => $msg
+			)
+		]);
+		die();
+	}
+
+	// normal request or command line
+	throw new \Exception($msg);
+}
+
 // enable strict error reporting
 error_reporting(E_ALL | E_STRICT);
 
@@ -37,17 +53,17 @@ if (!defined('VZ_DIR')) {
 }
 
 if (!file_exists(VZ_DIR . '/vendor/autoload.php')) {
-	die('Could not find autoloader. Check that dependencies have been installed via `composer install`.');
+	fail('Could not find autoloader. Check that dependencies have been installed via `composer install`.');
 }
 
-if (!file_exists(VZ_DIR . '/etc/volkszaehler.conf.php')) {
-	die('Could not find config file. Check that etc/volkszaehler.conf.php exists.');
+if (!file_exists(VZ_DIR . '/etc/config.yaml')) {
+	fail('Could not find config file. Check that etc/config.yaml exists.');
 }
 
 require_once VZ_DIR . '/vendor/autoload.php';
 
 // load configuration
-Util\Configuration::load(VZ_DIR . '/etc/volkszaehler.conf');
+Util\Configuration::load(VZ_DIR . '/etc/config.yaml');
 
 // set timezone
 $tz = (Util\Configuration::read('timezone')) ? Util\Configuration::read('timezone') : @date_default_timezone_get();

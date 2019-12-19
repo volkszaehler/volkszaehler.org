@@ -1,8 +1,7 @@
 <?php
 /**
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://www.gnu.org/licenses/gpl.txt GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -27,13 +26,17 @@ use Volkszaehler\Util;
 
 /**
  * @author Steffen Vogel <info@steffenvogel.de>
- * @package default
  */
 abstract class Definition {
 	/**
 	 * Cache key
 	 */
 	const CACHE_KEY = 'VZ_';
+
+	/**
+	 * @var string filename to load definitions from
+	 */
+	const FILE = null;
 
 	/**
 	 * @var string discriminator for database column
@@ -44,6 +47,11 @@ abstract class Definition {
 	 * @var string title for UI
 	 */
 	public $translation;
+
+	/**
+	 * @var array|null holds definitions
+	 */
+	protected static $definitions = NULL;
 
 	/**
 	 * Hide default constructor
@@ -65,7 +73,7 @@ abstract class Definition {
 	 * Factory method for creating new instances
 	 *
 	 * @param string $name
-	 * @return Util\Definition|array
+	 * @return Definition|array
 	 */
 	public static function get($name = NULL) {
 		if (is_null(static::$definitions)) {
@@ -105,10 +113,10 @@ abstract class Definition {
 
 		$cache_id = static::CACHE_KEY . static::FILE;
 
-		if (Util\Configuration::read('devmode') == FALSE && extension_loaded('apc') && apc_exists($cache_id) &&
-			(time() - filemtime(__DIR__ . '/' . static::FILE) > Util\Configuration::read('cache.ttl')))
+		if (Util\Configuration::read('devmode') == FALSE && extension_loaded('apcu') && apcu_exists($cache_id) &&
+			(time() - filemtime(__DIR__ . '/' . static::FILE) > Util\Configuration::read('cache.ttl', 3600)))
 		{
-			static::$definitions = apc_fetch($cache_id);
+			static::$definitions = apcu_fetch($cache_id);
 		}
 		else {
 			// expensive - cache results
@@ -118,8 +126,8 @@ abstract class Definition {
 				static::$definitions[$property->name] = new static($property);
 			}
 
-			if (extension_loaded('apc')) {
-				apc_store($cache_id, static::$definitions, Util\Configuration::read('cache.ttl'));
+			if (extension_loaded('apcu')) {
+				apcu_store($cache_id, static::$definitions, Util\Configuration::read('cache.ttl', 3600));
 			}
 		}
 	}

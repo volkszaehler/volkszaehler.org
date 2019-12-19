@@ -1,8 +1,7 @@
 <?php
 /**
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -29,59 +28,55 @@ use Volkszaehler\Model;
  * Aggregator controller
  *
  * @author Steffen Vogel (info@steffenvogel.de)
- * @package default
  */
 class AggregatorController extends EntityController {
+
 	/**
 	 * Get aggregator
-	 * @param null $identifier
-	 * @return array
+	 * @param string|array|null $uuid
+	 * @return array|Model\Aggregator
 	 * @throws \Exception
 	 */
-	public function get($identifier = NULL) {
-		$aggregator = parent::get($identifier);
+	public function get($uuid) {
+		$aggregator = parent::get($uuid);
 
 		if (is_array($aggregator)) { // filter public entities
-			return array('channels' => array_values(array_filter($aggregator['entities'], function($agg) {
-				return ($agg instanceof Model\Aggregator);
-			})));
+			return array('channels' => array_values(
+				array_filter($aggregator['entities'], function($agg) {
+					return ($agg instanceof Model\Aggregator);
+				})
+			));
 		}
 		else if ($aggregator instanceof Model\Aggregator) {
 			return $aggregator;
 		}
 		else {
-			throw new \Exception('Entity is not a group: \'' . $identifier . '\'');
+			throw new \Exception('Entity is not a group: \'' . $uuid . '\'');
 		}
 	}
 
 	/**
 	 * Create new aggregator or add entity to aggregator
-	 * @param null $identifier
+	 * @param string|null $uuid
 	 * @return array|Model\Aggregator
 	 * @throws \Exception
 	 */
-	public function add($identifier = NULL) {
-		if (isset($identifier)) {	// add entity to aggregator
-			$aggregator = $this->get($identifier);
-
-			if ($uuids = self::makeArray($this->getParameters()->get('uuid'))) {
+	public function add($uuid) {
+		if (isset($uuid)) {	// add entity to aggregator
+			if ($uuids = (array) $this->getParameters()->get('uuid')) {
+				/** @var Model\Aggregator */
+				$aggregator = $this->ef->get($uuid);
 				foreach ($uuids as $uuid) {
-					$aggregator->addChild(EntityController::factory($this->em, $uuid));
+					$aggregator->addChild($this->ef->get($uuid));
 				}
 			}
 			else {
-				throw new \Exception('You have to specifiy a UUID to add');
+				throw new \Exception('Missing child UUID(s) to add');
 			}
 		}
 		else {	// create new aggregator
-			$type = $this->getParameters()->get('type');
-
-			if (!isset($type)) {
-				$type = 'group';
-			}
-
+			$type = $this->getParameters()->get('type', 'group');
 			$aggregator = new Model\Aggregator($type);
-
 			$this->setProperties($aggregator, $this->getParameters()->all());
 			$this->em->persist($aggregator);
 		}
@@ -93,25 +88,27 @@ class AggregatorController extends EntityController {
 
 	/**
 	 * Delete Aggregator or remove entity from aggregator
-	 * @param $identifier
-	 * @return array|null
+	 * @param string|array|null $uuid
+	 * @return Model\Aggregator|null
 	 */
-	public function delete($identifier) {
-		if (!isset($identifier))
-			return;
+	public function delete($uuid) {
+		if (!($entity = $this->ef->getByUuid($uuid)) instanceof Model\Entity) {
+			throw new \Exception('Invalid operation - missing entity.');
+		}
 
-		$aggregator = NULL;
-		if ($uuids = self::makeArray($this->getParameters()->get('uuid'))) { // remove entity from aggregator
-			$aggregator = $this->get($identifier);
-
+		$aggregator = null;
+		if ($uuids = (array) $this->getParameters()->get('uuid')) { // remove entity from aggregator
+			/** @var Model\Aggregator */
+			$aggregator = $this->ef->getByUuid($uuid);
 			foreach ($uuids as $uuid) {
-				$aggregator->removeChild(EntityController::factory($this->em, $uuid));
+				$aggregator->removeChild($this->ef->getByUuid($uuid));
 			}
 
 			$this->em->flush();
+			$this->ef->remove($uuid);
 		}
 		else {	// remove aggregator
-			parent::delete($identifier);
+			parent::delete($uuid);
 		}
 		return $aggregator;
 	}

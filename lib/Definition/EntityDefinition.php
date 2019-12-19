@@ -1,8 +1,7 @@
 <?php
 /**
- * @package default
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @license http://www.gnu.org/licenses/gpl.txt GNU Public License
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -24,10 +23,11 @@
 namespace Volkszaehler\Definition;
 
 use Volkszaehler\Util;
+use Volkszaehler\Model\Aggregator;
 
 /**
  * @author Steffen Vogel <info@steffenvogel.de>
- * @package default
+ * @author Andreas Goetz <cpuidle@gmx.de>
  */
 class EntityDefinition extends Definition {
 	/**
@@ -94,21 +94,20 @@ class EntityDefinition extends Definition {
 	/**
 	 * Scaler for unit values
 	 * E.g. $scale = 1000 means entity definition is in impulses per 1000 units (same for initialconsumption and cost)
- 	 * @var boolean
+ 	 * @var float
 	 */
 	public $scale = 1;
 
-	/**
-	 * @var array holds definitions
-	 */
-	protected static $definitions = NULL;
+    protected static $definitions = NULL;
 
 	/**
 	 * Properties required/optional by default for all Entity types
 	 * @var array
 	 */
 	static protected $defaultRequired = array('title');
-	static protected $defaultOptional = array('public', 'color', 'style', 'fillstyle', 'yaxis', 'active', 'description', 'owner', 'address:', 'link');
+	static protected $channelOptional = array('public', 'active', 'color', 'style', 'fillstyle', 'linestyle', 'linewidth', 'yaxis', 'description', 'owner', 'address:', 'link', 'gap');
+	static protected $groupOptional = array('public', 'active', 'color', 'description', 'owner', 'address:', 'link');
+	static protected $consumptionOptional = array('initialconsumption', 'cost');
 
 	/**
 	 * Constructor
@@ -119,7 +118,17 @@ class EntityDefinition extends Definition {
 	 	parent::__construct($object);
 
 	 	$this->required = array_merge(self::$defaultRequired, $this->required);
-	 	$this->optional = array_merge(self::$defaultOptional, $this->optional);
+
+	 	if ($this->getModel() == Aggregator::class) {
+			 $optional = self::$groupOptional;
+		}
+		else {
+			$optional = self::$channelOptional;
+			if ($this->hasConsumption) {
+				$optional = array_merge($optional, self::$consumptionOptional);
+			}
+		}
+		$this->optional = array_merge($optional, $this->optional);
 	 }
 
 	/*

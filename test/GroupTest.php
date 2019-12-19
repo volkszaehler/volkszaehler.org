@@ -2,8 +2,9 @@
 /**
  * Entity tests
  *
- * @package Test
  * @author Andreas Götz <cpuidle@gmx.de>
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 
 namespace Tests;
@@ -70,6 +71,7 @@ class GroupTest extends Middleware
 		$this->getJson('/group/' . $child . '.json', array(
 			'operation' => 'delete'
 		));
+
 		$this->assertObjectNotHasAttribute('children', $this->getJson('/group/' . self::$uuid . '.json')->entity);
 	}
 
@@ -94,6 +96,16 @@ class GroupTest extends Middleware
 		$this->json = $this->getJson('/data/' . self::$uuid . '.json', array(), 'GET', true);
 
 		$this->assertTrue(isset($this->json->exception));
+	}
+
+	/**
+	 * @depends testCreateGroup
+	 */
+	function testGetGroupAsChannel() {
+		// $this->getTuples($this->ts1-1, $this->ts2);
+		$this->json = $this->getJson('/channel/' . self::$uuid . '.json', array(), 'GET', true);
+
+		$this->assertStringStartsWith('Entity is not a channel', $this->json->exception->message);
 	}
 
 	/**

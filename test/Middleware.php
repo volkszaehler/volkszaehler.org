@@ -2,8 +2,9 @@
 /**
  * Basic test functionality
  *
- * @package Test
  * @author Andreas Götz <cpuidle@gmx.de>
+ * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 
 namespace Tests;
@@ -13,17 +14,16 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
-use Proxy\Adapter\Guzzle\GuzzleAdapter;
+use GuzzleHttp\Exception\RequestException;
 use Symfony\Bridge\PsrHttpMessage\Factory;
 use Zend\Diactoros\Uri;
 
 use Volkszaehler\Router;
 
-abstract class Middleware extends \PHPUnit_Framework_TestCase
+abstract class Middleware extends \PHPUnit\Framework\TestCase
 {
 	/**
-	 * @var Volkszaehler\Router
+	 * @var \Volkszaehler\Router
 	 */
 	static $app;
 
@@ -31,24 +31,29 @@ abstract class Middleware extends \PHPUnit_Framework_TestCase
 	static $psrFoundationFactory;
 
 	/**
-	 * @var Proxy\Adapter\Guzzle\GuzzleAdapter
+	 * @var \GuzzleHttp\Client
 	 */
-	static $adapter;
+	static $client;
 
 	/**
-	 * @var Request memory consumption
+	 * @var int memory consumption
 	 */
 	static $mem;
 
 	/**
-	 * @var Symfony\Component\HttpFoundation\Request
+	 * @var Request
 	 */
 	static $request;
 
 	/**
-	 * @var Debug setting
+	 * @var bool setting
 	 */
 	static $debug = false;
+
+	/**
+	 * @var \stdClass
+	 */
+	protected $json;
 
 	/**
 	 * Initialize router
@@ -57,14 +62,12 @@ abstract class Middleware extends \PHPUnit_Framework_TestCase
 		parent::setupBeforeClass();
 
 		if (testAdapter == 'HTTP') {
-			// echo("Test using HTTP adapter\n");
-			static::$adapter = new GuzzleAdapter(new Client());
+			static::$client = new Client();
 			static::$httpFoundationFactory = new Factory\HttpFoundationFactory();
 			static::$psrFoundationFactory = new Factory\DiactorosFactory();
 		}
 		// cache entity manager
 		else if (null == self::$app) {
-			// echo("Test using built-in Router\n");
 			self::$app = new Router();
 		}
 	}
@@ -78,7 +81,7 @@ abstract class Middleware extends \PHPUnit_Framework_TestCase
 
 	/**
 	 * Send request via Guzzle
-	 * @param Request
+	 * @param Request $request
 	 * @return Response
 	 */
 	protected static function send(Request $request) {
@@ -89,10 +92,10 @@ abstract class Middleware extends \PHPUnit_Framework_TestCase
 		$psrRequest = $psrRequest->withUri(new Uri($uri));
 
 		try {
-			$psrResponse = static::$adapter->send($psrRequest);
+			$psrResponse = static::$client->send($psrRequest);
 		}
-		catch (GuzzleException $e) {
-			$psrResponse = $e->getResponse();
+		catch (RequestException $e) {
+			$psrResponse = $e->hasResponse() ? $e->getResponse() : null;
 			if (null === $psrResponse) {
 				var_dump($e);
 			}
@@ -106,7 +109,7 @@ abstract class Middleware extends \PHPUnit_Framework_TestCase
 
 	/**
 	 * Execute barebones JSON middleware request
-	 * @param Request
+	 * @param Request $request
 	 * @return Response
 	 */
 	protected static function executeRequest(Request $request) {
@@ -146,8 +149,8 @@ abstract class Middleware extends \PHPUnit_Framework_TestCase
 
 	/**
 	 * Execute and parse barebones JSON middleware request
-	 * @param Request
-	 * @return array
+	 * @param Request $request
+	 * @return \stdClass
 	 */
 	protected static function executeJsonRequest(Request $request) {
 		$response = self::executeRequest($request);
@@ -162,6 +165,7 @@ abstract class Middleware extends \PHPUnit_Framework_TestCase
 	protected static function getResponse($request, $parameters = array(), $method = 'GET') {
 		if (!$request instanceof Request) {
 			$request = Request::create($request, $method, $parameters);
+			// print_r($request);
 		}
 
 		return self::executeRequest(self::$request = $request);
@@ -187,10 +191,9 @@ abstract class Middleware extends \PHPUnit_Framework_TestCase
 		}
 
 		if ($hasException) {
-			if ($this->assertTrue(isset($this->json->exception), 'Expected <exception> got none.')) {
-				if (is_string($hasException)) {
-					$this->assertTrue($this->json->exception->message == $hasException);
-				}
+			$this->assertTrue(isset($this->json->exception), 'Expected <exception> got none.');
+			if (is_string($hasException)) {
+				$this->assertEquals($hasException, $this->json->exception->message);
 			}
 		}
 		else {
