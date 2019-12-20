@@ -155,7 +155,7 @@
 		}
 	},
 	{
-		"name"			: "gas flow",
+		"name"			: "gas sensor",
 		"required"			: ["resolution"],
 		"optional"			: [],
 		"icon"			: "flame.png",
@@ -165,7 +165,7 @@
 		"hasConsumption"	: true,
 		"translation"	: {
 			"de" : "Gas (Durchflusswerte)",
-			"en" : "Gas (flow rate readings)",
+			"en" : "Gas (flow rate)",
 			"fr" : "Gaz (vitesse d'écoulement)"
 		}
 	},
