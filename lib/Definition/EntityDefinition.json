@@ -387,6 +387,19 @@
 		}
 	},
 	{
+		"name"			: "humidity absolute",
+		"optional"			: ["resolution"],
+		"icon"			: "rain.png",
+		"unit"			: "g/m³",
+		"interpreter"			: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"			: {
+			"de" : "absolute Luftfeuchtigkeit",
+			"en" : "absolute humidity",
+			"fr" : "Humidité absolue"
+		}
+	},
+	{
 		"name"			: "windspeed",
 		"optional"		: ["resolution"],
 		"icon"			: "propeller.png",
