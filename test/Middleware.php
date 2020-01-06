@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use Symfony\Bridge\PsrHttpMessage\Factory;
-use Zend\Diactoros\Uri;
+use Laminas\Diactoros\Uri;
 
 use Volkszaehler\Router;
 
