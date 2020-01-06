@@ -31,7 +31,6 @@
         "phpunit/phpunit": "^7.0",
         "symfony/psr-http-message-bridge": "^2.0",
         "guzzlehttp/guzzle": "^6.3",
-        "laminas/laminas-diactoros": "^2.2",
         "jdorn/sql-formatter": "^1.2"
     },
     "autoload": {

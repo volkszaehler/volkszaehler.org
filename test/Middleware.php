@@ -16,8 +16,9 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory;
-use Laminas\Diactoros\RequestFactory;
-use Laminas\Diactoros\Uri;
+use Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory;
+use Nyholm\Psr7\Factory\Psr17Factory;
+use Nyholm\Psr7\Uri;
 
 use Volkszaehler\Router;
 
@@ -65,7 +66,9 @@ abstract class Middleware extends \PHPUnit\Framework\TestCase
 		if (testAdapter == 'HTTP') {
 			static::$client = new Client();
 			static::$httpFoundationFactory = new HttpFoundationFactory();
-			static::$psrFoundationFactory = new RequestFactory();
+
+			$psr17Factory = new Psr17Factory();
+			static::$psrFoundationFactory = new PsrHttpFactory($psr17Factory, $psr17Factory, $psr17Factory);
 		}
 		// cache entity manager
 		else if (null == self::$app) {
