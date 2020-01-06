@@ -68,7 +68,7 @@ abstract class Middleware extends \PHPUnit\Framework\TestCase
 			static::$httpFoundationFactory = new HttpFoundationFactory();
 
 			$psr17Factory = new Psr17Factory();
-			static::$psrFoundationFactory = new PsrHttpFactory($psr17Factory, $psr17Factory, $psr17Factory);
+			static::$psrFoundationFactory = new PsrHttpFactory($psr17Factory, $psr17Factory, $psr17Factory, $psr17Factory);
 		}
 		// cache entity manager
 		else if (null == self::$app) {
