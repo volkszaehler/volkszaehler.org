@@ -127,7 +127,7 @@ class Aggregation {
 	 * @param  string  $targetLevel desired highest level (e.g. 'day')
 	 * @return array|boolean list of valid aggregation levels
 	 */
-	public function getOptimalAggregationLevel($uuid, $targetLevel = null) {
+	public function getOptimalAggregationLevel($uuid, $targetLevel = null, $from = null, $to = null) {
 		$levels = self::getAggregationLevels();
 
 		$sqlParameters = array($uuid);
@@ -136,7 +136,15 @@ class Aggregation {
 			   'WHERE uuid = ? ';
 		if ($targetLevel) {
 			$sqlParameters[] = self::getAggregationLevelTypeValue($targetLevel);
-			$sql .= 'AND aggregate.type <= ? ';
+			$sql .= 'AND aggregate.type = ? ';
+		}
+		if ($from) {
+			$sqlParameters[] = $from;
+			$sql .= 'AND timestamp >= ? ';
+		}
+		if ($to) {
+			$sqlParameters[] = $to;
+			$sql .= 'AND timestamp <= ? ';
 		}
 		$sql.= 'GROUP BY type ' .
 			   'HAVING count > 0 ' .
