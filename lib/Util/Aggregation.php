@@ -127,7 +127,7 @@ class Aggregation {
 	 * @param  string  $targetLevel desired highest level (e.g. 'day')
 	 * @return array|boolean list of valid aggregation levels
 	 */
-	public function getOptimalAggregationLevel($uuid, $targetLevel = null, $from = null, $to = null) {
+	public function hasDataForAggregationLevel($uuid, $targetLevel = null, $from = null, $to = null) {
 		$levels = self::getAggregationLevels();
 
 		$sqlParameters = array($uuid);

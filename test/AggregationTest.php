@@ -192,7 +192,7 @@ class AggregationTest extends DataPerformance
 		$typeDay = Util\Aggregation::getAggregationLevelTypeValue('day');
 
 		// day: 2 rows of aggregation data, day first
-		$opt = $agg->getOptimalAggregationLevel(self::$uuid);
+		$opt = $agg->hasDataForAggregationLevel(self::$uuid);
 		$ref = array(
 			array(
 				'level' => 'day',
@@ -205,7 +205,7 @@ class AggregationTest extends DataPerformance
 		$this->assertEquals($ref, $opt);
 
 		// hour: 1 row of aggregation data
-		$opt = $agg->getOptimalAggregationLevel(self::$uuid, 'hour');
+		$opt = $agg->hasDataForAggregationLevel(self::$uuid, 'hour');
 		$ref = array(array(
 			'level' => 'hour',
 			'type' => $typeHour,
@@ -214,7 +214,7 @@ class AggregationTest extends DataPerformance
 
 		// minute: no aggregation data => false
 		$typeMinute = Util\Aggregation::getAggregationLevelTypeValue('minute');
-		$opt = $agg->getOptimalAggregationLevel(self::$uuid, 'minute');
+		$opt = $agg->hasDataForAggregationLevel(self::$uuid, 'minute');
 		$this->assertFalse($opt);
 
 		// 3 data, cannot use daily aggregates for hourly request
