@@ -138,11 +138,11 @@ class Aggregation {
 			$sqlParameters[] = self::getAggregationLevelTypeValue($targetLevel);
 			$sql .= 'AND aggregate.type = ? ';
 		}
-		if ($from) {
+		if (isset($from)) {
 			$sqlParameters[] = $from;
 			$sql .= 'AND timestamp >= ? ';
 		}
-		if ($to) {
+		if (isset($to)) {
 			$sqlParameters[] = $to;
 			$sql .= 'AND timestamp <= ? ';
 		}
