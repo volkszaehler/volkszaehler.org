@@ -79,7 +79,7 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 		if ($this->aggValid === null) {
 			$this->aggValid = false;
 			$levels = Util\Aggregation::getAggregationLevels();
-			$level = $this->groupBy ? Util\Aggregation::getAggregationLevelTypeValue($this->groupBy) : -1;
+			$level = $this->groupBy ? Util\Aggregation::getAggregationLevelTypeValue($this->groupBy) : max(array_keys($levels));
 			while ($level >= 0 && !$this->aggValid) {
 				$aggregationLevels = $this->aggregator->hasDataForAggregationLevel($this->channel->getUuid(), $levels[$level], $this->from, $this->to);
 
