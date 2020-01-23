@@ -70,7 +70,9 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 	/**
 	 * Validate use of aggregation table
 	 *
-	 * 	1. find matching aggregation level <= $this->groupBy or highest level
+	 * 	1. find matching aggregation level <= $this->groupBy or highest level by iterating
+	 *	   Aggregation::$aggregationLevels in reverse order starting with highest possible
+	 *	   level or $this->groupBy
 	 * 	2. calculate if matching timestamps found
 	 *
 	 * @return boolean	Aggregation table usage validity
