@@ -192,25 +192,12 @@ class AggregationTest extends DataPerformance
 		$typeDay = Util\Aggregation::getAggregationLevelTypeValue('day');
 
 		// day: 2 rows of aggregation data, day first
-		$opt = $agg->hasDataForAggregationLevel(self::$uuid);
-		$ref = array(
-			array(
-				'level' => 'day',
-				'type' => $typeDay,
-				'count' => $this->countAggregationRows(self::$uuid, $typeDay)),
-			array(
-				'level' => 'hour',
-				'type' => $typeHour,
-				'count' => $this->countAggregationRows(self::$uuid, $typeHour)));
-		$this->assertEquals($ref, $opt);
+		$opt = $agg->hasDataForAggregationLevel(self::$uuid, $typeDay);
+		$this->assertEquals($typeDay, $opt);
 
 		// hour: 1 row of aggregation data
 		$opt = $agg->hasDataForAggregationLevel(self::$uuid, $typeHour);
-		$ref = array(array(
-			'level' => 'hour',
-			'type' => $typeHour,
-			'count' => $this->countAggregationRows(self::$uuid, $typeHour)));
-		$this->assertEquals($ref, $opt);
+		$this->assertEquals($typeHour, $opt);
 
 		// minute: no aggregation data => false
 		$typeMinute = Util\Aggregation::getAggregationLevelTypeValue('minute');

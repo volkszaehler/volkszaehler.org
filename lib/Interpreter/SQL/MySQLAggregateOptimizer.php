@@ -80,16 +80,17 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 	private function validateAggregationUsage() {
 		if ($this->aggValid === null) {
 			$this->aggValid = false;
-			$aggType = $this->groupBy ? Util\Aggregation::getAggregationLevelTypeValue($this->groupBy) : max(array_keys(Util\Aggregation::getAggregationLevels()));
+			$levels = Util\Aggregation::getAggregationLevels();
+			$aggType = $this->groupBy ? Util\Aggregation::getAggregationLevelTypeValue($this->groupBy) : max(array_keys($levels));
 			while ($aggType >= 0 && !$this->aggValid) {
-				$aggregationLevels = $this->aggregator->hasDataForAggregationLevel($this->channel->getUuid(), $aggType, $this->from, $this->to);
+				$aggregationType = $this->aggregator->hasDataForAggregationLevel($this->channel->getUuid(), $aggType, $this->from, $this->to);
 
-				if ($aggregationLevels) {
-					// choose highest level
-					$this->aggLevel = $aggregationLevels[0]['level'];
+				if ($aggregationType) {
+					// set name of level
+					$this->aggLevel = $levels[$aggregationType];
 
-					// numeric value of desired aggregation level
-					$this->aggType = Util\Aggregation::getAggregationLevelTypeValue($this->aggLevel);
+					// numeric value of aggregation level
+					$this->aggType = $aggregationType;
 
 					// valid boundaries?
 					$this->aggValid = $this->getAggregationBoundary();
