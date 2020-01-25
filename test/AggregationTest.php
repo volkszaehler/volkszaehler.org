@@ -205,7 +205,7 @@ class AggregationTest extends DataPerformance
 		$this->assertEquals($ref, $opt);
 
 		// hour: 1 row of aggregation data
-		$opt = $agg->hasDataForAggregationLevel(self::$uuid, 'hour');
+		$opt = $agg->hasDataForAggregationLevel(self::$uuid, $typeHour);
 		$ref = array(array(
 			'level' => 'hour',
 			'type' => $typeHour,
@@ -214,7 +214,7 @@ class AggregationTest extends DataPerformance
 
 		// minute: no aggregation data => false
 		$typeMinute = Util\Aggregation::getAggregationLevelTypeValue('minute');
-		$opt = $agg->hasDataForAggregationLevel(self::$uuid, 'minute');
+		$opt = $agg->hasDataForAggregationLevel(self::$uuid, $typeMinute);
 		$this->assertFalse($opt);
 
 		// 3 data, cannot use daily aggregates for hourly request
