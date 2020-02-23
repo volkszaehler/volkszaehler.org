@@ -196,8 +196,18 @@ vz.parseUrlParams = function() {
 					// disable automatic refresh
 					vz.options.refresh = false;
 					// ms or speaking timestamp
-					var ts = (/^-?[0-9]+$/.test(vars[key])) ? parseInt(vars[key]) : new Date(vars[key]).getTime();
-					if (!isNaN(ts)) {
+					var ts_param = vars[key];
+					var ts = null;
+					if (/^-?[0-9]+$/.test(vars[key])){ 
+						// string contains only numbers => it's a timestamp
+						ts = parseInt(ts_param);
+					} else {
+						// string contains something else, parse it with chrono
+						parsedDate = chrono.parseDate(vars[key]);
+						// return time if chrono was successful
+						ts = parsedDate === null ? null : parsedDate.getTime(); 
+					}
+					if (ts != null && !isNaN(ts)) {
 						if (key == 'from')
 							vz.options.plot.xaxis.min = ts;
 						else
