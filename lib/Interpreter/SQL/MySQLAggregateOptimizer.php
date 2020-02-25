@@ -70,7 +70,9 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 	/**
 	 * Validate use of aggregation table
 	 *
-	 * 	1. find matching aggregation level <= $this->groupBy or highest level
+	 * 	1. find matching aggregation level <= $this->groupBy or highest level by iterating
+	 *	   Aggregation::$aggregationLevels in reverse order starting with highest possible
+	 *	   level or $this->groupBy
 	 * 	2. calculate if matching timestamps found
 	 *
 	 * @return boolean	Aggregation table usage validity
@@ -78,18 +80,22 @@ class MySQLAggregateOptimizer extends MySQLOptimizer {
 	private function validateAggregationUsage() {
 		if ($this->aggValid === null) {
 			$this->aggValid = false;
+			$levels = Util\Aggregation::getAggregationLevels();
+			$aggType = $this->groupBy ? Util\Aggregation::getAggregationLevelTypeValue($this->groupBy) : max(array_keys($levels));
+			while ($aggType >= 0 && !$this->aggValid) {
+				$aggregationType = $this->aggregator->hasDataForAggregationLevel($this->channel->getUuid(), $aggType, $this->from, $this->to);
 
-			$aggregationLevels = $this->aggregator->getOptimalAggregationLevel($this->channel->getUuid(), $this->groupBy);
+				if ($aggregationType) {
+					// set name of level
+					$this->aggLevel = $levels[$aggregationType];
 
-			if ($aggregationLevels) {
-				// choose highest level
-				$this->aggLevel = $aggregationLevels[0]['level'];
+					// numeric value of aggregation level
+					$this->aggType = $aggregationType;
 
-				// numeric value of desired aggregation level
-				$this->aggType = Util\Aggregation::getAggregationLevelTypeValue($this->aggLevel);
-
-				// valid boundaries?
-				$this->aggValid = $this->getAggregationBoundary();
+					// valid boundaries?
+					$this->aggValid = $this->getAggregationBoundary();
+				}
+				$aggType--;
 			}
 		}
 

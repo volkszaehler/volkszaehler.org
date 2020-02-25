@@ -125,31 +125,27 @@ class Aggregation {
 	 * Simple optimizer - choose aggregation level with most data available
 	 *
 	 * @param  string  $targetLevel desired highest level (e.g. 'day')
-	 * @return array|boolean list of valid aggregation levels
+	 * @return integer|boolean aggregation type
 	 */
-	public function getOptimalAggregationLevel($uuid, $targetLevel = null) {
-		$levels = self::getAggregationLevels();
+	public function hasDataForAggregationLevel($uuid, $targetAggType, $from = null, $to = null) {
 
-		$sqlParameters = array($uuid);
-		$sql = 'SELECT aggregate.type, COUNT(aggregate.id) AS count ' .
+	    $sqlParameters = array($uuid, $targetAggType);
+		$sql = 'SELECT aggregate.type ' .
 			   'FROM aggregate INNER JOIN entities ON aggregate.channel_id = entities.id ' .
-			   'WHERE uuid = ? ';
-		if ($targetLevel) {
-			$sqlParameters[] = self::getAggregationLevelTypeValue($targetLevel);
-			$sql .= 'AND aggregate.type <= ? ';
+			   'WHERE uuid = ? and aggregate.type = ? ';
+		if (isset($from)) {
+			$sqlParameters[] = $from;
+			$sql .= 'AND timestamp >= ? ';
 		}
-		$sql.= 'GROUP BY type ' .
-			   'HAVING count > 0 ' .
-			   'ORDER BY type DESC';
+		if (isset($to)) {
+			$sqlParameters[] = $to;
+			$sql .= 'AND timestamp <= ? ';
+		}
+		$sql.= 'LIMIT 1';
 
 		$rows = $this->conn->fetchAll($sql, $sqlParameters);
 
-		// append readable level name
-		for ($i=0; $i<count($rows); $i++) {
-			$rows[$i]['level'] = $levels[$rows[$i]['type']];
-		}
-
-		return count($rows) ? $rows : FALSE;
+		return count($rows) ? $rows[0]['type'] : FALSE;
 	}
 
 	/**
