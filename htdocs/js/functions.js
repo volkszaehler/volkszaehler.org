@@ -193,8 +193,10 @@ vz.parseUrlParams = function() {
 
 				case 'from':
 				case 'to':
-					// disable automatic refresh
-					vz.options.refresh = false;
+					if (key == 'to'){
+						// disable automatic refresh
+						vz.options.refresh = false;
+					}
 					// ms or speaking (relative) timestamp
 					var ts_param = vars[key];
 					var ts = null;
