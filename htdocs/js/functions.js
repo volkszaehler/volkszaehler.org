@@ -193,11 +193,23 @@ vz.parseUrlParams = function() {
 
 				case 'from':
 				case 'to':
-					// disable automatic refresh
-					vz.options.refresh = false;
-					// ms or speaking timestamp
-					var ts = (/^-?[0-9]+$/.test(vars[key])) ? parseInt(vars[key]) : new Date(vars[key]).getTime();
-					if (!isNaN(ts)) {
+					if (key == 'to') {
+						// disable automatic refresh
+						vz.options.refresh = false;
+					}
+					// ms or speaking (relative) timestamp
+					var ts_param = vars[key];
+					var ts = null;
+					if (/^-?[0-9]+$/.test(ts_param)) { 
+						// string contains only numbers => it's a timestamp
+						ts = parseInt(ts_param);
+					} else {
+						// string contains something else, parse it with strtotime
+						parsedDate = strtotime(ts_param);
+						// return time in ms if strtotime was successful
+						ts = parsedDate === false ? null : parsedDate * 1000;
+					}
+					if (ts != null && !isNaN(ts)) {
 						if (key == 'from')
 							vz.options.plot.xaxis.min = ts;
 						else
