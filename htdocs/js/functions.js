@@ -193,20 +193,18 @@ vz.parseUrlParams = function() {
 
 				case 'from':
 				case 'to':
-					if (key == 'to'){
+					if (key == 'to') {
 						// disable automatic refresh
 						vz.options.refresh = false;
 					}
 					// ms or speaking (relative) timestamp
 					var ts_param = vars[key];
 					var ts = null;
-					if (/^-?[0-9]+$/.test(ts_param)){ 
+					if (/^-?[0-9]+$/.test(ts_param)) { 
 						// string contains only numbers => it's a timestamp
 						ts = parseInt(ts_param);
 					} else {
-						// remove (outer) quotes from string which breaks strtotime (as expected)
-						ts_param = ts_param.replace(/['"]+/g, '');
-						// string contains something else, parse it with chrono
+						// string contains something else, parse it with strtotime
 						parsedDate = strtotime(ts_param);
 						// return time in ms if strtotime was successful
 						ts = parsedDate === false ? null : parsedDate * 1000;
