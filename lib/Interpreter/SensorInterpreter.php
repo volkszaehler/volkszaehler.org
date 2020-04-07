@@ -44,9 +44,7 @@ class SensorInterpreter extends Interpreter {
 		$this->ts_last = $this->getFrom();
 
 		foreach ($this->rows as $row) {
-			$delta_ts = $row[0] - $this->ts_last;
 			$tuple = $this->convertRawTuple($row);
-			$this->consumption += $tuple[1] * $delta_ts;
 
 			$this->updateMinMax($tuple);
 			yield $tuple;
@@ -62,6 +60,7 @@ class SensorInterpreter extends Interpreter {
 		// otherwise the default, non-optimized tuple packaging SQL statement will yield incorrect
 		// results with non-equidistant timestamps
 		$value = isset($row[4]) ? $row[4] : $row[1];
+		$delta_ts = $row[0] - $this->ts_last;
 
 		// @TODO check if scale is needed here
 		$tuple = array(
@@ -72,7 +71,11 @@ class SensorInterpreter extends Interpreter {
 
 		// consumption values
 		if ($this->output == self::CONSUMPTION_VALUES) {
-			$tuple[1] *= ($tuple[0] - $this->ts_last) / 3.6e6;
+			$tuple[1] *= $delta_ts / 3.6e6;
+			$this->consumption += $tuple[1];
+		}
+		else {
+			$this->consumption += $tuple[1] * $delta_ts;
 		}
 
 		$this->ts_last = $row[0];
