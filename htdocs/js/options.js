@@ -92,13 +92,22 @@ vz.options.plot = {
 			tickFormatter: vz.wui.tickFormatter		// show axis label
 		},
 		{
-			axisLabel: '°C', // assign el. energy to first axis- remove if not used
+			axisLabel: '°C', // assign temperature to 2nd axis- remove if not used
 			tickFormatter: vz.wui.tickFormatter		// show axis label
 		},
 		{
 			// alignTicksWithAxis: 1,
 			position: 'right',
 			tickFormatter: vz.wui.tickFormatter		// show axis label
+		},
+		{
+			/*
+			** Please note: The last axis defined in here will also be used as a 
+			** template to clone further axes as needed. All settings (except the 
+			** axis label) will replicate into those additional axes.
+			*/
+			position: 'left',
+			tickFormatter: vz.wui.tickFormatter             // show axis label
 		}
 	],
 	selection: { mode: 'x' },
