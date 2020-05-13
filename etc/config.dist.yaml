@@ -7,7 +7,7 @@ php:
 # http://www.doctrine-project.org/projects/doctrine-dbal/en/2.6
 db:
   driver: pdo_mysql
-  host: 127.0.0.1
+  host: localhost
   # port: 3306
   user: vz
   password: demo
