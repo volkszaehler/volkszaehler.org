@@ -96,18 +96,14 @@ vz.options.plot = {
 			tickFormatter: vz.wui.tickFormatter		// show axis label
 		},
 		{
-			// alignTicksWithAxis: 1,
-			position: 'right',
-			tickFormatter: vz.wui.tickFormatter		// show axis label
-		},
-		{
 			/*
 			** Please note: The last axis defined in here will also be used as a 
 			** template to clone further axes as needed. All settings (except the 
 			** axis label) will replicate into those additional axes.
 			*/
-			position: 'left',
-			tickFormatter: vz.wui.tickFormatter             // show axis label
+			position: 'right',
+			// alignTicksWithAxis: 1,
+			tickFormatter: vz.wui.tickFormatter		// show axis label
 		}
 	],
 	selection: { mode: 'x' },
