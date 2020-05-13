@@ -120,11 +120,13 @@ Entity.prototype.getUnitForMode = function () {
 };
 
 /**
- * Helper function to manage yaxes array (last entry contains template)
+ * Helper function to manage yaxes array, adds addt'l axes as required 
+ * Last yaxis defined in options.js is used as template for further axes
  */
 function ensureAavailableAxis() {
-	var length = vz.options.plot.yaxes.push($.extend({}, vz.options.plot.yaxes[1])) - 1;
-	// make sure new axis is neutral
+	var length = vz.options.plot.yaxes.length;
+	vz.options.plot.yaxes.push($.extend({}, vz.options.plot.yaxes[length-1]));
+	// make sure new axis has a neutral label
 	delete vz.options.plot.yaxes[length].axisLabel;
 	return length;
 }
