@@ -1,9 +1,9 @@
 #!/usr/bin/env php
 <?php
 /**
- * Doctrine cli configuration
+ * Doctrine migrations cli configuration
  *
- * @author Steffen Vogel <info@steffenvogel.de>
+ * @author Andreas Goetz <cpuidle@gmx.de>
  * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
  * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
@@ -36,5 +36,4 @@ $helperSet = new Symfony\Component\Console\Helper\HelperSet(array(
 	'question' => new Symfony\Component\Console\Helper\QuestionHelper(),
 ));
 
-// Doctrine\ORM\Tools\Console\ConsoleRunner
 Doctrine\Migrations\Tools\Console\ConsoleRunner::run($helperSet);
