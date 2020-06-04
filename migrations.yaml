@@ -1,0 +1,7 @@
+name: Volkzaehler
+migrations_namespace: "Volkszaehler\\Migrations"
+table_name: migrations
+column_name: version
+column_length: 14
+all_or_nothing: true
+check_database_platform: true
