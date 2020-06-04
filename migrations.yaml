@@ -4,3 +4,4 @@ column_name: version
 column_length: 14
 all_or_nothing: true
 check_database_platform: true
+migrations_directory: lib/Migrations
