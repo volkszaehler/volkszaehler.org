@@ -1,4 +1,4 @@
-name: Volkzaehler
+name: int to timestamp conversion
 migrations_namespace: "Volkszaehler\\Migrations"
 table_name: migrations
 column_name: version
