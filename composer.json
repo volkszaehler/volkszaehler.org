@@ -21,7 +21,7 @@
         "symfony/routing": "^4.0",
         "symfony/yaml": "^4.0",
         "cboden/ratchet": "^0.4",
-        "react/http": "^0.8",
+        "react/http": "^1.0",
         "ringcentral/psr7": "^1.2",
         "php-pm/php-pm": "^2.0",
         "php-pm/httpkernel-adapter": "^2.0",

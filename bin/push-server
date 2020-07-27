@@ -76,7 +76,7 @@ $middleware = new MiddlewareAdapter();
 
 // configure local httpd interface
 $localSocket = new SocketServer(REMOTE_IP_PORT . $localPort, $loop); // remote loggers can push updates
-$localServer = new HttpReceiver($localSocket, $middleware);
+$localServer = new HttpReceiver($loop, $localSocket, $middleware);
 
 // configure routes
 $routes = new RouteCollection;
