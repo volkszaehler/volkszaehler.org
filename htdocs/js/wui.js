@@ -45,7 +45,6 @@ vz.wui.init = function() {
 
 	// buttons
 	$('button, input[type=button],[type=image],[type=submit]').button();
-	$('button[name=options-save]').click(vz.options.saveCookies);
 	$('button[name=entity-add]').click(this.dialogs.init);
 
 	$('#export select').change(function(event) {
@@ -80,6 +79,7 @@ vz.wui.init = function() {
 	}
 	$('#refresh').change(function() {
 		vz.options.refresh = $(this).prop('checked');
+		vz.options.saveCookies();
 		if (vz.options.refresh) {
 			vz.wui.refresh(); // refresh once
 			vz.wui.setTimeout();
@@ -88,6 +88,25 @@ vz.wui.init = function() {
 		}
 	});
 
+	// switch dark theme
+	$('#darkTheme').prop('checked', vz.options.darkTheme);
+	if (vz.options.darkTheme) {
+		document.documentElement.classList.add('color-theme-in-transition');
+		document.documentElement.setAttribute('data-theme', "dark");
+		window.setTimeout(function() { document.documentElement.classList.remove('color-theme-in-transition'); }, 500);
+	}
+	$('#darkTheme').change(function() {
+		vz.options.darkTheme = $(this).prop('checked');
+		vz.options.saveCookies();
+		document.documentElement.classList.add('color-theme-in-transition');
+		if (vz.options.darkTheme) {
+			document.documentElement.setAttribute('data-theme', "dark");
+		} else {
+			document.documentElement.setAttribute('data-theme', "light");
+		}
+		window.setTimeout(function() { document.documentElement.classList.remove('color-theme-in-transition'); }, 500);
+	});
+	
 	// toggle all channels
 	$('#entity-toggle').click(function() {
 		vz.entities.each(function(entity, parent) {
@@ -758,14 +777,14 @@ vz.wui.setTimeout = function() {
 	var t = Math.max((vz.options.plot.xaxis.max - vz.options.plot.xaxis.min) / vz.options.tuples, vz.options.minTimeout);
 	vz.wui.timeout = window.setTimeout(vz.wui.refresh, t);
 
-	$('#refresh-time').html('(' + Math.round(t / 1000) + ' s)');
+	$('#refresh-time').html(' in (' + Math.round(t / 1000) + 's)');
 };
 
 /**
  * Stop auto-refresh of graphs
  */
 vz.wui.clearTimeout = function(text) {
-	$('#refresh-time').html(text || '');
+	$('#refresh-time').html('');
 
 	var rc = window.clearTimeout(vz.wui.timeout);
 	vz.wui.timeout = null;

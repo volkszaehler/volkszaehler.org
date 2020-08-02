@@ -1,39 +1,106 @@
+html {
+	--hue: 210; /* Blue 210*/
+	--accent-hue: 25; /* Orange */
+	--text-color-normal: hsl(var(--hue), 100%, 0%);
+	--text-color-light: hsl(var(--hue), 80%, 20%);
+	--text-color-richer: hsl(var(--hue), 70%, 30%);
+	--text-color-highlight: hsl(var(--accent-hue), 70%, 50%);
+	--link-color: hsl(var(--hue), 90%, 70%);
+	--accent-color: hsl(var(--accent-hue), 100%, 70%);
+	--h3-color: hsl(var(--hue), 100%, 87%);
+	
+	--button-color-text: hsl(var(--hue), 90%, 10%);
+	--button-color-background: hsl(var(--hue), 100%, 80%);
+	--button-color-hover: var(--background-richer);
+	
+	--slider-color: var(--background);
+	--slider-color-on: hsl(var(--hue), 100%, 77%); 
+	--slider-color-off: hsl(var(--hue), 50%, 10%);  
+	--slider-color-bg: hsl(var(--hue), 20%, 70%);  
+	
+	--background: hsl(var(--hue), 100%, 100%);
+	--background-vlight: hsl(var(--hue), 90%, 98%);;
+	--background-light: hsl(var(--hue), 90%, 95%);;
+	--background-richer: hsl(var(--hue), 100%, 88%);
+}
+
+@media (prefers-color-scheme: dark){
+	html[data-theme='dark'] {
+		--text-color-normal: hsl(var(--hue), 10%, 80%);
+		--text-color-light: hsl(var(--hue), 15%, 80%);
+		--text-color-richer: hsl(var(--hue), 50%, 80%);
+		--text-color-highlight: hsl(var(--accent-hue), 70%, 80%);
+		--link-color: hsl(var(--hue), 90%, 70%);
+		--accent-color: hsl(var(--accent-hue), 100%, 20%);
+		--h3-color: hsl(var(--hue), 66%, 28%);
+		
+		--button-color-text: hsl(var(--hue), 10%, 90%);
+		--button-color-background: hsl(var(--hue), 66%, 40%);
+		--button-color-hover: var(--background-richer);		
+		
+		--slider-color: var(--text-color-normal);
+		--slider-color-on: hsl(var(--hue), 66%, 40%); 
+		--slider-color-off: hsl(var(--hue), 50%, 10%); 
+		--slider-color-bg: hsl(var(--hue), 100%, 10%);  
+		
+		--background: hsl(var(--hue), 10%, 10%);
+		--background-vlight: hsl(var(--hue), 10%, 15%);;
+		--background-light: hsl(var(--hue), 10%, 20%);;
+		--background-richer: hsl(var(--hue), 45%, 35%);
+	}
+}
+
 body {
+	color: var(--text-color-normal);
+	background-color: var(--background);
 	margin: 0;
 	padding: 0;
-	background-color: white;
 	font-family: sans-serif;
 }
 
 table {
+	background-color: var(--background-light);
 	border-collapse: collapse;
+	border-color: var(--backgroud-richer);
 	empty-cells: show;
 	width: 100%;
+	border: 0px solid;
 }
 
 thead tr {
-	border-bottom: 2px solid grey;
-
+	color: var(--text-color-normal);
+	background-color: var(--background-richer);
 	text-align: left;
 	font-size: 0.9em;
 }
 
-tr {
-	font-size: 1em;
+tr, td, span, a, p, li {
+	color: var(--text-color-normal);
+}
+
+a:link, a:visited, a:hover, a:active {
+	color: var(--link-color);
+}
+	
+input, select {
+	color: var(--button-color-text);
+	background-color: var(--background-vlight);
+	border: 1px solid var(--background-light);		
 }
 
 tr.optional,
 tr.stale td.min, tr.stale td.max, tr.stale td.average, tr.stale td.last,
 tr.stale td.consumption, tr.stale td.cost, tr.stale td.total {
-  color: grey;
+	color: var(--text-color-light);
 }
 
-table.properties tr:not(:first-child) {
-	border-top: 1px solid #ddd;
+table {
+	background-color: var(--background);	
 }
 
 td input:not([type=image]):not([type=checkbox]) {
 	width: 100%;
+	border: 1px solid var(--background-light);	
 }
 
 #content {
@@ -46,10 +113,9 @@ td input:not([type=image]):not([type=checkbox]) {
 }
 
 #content h3 {
-	background-color: grey;
+	background-color: var(--h3-color);
 	padding: 4px;
 	margin: 2px 0;
-	color: white;
 	cursor: pointer;
 	font-size: 0.9em;
 }
@@ -60,16 +126,23 @@ td input:not([type=image]):not([type=checkbox]) {
 
 #plot {
 	position: relative;
-	background-color: white;
+}
+
+.legend {
+	background-color: var(--background); 
 }
 
 .legend table {
 	width: auto;
 }
 
+.legend td {
+	color: var(--text-color-normal);
+}
+
 .axisLabels { /* if axislabels plugin is used */
 	font-size: smaller;
-	color: #545454;
+	color: var(--text-color-normal);
 }
 
 #flot {
@@ -85,45 +158,45 @@ td input:not([type=image]):not([type=checkbox]) {
 	top: 50%;
 	margin-top: -42px;
 	text-align: center;
-	text-shadow: 0 0 4px white;
-	color: grey;
 }
 
 #time {
 	position: absolute;
 	z-index: 2;
 	display: none;
-	color: white;
-	background-color: rgba(170, 0, 0, 0.80);
+	color: var(--text-color-normal);
+	background-color: var(--accent-color);
 	font-size: smaller;
 	padding: 2px 4px;
 	white-space: nowrap;
 }
 
 #footer {
-	text-align: center;
+	text-align: right;
 	font-size: 0.7em;
-	background-color: #0292C0;
-	color: white;
 	padding: 10px;
 }
 
 #footer a, #footer a:visited {
-	color: white;
+	color: var(--link-color);
 }
 
 #controls {
-	background-color: grey;
 	margin-right: 0px; /* override jquery ui */
-	padding: 2px!important;
+	padding: 0px!important;
 }
 
 #controls button {
-	width: 10.0%;
-	height: 30px;
-	margin-right: 0px; /* override jquery ui */
-	font-size: 1em;
-	padding: 0;
+	border-color: var(--background);
+	background-color: var(--button-color-background);
+	color: var(--button-color-text);
+	width: 10%; /* 10 buttons */
+	margin: 0px; 
+	font-size: 0.9em;
+}
+
+#controls button:hover {
+	background-color: var(--button-color-hover);
 }
 
 #controls button img {
@@ -131,20 +204,15 @@ td input:not([type=image]):not([type=checkbox]) {
 }
 
 #accordion button {
-	margin-left: 0;
-	font-size: 0.9em;
+	border-color: var(--background);
+	background-color: var(--button-color-background);
+	color: var(--button-color-text);
+	margin-right: 1px; 
+	margin-bottom: 1px; 
 }
 
-#accordion button img {
-	vertical-align: text-top;
-}
-
-button {
-	background-color: silver;
-	border: 1px solid darkgrey;
-	-moz-border-radius: 3px;
-	-webkit-border-radius: 3px;
-	border-radius: 3px;
+#accordion button:hover {
+	background-color: var(--button-color-hover);
 }
 
 /* header */
@@ -211,6 +279,107 @@ select.icons option {
 	box-sizing: border-box;
 }
 
+/* jQuery UI customizations */
+
+.ui-corner-all {
+	border-radius: 0px;
+}
+
+.ui-corner-right {
+	border-bottom-right-radius: 0px; 
+}
+
+.ui-corner-left {
+	border-bottom-left-radius: 0px; 
+}
+
+.ui-corner-right{
+	border-top-right-radius: 0px; 
+}
+
+.ui-corner-left {
+	border-top-left-radius: 0px; 
+}
+
+.ui-widget-header {
+	border: 0px;
+}
+
+.ui-dialog{
+	background-color: var(--background-light);
+}
+
+.ui-dialog-titlebar {
+	background-color: var(--background-richer);
+	border-color: var(--background);
+}
+
+.ui-tabs, .ui-tabs-nav {
+	background-color: var(--background);
+	border-color: var(--background);
+}
+
+.ui-tabs-anchor {
+	background-color: var(--background-richer);
+}
+
+.ui-tabs-anchor:hover {
+	background-color: var(--background-highlight);
+}
+
+.ui-state-active a{
+	color: var(--button-color-text);
+}
+
+.ui-state-active, .ui-widget-content .ui-state-active {
+	border: 0px;
+	border-radius: 0px;
+}
+
+.ui-state-default, .ui-widget-content .ui-state-default {
+	border: 0px;
+	border-radius: 0px;
+}
+
+.ui-state-hover, .ui-widget-content .ui-state-hover {
+	border: 0px;
+	border-radius: 0px;
+}
+	
+.ui-state-default a:link {
+	color: var(--button-color-text);
+}
+
+.ui-state-focus a {
+	background: var(--background-richer);
+}
+
+.ui-widget-header .ui-state-default {
+	background: var(--background-light);
+}
+
+.ui-slider {
+	color: var(--button-color-text);
+	background-color: var(--button-color-background);
+}
+
+.ui-widget-content {
+	background: var(--background);	
+}
+
+.ui-dialog-buttonpane button {
+	border-color: var(--background);
+	background-color: var(--button-color-background);
+	color: var(--button-color-text);
+	margin: 0;
+}
+
+.ui-dialog-buttonpane button:hover {
+	border-color: var(--background);
+	background-color: var(--button-color-hover);
+	color: var(--button-color-text);
+}
+
 /* mobile styles */
 
 @media only screen and (max-width: 40em) {
@@ -247,26 +416,23 @@ select.icons option {
 }
 
 /* jQuery UI customizations */
-input.ui-button {
-	padding: 0.1em 0.5em;
+input.ui-button, input.ui-button:hover, input.ui-button:active {
+	color: var(--button-color-text);
+	border-color: var(--background);
+	background-color: var(--button-color-background);
 }
 
-.ui-button-text-only .ui-button-text {
-	padding: 0.1em 0.5em;
+input.ui-button:hover {
+	background-color: var(--button-color-hover);
 }
 
 #entity-add.ui-dialog-content {
 	padding: 0.3em 0 0;
 }
 
-.ui-tabs .ui-tabs-nav li a {
-  padding: 0.1em 0.5em !important;
-}
-
 .ui-error .ui-widget-header { /* red header */
 	background-image: url("../img/ui-bg_gloss-wave_35_red_500x100.png");
-}
-
+}	
 
 /* jQuery TreeTable Core 2.0 stylesheet
  *
@@ -295,8 +461,8 @@ input.ui-button {
 /* jquery.treeTable.sortable
  * ------------------------------------------------------------------------- */
 .treeTable tr.selected, .treeTable tr.accept {
-  background-color: #3875d7;
-  color: #fff;
+  background-color: var(--background);
+  color: var(--text-color-normal);;
 }
 
 .treeTable tr.collapsed.selected td .expander, .treeTable tr.collapsed.accept td .expander {
@@ -308,7 +474,7 @@ input.ui-button {
 }
 
 .treeTable .ui-draggable-dragging {
-  color: #000;
+  color: var(--background);
   z-index: 1;
 }
 
@@ -318,7 +484,7 @@ input.ui-button {
 }
 
 #nprogress .bar {
-  background: #29d;
+  background: var(--text-color-highlight);
 
   position: fixed;
   z-index: 1031;
@@ -384,4 +550,82 @@ input.ui-button {
 @keyframes nprogress-spinner {
   0%   { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* The switch - the box around the slider */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--slider-color-bg);
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: var(--slider-color);
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: var(--slider-color-on);
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px var(--slider-color-on);
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+/* transition effect for theme toggling */
+html.color-theme-in-transition,
+html.color-theme-in-transition *,
+html.color-theme-in-transition *:before,
+html.color-theme-in-transition *:after {
+  transition: all 500ms !important;
+  transition-delay: 0 !important;
+}
+
+/* theming the scroll bar on mac */
+.docs-page__content {
+  background: var(--background);
+  overflow-y: auto;
 }
