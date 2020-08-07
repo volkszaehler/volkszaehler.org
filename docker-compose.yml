@@ -23,7 +23,7 @@ services:
       sed -i s/vz_admin/root/ /vz/etc/config.yaml &&
       sleep 1 &&
       (/vz/bin/doctrine orm:schema-tool:update --force || /vz/bin/doctrine orm:schema-tool:create) &&
-      /vz/vendor/bin/ppm start -c /vz/etc/middleware.json --static-directory /vz/htdocs --cgi-path=/usr/bin/php"
+      /vz/vendor/bin/ppm start -c /vz/etc/middleware.json --static-directory /vz/htdocs --cgi-path=/usr/local/bin/php"
     links:
     - database
     depends_on:
