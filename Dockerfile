@@ -1,6 +1,6 @@
 # Copyright (c) 2019 Andreas Goetz <cpuidle@gmx.de>
 
-FROM jorge07/alpine-php:7.3-dev AS builder
+FROM composer:1 AS builder
 
 WORKDIR /vz
 
@@ -11,11 +11,13 @@ RUN composer install --no-ansi --no-scripts --no-dev --no-interaction --no-progr
 COPY . /vz
 
 
-FROM jorge07/alpine-php:7.3
+FROM php:7.3-alpine
 
 EXPOSE 8080
 EXPOSE 8082
 EXPOSE 5582
+
+RUN docker-php-ext-install pcntl pdo_mysql
 
 COPY --from=builder /vz /vz
 COPY --from=builder /vz/etc/config.dist.yaml /vz/etc/config.yaml
@@ -23,4 +25,4 @@ COPY --from=builder /vz/etc/config.dist.yaml /vz/etc/config.yaml
 # modify options.js
 RUN sed -i "s/url: 'api'/url: '',/" /vz/htdocs/js/options.js
 
-CMD /vz/vendor/bin/ppm start -c /vz/etc/middleware.json --static-directory /vz/htdocs --cgi-path=/usr/bin/php
+CMD /vz/vendor/bin/ppm start -c /vz/etc/middleware.json --static-directory /vz/htdocs --cgi-path=/usr/local/bin/php
