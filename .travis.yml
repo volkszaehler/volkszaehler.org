@@ -63,6 +63,10 @@ install:
         npm install -g gulp
         npm install
       fi
+      if [ "$COMPONENT" == "DOCKER" ]; then
+        curl -sfL https://raw.githubusercontent.com/ldez/seihon/master/godownloader.sh | bash -s -- -b $GOPATH/bin
+        seihon --version
+      fi
 
 before_script:
     # enable shell errors
