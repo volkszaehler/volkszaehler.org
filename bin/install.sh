@@ -176,6 +176,7 @@ else
     ask "link from webserver to volkszaehler directory?" "$web_dir"
 	web_dir="$REPLY"
 
+    #check if symbolic link from "web_dir" already exists
 	if [ -h "$web_dir" ]; then
 		ask "$web_dir symlink already exists. Remove it? (you have to type 'Yes' to do this!)" n
 		if [ "$REPLY" == 'Yes' ]; then
@@ -184,6 +185,7 @@ else
 		else
 			REPLY=n
 		fi
+    #check if "web_dir" is already a directory
     elif [ -d "$web_dir" ]; then
 		ask "$web_dir directory already exists. Remove it? (this will remove a previous installation and all changes you made - type 'Yes' to do this!)" n
 		if [ "$REPLY" == 'Yes' ]; then
