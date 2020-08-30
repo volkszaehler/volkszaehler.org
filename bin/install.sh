@@ -173,7 +173,7 @@ else
 		git clone "$vz_git" "$vz_dir"
 	fi
 
-	ask "link from webserver to volkszaehler directory?" "$web_dir"
+    ask "link from webserver to volkszaehler directory?" "$web_dir"
 	web_dir="$REPLY"
 
 	if [ -h "$web_dir" ]; then
@@ -184,18 +184,27 @@ else
 		else
 			REPLY=n
 		fi
-	else
-		if [ -d "$web_dir" ]; then
-			ask "$web_dir directory already exists. Remove it? (this will remove a previous installation and all changes you made - type 'Yes' to do this!)" n
-			if [ "$REPLY" == 'Yes' ]; then
-				sudo rm -fr "$web_dir"
-				REPLY=y
-			else
-				REPLY=n
-			fi
-		else
+    elif [ -d "$web_dir" ]; then
+		ask "$web_dir directory already exists. Remove it? (this will remove a previous installation and all changes you made - type 'Yes' to do this!)" n
+		if [ "$REPLY" == 'Yes' ]; then
+			sudo rm -fr "$web_dir"
 			REPLY=y
+		else
+			REPLY=n
 		fi
+    #check if parent directory of "web_dir" exists
+    elif [ ! -d "${web_dir%/*}" ]; then
+        ask "parent directory ${web_dir%/*} doesn't exist, create it?" y
+        if [ "$REPLY" == 'y' ]; then
+    		sudo mkdir ${web_dir%/*}
+            REPLY=y
+        else
+            #parent directory doesn't exist, so create symbolic link will fail.
+        	echo "parent directory ${web_dir%/*} doesn't exist, so creating symbolic link from $web_dir will fail."
+        	cleanup && exit 1            
+    	fi
+    else
+			REPLY=y
 	fi
 
 	if [ "$REPLY" == 'y' ]; then
