@@ -134,5 +134,6 @@ after_success:
       if [ "$COMPONENT" == "DOCKER" ] && [ "$TRAVIS_BRANCH" == "master" ] && [ "$DOCKER_USER" != "" ]; then
         docker login -u $DOCKER_USER -p $DOCKER_PASS
         export REPO=volkszaehler/volkszaehler
+        docker run --rm --privileged hypriot/qemu-register
         seihon publish --dry-run=false -v "latest" --image-name $REPO --base-runtime-image php:7.3-alpine
       fi
