@@ -10,3 +10,5 @@ node_modules/
 vendor/
 lib/Model/Proxy
 dbcopy.yaml
+linux-*.Dockerfile
+manifest.json
