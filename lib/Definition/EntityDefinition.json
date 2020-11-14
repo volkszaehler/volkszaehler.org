@@ -497,5 +497,18 @@
 			"de" : "Verbrauchssensor (virt.)",
 			"en" : "Consumption Sensor (virt.)"
 		}
-	}
+	},
+  {
+    "name"                  : "co2 concentration",
+    "optional"              : [],
+    "icon"                  : "propeller.png",
+    "unit"                  : "ppm",
+    "interpreter"           : "Volkszaehler\\Interpreter\\SensorInterpreter",
+    "model"                 : "Volkszaehler\\Model\\Channel",
+    "translation"           : {
+      "de" : "CO2-Konzentration",
+      "en" : "CO2 concentration",
+      "fr" : "Concentration CO2"
+    }
+  }
 ]
