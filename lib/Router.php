@@ -27,7 +27,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
-use Symfony\Component\Debug\ErrorHandler;
+use Symfony\Component\ErrorHandler\Debug;
 
 use Doctrine\ORM;
 use Doctrine\Common\Cache;
@@ -96,7 +96,7 @@ class Router implements HttpKernelInterface {
 	 */
 	public function __construct() {
 		// handle errors as exceptions
-		ErrorHandler::register();
+		Debug::enable();
 	}
 
 	/**
