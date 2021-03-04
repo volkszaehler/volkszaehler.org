@@ -894,10 +894,16 @@ vz.wui.dialogs.exception = function(exception) {
 };
 
 vz.wui.dialogs.middlewareException = function(xhr) {
+	// xhr failed - show details for problem
+	// create a message with the requestUrl that caused the problem
+	var msg="<a href='" + xhr.requestUrl + "' style='text-decoration:none'>"
+		+ xhr.requestUrl + "</a>:<br/><br/>";
+	// depending on type of problem create different exceptions and
+	// show different futher details
 	if (xhr.responseJSON && xhr.responseJSON.exception)
 		// middleware exception
-		this.exception(new Exception(xhr.responseJSON.exception.type, "<a href='" + xhr.requestUrl + "' style='text-decoration:none'>" + xhr.requestUrl + "</a>:<br/><br/>" + xhr.responseJSON.exception.message));
+		this.exception(new Exception(xhr.response.JSON.exception.type,msg+ xhr.responseJSON.exception.message));
 	else
 		// network exception
-		this.exception(new Exception("Network Error", xhr.statusText));
+		this.exception(new Exception("Network Error", msg+xhr.statusText));
 };
