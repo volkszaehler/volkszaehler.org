@@ -28,7 +28,7 @@ class SetupPerformanceData extends DataPerformance
 	/**
 	 * Create DB connection and setup channel
 	 */
-	static function setupBeforeClass() {
+	static function setupBeforeClass() : void {
 		parent::setupBeforeClass();
 
 		self::$testSize = round(self::TEST_DAYS * 24 * 3600 / self::TEST_SPACING);
@@ -40,7 +40,7 @@ class SetupPerformanceData extends DataPerformance
 	/**
 	 * Cleanup aggregation
 	 */
-	static function tearDownAfterClass() {
+	static function tearDownAfterClass() : void {
 		// prevent channel deletion
 	}
 

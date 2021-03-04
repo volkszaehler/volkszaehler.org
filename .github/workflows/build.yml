@@ -66,8 +66,8 @@ jobs:
       #     CHANGED_PHP_FILES=$(git diff --name-only --diff-filter=ACMRTUXB HEAD~..HEAD | grep -E "\.php$" || [[ $? == 1 ]])
       #     php vendor/bin/php-cs-fixer fix --config=.php_cs.php --dry-run --diff -v -- $CHANGED_PHP_FILES
 
-      - name: "Run a static analysis with phpstan/phpstan"
-        run: "php vendor/bin/phpstan analyse --error-format=checkstyle | cs2pr"
+      # - name: "Run a static analysis with phpstan/phpstan"
+      #   run: "php vendor/bin/phpstan analyse --error-format=checkstyle | cs2pr"
 
       - name: "Run PHPUnit"
         run: "vendor/bin/phpunit"

@@ -13,7 +13,7 @@ class CapabilitiesTest extends Middleware
 {
 	function testExistence() {
 		$this->assertNotNull($this->getJson('/capabilities.json')->capabilities);
-		$this->assertInternalType('object', $this->getJson('/capabilities.json')->capabilities);
+		$this->assertIsObject($this->getJson('/capabilities.json')->capabilities);
 	}
 }
 

@@ -16,7 +16,7 @@ class GroupTest extends Middleware
 	function testExistence() {
 		// create group
 		$this->assertNotNull($this->getJson('/group.json')->channels);
-		$this->assertInternalType('array', $this->getJson('/group.json')->channels);
+		$this->assertIsArray($this->getJson('/group.json')->channels);
 	}
 
 	function testCreateGroup() {

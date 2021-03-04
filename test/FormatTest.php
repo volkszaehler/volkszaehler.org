@@ -15,7 +15,7 @@ class FormatTest extends Data
 {
 	const INVALID_UUID = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
 
-	static function setupBeforeClass() {
+	static function setupBeforeClass() : void {
 		parent::setupBeforeClass();
 
 		// create channel
