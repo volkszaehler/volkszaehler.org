@@ -69,5 +69,5 @@ jobs:
       # - name: "Run a static analysis with phpstan/phpstan"
       #   run: "php vendor/bin/phpstan analyse --error-format=checkstyle | cs2pr"
 
-      - name: "Run PHPUnit"
-        run: "vendor/bin/phpunit"
+      # - name: "Run PHPUnit"
+      #   run: "vendor/bin/phpunit"
