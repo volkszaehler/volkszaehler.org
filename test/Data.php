@@ -19,7 +19,7 @@ abstract class Data extends Middleware
 	/**
 	 * Initialize context
 	 */
-	static function setupBeforeClass() {
+	static function setupBeforeClass() : void {
 		parent::setupBeforeClass();
 		self::$precision = pow(10, -\Volkszaehler\View\View::PRECISION);
 	}
@@ -27,7 +27,7 @@ abstract class Data extends Middleware
 	/**
 	 * Remove channel if initialized
 	 */
-	static function tearDownAfterClass() {
+	static function tearDownAfterClass() : void {
 		if (static::$uuid) {
 			self::deleteChannel(static::$uuid);
 			static::$uuid = null;

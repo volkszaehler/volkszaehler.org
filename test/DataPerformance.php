@@ -27,7 +27,7 @@ class DataPerformance extends Data
 	/**
 	 * Create DB connection and setup channel
 	 */
-	static function setupBeforeClass() {
+	static function setupBeforeClass() : void {
 		parent::setupBeforeClass();
 
 		self::$em = \Volkszaehler\Router::createEntityManager();
@@ -37,7 +37,7 @@ class DataPerformance extends Data
 	/**
 	 * Run before each test
 	 */
-	function setUp() {
+	function setUp() : void {
 		self::$time = microtime(true);
 	}
 

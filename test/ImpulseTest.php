@@ -28,7 +28,7 @@ class ImpulseTest extends Data
 	/**
 	 * Create channel
 	 */
-	static function setupBeforeClass() {
+	static function setupBeforeClass() : void {
 		parent::setupBeforeClass();
 		self::$uuid = self::createChannel('Meter', 'power', self::$resolution);
 	}

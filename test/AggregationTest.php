@@ -17,7 +17,7 @@ class AggregationTest extends DataPerformance
 	/**
 	 * Create DB connection and setup channel
 	 */
-	static function setupBeforeClass() {
+	static function setupBeforeClass() : void {
 		parent::setupBeforeClass();
 
 		if (!self::$uuid) {
@@ -28,7 +28,7 @@ class AggregationTest extends DataPerformance
 	/**
 	 * Cleanup aggregation
 	 */
-	static function tearDownAfterClass() {
+	static function tearDownAfterClass() : void {
 		if (self::$conn && self::$uuid) {
 			$agg = new Util\Aggregation(self::$conn);
 			$agg->clear(self::$uuid);

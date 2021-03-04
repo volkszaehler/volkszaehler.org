@@ -38,7 +38,7 @@ class ChannelTest extends Middleware
 
 	function testExistence() {
 		$this->assertNotNull($this->getJson('/channel.json')->channels);
-		$this->assertInternalType('array', $this->getJson('/channel.json')->channels);
+		$this->assertIsArray($this->getJson('/channel.json')->channels);
 	}
 
 	/**

@@ -60,7 +60,7 @@ abstract class Middleware extends \PHPUnit\Framework\TestCase
 	/**
 	 * Initialize router
 	 */
-	static function setupBeforeClass() {
+	static function setupBeforeClass() : void {
 		parent::setupBeforeClass();
 
 		if (testAdapter == 'HTTP') {

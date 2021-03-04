@@ -17,7 +17,7 @@ class EntityTest extends Middleware
 
 	function testExistence() {
 		$this->assertNotNull($this->getJson('/entity.json')->entities);
-		$this->assertInternalType('array', $this->getJson('/entity.json')->entities);
+		$this->assertIsArray($this->getJson('/entity.json')->entities);
 	}
 
 	function testCannotCreateEntity() {
