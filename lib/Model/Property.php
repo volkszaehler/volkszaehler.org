@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
  * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
@@ -23,7 +24,6 @@
 namespace Volkszaehler\Model;
 
 use Volkszaehler\Definition;
-use Volkszaehler\Util;
 use Volkszaehler\Model;
 
 /**
@@ -40,7 +40,8 @@ use Volkszaehler\Model;
  * )
  * @HasLifecycleCallbacks
  */
-class Property {
+class Property
+{
 	/**
 	 * @Id
 	 * @Column(type="integer", nullable=false)
@@ -68,7 +69,8 @@ class Property {
 	 * @param string $key
 	 * @param string $value
 	 */
-	public function __construct(Model\Entity $entity, $key, $value) {
+	public function __construct(Model\Entity $entity, $key, $value)
+	{
 		$this->entity = $entity;
 		$this->key = $key;
 		$this->value = $value;
@@ -79,15 +81,14 @@ class Property {
 	 *
 	 * @PostLoad
 	 */
-	public function cast() {
+	public function cast()
+	{
 		$type = $this->getDefinition()->getType();
 		if ($type == 'multiple') {
 			// TODO
-		}
-		elseif ($type == 'text') {
+		} elseif ($type == 'text') {
 			settype($this->value, 'string');
-		}
-		else {
+		} else {
 			settype($this->value, $type);
 		}
 	}
@@ -97,11 +98,11 @@ class Property {
 	 *
 	 * @PreFlush
 	 */
-	public function uncast() {
+	public function uncast()
+	{
 		if ($this->value === false) { // force boolean false to 0 instead of ''
 			$this->value = '0';
-		}
-		else {
+		} else {
 			settype($this->value, 'string');
 		}
 	}
@@ -114,7 +115,8 @@ class Property {
 	 * @PrePersist
 	 * @PreUpdate
 	 */
-	public function validate() {
+	public function validate()
+	{
 		if (!Definition\PropertyDefinition::exists($this->key)) {
 			throw new \Exception('Invalid property: \'' . $this->key . '\'');
 		}
@@ -128,11 +130,23 @@ class Property {
 	 * Setter & getter
 	 */
 
-	public function getKey() { return $this->key; }
-	public function getValue() { return $this->value; }
-	public function getDefinition() { return Definition\PropertyDefinition::get($this->key); }
+	public function getKey()
+	{
+		return $this->key;
+	}
 
-	public function setValue($value) { $this->value = $value; }
+	public function getValue()
+	{
+		return $this->value;
+	}
+
+	public function getDefinition()
+	{
+		return Definition\PropertyDefinition::get($this->key);
+	}
+
+	public function setValue($value)
+	{
+		$this->value = $value;
+	}
 }
-
-?>

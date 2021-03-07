@@ -22,11 +22,6 @@
 
 namespace Volkszaehler\Model;
 
-use Doctrine\ORM\Mapping;
-
-use Volkszaehler\Interpreter;
-use Doctrine\ORM;
-use Doctrine\Common\Collections;
 use Doctrine\Common\Collections\ArrayCollection;
 
 /**
@@ -115,6 +110,3 @@ class Aggregator extends Entity {
 	 */
 	public function getChildren() { return $this->children->toArray(); }
 }
-
-
-?>

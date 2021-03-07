@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
  * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
@@ -25,7 +26,8 @@ namespace Volkszaehler\Definition;
 /**
  * @author Steffen Vogel <info@steffenvogel.de>
  */
-class PropertyDefinition extends Definition {
+class PropertyDefinition extends Definition
+{
 	/**
 	 * File containing the JSON definitons
 	 *
@@ -71,7 +73,7 @@ class PropertyDefinition extends Definition {
 	 */
 	public $options = array();
 
-    protected static $definitions = NULL;
+	protected static $definitions = NULL;
 
 	/**
 	 * Validate value according to $this->type
@@ -79,7 +81,8 @@ class PropertyDefinition extends Definition {
 	 * @param string|number $value
 	 * @return boolean
 	 */
-	public function validateValue($value) {
+	public function validateValue($value)
+	{
 		switch ($this->type) {
 			case 'string':
 			case 'text':
@@ -123,7 +126,8 @@ class PropertyDefinition extends Definition {
 	/*
 	 * Setter & getter
 	 */
-	public function getType() { return $this->type; }
+	public function getType()
+	{
+		return $this->type;
+	}
 }
-
-?>

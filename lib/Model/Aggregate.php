@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
  * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
@@ -36,7 +37,8 @@ use Volkszaehler\Model;
  *	uniqueConstraints={@UniqueConstraint(name="aggregate_unique", columns={"channel_id", "type", "timestamp"})}
  * )
  */
-class Aggregate {
+class Aggregate
+{
 	/**
 	 * @Id
 	 * @Column(type="integer", nullable=false)
@@ -80,7 +82,8 @@ class Aggregate {
 	 */
 	protected $count;
 
-	public function __construct(Model\Channel $channel, $type, $timestamp, $value, $count) {
+	public function __construct(Model\Channel $channel, $type, $timestamp, $value, $count)
+	{
 		$this->channel = $channel;
 		$this->type = $type;
 
@@ -89,18 +92,36 @@ class Aggregate {
 		$this->count = $count;
 	}
 
-	public function toArray() {
+	public function toArray()
+	{
 		return array('channel' => $this->channel, 'type' => $this->type, 'timestamp' => $this->timestamp, 'value' => $this->value, 'count' => $this->count);
 	}
 
 	/**
 	 * setter & getter
 	 */
-	public function getValue() { return $this->value; }
-	public function getTimestamp() { return $this->timestamp; }
-	public function getChannel() { return $this->channel; }
-	public function getCount() { return $this->count; }
-	public function getType() { return $this->type; }
-}
+	public function getValue()
+	{
+		return $this->value;
+	}
 
-?>
+	public function getTimestamp()
+	{
+		return $this->timestamp;
+	}
+
+	public function getChannel()
+	{
+		return $this->channel;
+	}
+
+	public function getCount()
+	{
+		return $this->count;
+	}
+
+	public function getType()
+	{
+		return $this->type;
+	}
+}
