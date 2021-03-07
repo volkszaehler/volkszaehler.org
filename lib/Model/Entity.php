@@ -22,7 +22,6 @@
 
 namespace Volkszaehler\Model;
 
-use Doctrine\ORM;
 use Doctrine\Common\Collections;
 use Webpatser\Uuid\Uuid as UUID;
 
@@ -231,5 +230,3 @@ abstract class Entity {
 	public function getType() { return $this->type; }	// read only
 	public function getDefinition() { return Definition\EntityDefinition::get($this->type); }
 }
-
-?>
