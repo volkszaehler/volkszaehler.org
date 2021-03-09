@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
  * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
@@ -22,7 +23,6 @@
 
 namespace Volkszaehler\Model;
 
-use Volkszaehler\Util;
 use Volkszaehler\Interpreter\SQL;
 use Doctrine\DBAL;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -34,7 +34,8 @@ use Doctrine\Common\Collections\ArrayCollection;
  *
  * @Entity
  */
-class Channel extends Entity {
+class Channel extends Entity
+{
 	/**
 	 * @OneToMany(targetEntity="Data", mappedBy="channel", cascade={"persist"}, orphanRemoval=true)
 	 * @OrderBy({"timestamp" = "ASC"})
@@ -50,7 +51,8 @@ class Channel extends Entity {
 	/**
 	 * Constructor
 	 */
-	public function __construct($type) {
+	public function __construct($type)
+	{
 		parent::__construct($type);
 
 		$this->data = new ArrayCollection();
@@ -60,7 +62,8 @@ class Channel extends Entity {
 	/**
 	 * Add a new data to the database
 	 */
-	public function addData(\Volkszaehler\Model\Data $data) {
+	public function addData(\Volkszaehler\Model\Data $data)
+	{
 		$this->data->add($data);
 	}
 
@@ -69,25 +72,24 @@ class Channel extends Entity {
 	 *
 	 * prevents doctrine of using single delete statements
 	 */
-	public function clearData(DBAL\Connection $conn, $from = null, $to = null, $filters = []) {
-		$conn->transactional(function() use ($conn, $from, $to, $filters, &$res) {
+	public function clearData(DBAL\Connection $conn, $from = null, $to = null, $filters = [])
+	{
+		$res = $conn->transactional(function () use ($conn, $from, $to, $filters, &$res) {
 			$params = array($this->id);
 
 			$sql = 'WHERE channel_id = ?';
 			$sql .= SQL\SQLOptimizer::buildDateTimeFilterSQL($from, $to, $params);
 
 			// clean aggregation table as well
-			$conn->executeUpdate('DELETE FROM aggregate ' . $sql, $params);
+			$conn->executeStatement('DELETE FROM aggregate ' . $sql, $params);
 
 			if ($filter = SQL\SQLOptimizer::buildValueFilterSQL($filters, $params)) {
 				$sql .= $filter;
 			}
 
-			$res = $conn->executeUpdate('DELETE FROM data ' . $sql, $params);
+			return $conn->executeStatement('DELETE FROM data ' . $sql, $params);
 		});
 
 		return $res;
 	}
 }
-
-?>

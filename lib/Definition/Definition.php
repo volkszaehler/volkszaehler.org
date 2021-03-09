@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
  * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
@@ -27,7 +28,8 @@ use Volkszaehler\Util;
 /**
  * @author Steffen Vogel <info@steffenvogel.de>
  */
-abstract class Definition {
+abstract class Definition
+{
 	/**
 	 * Cache key
 	 */
@@ -58,12 +60,12 @@ abstract class Definition {
 	 *
 	 * @param array $object to cast from
 	 */
-	protected function __construct($object) {
+	protected function __construct($object)
+	{
 		foreach (get_object_vars($object) as $name => $value) {
 			if (property_exists(get_class($this), $name)) {
 				$this->$name = $value;
-			}
-			else {
+			} else {
 				throw new \Exception('Unknown definition syntax: \'' . $name . '\'');
 			}
 		}
@@ -73,20 +75,19 @@ abstract class Definition {
 	 * Factory method for creating new instances
 	 *
 	 * @param string $name
-	 * @return Definition|array
+	 * @return Definition|Definition[]
 	 */
-	public static function get($name = NULL) {
+	public static function get($name = NULL)
+	{
 		if (is_null(static::$definitions)) {
 			static::load();
 		}
 
 		if (is_null($name)) {
 			return array_values(static::$definitions);
-		}
-		elseif (static::exists($name)) {
+		} elseif (static::exists($name)) {
 			return static::$definitions[$name];
-		}
-		else {
+		} else {
 			throw new \Exception('Unknown definition: \'' . $name . '\'');
 		}
 	}
@@ -95,7 +96,8 @@ abstract class Definition {
 	 * Checks if $name is defined
 	 * @param string $name
 	 */
-	public static function exists($name) {
+	public static function exists($name)
+	{
 		if (is_null(static::$definitions)) {
 			static::load();
 		}
@@ -108,17 +110,18 @@ abstract class Definition {
 	 *
 	 * @todo add caching
 	 */
-	protected static function load() {
+	protected static function load()
+	{
 		static::$definitions = array();
 
 		$cache_id = static::CACHE_KEY . static::FILE;
 
-		if (Util\Configuration::read('devmode') == FALSE && extension_loaded('apcu') && apcu_exists($cache_id) &&
-			(time() - filemtime(__DIR__ . '/' . static::FILE) > Util\Configuration::read('cache.ttl', 3600)))
-		{
+		if (
+			Util\Configuration::read('devmode') == FALSE && extension_loaded('apcu') && apcu_exists($cache_id) &&
+			(time() - filemtime(__DIR__ . '/' . static::FILE) > Util\Configuration::read('cache.ttl', 3600))
+		) {
 			static::$definitions = apcu_fetch($cache_id);
-		}
-		else {
+		} else {
 			// expensive - cache results
 			$json = Util\JSON::decode(file_get_contents(__DIR__ . '/' . static::FILE));
 
@@ -135,8 +138,12 @@ abstract class Definition {
 	/*
 	 * Setter & Getter
 	 */
-	public function getName() { return $this->name; }
-	public function getTranslation($language) { return $this->translation[$language]; }
+	public function getName()
+	{
+		return $this->name;
+	}
+	public function getTranslation($language)
+	{
+		return $this->translation[$language];
+	}
 }
-
-?>

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
  * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
@@ -36,7 +37,8 @@ use Volkszaehler\Model;
  *	uniqueConstraints={@UniqueConstraint(name="data_unique", columns={"channel_id", "timestamp"})}
  * )
  */
-class Data {
+class Data
+{
 	/**
 	 * @Id
 	 * @Column(type="integer", nullable=false)
@@ -64,23 +66,34 @@ class Data {
 	 */
 	protected $channel;
 
-	public function __construct(Model\Channel $channel, $timestamp, $value) {
+	public function __construct(Model\Channel $channel, $timestamp, $value)
+	{
 		$this->channel = $channel;
 
 		$this->value = $value;
 		$this->timestamp = $timestamp;
 	}
 
-	public function toArray() {
+	public function toArray()
+	{
 		return array('channel' => $this->channel, 'timestamp' => $this->timestamp, 'value' => $this->value);
 	}
 
 	/**
 	 * setter & getter
 	 */
-	public function getValue() { return $this->value; }
-	public function getTimestamp() { return $this->timestamp; }
-	public function getChannel() { return $this->channel; }
-}
+	public function getValue()
+	{
+		return $this->value;
+	}
 
-?>
+	public function getTimestamp()
+	{
+		return $this->timestamp;
+	}
+
+	public function getChannel()
+	{
+		return $this->channel;
+	}
+}

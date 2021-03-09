@@ -41,21 +41,24 @@ require VZ_DIR . '/lib/bootstrap.php';
  *
  * @author Andreas Goetz <cpuidle@gmx.de>
  */
-class ValidateCommand extends Command {
+class ValidateCommand extends Command
+{
 
-	protected function configure() {
+	protected function configure()
+	{
 		$this->setName('propertyusage')
 			->setDescription('Validate property usage')
- 		->addArgument('property', InputArgument::REQUIRED, 'Property name');
+			->addArgument('property', InputArgument::REQUIRED, 'Property name');
 	}
 
-	protected function execute(InputInterface $input, OutputInterface $output) {
+	protected function execute(InputInterface $input, OutputInterface $output)
+	{
 		$property = $input->getArgument('property');
 		$model = null; // "Volkszaehler\\Model\\Channel"
 
 		$entity_groups = array();
 
-		echo("Reporting property usage of '" . $property . "'\n");
+		echo ("Reporting property usage of '" . $property . "'\n");
 
 		foreach (Definition\EntityDefinition::get() as $entity) {
 			if ($model && $entity->getModel() !== $model)
@@ -67,12 +70,12 @@ class ValidateCommand extends Command {
 			$entity_groups[$entity->getInterpreter()][] = $entity;
 		}
 
-		foreach($entity_groups as $group => $entities) {
-			echo("\n== " . $group . " ==\n");
+		foreach ($entity_groups as $group => $entities) {
+			echo ("\n== " . $group . " ==\n");
 
-			foreach($entities as $entity) {
+			foreach ($entities as $entity) {
 				$name = $entity->getName();
-				echo(str_pad($name . ":", 20));
+				echo (str_pad($name . ":", 20));
 				$value = (isset($entity->$property)) ? $entity->$property : '';
 
 				if ($property == "optional") {
@@ -82,8 +85,7 @@ class ValidateCommand extends Command {
 					}
 
 					printf("%s\n", $value);
-				}
-				else {
+				} else {
 					// actual property
 					if (in_array($property, $entity->required))
 						$required = "required";
@@ -96,8 +98,10 @@ class ValidateCommand extends Command {
 				}
 			}
 
-			echo("\n");
+			echo ("\n");
 		}
+
+		return 0;
 	}
 }
 

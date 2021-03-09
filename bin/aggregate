@@ -46,7 +46,8 @@ require_once VZ_DIR . '/lib/bootstrap.php';
 /**
  * BasicCommand
  */
-abstract class BasicCommand extends Command {
+abstract class BasicCommand extends Command
+{
 
 	/**
 	 * @var \Doctrine\ORM\EntityManager Doctrine EntityManager
@@ -63,41 +64,50 @@ abstract class BasicCommand extends Command {
 	 */
 	protected $output;
 
-	public function __construct() {
+	public function __construct()
+	{
 		parent::__construct();
 
 		$this->em = Volkszaehler\Router::createEntityManager(true); // get admin credentials
 		$this->aggregator = new Util\Aggregation($this->em->getConnection());
 	}
 
-	protected function execute(InputInterface $input, OutputInterface $output) {
+	protected function execute(InputInterface $input, OutputInterface $output)
+	{
 		if ($input->getOption('verbose')) {
 			$this->em->getConnection()->getConfiguration()->setSQLLogger(new Util\ConsoleSQLLogger($output));
 		}
 		$this->output = $output;
+
+		return 0;
 	}
 }
 
 /**
  * Optimize data and aggregate tables
  */
-class OptimizeCommand extends BasicCommand {
+class OptimizeCommand extends BasicCommand
+{
 
-	protected function configure() {
+	protected function configure()
+	{
 		$this->setName('optimize')
 			->setDescription('Optimize data and aggregate tables')
 			->addOption('verbose', 'v', InputOption::VALUE_NONE, 'Verbose mode');
 	}
 
-	protected function execute(InputInterface $input, OutputInterface $output) {
+	protected function execute(InputInterface $input, OutputInterface $output)
+	{
 		parent::execute($input, $output);
 
 		$conn = $this->em->getConnection();
 
-		echo("Optimizing aggregate table.\n");
+		echo ("Optimizing aggregate table.\n");
 		$conn->executeQuery('OPTIMIZE TABLE aggregate');
-		echo("Optimizing data table (slow).\n");
+		echo ("Optimizing data table (slow).\n");
 		$conn->executeQuery('OPTIMIZE TABLE data');
+
+		return 0;
 	}
 }
 
@@ -105,18 +115,21 @@ class OptimizeCommand extends BasicCommand {
  * Clear aggregate table for channel
  * @todo add levels support
  */
-class ClearCommand extends BasicCommand {
+class ClearCommand extends BasicCommand
+{
 
-	protected function configure() {
+	protected function configure()
+	{
 		$this->setName('clear')
 			->setDescription('Clear aggregation table')
-		->addArgument('uuid', InputArgument::OPTIONAL | InputArgument::IS_ARRAY, 'UUID(s)', array(null))
+			->addArgument('uuid', InputArgument::OPTIONAL | InputArgument::IS_ARRAY, 'UUID(s)', array(null))
 			->addOption('level', 'l', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Level (hour|day|month|year)', ['all'])
 			->addOption('since', 's', InputOption::VALUE_REQUIRED, 'Clear aggregation data since specified date')
 			->addOption('verbose', 'v', InputOption::VALUE_NONE, 'Verbose mode');
 	}
 
-	protected function execute(InputInterface $input, OutputInterface $output) {
+	protected function execute(InputInterface $input, OutputInterface $output)
+	{
 		parent::execute($input, $output);
 
 		$timestamp = null;
@@ -132,13 +145,15 @@ class ClearCommand extends BasicCommand {
 				$msg = "Clearing aggregation table";
 				if ($uuid) $msg .= " for UUID " . $uuid;
 				$msg .= " on '" . $level . "' level";
-				echo($msg . ".\n");
+				echo ($msg . ".\n");
 
 				$this->aggregator->clear($uuid, $level, $timestamp);
 			}
 		}
 
-		echo("Done clearing aggregation table.\n");
+		echo ("Done clearing aggregation table.\n");
+
+		return 0;
 	}
 }
 
@@ -146,19 +161,22 @@ class ClearCommand extends BasicCommand {
 /**
  * Aggregate selected channels and levels
  */
-class RunCommand extends BasicCommand {
+class RunCommand extends BasicCommand
+{
 
-	protected function configure() {
+	protected function configure()
+	{
 		$this->setName('run')
 			->setDescription('Run aggregation')
- 		->addArgument('uuid', InputArgument::OPTIONAL | InputArgument::IS_ARRAY, 'UUID(s)')
+			->addArgument('uuid', InputArgument::OPTIONAL | InputArgument::IS_ARRAY, 'UUID(s)')
 			->addOption('level', 'l', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Level (hour|day|month|year)', array('day'))
 			->addOption('mode', 'm', InputOption::VALUE_REQUIRED, 'Mode (full|delta)', 'delta')
 			->addOption('periods', 'p', InputOption::VALUE_REQUIRED, 'Previous time periods to run aggregation for (full mode only)')
 			->addOption('verbose', 'v', InputOption::VALUE_NONE, 'Verbose mode');
 	}
 
-	protected function runAggregation($mode, $levels, $uuids = null, $periods = null) {
+	protected function runAggregation($mode, $levels, $uuids = null, $periods = null)
+	{
 		$channels = count($uuids);
 
 		if (!$uuids) {
@@ -186,7 +204,7 @@ class RunCommand extends BasicCommand {
 					throw new \Exception('Unsupported aggregation level ' . $level);
 				}
 
-				$rows += $this->aggregator->aggregate($uuid, $level, $mode, $periods, function($rows) use ($uuid, $progress) {
+				$rows += $this->aggregator->aggregate($uuid, $level, $mode, $periods, function ($rows) use ($uuid, $progress) {
 					$this->output->writeln($uuid);
 					$progress->advance();
 				});
@@ -197,7 +215,8 @@ class RunCommand extends BasicCommand {
 		}
 	}
 
-	protected function execute(InputInterface $input, OutputInterface $output) {
+	protected function execute(InputInterface $input, OutputInterface $output)
+	{
 		parent::execute($input, $output);
 
 		if (!in_array($mode = $input->getOption('mode'), array('full', 'delta'))) {
@@ -219,6 +238,8 @@ class RunCommand extends BasicCommand {
 		$uuids = $input->getArgument('uuid');
 
 		$this->runAggregation($mode, $levels, $uuids, $periods);
+
+		return 0;
 	}
 }
 
@@ -226,16 +247,19 @@ class RunCommand extends BasicCommand {
 /**
  * Aggregate selected channels and levels
  */
-class RebuildCommand extends RunCommand {
+class RebuildCommand extends RunCommand
+{
 
-	protected function configure() {
+	protected function configure()
+	{
 		$this->setName('rebuild')
 			->setDescription('Rebuild aggregation table (using temporary table)')
 			->addOption('level', 'l', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Level (hour|day|month|year)', array('day'))
 			->addOption('verbose', 'v', InputOption::VALUE_NONE, 'Verbose mode');
 	}
 
-	protected function execute(InputInterface $input, OutputInterface $output) {
+	protected function execute(InputInterface $input, OutputInterface $output)
+	{
 		BasicCommand::execute($input, $output);
 
 		$levels = $input->getOption('level');
@@ -250,6 +274,8 @@ class RebuildCommand extends RunCommand {
 		$this->aggregator->finishRebuild();
 
 		$output->writeln('Finished rebuilding aggregation table');
+
+		return 0;
 	}
 }
 
