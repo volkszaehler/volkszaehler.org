@@ -1,17 +1,17 @@
 # Copyright (c) 2019 Andreas Goetz <cpuidle@gmx.de>
 
-FROM composer:1 AS builder
+FROM composer:2 AS builder
 
 WORKDIR /vz
 
 COPY composer.json /vz
 
-RUN composer install --no-ansi --no-scripts --no-dev --no-interaction --no-progress --optimize-autoloader
+RUN composer install --ignore-platform-reqs --no-ansi --no-scripts --no-dev --no-interaction --no-progress --optimize-autoloader
 
 COPY . /vz
 
 
-FROM php:7.3-alpine
+FROM php:8.0-alpine
 
 EXPOSE 8080
 EXPOSE 8082
