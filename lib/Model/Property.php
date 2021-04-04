@@ -63,7 +63,7 @@ class Property
 	protected $value;
 
 	/**
-	 * @ManyToOne(targetEntity="Entity", inversedBy="properties", nullable=false)
+	 * @ManyToOne(targetEntity="Entity", inversedBy="properties")
 	 */
 	protected $entity;
 
