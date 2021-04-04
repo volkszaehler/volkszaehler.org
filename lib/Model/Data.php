@@ -51,18 +51,18 @@ class Data
 	/**
 	 * Ending timestamp of period in ms since 1970
 	 *
-	 * @Column(type="bigint")
+	 * @Column(type="bigint", nullable=false)
 	 */
 	protected $timestamp;
 
 	/**
-	 * @Column(type="float")
+	 * @Column(type="float", nullable=false)
 	 */
 	protected $value;
 
 	/**
 	 * @ManyToOne(targetEntity="Channel", inversedBy="data")
-	 * @JoinColumn(name="channel_id", referencedColumnName="id")
+	 * @JoinColumn(name="channel_id", referencedColumnName="id", nullable=false)
 	 */
 	protected $channel;
 

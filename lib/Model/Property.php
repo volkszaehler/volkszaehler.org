@@ -57,10 +57,14 @@ class Property
 	 */
 	protected $key;
 
-	/** @Column(type="text", nullable=false) */
+	/**
+	 * @Column(type="text", nullable=false)
+	 */
 	protected $value;
 
-	/** @ManyToOne(targetEntity="Entity", inversedBy="properties") */
+	/**
+	 * @ManyToOne(targetEntity="Entity", inversedBy="properties", nullable=false)
+	 */
 	protected $entity;
 
 	/**
