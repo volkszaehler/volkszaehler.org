@@ -64,6 +64,7 @@ class Property
 
 	/**
 	 * @ManyToOne(targetEntity="Entity", inversedBy="properties")
+	 * @JoinColumn(name="entity_id", nullable=false)
 	 */
 	protected $entity;
 
