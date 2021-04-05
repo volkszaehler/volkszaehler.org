@@ -24,7 +24,6 @@
 namespace Volkszaehler\Model;
 
 use Volkszaehler\Definition;
-use Volkszaehler\Model;
 
 /**
  * Property entity
@@ -44,14 +43,13 @@ class Property
 {
 	/**
 	 * @Id
-	 * @Column(type="integer", nullable=false)
-	 * @GeneratedValue(strategy="AUTO")
-	 *
-	 * @todo wait until DDC-117 is fixed (PKs on FKs)
+	 * @ManyToOne(targetEntity="Entity", inversedBy="properties")
+	 * @JoinColumn(name="entity_id", nullable=false)
 	 */
-	protected $id;
+	protected $entity;
 
 	/**
+	 * @Id
 	 * @Column(name="pkey", type="string", nullable=false)
 	 * HINT: column name "key" is reserved by mysql
 	 */
@@ -63,18 +61,12 @@ class Property
 	protected $value;
 
 	/**
-	 * @ManyToOne(targetEntity="Entity", inversedBy="properties")
-	 * @JoinColumn(name="entity_id", nullable=false)
-	 */
-	protected $entity;
-
-	/**
 	 * Constructor
 	 *
 	 * @param string $key
 	 * @param string $value
 	 */
-	public function __construct(Model\Entity $entity, $key, $value)
+	public function __construct(Entity $entity, $key, $value)
 	{
 		$this->entity = $entity;
 		$this->key = $key;

@@ -23,13 +23,13 @@
 
 namespace Volkszaehler\Model;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Volkszaehler\Model;
-
 /**
  * Data entity
  *
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @author Andreas Goetz <cpuidle@gmx.de>
+ *
+ * @todo change index name to something more meaningful like data_channel_ts_idx
  *
  * @Entity
  * @Table(
@@ -41,16 +41,13 @@ class Data
 {
 	/**
 	 * @Id
-	 * @Column(type="integer", nullable=false)
-	 * @GeneratedValue(strategy="IDENTITY")
-	 *
-	 * @todo wait until DDC-117 is fixed (PKs on FKs)
+	 * @ManyToOne(targetEntity="Channel", inversedBy="data")
+	 * @JoinColumn(name="channel_id", referencedColumnName="id", nullable=false)
 	 */
-	protected $id;
+	protected $channel;
 
 	/**
-	 * Ending timestamp of period in ms since 1970
-	 *
+	 * @Id
 	 * @Column(type="bigint", nullable=false)
 	 */
 	protected $timestamp;
@@ -60,13 +57,7 @@ class Data
 	 */
 	protected $value;
 
-	/**
-	 * @ManyToOne(targetEntity="Channel", inversedBy="data")
-	 * @JoinColumn(name="channel_id", referencedColumnName="id", nullable=false)
-	 */
-	protected $channel;
-
-	public function __construct(Model\Channel $channel, $timestamp, $value)
+	public function __construct(Channel $channel, $timestamp, $value)
 	{
 		$this->channel = $channel;
 

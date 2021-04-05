@@ -23,13 +23,12 @@
 
 namespace Volkszaehler\Model;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Volkszaehler\Model;
-
 /**
  * Aggregate materialized view entity
  *
  * @author Andreas Goetz <cpuidle@gmx.de>
+ *
+ * @todo change index name to something more meaningful like aggregate_channel_type_ts_idx
  *
  * @Entity
  * @Table(
@@ -41,14 +40,6 @@ class Aggregate
 {
 	/**
 	 * @Id
-	 * @Column(type="integer", nullable=false)
-	 * @GeneratedValue(strategy="AUTO")
-	 *
-	 * @todo wait until DDC-117 is fixed (PKs on FKs)
-	 */
-	protected $id;
-
-	/**
 	 * @ManyToOne(targetEntity="Channel", inversedBy="aggregate")
 	 * @JoinColumn(name="channel_id", referencedColumnName="id", nullable=false)
 	 *
@@ -59,6 +50,7 @@ class Aggregate
 	/**
 	 * Aggregation type
 	 *
+	 * @Id
 	 * @Column(type="smallint", nullable=false)
 	 */
 	protected $type;
@@ -66,6 +58,7 @@ class Aggregate
 	/**
 	 * Ending timestamp of period in ms since 1970
 	 *
+	 * @Id
 	 * @Column(type="bigint", nullable=false)
 	 */
 	protected $timestamp;
@@ -82,7 +75,7 @@ class Aggregate
 	 */
 	protected $count;
 
-	public function __construct(Model\Channel $channel, $type, $timestamp, $value, $count)
+	public function __construct(Channel $channel, $type, $timestamp, $value, $count)
 	{
 		$this->channel = $channel;
 		$this->type = $type;

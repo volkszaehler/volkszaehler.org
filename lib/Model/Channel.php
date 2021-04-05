@@ -62,7 +62,7 @@ class Channel extends Entity
 	/**
 	 * Add a new data to the database
 	 */
-	public function addData(\Volkszaehler\Model\Data $data)
+	public function addData(Data $data)
 	{
 		$this->data->add($data);
 	}
