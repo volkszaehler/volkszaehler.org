@@ -32,10 +32,7 @@ namespace Volkszaehler\Model;
  * @todo change index name to something more meaningful like data_channel_ts_idx
  *
  * @Entity
- * @Table(
- * 	name="data",
- *	uniqueConstraints={@UniqueConstraint(name="data_unique", columns={"channel_id", "timestamp"})}
- * )
+ * @Table(name="data")
  */
 class Data
 {

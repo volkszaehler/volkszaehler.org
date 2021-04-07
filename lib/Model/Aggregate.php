@@ -31,10 +31,7 @@ namespace Volkszaehler\Model;
  * @todo change index name to something more meaningful like aggregate_channel_type_ts_idx
  *
  * @Entity
- * @Table(
- * 	name="aggregate",
- *	uniqueConstraints={@UniqueConstraint(name="aggregate_unique", columns={"channel_id", "type", "timestamp"})}
- * )
+ * @Table(name="aggregate")
  */
 class Aggregate
 {

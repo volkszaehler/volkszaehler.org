@@ -31,12 +31,7 @@ use Volkszaehler\Definition;
  * @author Steffen Vogel <info@steffenvogel.de>
  *
  * @Entity
- * @Table(
- * 		name="properties",
- * 		uniqueConstraints={
- * 			@UniqueConstraint(name="property_unique", columns={"entity_id", "pkey"})
- * 		}
- * )
+ * @Table(name="properties")
  * @HasLifecycleCallbacks
  */
 class Property
