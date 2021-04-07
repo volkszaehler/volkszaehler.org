@@ -37,13 +37,13 @@ class Data
 	/**
 	 * @Id
 	 * @ManyToOne(targetEntity="Channel", inversedBy="data")
-	 * @JoinColumn(name="channel_id", referencedColumnName="id", nullable=false)
+	 * @JoinColumn(name="channel_id", referencedColumnName="id")
 	 */
 	protected $channel;
 
 	/**
 	 * @Id
-	 * @Column(type="bigint", nullable=false)
+	 * @Column(type="bigint")
 	 */
 	protected $timestamp;
 

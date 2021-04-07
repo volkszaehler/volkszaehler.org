@@ -39,13 +39,13 @@ class Property
 	/**
 	 * @Id
 	 * @ManyToOne(targetEntity="Entity", inversedBy="properties")
-	 * @JoinColumn(name="entity_id", nullable=false)
+	 * @JoinColumn(name="entity_id")
 	 */
 	protected $entity;
 
 	/**
 	 * @Id
-	 * @Column(name="pkey", type="string", nullable=false)
+	 * @Column(name="pkey", type="string")
 	 * HINT: column name "key" is reserved by mysql
 	 */
 	protected $key;

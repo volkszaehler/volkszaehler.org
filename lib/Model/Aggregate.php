@@ -36,7 +36,7 @@ class Aggregate
 	/**
 	 * @Id
 	 * @ManyToOne(targetEntity="Channel", inversedBy="aggregate")
-	 * @JoinColumn(name="channel_id", referencedColumnName="id", nullable=false)
+	 * @JoinColumn(name="channel_id", referencedColumnName="id")
 	 *
 	 * @todo implement inverse side (Channel->aggregate)
 	 */
@@ -46,7 +46,7 @@ class Aggregate
 	 * Aggregation type
 	 *
 	 * @Id
-	 * @Column(type="smallint", nullable=false)
+	 * @Column(type="smallint")
 	 */
 	protected $type;
 
@@ -54,7 +54,7 @@ class Aggregate
 	 * Ending timestamp of period in ms since 1970
 	 *
 	 * @Id
-	 * @Column(type="bigint", nullable=false)
+	 * @Column(type="bigint")
 	 */
 	protected $timestamp;
 

@@ -59,7 +59,7 @@ class Aggregator extends Entity
 	 *
 	 * @param Entity $child
 	 * @todo check if the entity is already member of the group
-	 * @todo add bidrectional association
+	 * @todo add bidirectional association
 	 */
 	public function addChild(Entity $child)
 	{
@@ -78,7 +78,7 @@ class Aggregator extends Entity
 	 * Checks if aggregator contains given entity
 	 *
 	 * @param Entity $entity
-	 * @param boolean $recursive should we search recursivly?
+	 * @param boolean $recursive should we search recursively?
 	 */
 	protected function contains(Entity $entity, $recursive = FALSE)
 	{
