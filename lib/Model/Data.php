@@ -29,8 +29,6 @@ namespace Volkszaehler\Model;
  * @author Steffen Vogel <info@steffenvogel.de>
  * @author Andreas Goetz <cpuidle@gmx.de>
  *
- * @todo change index name to something more meaningful like data_channel_ts_idx
- *
  * @Entity
  * @Table(name="data")
  */

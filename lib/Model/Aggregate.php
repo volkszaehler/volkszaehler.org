@@ -28,8 +28,6 @@ namespace Volkszaehler\Model;
  *
  * @author Andreas Goetz <cpuidle@gmx.de>
  *
- * @todo change index name to something more meaningful like aggregate_channel_type_ts_idx
- *
  * @Entity
  * @Table(name="aggregate")
  */
