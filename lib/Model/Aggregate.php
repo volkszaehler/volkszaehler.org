@@ -50,7 +50,7 @@ class Aggregate
 
 	/**
 	 * @ManyToOne(targetEntity="Channel", inversedBy="aggregate")
-	 * @JoinColumn(name="channel_id", referencedColumnName="id")
+	 * @JoinColumn(name="channel_id", referencedColumnName="id", nullable=false)
 	 *
 	 * @todo implement inverse side (Channel->aggregate)
 	 */
@@ -59,26 +59,26 @@ class Aggregate
 	/**
 	 * Aggregation type
 	 *
-	 * @Column(type="smallint")
+	 * @Column(type="smallint", nullable=false)
 	 */
 	protected $type;
 
 	/**
 	 * Ending timestamp of period in ms since 1970
 	 *
-	 * @Column(type="bigint")
+	 * @Column(type="bigint", nullable=false)
 	 */
 	protected $timestamp;
 
 	/**
-	 * @Column(type="float")
+	 * @Column(type="float", nullable=false)
 	 */
 	protected $value;
 
 	/**
 	 * Aggregated row count
 	 *
-	 * @Column(type="integer")
+	 * @Column(type="integer", nullable=false)
 	 */
 	protected $count;
 
