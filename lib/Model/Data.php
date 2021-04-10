@@ -23,35 +23,27 @@
 
 namespace Volkszaehler\Model;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Volkszaehler\Model;
-
 /**
  * Data entity
  *
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @author Andreas Goetz <cpuidle@gmx.de>
  *
  * @Entity
- * @Table(
- * 	name="data",
- *	uniqueConstraints={@UniqueConstraint(name="data_unique", columns={"channel_id", "timestamp"})}
- * )
+ * @Table(name="data")
  */
 class Data
 {
 	/**
 	 * @Id
-	 * @Column(type="integer", nullable=false)
-	 * @GeneratedValue(strategy="IDENTITY")
-	 *
-	 * @todo wait until DDC-117 is fixed (PKs on FKs)
+	 * @ManyToOne(targetEntity="Channel", inversedBy="data")
+	 * @JoinColumn(name="channel_id", referencedColumnName="id")
 	 */
-	protected $id;
+	protected $channel;
 
 	/**
-	 * Ending timestamp of period in ms since 1970
-	 *
-	 * @Column(type="bigint", nullable=false)
+	 * @Id
+	 * @Column(type="bigint")
 	 */
 	protected $timestamp;
 
@@ -60,13 +52,7 @@ class Data
 	 */
 	protected $value;
 
-	/**
-	 * @ManyToOne(targetEntity="Channel", inversedBy="data")
-	 * @JoinColumn(name="channel_id", referencedColumnName="id", nullable=false)
-	 */
-	protected $channel;
-
-	public function __construct(Model\Channel $channel, $timestamp, $value)
+	public function __construct(Channel $channel, $timestamp, $value)
 	{
 		$this->channel = $channel;
 

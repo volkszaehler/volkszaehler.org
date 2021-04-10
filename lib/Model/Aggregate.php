@@ -23,34 +23,20 @@
 
 namespace Volkszaehler\Model;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Volkszaehler\Model;
-
 /**
  * Aggregate materialized view entity
  *
  * @author Andreas Goetz <cpuidle@gmx.de>
  *
  * @Entity
- * @Table(
- * 	name="aggregate",
- *	uniqueConstraints={@UniqueConstraint(name="aggregate_unique", columns={"channel_id", "type", "timestamp"})}
- * )
+ * @Table(name="aggregate")
  */
 class Aggregate
 {
 	/**
 	 * @Id
-	 * @Column(type="integer", nullable=false)
-	 * @GeneratedValue(strategy="AUTO")
-	 *
-	 * @todo wait until DDC-117 is fixed (PKs on FKs)
-	 */
-	protected $id;
-
-	/**
 	 * @ManyToOne(targetEntity="Channel", inversedBy="aggregate")
-	 * @JoinColumn(name="channel_id", referencedColumnName="id", nullable=false)
+	 * @JoinColumn(name="channel_id", referencedColumnName="id")
 	 *
 	 * @todo implement inverse side (Channel->aggregate)
 	 */
@@ -59,14 +45,16 @@ class Aggregate
 	/**
 	 * Aggregation type
 	 *
-	 * @Column(type="smallint", nullable=false)
+	 * @Id
+	 * @Column(type="smallint")
 	 */
 	protected $type;
 
 	/**
 	 * Ending timestamp of period in ms since 1970
 	 *
-	 * @Column(type="bigint", nullable=false)
+	 * @Id
+	 * @Column(type="bigint")
 	 */
 	protected $timestamp;
 
@@ -82,7 +70,7 @@ class Aggregate
 	 */
 	protected $count;
 
-	public function __construct(Model\Channel $channel, $type, $timestamp, $value, $count)
+	public function __construct(Channel $channel, $type, $timestamp, $value, $count)
 	{
 		$this->channel = $channel;
 		$this->type = $type;

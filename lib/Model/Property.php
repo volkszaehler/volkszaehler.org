@@ -24,7 +24,6 @@
 namespace Volkszaehler\Model;
 
 use Volkszaehler\Definition;
-use Volkszaehler\Model;
 
 /**
  * Property entity
@@ -32,27 +31,21 @@ use Volkszaehler\Model;
  * @author Steffen Vogel <info@steffenvogel.de>
  *
  * @Entity
- * @Table(
- * 		name="properties",
- * 		uniqueConstraints={
- * 			@UniqueConstraint(name="property_unique", columns={"entity_id", "pkey"})
- * 		}
- * )
+ * @Table(name="properties")
  * @HasLifecycleCallbacks
  */
 class Property
 {
 	/**
 	 * @Id
-	 * @Column(type="integer", nullable=false)
-	 * @GeneratedValue(strategy="AUTO")
-	 *
-	 * @todo wait until DDC-117 is fixed (PKs on FKs)
+	 * @ManyToOne(targetEntity="Entity", inversedBy="properties")
+	 * @JoinColumn(name="entity_id")
 	 */
-	protected $id;
+	protected $entity;
 
 	/**
-	 * @Column(name="pkey", type="string", nullable=false)
+	 * @Id
+	 * @Column(name="pkey", type="string")
 	 * HINT: column name "key" is reserved by mysql
 	 */
 	protected $key;
@@ -63,18 +56,12 @@ class Property
 	protected $value;
 
 	/**
-	 * @ManyToOne(targetEntity="Entity", inversedBy="properties")
-	 * @JoinColumn(name="entity_id", nullable=false)
-	 */
-	protected $entity;
-
-	/**
 	 * Constructor
 	 *
 	 * @param string $key
 	 * @param string $value
 	 */
-	public function __construct(Model\Entity $entity, $key, $value)
+	public function __construct(Entity $entity, $key, $value)
 	{
 		$this->entity = $entity;
 		$this->key = $key;

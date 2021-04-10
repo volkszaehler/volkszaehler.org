@@ -47,15 +47,19 @@ abstract class Entity
 {
 	/**
 	 * @Id
-	 * @Column(type="integer", nullable=false)
+	 * @Column(type="integer")
 	 * @GeneratedValue(strategy="AUTO")
 	 */
 	protected $id;
 
-	/** @Column(type="string", length=36, nullable=false, unique=true) */
+	/**
+	 * @Column(type="string", length=36, nullable=false, unique=true)
+	 */
 	protected $uuid;
 
-	/** @Column(type="string", nullable=false) */
+	/**
+	 * @Column(type="string", nullable=false)
+	 */
 	protected $type;
 
 	/**
