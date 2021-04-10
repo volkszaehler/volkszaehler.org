@@ -205,7 +205,6 @@ class RunCommand extends BasicCommand
 				}
 
 				$rows += $this->aggregator->aggregate($uuid, $level, $mode, $periods, function ($rows) use ($uuid, $progress) {
-					$this->output->writeln($uuid);
 					$progress->advance();
 				});
 			}
