@@ -39,8 +39,8 @@ vz.options = {
 	middleware: [
 		{
 			title: 'Local (default)',
-			url: 'api'
-			// live: 8082					// NOTE: live updates require
+			url: 'api',
+			live: 8082					// NOTE: live updates require
 														//    - push-server running and
 														//    - either apache proxy forwarding configured according to
 														//			https://github.com/volkszaehler/volkszaehler.org/issues/382
