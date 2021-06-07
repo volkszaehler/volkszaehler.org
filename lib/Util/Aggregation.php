@@ -335,7 +335,7 @@ class Aggregation
 		if (Util\Debug::isActivated())
 			echo (Util\Debug::getParametrizedQuery($sql, $sqlParameters) . "\n");
 
-		$rows = $this->conn->executeUpdate($sql, $sqlParameters);
+		$rows = $this->conn->executeStatement($sql, $sqlParameters);
 
 		return ($rows);
 	}

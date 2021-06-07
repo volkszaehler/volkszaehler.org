@@ -24,7 +24,6 @@ namespace Volkszaehler\Controller;
 
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\ORMException;
 
 use Volkszaehler\Model;
 use Volkszaehler\Util;
@@ -35,6 +34,7 @@ use Volkszaehler\View\View;
  * Data controller
  *
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @author Andreas Goetz <cpuidle@gmx.de>
  */
 class DataController extends Controller {
 
@@ -114,7 +114,7 @@ class DataController extends Controller {
 		}
 		catch (\RuntimeException $e) { /* fallback to old method */
 			$timestamp = $this->getParameters()->get('ts');
-			$value = $this->getParameters()->get('value');
+			$value = $this->getParameters()->get('value', 1);
 
 			if (is_null($timestamp)) {
 				$timestamp = (double) round(microtime(TRUE) * 1000);
@@ -123,19 +123,15 @@ class DataController extends Controller {
 				$timestamp = Interpreter::parseDateTimeString($timestamp);
 			}
 
-			if (is_null($value)) {
-				$value = 1;
-			}
-
 			// same structure as JSON request result
-			$data = array($timestamp, $value);
+			$data = array($timestamp, (float)$value);
 		}
 
 		$sql = 'INSERT ' . ((in_array(self::OPT_SKIP_DUPLICATES, $this->options)) ? 'IGNORE ' : '') .
 			   'INTO data (channel_id, timestamp, value) ' .
 			   'VALUES ' . implode(', ', array_fill(0, count($data)>>1, '(' . $channel->getId() . ',?,?)'));
 
-		$rows = $this->em->getConnection()->executeUpdate($sql, $data);
+		$rows = $this->em->getConnection()->executeStatement($sql, $data);
 		return array('rows' => $rows);
 	}
 
@@ -181,7 +177,6 @@ class DataController extends Controller {
 
 		return array('rows' => $rows);
 	}
-
 
 	/**
 	 * Parse query parameters into SQL filters
