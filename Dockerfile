@@ -18,7 +18,7 @@ EXPOSE 8082
 EXPOSE 5582
 
 RUN apk add postgresql-dev
-RUN docker-php-ext-install pcntl pdo_mysql pdo_pgsql
+RUN docker-php-ext-install pcntl pdo_mysql pdo_pgsql mysqli
 
 COPY --from=builder /vz /vz
 COPY --from=builder /vz/etc/config.dist.yaml /vz/etc/config.yaml
