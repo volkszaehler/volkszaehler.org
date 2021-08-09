@@ -23,9 +23,6 @@
 namespace Volkszaehler\Util;
 
 use Doctrine\ORM;
-use Doctrine\Common\Cache\Psr6\DoctrineProvider;
-use Symfony\Component\Cache\Adapter\ArrayAdapter;
-
 use Webpatser\Uuid\Uuid as UUID;
 
 use Volkszaehler\Util;
@@ -82,11 +79,6 @@ class EntityFactory {
 	protected function __construct(ORM\EntityManager $em) {
 		$this->em = $em;
 		$this->cache = $em->getConfiguration()->getQueryCacheImpl();
-
-		if (!isset($this->cache)) {
-			$cachePool = new ArrayAdapter(0, false);
-			$this->cache = DoctrineProvider::wrap($cachePool);
-		}
 	}
 
 	/**

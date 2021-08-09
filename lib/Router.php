@@ -30,7 +30,7 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\ErrorHandler\Debug;
 
 use Doctrine\ORM;
-// use Doctrine\Common\Cache\Psr6\DoctrineProvider;
+use Doctrine\Common\Cache\Psr6\DoctrineProvider;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 
 use Volkszaehler\View;
@@ -237,7 +237,7 @@ class Router implements HttpKernelInterface {
 
 		$cache = new ArrayAdapter(0, false);
 		$config->setMetadataCache($cache);
-		// $config->setQueryCacheImpl(DoctrineProvider::wrap($cache));
+		$config->setQueryCacheImpl(DoctrineProvider::wrap($cache));
 
 		$driverImpl = $config->newDefaultAnnotationDriver(VZ_DIR . '/lib/Model');
 		$config->setMetadataDriverImpl($driverImpl);
