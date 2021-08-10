@@ -30,7 +30,8 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\ErrorHandler\Debug;
 
 use Doctrine\ORM;
-use Doctrine\Common\Cache;
+use Doctrine\Common\Cache\Psr6\DoctrineProvider;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
 
 use Volkszaehler\View;
 use Volkszaehler\Util;
@@ -234,9 +235,9 @@ class Router implements HttpKernelInterface {
 	public static function createEntityManager($admin = false) {
 		$config = new ORM\Configuration;
 
-		$cache = new Cache\ArrayCache;
-		$config->setMetadataCacheImpl($cache);
-		$config->setQueryCacheImpl($cache);
+		$cache = new ArrayAdapter(0, false);
+		$config->setMetadataCache($cache);
+		$config->setQueryCacheImpl(DoctrineProvider::wrap($cache));
 
 		$driverImpl = $config->newDefaultAnnotationDriver(VZ_DIR . '/lib/Model');
 		$config->setMetadataDriverImpl($driverImpl);

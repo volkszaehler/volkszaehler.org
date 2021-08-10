@@ -23,7 +23,6 @@
 namespace Volkszaehler\Util;
 
 use Doctrine\ORM;
-use Doctrine\Common\Cache;
 use Webpatser\Uuid\Uuid as UUID;
 
 use Volkszaehler\Util;
@@ -80,10 +79,6 @@ class EntityFactory {
 	protected function __construct(ORM\EntityManager $em) {
 		$this->em = $em;
 		$this->cache = $em->getConfiguration()->getQueryCacheImpl();
-
-		if (!isset($this->cache)) {
-			$this->cache = new Cache\ArrayCache();
-		}
 	}
 
 	/**
