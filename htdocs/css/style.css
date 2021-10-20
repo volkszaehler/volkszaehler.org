@@ -31,6 +31,9 @@ tr.stale td.consumption, tr.stale td.cost, tr.stale td.total {
 table.properties tr:not(:first-child) {
 	border-top: 1px solid #ddd;
 }
+table.properties td.key {
+	vertical-align: top;
+}
 
 td input:not([type=image]):not([type=checkbox]) {
 	width: 100%;
