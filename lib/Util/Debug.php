@@ -155,7 +155,7 @@ class Debug {
 	 * @author Andreas Goetz <cpuidle@gmx.de>
 	 */
 	public static function getParametrizedQuery($sql, $sqlParameters) {
-		while (count($sqlParameters)) {
+		while (count((array) $sqlParameters)) {
 			$sql = preg_replace('/\?/', self::formatSQLParameter(array_shift($sqlParameters)), $sql, 1);
 		}
 		if (php_sapi_name() === 'cli' && class_exists('\SqlFormatter')) {
