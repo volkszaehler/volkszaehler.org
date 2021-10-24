@@ -374,7 +374,7 @@ vz.wui.dialogs.addProperties = function(container, proplist, className, entity) 
 			if (def == propdef.name) {
 				var cntrl = null;
 				var row = $('<tr>').append(
-					$('<td>').text(propdef.translation[vz.options.language])
+					$('<td class="key">').text(propdef.translation[vz.options.language])
 				);
 
 				switch (propdef.type) {
