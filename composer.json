@@ -33,7 +33,7 @@
         "guzzlehttp/guzzle": "^7.0",
         "jdorn/sql-formatter": "^1.2",
         "friendsofphp/php-cs-fixer": "^3.0",
-        "phpstan/phpstan": "^0.12.80"
+        "phpstan/phpstan": "^1.1.1"
     },
     "autoload": {
         "psr-4": {
