@@ -89,8 +89,11 @@ $(document).ready(function() {
 	}
 
 	// start loading cookies/url params
-	vz.entities.loadCookie(); // load uuids from cookie
-	vz.options.loadCookies(); // load options from cookie
+	if (!(params.hasOwnProperty('uuid') || params.uuid)) {
+		// only load cookies when no uuid present in url params	
+		vz.entities.loadCookie(); // load uuids from cookie
+		vz.options.loadCookies(); // load options from cookie	
+	}
 
 	// set x axis limits _after_ loading options cookie
 	vz.options.plot.xaxis.max = new Date().getTime();
