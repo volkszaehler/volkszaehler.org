@@ -11,7 +11,7 @@
     "require": {
         "php": "^7.3|^8.0",
         "doctrine/orm": "^2.9",
-        "doctrine/dbal": "^2.12",
+        "doctrine/dbal": "^3.2",
         "andig/dbcopy": "^1.4",
         "andig/php-shunting-yard": "^1.0",
         "symfony/cache": "^5.0",
