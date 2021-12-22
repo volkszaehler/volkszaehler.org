@@ -4,7 +4,7 @@
  * @author Justin Otherguy <justin@justinotherguy.org>
  * @author Steffen Vogel <info@steffenvogel.de>
  * @author Andreas Götz <cpuidle@gmx.de>
- * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
  * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
@@ -120,11 +120,13 @@ Entity.prototype.getUnitForMode = function () {
 };
 
 /**
- * Helper function to manage yaxes array (last entry contains template)
+ * Helper function to manage yaxes array, adds addt'l axes as required 
+ * Last yaxis defined in options.js is used as template for further axes
  */
 function ensureAavailableAxis() {
-	var length = vz.options.plot.yaxes.push($.extend({}, vz.options.plot.yaxes[1])) - 1;
-	// make sure new axis is neutral
+	var length = vz.options.plot.yaxes.length;
+	vz.options.plot.yaxes.push($.extend({}, vz.options.plot.yaxes[length-1]));
+	// make sure new axis has a neutral label
 	delete vz.options.plot.yaxes[length].axisLabel;
 	return length;
 }
@@ -619,6 +621,10 @@ Entity.prototype.getDOMDetails = function (edit) {
 					case 'cost':
 						prefix = (this.definition.scale == 1000) ? ' ct/k' : ' ct/'; // ct per Wh or kWh
 						value = Number(value * 100).toFixed(2) + prefix + vz.wui.formatConsumptionUnit(this.getUnit());
+						break;
+
+					case 'description':
+						value = (value + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br/>$2');
 						break;
 
 					case 'resolution':

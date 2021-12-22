@@ -4,7 +4,7 @@
  * @author Florian Ziegler <fz@f10-home.de>
  * @author Justin Otherguy <justin@justinotherguy.org>
  * @author Steffen Vogel <info@steffenvogel.de>
- * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
  * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
@@ -92,12 +92,17 @@ vz.options.plot = {
 			tickFormatter: vz.wui.tickFormatter		// show axis label
 		},
 		{
-			axisLabel: '°C', // assign el. energy to first axis- remove if not used
+			axisLabel: '°C', // assign temperature to 2nd axis- remove if not used
 			tickFormatter: vz.wui.tickFormatter		// show axis label
 		},
 		{
-			// alignTicksWithAxis: 1,
+			/*
+			** Please note: The last axis defined in here will also be used as a 
+			** template to clone further axes as needed. All settings (except the 
+			** axis label) will replicate into those additional axes.
+			*/
 			position: 'right',
+			// alignTicksWithAxis: 1,
 			tickFormatter: vz.wui.tickFormatter		// show axis label
 		}
 	],

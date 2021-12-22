@@ -1,6 +1,6 @@
 <?php
 /**
- * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
  * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
@@ -27,10 +27,11 @@ use Symfony\Component\HttpFoundation\Response;
 
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
-use Symfony\Component\Debug\ErrorHandler;
+use Symfony\Component\ErrorHandler\Debug;
 
 use Doctrine\ORM;
-use Doctrine\Common\Cache;
+use Doctrine\Common\Cache\Psr6\DoctrineProvider;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
 
 use Volkszaehler\View;
 use Volkszaehler\Util;
@@ -96,7 +97,7 @@ class Router implements HttpKernelInterface {
 	 */
 	public function __construct() {
 		// handle errors as exceptions
-		ErrorHandler::register();
+		Debug::enable();
 	}
 
 	/**
@@ -234,9 +235,9 @@ class Router implements HttpKernelInterface {
 	public static function createEntityManager($admin = false) {
 		$config = new ORM\Configuration;
 
-		$cache = new Cache\ArrayCache;
-		$config->setMetadataCacheImpl($cache);
-		$config->setQueryCacheImpl($cache);
+		$cache = new ArrayAdapter(0, false);
+		$config->setMetadataCache($cache);
+		$config->setQueryCacheImpl(DoctrineProvider::wrap($cache));
 
 		$driverImpl = $config->newDefaultAnnotationDriver(VZ_DIR . '/lib/Model');
 		$config->setMetadataDriverImpl($driverImpl);

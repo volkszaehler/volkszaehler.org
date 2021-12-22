@@ -3,7 +3,7 @@
  * Basic test functionality
  *
  * @author Andreas Götz <cpuidle@gmx.de>
- * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
  * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 
@@ -15,8 +15,10 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
-use Symfony\Bridge\PsrHttpMessage\Factory;
-use Zend\Diactoros\Uri;
+use Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory;
+use Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory;
+use Nyholm\Psr7\Factory\Psr17Factory;
+use Nyholm\Psr7\Uri;
 
 use Volkszaehler\Router;
 
@@ -58,13 +60,15 @@ abstract class Middleware extends \PHPUnit\Framework\TestCase
 	/**
 	 * Initialize router
 	 */
-	static function setupBeforeClass() {
+	static function setupBeforeClass() : void {
 		parent::setupBeforeClass();
 
 		if (testAdapter == 'HTTP') {
 			static::$client = new Client();
-			static::$httpFoundationFactory = new Factory\HttpFoundationFactory();
-			static::$psrFoundationFactory = new Factory\DiactorosFactory();
+			static::$httpFoundationFactory = new HttpFoundationFactory();
+
+			$psr17Factory = new Psr17Factory();
+			static::$psrFoundationFactory = new PsrHttpFactory($psr17Factory, $psr17Factory, $psr17Factory, $psr17Factory);
 		}
 		// cache entity manager
 		else if (null == self::$app) {

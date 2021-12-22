@@ -1,6 +1,6 @@
 # volkszaehler.org
 
-[![Build Status](https://travis-ci.org/volkszaehler/volkszaehler.org.svg?branch=master)](https://travis-ci.org/volkszaehler/volkszaehler.org)
+[![Build](https://github.com/volkszaehler/volkszaehler.org/actions/workflows/build.yml/badge.svg)](https://github.com/volkszaehler/volkszaehler.org/actions/workflows/build.yml)
 
 volkszaehler.org is a free smart meter implementation with focus on data privacy.
 
@@ -62,5 +62,5 @@ Or follow the detailed installation instructions at http://wiki.volkszaehler.org
 
 ## Copyright
 
-Copyright © 2011-2018 volkszaehler.org
+Copyright © 2011-2020 volkszaehler.org
 Licensed under the GNU General Public License Version 3 (https://opensource.org/licenses/GPL-3.0).

@@ -1,6 +1,6 @@
 <?php
 /**
- * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
  * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
@@ -44,7 +44,7 @@ class CapabilitiesController extends Controller {
 	 * @return int Number of database rows
 	 */
 	private function sqlCount(Connection $conn, $table) {
-		$explain = $conn->fetchAssoc('EXPLAIN SELECT COUNT(id) FROM ' . $table . ' USE INDEX (PRIMARY)');
+		$explain = $conn->fetchAssoc('EXPLAIN SELECT COUNT(*) FROM ' . $table . ' USE INDEX (PRIMARY)');
 		if (isset($explain['rows']))
 			// estimated for InnoDB
 			$rows = $conn->fetchColumn(

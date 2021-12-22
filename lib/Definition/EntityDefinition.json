@@ -4,7 +4,7 @@
  * Format is specified in EntityDefinition model
  *
  * @author Steffen Vogel <info@steffenvogel.de>
- * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
  * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
@@ -387,6 +387,19 @@
 		}
 	},
 	{
+		"name"			: "humidity absolute",
+		"optional"			: ["resolution"],
+		"icon"			: "rain.png",
+		"unit"			: "g/m³",
+		"interpreter"			: "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"translation"			: {
+			"de" : "absolute Luftfeuchtigkeit",
+			"en" : "absolute humidity",
+			"fr" : "Humidité absolue"
+		}
+	},
+	{
 		"name"			: "windspeed",
 		"optional"		: ["resolution"],
 		"icon"			: "propeller.png",
@@ -511,5 +524,18 @@
 			"de" : "Verbrauchssensor (virt.)",
 			"en" : "Consumption Sensor (virt.)"
 		}
-	}
+	},
+  {
+    "name"                  : "co2 concentration",
+    "optional"              : [],
+    "icon"                  : "propeller.png",
+    "unit"                  : "ppm",
+    "interpreter"           : "Volkszaehler\\Interpreter\\SensorInterpreter",
+    "model"                 : "Volkszaehler\\Model\\Channel",
+    "translation"           : {
+      "de" : "CO2-Konzentration",
+      "en" : "CO2 concentration",
+      "fr" : "Concentration CO2"
+    }
+  }
 ]

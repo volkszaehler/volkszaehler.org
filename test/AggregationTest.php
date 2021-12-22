@@ -3,7 +3,7 @@
  * Aggregation tests
  *
  * @author Andreas Götz <cpuidle@gmx.de>
- * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
  * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 
@@ -17,7 +17,7 @@ class AggregationTest extends DataPerformance
 	/**
 	 * Create DB connection and setup channel
 	 */
-	static function setupBeforeClass() {
+	static function setupBeforeClass() : void {
 		parent::setupBeforeClass();
 
 		if (!self::$uuid) {
@@ -28,7 +28,7 @@ class AggregationTest extends DataPerformance
 	/**
 	 * Cleanup aggregation
 	 */
-	static function tearDownAfterClass() {
+	static function tearDownAfterClass() : void {
 		if (self::$conn && self::$uuid) {
 			$agg = new Util\Aggregation(self::$conn);
 			$agg->clear(self::$uuid);
@@ -192,29 +192,16 @@ class AggregationTest extends DataPerformance
 		$typeDay = Util\Aggregation::getAggregationLevelTypeValue('day');
 
 		// day: 2 rows of aggregation data, day first
-		$opt = $agg->getOptimalAggregationLevel(self::$uuid);
-		$ref = array(
-			array(
-				'level' => 'day',
-				'type' => $typeDay,
-				'count' => $this->countAggregationRows(self::$uuid, $typeDay)),
-			array(
-				'level' => 'hour',
-				'type' => $typeHour,
-				'count' => $this->countAggregationRows(self::$uuid, $typeHour)));
-		$this->assertEquals($ref, $opt);
+		$opt = $agg->hasDataForAggregationLevel(self::$uuid, $typeDay);
+		$this->assertEquals($typeDay, $opt);
 
 		// hour: 1 row of aggregation data
-		$opt = $agg->getOptimalAggregationLevel(self::$uuid, 'hour');
-		$ref = array(array(
-			'level' => 'hour',
-			'type' => $typeHour,
-			'count' => $this->countAggregationRows(self::$uuid, $typeHour)));
-		$this->assertEquals($ref, $opt);
+		$opt = $agg->hasDataForAggregationLevel(self::$uuid, $typeHour);
+		$this->assertEquals($typeHour, $opt);
 
 		// minute: no aggregation data => false
 		$typeMinute = Util\Aggregation::getAggregationLevelTypeValue('minute');
-		$opt = $agg->getOptimalAggregationLevel(self::$uuid, 'minute');
+		$opt = $agg->hasDataForAggregationLevel(self::$uuid, $typeMinute);
 		$this->assertFalse($opt);
 
 		// 3 data, cannot use daily aggregates for hourly request

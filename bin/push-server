@@ -4,7 +4,7 @@
  * WebSockets push server for realtime updates from middleware
  *
  * @author Andreas Goetz <cpuidle@gmx.de>
- * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
  * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
@@ -76,7 +76,7 @@ $middleware = new MiddlewareAdapter();
 
 // configure local httpd interface
 $localSocket = new SocketServer(REMOTE_IP_PORT . $localPort, $loop); // remote loggers can push updates
-$localServer = new HttpReceiver($localSocket, $middleware);
+$localServer = new HttpReceiver($loop, $localSocket, $middleware);
 
 // configure routes
 $routes = new RouteCollection;

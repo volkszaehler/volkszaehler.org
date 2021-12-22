@@ -3,7 +3,7 @@
  * Entity tests
  *
  * @author Andreas Götz <cpuidle@gmx.de>
- * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
  * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 
@@ -17,7 +17,7 @@ class EntityTest extends Middleware
 
 	function testExistence() {
 		$this->assertNotNull($this->getJson('/entity.json')->entities);
-		$this->assertInternalType('array', $this->getJson('/entity.json')->entities);
+		$this->assertIsArray($this->getJson('/entity.json')->entities);
 	}
 
 	function testCannotCreateEntity() {

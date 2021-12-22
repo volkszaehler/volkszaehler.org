@@ -1,6 +1,6 @@
 <?php
 /**
- * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
  * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
@@ -23,7 +23,6 @@
 namespace Volkszaehler\Util;
 
 use Doctrine\ORM;
-use Doctrine\Common\Cache;
 use Webpatser\Uuid\Uuid as UUID;
 
 use Volkszaehler\Util;
@@ -80,10 +79,6 @@ class EntityFactory {
 	protected function __construct(ORM\EntityManager $em) {
 		$this->em = $em;
 		$this->cache = $em->getConfiguration()->getQueryCacheImpl();
-
-		if (!isset($this->cache)) {
-			$this->cache = new Cache\ArrayCache();
-		}
 	}
 
 	/**

@@ -5,7 +5,7 @@
  * @author Justin Otherguy <justin@justinotherguy.org>
  * @author Steffen Vogel <info@steffenvogel.de>
  * @author Andreas Götz <cpuidle@gmx.de>
- * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
  * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
@@ -374,7 +374,7 @@ vz.wui.dialogs.addProperties = function(container, proplist, className, entity) 
 			if (def == propdef.name) {
 				var cntrl = null;
 				var row = $('<tr>').append(
-					$('<td>').text(propdef.translation[vz.options.language])
+					$('<td class="key">').text(propdef.translation[vz.options.language])
 				);
 
 				switch (propdef.type) {
@@ -894,10 +894,16 @@ vz.wui.dialogs.exception = function(exception) {
 };
 
 vz.wui.dialogs.middlewareException = function(xhr) {
+	// xhr failed - show details for problem
+	// create a message with the requestUrl that caused the problem
+	var msg="<a href='" + xhr.requestUrl + "' style='text-decoration:none'>"
+		+ xhr.requestUrl + "</a>:<br/><br/>";
+	// depending on type of problem create different exceptions and
+	// show different futher details
 	if (xhr.responseJSON && xhr.responseJSON.exception)
 		// middleware exception
-		this.exception(new Exception(xhr.responseJSON.exception.type, "<a href='" + xhr.requestUrl + "' style='text-decoration:none'>" + xhr.requestUrl + "</a>:<br/><br/>" + xhr.responseJSON.exception.message));
+		this.exception(new Exception(xhr.response.JSON.exception.type,msg+ xhr.responseJSON.exception.message));
 	else
 		// network exception
-		this.exception(new Exception("Network Error", xhr.statusText));
+		this.exception(new Exception("Network Error", msg+xhr.statusText));
 };

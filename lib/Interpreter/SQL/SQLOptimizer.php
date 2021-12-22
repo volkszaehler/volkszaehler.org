@@ -1,7 +1,7 @@
 <?php
 /**
  * @author Andreas Goetz <cpuidle@gmx.de>
- * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
  * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
@@ -164,7 +164,7 @@ abstract class SQLOptimizer {
 	 * @param string  $op initial concatenation operator
 	 * @return string sql part including leading operator (' AND ')
 	 */
-	public static function buildDateTimeFilterSQL($from = NULL, $to = NULL, &$parameters, $sequential = false, $op = ' AND') {
+	public static function buildDateTimeFilterSQL($from, $to, &$parameters, $sequential = false, $op = ' AND') {
 		$sql = '';
 
 		if (isset($from)) {
@@ -284,5 +284,3 @@ abstract class SQLOptimizer {
 		throw new \RuntimeException('Disabling caching not implemented for current DBMS');
 	}
 }
-
-?>

@@ -1,9 +1,9 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 #  @author Andreas Götz <cpuidle@gmx.de>
 #  @author Sven Anders <volkszaehler2011@sven.anders.im> 2011
-#  @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+#  @copyright Copyright (c) 2011-2020, The volkszaehler.org project
 #  @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
 
 #
@@ -25,14 +25,13 @@
 
 
 import argparse
-import ConfigParser
-import urllib
-import urllib2
+import configparser
+import urllib.request as urllib
 import os
 import json
 
-Config = ConfigParser.ConfigParser()
-version="1.0";
+Config = configparser.ConfigParser()
+version="1.1";
 
 parser = argparse.ArgumentParser(description='A python client for volkszaehler.org',
   formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -67,7 +66,7 @@ if (url is None):
   try:
     url=Config.get("default", "url");
   except:
-    print "ERROR: Please specify an url!";
+    print("ERROR: Please specify an url!");
     exit(1);
 elif (url[:4].lower() != "http"):
   url="http://"+url
@@ -89,25 +88,25 @@ if (uuid is not None) and len(uuid) > 1:
   url=url+"&uuid[]="+"&uuid[]=".join(uuid);
 for p in args.param:
   (key,value)=p.split("=");
-  url=url+"&"+urllib2.quote(key)+"="+urllib2.quote(value);
-# print url;
+  url=url+"&"+urllib.quote(key)+"="+urllib.quote(value);
+# print(url);
 
-req = urllib2.Request(url)
+req = urllib.Request(url)
 req.add_header('User-Agent', 'vzclient/'+version)
 try:
   if (args.json):
     req.add_header('Content-Type', 'application/json');
-    f=urllib2.urlopen(req, args.json);
+    f=urllib.urlopen(req, args.json);
   else:
-    f=urllib2.urlopen(req);
+    f=urllib.urlopen(req);
   jsonstr=f.read();
 
   # unparsed - json or other format
   if (args.eval is None):
     if (args.format == "json"):
-      print json.dumps(json.loads(jsonstr), indent=2)
+      print(json.dumps(json.loads(jsonstr), indent=2))
     else:
-      print jsonstr;
+      print(jsonstr);
     exit(0)
 
   # parsed - only json
@@ -129,10 +128,10 @@ try:
       try:
         obj=obj[ev]
       except KeyError:
-        print "Key: "+ev+" not found in str: "+jsonstr;
+        print("Key:",ev,"not found in str:",jsonstr);
 
-  print json.dumps(obj, indent=None if args.format != "json" else 2);
+  print(json.dumps(obj, indent=None if args.format != "json" else 2));
 
-except urllib2.HTTPError,error:
-  print error.read();
+except urllib.HTTPError as error:
+  print(error.read());
   exit(1);

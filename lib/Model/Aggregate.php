@@ -1,6 +1,7 @@
 <?php
+
 /**
- * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
  * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
@@ -22,31 +23,18 @@
 
 namespace Volkszaehler\Model;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Volkszaehler\Model;
-
 /**
  * Aggregate materialized view entity
  *
  * @author Andreas Goetz <cpuidle@gmx.de>
  *
  * @Entity
- * @Table(
- * 	name="aggregate",
- *	uniqueConstraints={@UniqueConstraint(name="aggregate_unique", columns={"channel_id", "type", "timestamp"})}
- * )
+ * @Table(name="aggregate")
  */
-class Aggregate {
+class Aggregate
+{
 	/**
 	 * @Id
-	 * @Column(type="integer", nullable=false)
-	 * @GeneratedValue(strategy="AUTO")
-	 *
-	 * @todo wait until DDC-117 is fixed (PKs on FKs)
-	 */
-	protected $id;
-
-	/**
 	 * @ManyToOne(targetEntity="Channel", inversedBy="aggregate")
 	 * @JoinColumn(name="channel_id", referencedColumnName="id")
 	 *
@@ -57,6 +45,7 @@ class Aggregate {
 	/**
 	 * Aggregation type
 	 *
+	 * @Id
 	 * @Column(type="smallint")
 	 */
 	protected $type;
@@ -64,23 +53,25 @@ class Aggregate {
 	/**
 	 * Ending timestamp of period in ms since 1970
 	 *
+	 * @Id
 	 * @Column(type="bigint")
 	 */
 	protected $timestamp;
 
 	/**
-	 * @Column(type="float")
+	 * @Column(type="float", nullable=false)
 	 */
 	protected $value;
 
 	/**
 	 * Aggregated row count
 	 *
-	 * @Column(type="integer")
+	 * @Column(type="integer", nullable=false)
 	 */
 	protected $count;
 
-	public function __construct(Model\Channel $channel, $type, $timestamp, $value, $count) {
+	public function __construct(Channel $channel, $type, $timestamp, $value, $count)
+	{
 		$this->channel = $channel;
 		$this->type = $type;
 
@@ -89,18 +80,36 @@ class Aggregate {
 		$this->count = $count;
 	}
 
-	public function toArray() {
+	public function toArray()
+	{
 		return array('channel' => $this->channel, 'type' => $this->type, 'timestamp' => $this->timestamp, 'value' => $this->value, 'count' => $this->count);
 	}
 
 	/**
 	 * setter & getter
 	 */
-	public function getValue() { return $this->value; }
-	public function getTimestamp() { return $this->timestamp; }
-	public function getChannel() { return $this->channel; }
-	public function getCount() { return $this->count; }
-	public function getType() { return $this->type; }
-}
+	public function getValue()
+	{
+		return $this->value;
+	}
 
-?>
+	public function getTimestamp()
+	{
+		return $this->timestamp;
+	}
+
+	public function getChannel()
+	{
+		return $this->channel;
+	}
+
+	public function getCount()
+	{
+		return $this->count;
+	}
+
+	public function getType()
+	{
+		return $this->type;
+	}
+}

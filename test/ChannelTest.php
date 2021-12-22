@@ -3,7 +3,7 @@
  * Entity tests
  *
  * @author Andreas Götz <cpuidle@gmx.de>
- * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
  * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 
@@ -38,7 +38,7 @@ class ChannelTest extends Middleware
 
 	function testExistence() {
 		$this->assertNotNull($this->getJson('/channel.json')->channels);
-		$this->assertInternalType('array', $this->getJson('/channel.json')->channels);
+		$this->assertIsArray($this->getJson('/channel.json')->channels);
 	}
 
 	/**

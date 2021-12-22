@@ -1,6 +1,6 @@
 <?php
 /**
- * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
  * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
@@ -155,7 +155,7 @@ class Debug {
 	 * @author Andreas Goetz <cpuidle@gmx.de>
 	 */
 	public static function getParametrizedQuery($sql, $sqlParameters) {
-		while (count($sqlParameters)) {
+		while (count((array) $sqlParameters)) {
 			$sql = preg_replace('/\?/', self::formatSQLParameter(array_shift($sqlParameters)), $sql, 1);
 		}
 		if (php_sapi_name() === 'cli' && class_exists('\SqlFormatter')) {

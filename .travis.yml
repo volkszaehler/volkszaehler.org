@@ -63,6 +63,10 @@ install:
         npm install -g gulp
         npm install
       fi
+      if [ "$COMPONENT" == "DOCKER" ]; then
+        curl -sfL https://raw.githubusercontent.com/ldez/seihon/master/godownloader.sh | bash -s -- -b $GOPATH/bin
+        seihon --version
+      fi
 
 before_script:
     # enable shell errors
@@ -130,7 +134,5 @@ after_success:
       if [ "$COMPONENT" == "DOCKER" ] && [ "$TRAVIS_BRANCH" == "master" ] && [ "$DOCKER_USER" != "" ]; then
         docker login -u $DOCKER_USER -p $DOCKER_PASS
         export REPO=volkszaehler/volkszaehler
-        docker pull $REPO:latest
-        docker build --cache-from $REPO:latest -f Dockerfile -t $REPO:latest .
-        docker push $REPO
+        seihon publish --dry-run=false -v "latest" --image-name $REPO --base-runtime-image php:7.3-alpine
       fi

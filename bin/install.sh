@@ -7,7 +7,7 @@
 # and configuration of of the PHP interpreter/webserver
 #
 # @author Jakob Hirsch
-# @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+# @copyright Copyright (c) 2011-2020, The volkszaehler.org project
 # @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
 #
 ##
@@ -176,6 +176,7 @@ else
 	ask "link from webserver to volkszaehler directory?" "$web_dir"
 	web_dir="$REPLY"
 
+	#check if symbolic link from "web_dir" already exists
 	if [ -h "$web_dir" ]; then
 		ask "$web_dir symlink already exists. Remove it? (you have to type 'Yes' to do this!)" n
 		if [ "$REPLY" == 'Yes' ]; then
@@ -184,18 +185,28 @@ else
 		else
 			REPLY=n
 		fi
-	else
-		if [ -d "$web_dir" ]; then
-			ask "$web_dir directory already exists. Remove it? (this will remove a previous installation and all changes you made - type 'Yes' to do this!)" n
-			if [ "$REPLY" == 'Yes' ]; then
-				sudo rm -fr "$web_dir"
-				REPLY=y
-			else
-				REPLY=n
-			fi
-		else
+	#check if "web_dir" is already a directory
+	elif [ -d "$web_dir" ]; then
+		ask "$web_dir directory already exists. Remove it? (this will remove a previous installation and all changes you made - type 'Yes' to do this!)" n
+		if [ "$REPLY" == 'Yes' ]; then
+			sudo rm -fr "$web_dir"
 			REPLY=y
+		else
+			REPLY=n
 		fi
+	#check if parent directory of "web_dir" exists
+	elif [ ! -d "${web_dir%/*}" ]; then
+		ask "parent directory ${web_dir%/*} doesn't exist, create it?" y
+		if [ "$REPLY" == 'y' ]; then
+			sudo mkdir ${web_dir%/*}
+			REPLY=y
+		else
+			#parent directory doesn't exist, so create symbolic link will fail.
+			echo "parent directory ${web_dir%/*} doesn't exist, so creating symbolic link from $web_dir will fail."
+			cleanup && exit 1            
+		fi
+	else
+		REPLY=y
 	fi
 
 	if [ "$REPLY" == 'y' ]; then

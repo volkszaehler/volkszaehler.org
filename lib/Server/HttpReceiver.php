@@ -1,7 +1,7 @@
 <?php
 /**
  * @author Andreas Goetz <cpuidle@gmx.de>
- * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
  * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
@@ -23,6 +23,7 @@
 
 namespace Volkszaehler\Server;
 
+use React\EventLoop\LoopInterface;
 use React\Socket\Server as SocketServer;
 use React\Http\Server as HttpServer;
 use Psr\Http\Message\ResponseInterface;
@@ -44,10 +45,10 @@ class HttpReceiver {
 	 */
 	protected $http;
 
-	function __construct(SocketServer $socket, MiddlewareAdapter $hub) {
+	function __construct(LoopInterface $loop, SocketServer $socket, MiddlewareAdapter $hub) {
 		$this->hub = $hub;
 
-		$this->http = new HttpServer([$this, 'handleRequest']);
+		$this->http = new HttpServer($loop, [$this, 'handleRequest']);
 		$this->http->listen($socket);
 	}
 

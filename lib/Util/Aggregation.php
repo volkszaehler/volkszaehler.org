@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Data aggregation utility
  *
  * @author Andreas Goetz <cpuidle@gmx.de>
- * @copyright Copyright (c) 2011-2018, The volkszaehler.org project
+ * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
  * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
@@ -30,8 +31,10 @@ use Volkszaehler\Interpreter;
 use Volkszaehler\Interpreter\SQL\SQLOptimizer;
 use Volkszaehler\Definition;
 use Doctrine\DBAL;
+use Volkszaehler\Model\Aggregator;
 
-class Aggregation {
+class Aggregation
+{
 
 	/*
 	 * Aggregation modes
@@ -59,7 +62,8 @@ class Aggregation {
 	 *
 	 * @todo When changing order or this array the aggregation table must be rebuilt
 	 */
-	static function init() {
+	static function init()
+	{
 		self::$aggregationLevels = array(
 			'second' => '"%Y-%m-%d %H:%i:%s"',	// type 0
 			'minute' => '"%Y-%m-%d %H:%i:00"',	// type 1
@@ -71,7 +75,8 @@ class Aggregation {
 		);
 	}
 
-	public function __construct(DBAL\Connection $conn) {
+	public function __construct(DBAL\Connection $conn)
+	{
 		$this->conn = $conn;
 	}
 
@@ -80,7 +85,8 @@ class Aggregation {
 	 *
 	 * @return array
 	 */
-	public static function getAggregationLevels() {
+	public static function getAggregationLevels()
+	{
 		return array_keys(self::$aggregationLevels);
 	}
 
@@ -90,7 +96,8 @@ class Aggregation {
 	 * @param  string  $level aggregation level (e.g. 'day')
 	 * @return boolean
 	 */
-	public static function isValidAggregationLevel($level) {
+	public static function isValidAggregationLevel($level)
+	{
 		return in_array($level, self::getAggregationLevels())
 			&& (isset(self::$aggregationLevels[$level]));
 	}
@@ -101,11 +108,12 @@ class Aggregation {
 	 * @param  string $level aggregation level (e.g. 'day')
 	 * @return integer       aggregation level numeric value
 	 */
-	public static function getAggregationLevelTypeValue($level) {
+	public static function getAggregationLevelTypeValue($level)
+	{
 		if (($type = array_search($level, self::getAggregationLevels(), true)) === false) {
 			throw new \RuntimeException('Invalid aggregation level \'' . $level . '\'');
 		};
-		return($type);
+		return ($type);
 	}
 
 	/**
@@ -114,7 +122,8 @@ class Aggregation {
 	 * @param  string $level aggregation level (e.g. 'day')
 	 * @return string        SQL date format
 	 */
-	public static function getAggregationDateFormat($level) {
+	public static function getAggregationDateFormat($level)
+	{
 		if (!self::isValidAggregationLevel($level)) {
 			throw new \RuntimeException('Invalid aggregation level \'' . $level . '\'');
 		}
@@ -125,31 +134,27 @@ class Aggregation {
 	 * Simple optimizer - choose aggregation level with most data available
 	 *
 	 * @param  string  $targetLevel desired highest level (e.g. 'day')
-	 * @return array|boolean list of valid aggregation levels
+	 * @return integer|boolean aggregation type
 	 */
-	public function getOptimalAggregationLevel($uuid, $targetLevel = null) {
-		$levels = self::getAggregationLevels();
-
-		$sqlParameters = array($uuid);
-		$sql = 'SELECT aggregate.type, COUNT(aggregate.id) AS count ' .
-			   'FROM aggregate INNER JOIN entities ON aggregate.channel_id = entities.id ' .
-			   'WHERE uuid = ? ';
-		if ($targetLevel) {
-			$sqlParameters[] = self::getAggregationLevelTypeValue($targetLevel);
-			$sql .= 'AND aggregate.type <= ? ';
+	public function hasDataForAggregationLevel($uuid, $targetAggType, $from = null, $to = null)
+	{
+		$sqlParameters = array($uuid, $targetAggType);
+		$sql = 'SELECT aggregate.type ' .
+			'FROM aggregate INNER JOIN entities ON aggregate.channel_id = entities.id ' .
+			'WHERE uuid = ? and aggregate.type = ? ';
+		if (isset($from)) {
+			$sqlParameters[] = $from;
+			$sql .= 'AND timestamp >= ? ';
 		}
-		$sql.= 'GROUP BY type ' .
-			   'HAVING count > 0 ' .
-			   'ORDER BY type DESC';
+		if (isset($to)) {
+			$sqlParameters[] = $to;
+			$sql .= 'AND timestamp <= ? ';
+		}
+		$sql .= 'LIMIT 1';
 
 		$rows = $this->conn->fetchAll($sql, $sqlParameters);
 
-		// append readable level name
-		for ($i=0; $i<count($rows); $i++) {
-			$rows[$i]['level'] = $levels[$rows[$i]['type']];
-		}
-
-		return count($rows) ? $rows : FALSE;
+		return count($rows) ? $rows[0]['type'] : FALSE;
 	}
 
 	/**
@@ -160,16 +165,16 @@ class Aggregation {
 	 * @param  int $since    unix timestap in seconds to clean data from to now
 	 * @return int 			 number of affected rows
 	 */
-	public function clear($uuid = null, $level = 'all', $since = null) {
+	public function clear($uuid = null, $level = 'all', $since = null)
+	{
 		$sqlParameters = array();
 
 		if ($level == 'all' && !$uuid && !$since) {
 			$sql = 'TRUNCATE TABLE aggregate';
-		}
-		else {
+		} else {
 			// join clause
 			$sql = 'INNER JOIN entities ON aggregate.channel_id = entities.id ' .
-				   'WHERE ';
+				'WHERE ';
 
 			if ($level !== 'all') {
 				$sqlParameters[] = self::getAggregationLevelTypeValue($level);
@@ -193,7 +198,7 @@ class Aggregation {
 		}
 
 		if (Util\Debug::isActivated())
-			echo(Util\Debug::getParametrizedQuery($sql, $sqlParameters)."\n");
+			echo (Util\Debug::getParametrizedQuery($sql, $sqlParameters) . "\n");
 
 		$rows = $this->conn->executeQuery($sql, $sqlParameters);
 	}
@@ -201,16 +206,18 @@ class Aggregation {
 	/**
 	 * Create temporary aggregate table for rebuild
 	 */
-	public function startRebuild() {
+	public function startRebuild()
+	{
 		$this->conn->executeQuery('DROP TABLE IF EXISTS aggregate_temp');
 		$this->conn->executeQuery('CREATE TABLE aggregate_temp LIKE aggregate');
 		$this->targetTable = 'aggregate_temp';
 	}
 
 	/**
-	 * Appy rebuild temporary aggregate table
+	 * Apply rebuilt temporary aggregate table
 	 */
-	public function finishRebuild() {
+	public function finishRebuild()
+	{
 		$this->conn->beginTransaction();
 		$this->conn->executeQuery('DROP TABLE aggregate');
 		$this->conn->executeQuery('RENAME TABLE aggregate_temp TO aggregate');
@@ -228,7 +235,8 @@ class Aggregation {
 	 * @param  int 	  $period      delta days to aggregate
 	 * @return int    number of rows
 	 */
-	protected function aggregateChannel($channel_id, $interpreter, $mode, $level, $period) {
+	protected function aggregateChannel($channel_id, $interpreter, $mode, $level, $period)
+	{
 		$format = self::getAggregationDateFormat($level);
 		$type = self::getAggregationLevelTypeValue($level);
 
@@ -252,8 +260,7 @@ class Aggregation {
 					'INTERVAL 1 ' . $level . ')) * 1000 ' .
 					'FROM aggregate ' .
 					'WHERE type = ? AND aggregate.channel_id = ?';
-			}
-			elseif ($period) {
+			} elseif ($period) {
 				// selected number of periods only
 				array_push($sqlParameters, $type, $channel_id, $period);
 				$intialTimestamp =
@@ -265,29 +272,28 @@ class Aggregation {
 			// SQL query similar to MySQLOptimizer group mode
 			$sql .=
 				'SELECT channel_id, ? AS type, ' .
-					'MAX(agg.timestamp) AS timestamp, ' .
-					'COALESCE( ' .
-						'SUM(agg.val_by_time) / (MAX(agg.timestamp) - MIN(agg.prev_timestamp)), ' .
-						$aggregationFunction .
-					') AS value, ' .
-					'COUNT(agg.value) AS count ' .
+				'MAX(agg.timestamp) AS timestamp, ' .
+				'COALESCE( ' .
+				'SUM(agg.val_by_time) / (MAX(agg.timestamp) - MIN(agg.prev_timestamp)), ' .
+				$aggregationFunction .
+				') AS value, ' .
+				'COUNT(agg.value) AS count ' .
 				'FROM ( ' .
-					'SELECT channel_id, timestamp, value, ' .
-						'value * (timestamp - @prev_timestamp) AS val_by_time, ' .
-						'COALESCE(@prev_timestamp, 0) AS prev_timestamp, ' .
-						'@prev_timestamp := timestamp ' .
-					'FROM data ' .
-					'CROSS JOIN (SELECT @prev_timestamp := ' . $intialTimestamp . ') AS vars ' .
-					'WHERE ';
-		}
-		else {
+				'SELECT channel_id, timestamp, value, ' .
+				'value * (timestamp - @prev_timestamp) AS val_by_time, ' .
+				'COALESCE(@prev_timestamp, 0) AS prev_timestamp, ' .
+				'@prev_timestamp := timestamp ' .
+				'FROM data ' .
+				'CROSS JOIN (SELECT @prev_timestamp := ' . $intialTimestamp . ') AS vars ' .
+				'WHERE ';
+		} else {
 			// get interpreter's aggregation function
 			$aggregationFunction = $interpreter::groupExprSQL('value');
 
 			$sql .=
-			   'SELECT channel_id, ? AS type, MAX(timestamp) AS timestamp, ' .
-			   $aggregationFunction . ' AS value, COUNT(timestamp) AS count ' .
-			   'FROM data WHERE ';
+				'SELECT channel_id, ? AS type, MAX(timestamp) AS timestamp, ' .
+				$aggregationFunction . ' AS value, COUNT(timestamp) AS count ' .
+				'FROM data WHERE ';
 		}
 
 		// selected channel only
@@ -299,20 +305,20 @@ class Aggregation {
 			// timestamp at start of next period after last aggregated period
 			array_push($sqlParameters, $type, $channel_id);
 			$sql .=
-			   'AND timestamp >= IFNULL((' .
-				   'SELECT UNIX_TIMESTAMP(DATE_ADD(' .
-						  'FROM_UNIXTIME(MAX(timestamp) / 1000, ' . $format . '), ' .
-						  'INTERVAL 1 ' . $level . ')) * 1000 ' .
-				   'FROM aggregate ' .
-				   'WHERE type = ? AND aggregate.channel_id = ? ' .
-			   '), 0) ';
+				'AND timestamp >= IFNULL((' .
+				'SELECT UNIX_TIMESTAMP(DATE_ADD(' .
+				'FROM_UNIXTIME(MAX(timestamp) / 1000, ' . $format . '), ' .
+				'INTERVAL 1 ' . $level . ')) * 1000 ' .
+				'FROM aggregate ' .
+				'WHERE type = ? AND aggregate.channel_id = ? ' .
+				'), 0) ';
 		}
 
 		// selected number of periods only
 		elseif ($period) {
 			$sqlParameters[] = $period;
 			$sql .=
-			   'AND timestamp >= (SELECT UNIX_TIMESTAMP(DATE_SUB(DATE_FORMAT(NOW(), ' . $format . '), INTERVAL ? ' . $level . ')) * 1000) ';
+				'AND timestamp >= (SELECT UNIX_TIMESTAMP(DATE_SUB(DATE_FORMAT(NOW(), ' . $format . '), INTERVAL ? ' . $level . ')) * 1000) ';
 		}
 
 		// up to before current period
@@ -327,17 +333,18 @@ class Aggregation {
 		$sql .= 'GROUP BY channel_id, ' . $optimizer::buildGroupBySQL($level);
 
 		if (Util\Debug::isActivated())
-			echo(Util\Debug::getParametrizedQuery($sql, $sqlParameters)."\n");
+			echo (Util\Debug::getParametrizedQuery($sql, $sqlParameters) . "\n");
 
 		$rows = $this->conn->executeUpdate($sql, $sqlParameters);
 
-		return($rows);
+		return ($rows);
 	}
 
 	/**
 	 * Retrieve aggregatable entities as array of database rows
 	 */
-	public function getAggregatableEntitiesArray($uuid = null) {
+	public function getAggregatableEntitiesArray($uuid = null)
+	{
 		// get channel definition to select correct aggregation function
 		$sqlParameters = array('channel');
 		$sql = 'SELECT id, uuid, type FROM entities WHERE class = ?';
@@ -359,7 +366,8 @@ class Aggregation {
 	 * @param  callable $progress progress callback
 	 * @return int         	  number of affected rows
 	 */
-	public function aggregate($uuid = null, $level = 'day', $mode = self::MODE_FULL, $period = null, $progress = null) {
+	public function aggregate($uuid = null, $level = 'day', $mode = self::MODE_FULL, $period = null, $progress = null)
+	{
 
 		// validate settings
 		if (!in_array($mode, array(self::MODE_FULL, self::MODE_DELTA))) {
@@ -375,6 +383,11 @@ class Aggregation {
 		foreach ($this->getAggregatableEntitiesArray($uuid) as $row) {
 			/** @var Definition\EntityDefinition */
 			$entity = Definition\EntityDefinition::get($row['type']);
+			if ($entity->getModel() == Aggregator::class) {
+				// cannot aggregate groups
+				continue;
+			}
+
 			$interpreter = $entity->getInterpreter();
 
 			$rows = $this->aggregateChannel($row['id'], $interpreter, $mode, $level, $period);
@@ -385,11 +398,9 @@ class Aggregation {
 			}
 		}
 
-		return($total);
+		return $total;
 	}
 }
 
 // initialize static variables
 Aggregation::init();
-
-?>
