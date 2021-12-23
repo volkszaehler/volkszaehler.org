@@ -461,20 +461,20 @@
 			"en" : "Frequency"
 		}
 	},
-        {
-                "name"                  : "universalcounter",
-                "required"              : ["unit"],
-                "optional"              : ["resolution"],
-                "icon"                  : "freq.png",
-                "interpreter"           : "Volkszaehler\\Interpreter\\ImpulseInterpreter",
-                "style"                 : "steps",
-                "model"                 : "Volkszaehler\\Model\\Channel",
-                "hasConsumption"        : true,
-                "translation"           : {
-                        "de" : "Allgemeiner Impulszähler",
-                        "en" : "Universal Pulse Counter"
-                }
-        },
+		{
+		"name"			: "universalcounter",
+		"required"		: ["unit"],
+		"optional"		: ["resolution"],
+		"icon"			: "freq.png",
+		"interpreter"		: "Volkszaehler\\Interpreter\\ImpulseInterpreter",
+		"style"			: "steps",
+		"model"			: "Volkszaehler\\Model\\Channel",
+		"hasConsumption"	: true,
+		"translation"		: {
+			"de" : "Allgemeiner Impulszähler",
+			"en" : "Universal Pulse Counter"
+		}
+	},
 	{
 		"name"			: "universalsensor",
 		"required"		: ["unit"],
