@@ -123,7 +123,7 @@ $(document).ready(function() {
 			// set global parameters for display mode, then load data accordingly
 			vz.wui.changeDisplayMode(vz.options.mode || "current");
 			vz.entities.loadData().done(function() {
-				// vz.wui.resizePlot();
+				vz.wui.resizePlot();
 				vz.wui.drawPlot();
 				vz.entities.loadTotalConsumption();
 			});
