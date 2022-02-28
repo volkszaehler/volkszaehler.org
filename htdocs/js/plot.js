@@ -136,6 +136,20 @@ vz.wui.updateLegend = function(pos, item) {
 
 	// update opaque background sizing
 	$('.legend > div').css({ width: $('.legend table').css('width') });
+
+	if (item) {
+		var x = item.datapoint[0].toFixed(2),
+				y = item.datapoint[1].toFixed(2);
+
+		$("#tooltip").html(
+			vz.wui.formatNumber(parseFloat(y), item.series.unit)
+				.replace(/ /g, '&nbsp;')
+		)
+			.css({top: item.pageY-20, left: item.pageX+10})
+			.fadeIn(200);
+	} else {
+		$('#tooltip').fadeOut(200);
+	}
 };
 
 /**

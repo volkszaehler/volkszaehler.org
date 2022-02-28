@@ -81,6 +81,15 @@ td input:not([type=image]):not([type=checkbox]) {
 	margin-bottom: 5px;
 }
 
+#tooltip {
+  position: absolute;
+  display: none;
+  background-color: #fff;
+  z-index: 3;
+  font-size: smaller;
+  pointer-events: none;
+}
+
 #overlay {
 	position: absolute;
 	z-index: 3;
