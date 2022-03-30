@@ -45,8 +45,8 @@ class TimestampGenerator implements \IteratorAggregate {
 
 		// get minimum from timestamp
 		$from = array_reduce($this->iterators, function($carry, $iterator) {
-			// if (!$iterator->valid())
-			// 	return $carry;
+			if (!$iterator->valid())
+				return $carry;
 			$current = $iterator->current();
 			if ($carry === null || $current < $carry)
 				return $current;
