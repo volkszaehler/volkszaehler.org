@@ -1,8 +1,7 @@
 <?php
 /**
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package util
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -29,15 +28,22 @@ use Doctrine\DBAL\Logging;
 /**
  * Static debugging class
  *
- * @package util
  * @author Steffen Vogel <info@steffenvogel.de>
  * @author Andreas Goetz <cpuidle@gmx.de>
  */
 class Debug {
+    /**
+     * @var Debug|null
+     */
 	protected static $instance = NULL;
 
 	/**
-	 * @var array Array of logged messages
+	 * @var ORM\EntityManager
+	 */
+	protected $em;
+
+	/**
+	 * @var mixed[] Array of logged messages
 	 */
 	protected $messages;
 
@@ -53,8 +59,6 @@ class Debug {
 
 	/**
 	 * Constructor
-	 *
-	 * @param integer $level the debug level
 	 */
 	protected function __construct(ORM\EntityManager $em) {
 		$this->messages = array();
@@ -130,7 +134,7 @@ class Debug {
 	}
 
 	/**
-	 * @return 2 dimensional array with sql queries and parameters
+	 * @return array two-dimensional array with sql queries and parameters
 	 */
 	public function getQueries() {
 		return ($this->sqlLogger) ? $this->sqlLogger->queries : array();
@@ -147,18 +151,21 @@ class Debug {
 	}
 
 	/**
-	 * @return format SQL string with parameters
+	 * @return string format SQL string with parameters
 	 * @author Andreas Goetz <cpuidle@gmx.de>
 	 */
 	public static function getParametrizedQuery($sql, $sqlParameters) {
-		while (count($sqlParameters)) {
+		while (count((array) $sqlParameters)) {
 			$sql = preg_replace('/\?/', self::formatSQLParameter(array_shift($sqlParameters)), $sql, 1);
+		}
+		if (php_sapi_name() === 'cli' && class_exists('\SqlFormatter')) {
+			$sql = \SqlFormatter::format($sql, false);
 		}
 		return $sql;
 	}
 
 	/**
-	 * @return 2 dimensional array with messages
+	 * @return array two-dimensional array with messages
 	 */
 	public function getMessages() { return $this->messages; }
 
@@ -220,7 +227,7 @@ class Debug {
 	/**
 	 * Get server uptime
 	 *
-	 * @return integer server uptime in seconds
+	 * @return number|bool server uptime in seconds
 	 */
 	public static function getUptime() {
 		if (@is_readable("/proc/uptime")) {
@@ -232,8 +239,8 @@ class Debug {
 			if (preg_match("/up (?:(?P<days>\d+) days?,? )?(?P<hours>\d+):(?P<minutes>\d{2})/", $res, $matches)) {
 				$uptime = 60 * (int)$matches['hours'] + (int)$matches['minutes'];
 
-				if (isset($matches['days'])) {
-					$uptime += 60 * 24 * (int)$matches['days'];
+				if (isset($matches['days']) && $matches['days'] > 0) {
+					$uptime += $matches['days']*60*24;
 				}
 
 				return 60 * $uptime; // minutes => seconds

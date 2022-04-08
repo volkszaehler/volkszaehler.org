@@ -1,8 +1,7 @@
 <?php
 /**
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -29,7 +28,6 @@ use Volkszaehler\Model;
  * Channel controller
  *
  * @author Steffen Vogel <info@steffenvogel.de>
- * @package default
  */
 class ChannelController extends EntityController {
 
@@ -37,8 +35,8 @@ class ChannelController extends EntityController {
 	 * Get one or more channels.
 	 * If uuid is empty, list of public channels is returned.
 	 *
-	 * @param $identifier
-	 * @return array
+	 * @param string|array|null $uuid
+	 * @return array|Model\Channel
 	 * @throws \Exception
 	 */
 	public function get($uuid = NULL) {

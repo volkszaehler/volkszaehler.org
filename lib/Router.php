@@ -1,8 +1,7 @@
 <?php
 /**
- * @package default
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @license http://www.gnu.org/licenses/gpl.txt GNU Public License
+ * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -28,10 +27,11 @@ use Symfony\Component\HttpFoundation\Response;
 
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
-use Symfony\Component\Debug\ErrorHandler;
+use Symfony\Component\ErrorHandler\Debug;
 
 use Doctrine\ORM;
-use Doctrine\Common\Cache;
+use Doctrine\Common\Cache\Psr6\DoctrineProvider;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
 
 use Volkszaehler\View;
 use Volkszaehler\Util;
@@ -41,7 +41,6 @@ use Volkszaehler\Util;
  *
  * This class routes incoming requests to controllers
  *
- * @package default
  * @author Steffen Vogel <info@steffenvogel.de>
  * @author Andreas Götz <cpuidle@gmx.de>
  */
@@ -53,7 +52,7 @@ class Router implements HttpKernelInterface {
 	public $em;
 
 	/**
-	 * @var View\View output view
+	 * @var View\View|null output view
 	 */
 	public $view;
 
@@ -77,6 +76,8 @@ class Router implements HttpKernelInterface {
 		'aggregator'	=> 'Volkszaehler\Controller\AggregatorController',
 		'entity'		=> 'Volkszaehler\Controller\EntityController',
 		'data'			=> 'Volkszaehler\Controller\DataController',
+		'query'			=> 'Volkszaehler\Controller\QueryController',
+		'prognosis'		=> 'Volkszaehler\Controller\PrognosisController',
 		'capabilities'	=> 'Volkszaehler\Controller\CapabilitiesController',
 		'iot'			=> 'Volkszaehler\Controller\IotController'
 	);
@@ -87,7 +88,8 @@ class Router implements HttpKernelInterface {
 	public static $viewMapping = array(
 		'csv'			=> 'Volkszaehler\View\CSV',
 		'json'			=> 'Volkszaehler\View\JSON',
-		'txt'			=> 'Volkszaehler\View\Text'
+		'txt'			=> 'Volkszaehler\View\Text',
+		'atom'			=> 'Volkszaehler\View\Atom',
 	);
 
 	/**
@@ -95,14 +97,7 @@ class Router implements HttpKernelInterface {
 	 */
 	public function __construct() {
 		// handle errors as exceptions
-		ErrorHandler::register();
-
-		// views
-		if (class_exists('\JpGraph\JpGraph')) {
-			foreach (array('png', 'jpeg', 'jpg', 'gif') as $format) {
-				self::$viewMapping[$format] = 'Volkszaehler\View\JpGraph';
-			}
-		}
+		Debug::enable();
 	}
 
 	/**
@@ -123,6 +118,10 @@ class Router implements HttpKernelInterface {
 			// initialize entity manager
 			if (null == $this->em || !$this->em->isOpen() || $this->em->getConnection()->ping() === false) {
 				$this->em = self::createEntityManager();
+			}
+			else {
+				// clear to make sure it doesn't use its cache
+				$this->em->clear();
 			}
 
 			return $this->handleRaw($request, $type);
@@ -192,8 +191,8 @@ class Router implements HttpKernelInterface {
 	 *
 	 * Example: http://sub.domain.local/middleware.php/channel/550e8400-e29b-11d4-a716-446655440000/data.json?operation=edit&title=New Title
 	 * @param Request $request
-	 * @param $context
-	 * @param $uuid
+	 * @param string $context
+	 * @param string|array|null $uuid
 	 * @return Response
 	 */
 	function handler(Request $request, $context, $uuid) {
@@ -236,19 +235,9 @@ class Router implements HttpKernelInterface {
 	public static function createEntityManager($admin = false) {
 		$config = new ORM\Configuration;
 
-		if (Util\Configuration::read('devmode') == false) {
-			$cache = null;
-			if (extension_loaded('apcu'))
-				$cache = new Cache\ApcuCache();
-			if ($cache) {
-				$config->setMetadataCacheImpl($cache);
-				$config->setQueryCacheImpl($cache);
-			}
-		}
-		else if (extension_loaded('apcu')) {
-			// clear cache
-			apcu_clear_cache();
-		}
+		$cache = new ArrayAdapter(0, false);
+		$config->setMetadataCache($cache);
+		$config->setQueryCacheImpl(DoctrineProvider::wrap($cache));
 
 		$driverImpl = $config->newDefaultAnnotationDriver(VZ_DIR . '/lib/Model');
 		$config->setMetadataDriverImpl($driverImpl);
@@ -258,6 +247,7 @@ class Router implements HttpKernelInterface {
 		$config->setAutoGenerateProxyClasses(Util\Configuration::read('devmode'));
 
 		$dbConfig = Util\Configuration::read('db');
+
 		if ($admin && isset($dbConfig['admin'])) {
 			$dbConfig = array_merge($dbConfig, $dbConfig['admin']);
 		}

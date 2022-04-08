@@ -1,8 +1,7 @@
 <?php
 /**
- * @package util
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @license http://www.gnu.org/licenses/gpl.txt GNU Public License
+ * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -31,7 +30,6 @@ define('JSON_PRETTY', 128);
 /**
  * Static JSON utility class
  *
- * @package util
  * @author Steffen Vogel <info@steffenvogel.de>
  * @author Andreas Goetz <cpuidle@gmx.de>
  */
@@ -40,7 +38,7 @@ class JSON {
 	/**
 	 * OOP wrapper and factory
 	 * @param string $json
-	 * @return Util\JSON
+	 * @return array
 	 */
 	public static function decode($json, $assoc = FALSE, $depth = 512) {
 		$data = json_decode(self::strip($json), $assoc, $depth);

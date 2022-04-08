@@ -1,8 +1,7 @@
 <?php
 /**
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -26,7 +25,6 @@ namespace Volkszaehler\Interpreter;
 /**
  * Sensor interpreter
  *
- * @package default
  * @author Steffen Vogel <info@steffenvogel.de>
  * @author Andreas Götz <cpuidle@gmx.de>
  */
@@ -41,24 +39,15 @@ class SensorInterpreter extends Interpreter {
 	 *
 	 * @return \Generator
 	 */
-	public function getIterator() {
+	public function generateData() {
 		$this->rows = $this->getData();
 		$this->ts_last = $this->getFrom();
 
 		foreach ($this->rows as $row) {
-			if ($this->raw) {
-				// raw database values
-				yield array_slice($row, 0, 3);
-			}
-			else {
-				$delta_ts = $row[0] - $this->ts_last;
-				$tuple = $this->convertRawTuple($row);
-				$this->consumption += $tuple[1] * $delta_ts;
+			$tuple = $this->convertRawTuple($row);
 
-				$this->updateMinMax($tuple);
-
-				yield $tuple;
-			}
+			$this->updateMinMax($tuple);
+			yield $tuple;
 		}
 	}
 
@@ -74,10 +63,19 @@ class SensorInterpreter extends Interpreter {
 
 		// @TODO check if scale is needed here
 		$tuple = array(
-			(float) ($this->ts_last = $row[0]),	// timestamp of interval end
+			(float) $row[0],	// timestamp of interval end
 			(float) $value / $this->resolution,
 			(int) $row[2]
 		);
+
+		// consumption values
+		$delta_consumption = $tuple[1] * ($tuple[0] - $this->ts_last);
+		if ($this->output == self::CONSUMPTION_VALUES) {
+			$tuple[1] = $delta_consumption / 3.6e6;
+		}
+		$this->consumption += $delta_consumption;
+
+		$this->ts_last = $row[0];
 
 		return $tuple;
 	}
@@ -88,9 +86,9 @@ class SensorInterpreter extends Interpreter {
 	 * @return float total consumption in Wh
 	 */
 	public function getConsumption() {
-		// convert to Wh
+		// convert to hourly values (Wh, m³)
 		// @TODO check if resolution is needed here
-		return $this->channel->getDefinition()->hasConsumption ? $this->consumption / (3.6e3 * $this->scale) : NULL;
+		return $this->channel->getDefinition()->hasConsumption ? $this->consumption / 3.6e6 : NULL;
 	}
 
 	/**
@@ -99,7 +97,10 @@ class SensorInterpreter extends Interpreter {
 	 * @return float average
 	 */
 	public function getAverage() {
-		if ($this->consumption) {
+		if ($this->output == self::CONSUMPTION_VALUES) {
+			return $this->getAverageConsumption();
+		}
+		elseif ($this->consumption) {
 			$delta = $this->getTo() - $this->getFrom();
 			return $this->consumption / $delta;
 		}

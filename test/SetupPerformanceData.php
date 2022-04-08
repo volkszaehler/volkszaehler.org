@@ -4,8 +4,9 @@
  *
  * NOTE: these tests should be DST-ready
  *
- * @package Test
  * @author Andreas Götz <cpuidle@gmx.de>
+ * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 
 namespace Tests;
@@ -27,7 +28,7 @@ class SetupPerformanceData extends DataPerformance
 	/**
 	 * Create DB connection and setup channel
 	 */
-	static function setupBeforeClass() {
+	static function setupBeforeClass() : void {
 		parent::setupBeforeClass();
 
 		self::$testSize = round(self::TEST_DAYS * 24 * 3600 / self::TEST_SPACING);
@@ -39,7 +40,7 @@ class SetupPerformanceData extends DataPerformance
 	/**
 	 * Cleanup aggregation
 	 */
-	static function tearDownAfterClass() {
+	static function tearDownAfterClass() : void {
 		// prevent channel deletion
 	}
 

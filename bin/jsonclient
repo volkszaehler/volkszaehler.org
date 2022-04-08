@@ -1,0 +1,82 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+#  @author Andreas Götz <cpuidle@gmx.de> 2015
+#  @copyright Copyright (c) 2011-2020, The volkszaehler.org project
+#  @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
+
+#
+#  This file is part of volkzaehler.org
+#
+#  volkzaehler.org is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  any later version.
+#
+#  volkzaehler.org is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
+#
+
+
+import argparse
+import ConfigParser
+import urllib
+import urllib2
+import os
+import json
+version="0.1";
+
+parser = argparse.ArgumentParser(description='A python client for json data sources');
+parser.add_argument('--url', action='store', help="url of the data source");
+parser.add_argument('-f', '--file', action='store', help="filename of the data source");
+parser.add_argument('-e', '--eval', action='store', help="get comma-separated attribute from json response (use @prop=value to filter arrays)\n(Example: entity,@uuid=4,0,type will extract the type from a json string: {entity:[{uuid:4,type=\"power\"...}]})");
+parser.add_argument('-j', '--json', action='store', help="send json request");
+args = parser.parse_args();
+
+url=args.url;
+if (url is None):
+  file=args.file
+  if (file is None):
+    print "No url given. Reading from STDIN";
+    jsonstr=raw_input()
+  else:
+    f=open(file, 'r')
+    jsonstr=f.read()
+else:
+  req = urllib2.Request(url)
+  req.add_header('User-agent', 'jsonclient/$version')
+  try:
+    if (args.json):
+      req.add_header('Content-Type', 'application/json');
+      f=urllib2.urlopen(url, args.json);
+    else:
+      f=urllib2.urlopen(url);
+    jsonstr=f.read();
+  except urllib2.HTTPError,error:
+    print error.read();
+    exit(1);
+
+if (args.eval is None):
+  print jsonstr;
+else:
+  obj=json.loads(jsonstr);
+  for ev in args.eval.split(",") :
+    if (isinstance(obj,(list,tuple))):
+      try:
+        ev=int(ev) # array access
+      except:
+        pass
+    try:
+      obj=obj[ev]
+    except TypeError:
+      # try @property=value notation
+      (prop,val)=ev[1:].split("=") # strip @
+      obj=[el for el in obj if (prop in el and el[prop] == val)]
+    except KeyError:
+      print "Key: "+ev+" not found in str: "+jsonstr;
+  print obj;

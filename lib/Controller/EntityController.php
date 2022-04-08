@@ -1,8 +1,7 @@
 <?php
 /**
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -34,7 +33,6 @@ use Volkszaehler\Definition;
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @author Andreas Götz <cpuidle@gmx.de>
- * @package default
  */
 class EntityController extends Controller {
 
@@ -42,8 +40,8 @@ class EntityController extends Controller {
 	 * Get one or more entities.
 	 * If uuid is empty, list of public entities is returned.
 	 *
-	 * @param $uuid
-	 * @return array
+	 * @param string|array|null $uuid
+	 * @return array|Model\Entity
 	 * @throws \Exception
 	 */
 	public function get($uuid) {
@@ -75,13 +73,14 @@ class EntityController extends Controller {
 
 	/**
 	 * Delete entity by uuid
-	 * @param $uuid
+	 * @param string $uuid
 	 * @throws \Exception
 	 */
 	public function delete($uuid) {
 		$entity = $this->ef->get($uuid);
 
 		if ($entity instanceof Model\Channel) {
+			/** @var Model\Channel */
 			$entity->clearData($this->em->getConnection());
 		}
 
@@ -92,8 +91,8 @@ class EntityController extends Controller {
 
 	/**
 	 * Edit entity properties
-	 * @param $uuid
-	 * @return array
+	 * @param string|null $uuid
+	 * @return Model\Entity
 	 * @throws \Exception
 	 */
 	public function edit($uuid) {
@@ -112,7 +111,7 @@ class EntityController extends Controller {
 	/**
 	 * Update/set/delete properties of entities
 	 * @param Model\Entity $entity
-	 * @param $parameters
+	 * @param array $parameters
 	 * @throws \Exception
 	 */
 	protected function setProperties(Model\Entity $entity, $parameters) {

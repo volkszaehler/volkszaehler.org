@@ -1,8 +1,7 @@
 <?php
 /**
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -35,7 +34,6 @@ use Volkszaehler\Definition;
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @author Andreas Götz <cpuidle@gmx.de>
- * @package default
  */
 class CapabilitiesController extends Controller {
 
@@ -46,7 +44,7 @@ class CapabilitiesController extends Controller {
 	 * @return int Number of database rows
 	 */
 	private function sqlCount(Connection $conn, $table) {
-		$explain = $conn->fetchAssoc('EXPLAIN SELECT COUNT(id) FROM ' . $table . ' USE INDEX (PRIMARY)');
+		$explain = $conn->fetchAssoc('EXPLAIN SELECT COUNT(*) FROM ' . $table . ' USE INDEX (PRIMARY)');
 		if (isset($explain['rows']))
 			// estimated for InnoDB
 			$rows = $conn->fetchColumn(
@@ -116,16 +114,14 @@ class CapabilitiesController extends Controller {
 			);
 
 			// aggregation table size
-			if (Util\Configuration::read('aggregation')) {
-				$agg_rows = $this->sqlCount($conn, 'aggregate');
-				$agg_size = $this->dbSize($conn, 'aggregate');
+			$agg_rows = $this->sqlCount($conn, 'aggregate');
+			$agg_size = $this->dbSize($conn, 'aggregate');
 
-				$capabilities['database']['aggregation'] = array(
-					'rows' => $agg_rows,
-					'size' => $agg_size,
-					'ratio' => ($agg_rows) ? $rows/$agg_rows : 0
-				);
-			}
+			$capabilities['database']['aggregation'] = array(
+				'rows' => $agg_rows,
+				'size' => $agg_size,
+				'ratio' => ($agg_rows) ? $rows/$agg_rows : 0
+			);
 		}
 
 		if (is_null($section) || $section == 'formats') {

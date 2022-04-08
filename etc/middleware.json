@@ -2,7 +2,7 @@
 	"host": "0.0.0.0",
 	"port": 8080,
 	"workers": 8,
-	"static": false,
+	"static-directory": "htdocs",
 	"logging": 0,
 	"max-requests": 1000,
 	"bridge": "HttpKernel",

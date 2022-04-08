@@ -1,0 +1,104 @@
+#!/usr/bin/python
+#-*- coding:utf8 -*-
+#
+# @author Peer Janssen
+# @author Justin Otherguy <justin@justinotherguy.org>
+# @copyright Copyright (c) 2011-2020, The volkszaehler.org project
+# @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
+#
+#/*
+#* This file is part of volkzaehler.org
+#*
+#* volkzaehler.org is free software: you can redistribute it and/or modify
+#* it under the terms of the GNU General Public License as published by
+#* the Free Software Foundation, either version 3 of the License, or
+#* any later version.
+#*
+#* volkzaehler.org is distributed in the hope that it will be useful,
+#* but WITHOUT ANY WARRANTY; without even the implied warranty of
+#* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#* GNU General Public License for more details.
+#*
+#* You should have received a copy of the GNU General Public License
+#* along with volkszaehler.org. If not, see <http://www.gnu.org/licenses/>.
+#*/
+
+# vzmonitor operates as a cronjob and monitors whether data for a particular UUID
+#  a) keeps arriving (or - to be precise: has been arriving recently)
+#  b) its value is within a certain corridor (minimum_value, maximum_value)
+
+#----<config>-------------------------------------------------------------
+
+# UUID to be monitored
+uuid = '12345678-1234-1234-1234-123456789012'
+
+# URL of the vz middleware
+middleware = 'http://demo.volkszaehler.org/middleware.php/'
+
+# time interval to be monitored in seconds
+interval = 3600
+
+# minimum number of expected readings that needs to be present to prevent an alarm
+minimum_number_of_values = 9
+
+# minimum value (the corridor's lower boundary)
+minimum_value = 40
+
+# maximum value (the corridor's upper boundary)
+maximum_value = 55
+
+#----</config>------------------------------------------------------------
+
+tz_offset = 2 # h; CEST -> 2; CET -> 1; show me, how to improve this! :-)
+
+debug = False
+debug_middleware = False
+
+#------------------------------------------------------------------------
+
+uuidstring = str(uuid)
+
+import datetime
+
+# convert timestamp into volkszaehler format
+def timestamp2vz_format(ts):
+  tz_delta = datetime.timedelta(seconds=tz_offset*3600) #UTC offset and adjustment for daylight saving time (sutraction in seconds)
+  dt = ts - datetime.datetime(1970, 1, 1, 0, 0) - tz_delta
+  Timestamp = str(dt.days*86400 + dt.seconds) + str(dt.microseconds).zfill(6)[:-3]
+  return Timestamp
+
+now = datetime.datetime.now()
+past = now  - datetime.timedelta(seconds=interval)
+intervalstart = timestamp2vz_format(past)
+
+#------------------------------------------------------------------------
+
+
+import urllib2
+url = middleware
+url += 'data/'
+url += uuid
+url += '.json?from='
+url += intervalstart
+if debug_middleware: url += '&debug=5'
+if debug: print url
+connection = 0
+result = urllib2.urlopen(url).read()
+if debug: print result
+import json
+json_decoded = json.loads(result)
+number_of_values = json_decoded['data']['rows']
+if debug: print number_of_values
+average = round(json_decoded['data']['average'])
+if debug: print average
+
+if number_of_values == 0:
+  print 'Alarm! The interval ranging from %s until now (%s) contains only no readings for uuid %s. You might want to check the sensor.' % (str(past)[:19], str(now)[:19], uuidstring)
+elif number_of_values < minimum_number_of_values:
+  print 'Alarm! The interval ranging from %s until now (%s) contains only %s reading(s) (<%d) for uuid %s. You might want to check the sensor' % (str(past)[:19], str(now)[:19], number_of_values, minimum_number_of_values, uuidstring)
+
+if average < minimum_value:
+  print 'Alarm! The average value in the interval between %s and now (%s) for channel %s is below the minimum value. It is currently at %d (<%d).' % (str(past)[:19], str(now)[:19], uuidstring, average, minimum_value)
+
+if average > maximum_value:
+  print 'Alarm! The average value in the interval between %s and now (%s) for channel %s is above the maximum value. It is currently at %d (>%d).' % (str(past)[:19], str(now)[:19], uuidstring, average, maximum_value)

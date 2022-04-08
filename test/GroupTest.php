@@ -2,8 +2,9 @@
 /**
  * Entity tests
  *
- * @package Test
  * @author Andreas Götz <cpuidle@gmx.de>
+ * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 
 namespace Tests;
@@ -15,7 +16,7 @@ class GroupTest extends Middleware
 	function testExistence() {
 		// create group
 		$this->assertNotNull($this->getJson('/group.json')->channels);
-		$this->assertInternalType('array', $this->getJson('/group.json')->channels);
+		$this->assertIsArray($this->getJson('/group.json')->channels);
 	}
 
 	function testCreateGroup() {
@@ -70,6 +71,7 @@ class GroupTest extends Middleware
 		$this->getJson('/group/' . $child . '.json', array(
 			'operation' => 'delete'
 		));
+
 		$this->assertObjectNotHasAttribute('children', $this->getJson('/group/' . self::$uuid . '.json')->entity);
 	}
 
