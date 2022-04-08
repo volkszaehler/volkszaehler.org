@@ -75,6 +75,7 @@ gulp.task('vz-scripts', function() {
 		javascripts + 'functions.js',
 		javascripts + 'entities.js',
 		javascripts + 'wui.js',
+		javascripts + 'plot.js',
 		javascripts + 'entity.js',
 		'!**/options.js',						// exclude options
 	])
@@ -97,6 +98,7 @@ gulp.task('flot', function() {
 		flot + '**/jquery.flot.canvas.js',
 		flot + '**/jquery.flot.axislabels.js',
 		flot + '**/jquery.flot.xgap.js',
+		flot + '**/jquery.flot.orderBars.js',
 		flot + '**/date.js',
 		flot + '**/canvas2image.js',
 		flot + '**/base64.js',
@@ -117,7 +119,7 @@ gulp.task('jquery-ext', function() {
 		extensions + '**.js',
 		'!**/*.min.js',							// omit minified files
 	])
-		.pipe($.concat('jquery-ext.js'))
+		.pipe($.concat('jquery-extensions.js'))
 		.pipe(gulp.dest(build))				// for reference only
 		.pipe($.size({showFiles: true}))
 		.pipe($.uglify())

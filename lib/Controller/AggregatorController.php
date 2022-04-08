@@ -1,8 +1,7 @@
 <?php
 /**
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @package default
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -29,14 +28,13 @@ use Volkszaehler\Model;
  * Aggregator controller
  *
  * @author Steffen Vogel (info@steffenvogel.de)
- * @package default
  */
 class AggregatorController extends EntityController {
 
 	/**
 	 * Get aggregator
-	 * @param $uuid
-	 * @return array
+	 * @param string|array|null $uuid
+	 * @return array|Model\Aggregator
 	 * @throws \Exception
 	 */
 	public function get($uuid) {
@@ -59,13 +57,14 @@ class AggregatorController extends EntityController {
 
 	/**
 	 * Create new aggregator or add entity to aggregator
-	 * @param $uuid
+	 * @param string|null $uuid
 	 * @return array|Model\Aggregator
 	 * @throws \Exception
 	 */
 	public function add($uuid) {
 		if (isset($uuid)) {	// add entity to aggregator
 			if ($uuids = (array) $this->getParameters()->get('uuid')) {
+				/** @var Model\Aggregator */
 				$aggregator = $this->ef->get($uuid);
 				foreach ($uuids as $uuid) {
 					$aggregator->addChild($this->ef->get($uuid));
@@ -83,15 +82,14 @@ class AggregatorController extends EntityController {
 		}
 
 		$this->em->flush();
-		$this->ef->remove($uuid);
 
 		return $aggregator;
 	}
 
 	/**
 	 * Delete Aggregator or remove entity from aggregator
-	 * @param $uuid
-	 * @return array|null
+	 * @param string|array|null $uuid
+	 * @return Model\Aggregator|null
 	 */
 	public function delete($uuid) {
 		if (!($entity = $this->ef->getByUuid($uuid)) instanceof Model\Entity) {
@@ -100,6 +98,7 @@ class AggregatorController extends EntityController {
 
 		$aggregator = null;
 		if ($uuids = (array) $this->getParameters()->get('uuid')) { // remove entity from aggregator
+			/** @var Model\Aggregator */
 			$aggregator = $this->ef->getByUuid($uuid);
 			foreach ($uuids as $uuid) {
 				$aggregator->removeChild($this->ef->getByUuid($uuid));

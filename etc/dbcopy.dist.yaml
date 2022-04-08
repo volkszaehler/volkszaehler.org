@@ -1,0 +1,38 @@
+# DATABASE DEFINITION
+source:
+  driver: pdo_mysql
+  host: localhost
+  user: vz
+  password: demo
+  dbname: volkszaehler
+
+target:
+  driver: pdo_sqlite
+  # host: localhost
+  # user: root
+  # password: raspberry
+  # dbname: volkszaehler_backup
+  path: sqlite.db3		# path is only used if driver = pdo_sqlite
+
+# influxdb target database connection
+influx:
+  dsn: influxdb://localhost:8086
+  dbname: volkszaehler
+  measurement: data
+
+# TABLE DEFINITION
+# ----------------
+# tables will be processed in the order they are mentioned:
+#		- foreign keys on target will be dropped
+#		- if a table is not listed here, it will not be touched
+# transfer mode
+#		skip:		table will not be copied
+#		copy:		entire table will be truncated on target and copied from source
+#		pk:			selective copy by primary key. only data not present on target
+# 					will be copied from source.
+tables:
+  entities: copy
+  properties: copy
+  entities_in_aggregator: copy
+  data: pk
+  aggregate: skip

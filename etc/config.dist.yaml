@@ -1,0 +1,43 @@
+# general settings overriding php configuration
+php:
+  timezone: Europe/Berlin
+  locale: ['de_DE', 'en_US', 'C']
+
+# Doctrine database configuration
+# http://www.doctrine-project.org/projects/doctrine-dbal/en/2.6
+db:
+  driver: pdo_mysql
+  host: localhost
+  # port: 3306
+  user: vz
+  password: demo
+  charset: utf8
+  dbname: volkszaehler
+  path: volkszaehler # only used for sqlite
+
+  # db admin credentials (used by doctrine cli and setup script)
+  admin:
+    user: vz_admin
+    password: admin_demo
+
+  # database optimizer - leave empty for automatic
+  # optimizer: Volkszaehler\Interpreter\SQL\MySQLOptimizer # provides additional group=15m setting for demo purposes
+
+# push server for realtime frontend updates
+push:
+  server: 5582
+  broadcast: 8082
+  # routes for wamp access
+  wamp:
+    - /
+    - /ws
+  # routes for plain web socket access
+  websocket:
+    - /socket
+
+network:
+  # limit maximum POST body size, e.g. 4096
+  postlimit: false
+
+# enable debug messages by default if true
+debug: false

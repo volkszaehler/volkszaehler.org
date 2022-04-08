@@ -1,8 +1,7 @@
 <?php
 /**
- * @copyright Copyright (c) 2017, The volkszaehler.org project
- * @package default
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -24,16 +23,16 @@
 namespace Volkszaehler\Util;
 
 use Doctrine\ORM;
-use Doctrine\Common\Cache;
+use Webpatser\Uuid\Uuid as UUID;
 
 use Volkszaehler\Util;
 use Volkszaehler\Definition\PropertyDefinition;
+use Volkszaehler\Model;
 
 /**
  * Entity factory
  *
  * @author Andreas Götz <cpuidle@gmx.de>
- * @package default
  */
 class EntityFactory {
 
@@ -43,7 +42,7 @@ class EntityFactory {
 	protected static $instance;
 
 	/**
-	 * @var Doctrine\ORM\EntityManager
+	 * @var ORM\EntityManager
 	 */
 	protected $em;
 
@@ -80,18 +79,14 @@ class EntityFactory {
 	protected function __construct(ORM\EntityManager $em) {
 		$this->em = $em;
 		$this->cache = $em->getConfiguration()->getQueryCacheImpl();
-
-		if (!isset($this->cache)) {
-			$this->cache = new Cache\ArrayCache();
-		}
 	}
 
 	/**
 	 * Return a single entity by identifier, either UUID or name
-	 * @param $uuid
+	 * @param string|null $uuid
 	 * @param bool $cache Use cache
-	 * @throws Exception on empty result
-	 * @return Entity
+	 * @throws \Exception on empty result
+	 * @return Model\Entity
 	 */
 	public function get($uuid, $cache = false) {
 		if (empty($uuid)) {
@@ -106,10 +101,10 @@ class EntityFactory {
 	/**
 	 * Return a single entity by UUID, potentially from cache
 	 *
-	 * @param $uuid
+	 * @param string $uuid
 	 * @param bool $cache Use cache
-	 * @throws Exception on empty result
-	 * @return Entity
+	 * @throws \Exception on empty result
+	 * @return Model\Entity
 	 */
 	public function getByUuid($uuid, $cache = false) {
 		if (!UUID::validate($uuid)) {
@@ -122,10 +117,10 @@ class EntityFactory {
 	 * Return a single entity by UUID, potentially from cache.
 	 * Does not validate UUID.
 	 *
-	 * @param $uuid
+	 * @param string $uuid
 	 * @param bool $cache Use cache
-	 * @throws Exception on empty result
-	 * @return Entity
+	 * @throws \Exception on empty result
+	 * @return Model\Entity
 	 */
 	protected function getByUuidUnvalidated($uuid, $cache = false) {
 		return $this->cached($uuid, $cache, function() use ($uuid) {
@@ -149,10 +144,10 @@ class EntityFactory {
 	/**
 	 * Return a single public entity by name, potentially from cache
 	 *
-	 * @param $name
+	 * @param string $name
 	 * @param bool $cache Use cache
-	 * @throws Exception on empty or multiple results
-	 * @return Entity
+	 * @throws \Exception on empty or multiple results
+	 * @return Model\Entity
 	 */
 	public function getByName($name, $cache = false) {
 		return $this->cached($name, $cache, function() use ($name) {
@@ -172,8 +167,8 @@ class EntityFactory {
 	/**
 	 * Return multiple entities by properties
 	 *
-	 * @param array of property => value filters
-	 * @return array of entities
+	 * @param array $properties array of property => value filters
+	 * @return Model\Entity[] array of entities
 	 */
 	public function getByProperties(array $properties) {
 		$dql = 'SELECT e, p
@@ -184,7 +179,9 @@ class EntityFactory {
 		$where = array();
 		$params = array();
 		foreach ($properties as $key => $value) {
-			if (PropertyDefinition::get($key)->getType() == 'boolean') {
+			/** @var PropertyDefinition */
+			$propDef = PropertyDefinition::get($key);
+			if ($propDef->getType() == 'boolean') {
 				$value = (int) $value;
 			}
 
@@ -206,7 +203,7 @@ class EntityFactory {
 	/**
 	 * Remove an entity by key from cache
 	 *
-	 * @param $key
+	 * @param string|null $key
 	 */
 	public function remove($key) {
 		if (isset($key)) {
@@ -217,16 +214,20 @@ class EntityFactory {
 	/**
 	 * Wrap an EntityManager operation with cache read/write
 	 *
-	 * @throws Exception
+	 * @throws \Exception
 	 */
-	protected function cached($key, $cache, $callable) {
-		if ($cache && $this->cache->contains($key)) {
-			return $this->cache->fetch($key);
+	private function cached($key, $cache, $callable) {
+		if ($cache && $this->cache->contains($key) && !Util\Configuration::read('devmode')) {
+			$entity = $this->cache->fetch($key);
+
+			if (!$entity instanceof Model\Aggregator) {
+				return $entity;
+			}
 		}
 
 		$entity = $callable();
 
-		if (isset($entity) && $cache) {
+		if ($cache && isset($entity) &! $entity instanceof Model\Aggregator) {
 			if (!isset($this->ttl)) {
 				$this->ttl = Util\Configuration::read('cache.ttl', 3600);
 			}

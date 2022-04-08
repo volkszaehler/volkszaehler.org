@@ -1,9 +1,8 @@
 <?php
 /**
- * @copyright Copyright (c) 2016, The volkszaehler.org project
  * @author Andreas Goetz <cpuidle@gmx.de>
- * @package util
- * @license http://www.opensource.org/licenses/gpl-license.php GNU Public License
+ * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -33,12 +32,12 @@ use Ratchet\Wamp\WampServerInterface;
 class WampClientAdapter implements WampServerInterface, PushTransportInterface {
 
 	/**
-	 * @var lookup of all the topics clients have subscribed to
+	 * @var array lookup of all the topics clients have subscribed to
 	 */
 	protected $subscribedTopics = array();
 
 	/**
-	 * @var count of open connections
+	 * @var int count of open connections
 	 */
 	protected $connections = 0;
 
@@ -67,7 +66,7 @@ class WampClientAdapter implements WampServerInterface, PushTransportInterface {
 
 	public function onCall(ConnectionInterface $conn, $id, $topic, array $params) {
 		// In this application if clients send data it's because the user hacked around in console
-		$conn->callError($id, $topic, 'Calls not supported')->close();
+        $conn->close();
 	}
 
 	public function onPublish(ConnectionInterface $conn, $topic, $event, array $exclude, array $eligible) {

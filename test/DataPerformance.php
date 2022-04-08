@@ -2,8 +2,9 @@
 /**
  * Performance test base functions
  *
- * @package Test
  * @author Andreas Götz <cpuidle@gmx.de>
+ * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 
 namespace Tests;
@@ -26,7 +27,7 @@ class DataPerformance extends Data
 	/**
 	 * Create DB connection and setup channel
 	 */
-	static function setupBeforeClass() {
+	static function setupBeforeClass() : void {
 		parent::setupBeforeClass();
 
 		self::$em = \Volkszaehler\Router::createEntityManager();
@@ -36,13 +37,13 @@ class DataPerformance extends Data
 	/**
 	 * Run before each test
 	 */
-	function setUp() {
+	function setUp() : void {
 		self::$time = microtime(true);
 	}
 
 	protected static function getChannelByUUID($uuid) {
-		$ec = new Controller\EntityController(null, self::$em);
-		return $ec->get($uuid);
+		$ef = Util\EntityFactory::getInstance(self::$em);
+		return $ef->get($uuid);
 	}
 
 	protected static function countRows($uuid, $table = 'data') {

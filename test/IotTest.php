@@ -2,20 +2,21 @@
 /**
  * IoT tests
  *
- * @package Test
  * @author Andreas Götz <cpuidle@gmx.de>
+ * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 
 namespace Tests;
 
-use Volkszaehler\Util;
+use Webpatser\Uuid\Uuid as UUID;
 
 class IotTest extends Middleware
 {
 	protected $uuid;
 
 	function testRetrievel() {
-		$secret = str_replace('-', '', Util\UUID::mint());
+		$secret = str_replace('-', '', UUID::generate());
 		$this->getJson('/channel.json', array(
 			'operation' => 'add',
 			'title' => 'Power',

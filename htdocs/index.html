@@ -25,18 +25,18 @@
 	<meta name="msapplication-config" content="ico/browserconfig.xml">
 	<meta name="theme-color" content="#ffffff">
 
-	<meta name="apple-mobile-web-app-capable" content="yes" />
-	<meta name="apple-mobile-web-app-status-bar-style" content="black" />
-	<!-- to support IE 9+ in intranet environments -->
-	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<!-- <meta name="viewport" content="width=device-width, initial-scale=1"> -->
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
 
 	<!-- CSS before JS -->
 	<link rel="stylesheet" type="text/css" href="vendor/jquery-ui/jquery-ui.min.css" />
 	<link rel="stylesheet" type="text/css" href="css/style.css" />
 	<link rel="stylesheet" type="text/css" href="css/sprites.css" />
+	<link rel="stylesheet" type="text/css" href="css/print.css" media="print" />
 
 	<!-- jQuery -->
-	<script type="text/javascript" src="vendor/jquery/jquery-2.1.3.min.js"></script>
+	<script type="text/javascript" src="vendor/jquery/jquery-3.3.1.min.js"></script>
 	<script type="text/javascript" src="vendor/jquery-ui/jquery-ui.min.js"></script>
 
 	<script type="text/javascript" src="js/jquery/jquery-ext.min.js"></script>
@@ -46,7 +46,9 @@
 	-->
 
 	<script type="text/javascript" src="vendor/moment.min.js"></script>
+	<script type="text/javascript" src="vendor/nprogress.min.js"></script>
 	<script type="text/javascript" src="vendor/flot/flot.min.js"></script>
+	<script type="text/javascript" src="vendor/strtotime.min.js"></script>
 	<!-- debug: uncomment scripts below -->	<!--
 	<script type="text/javascript" src="vendor/flot/jquery.flot.js"></script>
 	<script type="text/javascript" src="vendor/flot/jquery.flot.crosshair.js"></script>
@@ -54,6 +56,7 @@
 	<script type="text/javascript" src="vendor/flot/jquery.flot.time.js"></script>
 	<script type="text/javascript" src="vendor/flot/jquery.flot.canvas.js"></script>
 	<script type="text/javascript" src="vendor/flot/jquery.flot.axislabels.js"></script>
+	<script type="text/javascript" src="vendor/flot/jquery.flot.orderBars.js"></script>
 	<script type="text/javascript" src="vendor/flot/jquery.flot.xgap.js"></script>
 	<script type="text/javascript" src="vendor/flot/date.js"></script>
 	-->
@@ -65,6 +68,7 @@
 	<script type="text/javascript" src="js/functions.js"></script>
 	<script type="text/javascript" src="js/entities.js"></script>
 	<script type="text/javascript" src="js/wui.js"></script>
+	<script type="text/javascript" src="js/plot.js"></script>
 	<script type="text/javascript" src="js/entity.js"></script>
 	<script type="text/javascript" src="js/options.js"></script>
 
@@ -81,12 +85,12 @@
 <!--[if lt IE 8]>
 <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
 <![endif]-->
+<div id="time"></div>
 <div id="content">
 	<div id="header">
 		<h2 id="title"></h2>
 
 		<div id="export">
-			<img alt="export" src="img/blank.png" class="icon-export" />
 			<select class="icons">
 				<option value="default" selected="selected" class="icon-export">Export...</option>
 				<option value="permalink" class="icon-link">Permalink</option>
@@ -95,11 +99,26 @@
 				<option value="json" class="icon-json">JSON</option>
 			</select>
 		</div>
+		<div id="display">
+			<select class="icons">
+				<option value="current" selected="selected" class="icon-chart_line">Current</option>
+				<option>--</option>
+				<option value="hour" class="icon-chart_bar">Hourly</option>
+				<option value="day" class="icon-chart_bar">Daily</option>
+				<option value="month" class="icon-chart_bar">Monthly</option>
+				<option value="year" class="icon-chart_bar">Yearly</option>
+				<option>--</option>
+				<option value="year-month" class="icon-chart_bar">Year by month</option>
+				<option value="year-day" class="icon-chart_bar">Year by day</option>
+				<option value="month-day" class="icon-chart_bar">Month by day</option>
+				<option value="month-hour" class="icon-chart_bar">Month by hour</option>
+				<option value="day-hour" class="icon-chart_bar">Day by hour</option>
+			</select>
+		</div>
 		<br style="clear: both" />
 	</div>
 	<div id="plot">
 		<div id="flot"></div>
-		<div id="overlay"></div>
 	</div>
 
 	<div id="controls">
@@ -109,7 +128,7 @@
 	<div id="accordion">
 		<h3><img src="img/blank.png" class="icon-table" alt="" /> Kanäle</h3>
 		<div id="entity-list">
-			<table>
+			<table class="properties">
 				<thead>
 					<tr>
 						<th><img src="img/blank.png" class="icon-eye" alt="Anzeige" id="entity-toggle" title="Toggle entitites" /></th>
@@ -128,7 +147,7 @@
 				</thead>
 				<tbody></tbody>
 			</table>
-			<div><button name="entity-add"><img src="img/blank.png" class="icon-add" alt="add" /> Kanal hinzuf&uuml;gen</button></div>
+			<div><button name="entity-add"><img src="img/blank.png" class="icon-add" alt="add" /> Kanal hinzufügen</button></div>
 		</div>
 		<h3><img src="img/blank.png" class="icon-wrench" alt="" /> Optionen</h3>
 		<div id="options">
@@ -151,7 +170,7 @@
 	</div>
 </div>
 <div id="footer">
-	&copy; 2011 - <a href="http://volkszaehler.org/">volkszaehler.org</a> - the open smartmeter platform
+	&copy; 2011-2020 - <a href="http://volkszaehler.org/">volkszaehler.org</a> - the open smartmeter platform
 </div>
 
 <!-- dialogs -->
@@ -165,8 +184,16 @@
 <div id="entity-delete" class="dialog">
 	<p>
 		<span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>
-		Wollen Sie diesen Kanal wirklich L&ouml;schen?<br />
-		Dabei werden auch alle Daten gel&ouml;scht!
+		Wollen Sie diesen Kanal wirklich Löschen?<br />
+		Dabei werden auch alle Daten gelöscht!
+	</p>
+</div>
+
+<div id="entity-delete-group" class="dialog">
+	<p>
+		<span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>
+		Wollen Sie diese Gruppe wirklich Löschen?<br />
+		Dabei werden keine enthaltenen Kanäle oder Daten gelöscht.
 	</p>
 </div>
 
@@ -177,39 +204,73 @@
 			<li><a href="#entity-subscribe">Private Kanäle</a></li>
 			<li><a href="#entity-create">Kanal erstellen</a></li>
 		</ul>
-		<div id="entity-subscribe">
-			<p>Private Kanäle und Kanäle anderer Middlewares mittels UUID hinzufügen:</p>
-			<table>
-				<tr><td><label for="entity-subscribe-middleware">Middleware:</label></td><td><input id="entity-subscribe-middleware" type="text" size="36" /></td></tr>
-				<tr><td><label for="entity-subscribe-uuid">UUID:</label></td><td><input id="entity-subscribe-uuid" type="text" size="36" maxlength="36" /></td></tr>
-			</table>
-			<p><input type="button" value="Abonnieren" /> <label for="entity-subscribe-cookie">Cookie:</label> <input id="entity-subscribe-cookie" type="checkbox" checked="checked" /></p>
-		</div>
 		<div id="entity-public">
 			<p>Öffentliche Kanäle abonnieren:</p>
-			<table>
-				<tr><td><label for="entity-public-middleware">Middleware:</label></td><td><select id="entity-public-middleware"></select></td></tr>
-				<tr><td><label for="entity-public-entity">Kanal:</label></td><td><select id="entity-public-entity" size="1"></select></td></tr>
-			</table>
-			<p><input type="button" value="Abonnieren" /> <label for="entity-public-cookie">Cookie:</label> <input id="entity-public-cookie" type="checkbox" checked="checked" /></p>
+			<form>
+				<table>
+					<tr><td><label for="entity-public-middleware">Middleware:</label></td><td><select id="entity-public-middleware"></select></td></tr>
+					<tr><td><label for="entity-public-entity">Kanal:</label></td><td><select id="entity-public-entity" class="defaultfocus"></select></td></tr>
+				</table>
+				<p>
+					<input type="submit" value="Abonnieren" />
+					<label for="entity-public-cookie">Cookie:</label>
+					<input id="entity-public-cookie" type="checkbox" checked="checked" />
+				</p>
+			</form>
+		</div>
+		<div id="entity-subscribe">
+			<p>Private Kanäle und Kanäle anderer Middlewares mittels UUID hinzufügen:</p>
+			<form>
+				<table>
+					<tr><td><label for="entity-subscribe-middleware">Middleware:</label></td><td><input id="entity-subscribe-middleware" type="text" /></td></tr>
+					<tr><td><label for="entity-subscribe-uuid">UUID:</label></td><td><input id="entity-subscribe-uuid" type="text" class="defaultfocus" maxlength="36" /></td></tr>
+				</table>
+				<p>
+					<input type="submit" value="Abonnieren" />
+					<label for="entity-subscribe-cookie">Cookie:</label>
+					<input id="entity-subscribe-cookie" type="checkbox" checked="checked" />
+				</p>
+			</form>
 		</div>
 		<div id="entity-create">
-			<form method="get" target="_blank">
-				<table>
-					<tr class="property"><th>Eigenschaft</th><th>Wert</th></tr>
-					<tr class="property"><td>Middleware:</td><td><select id="entity-create-middleware"></select></td></tr>
-					<tr class="property"><td>Typ:</td><td><select class="icons" name="type" size="1"></select></td></tr>
+			<form>
+				<table class="properties">
+					<thead>
+						<tr><th>Eigenschaft</th><th>Wert</th></tr>
+					</thead>
+					<tbody>
+						<tr><td>Middleware:</td><td><select id="entity-create-middleware" /></select></td></tr>
+						<tr><td>Typ:</td><td><select class="icons" name="type"></select></td></tr>
+					</tbody>
 				</table>
-				<p><input type="submit" value="Erstellen" />  <label for="entity-create-cookie">Cookie:</label> <input id="entity-create-cookie" type="checkbox" checked="checked" /></p>
+				<p>
+					<input type="submit" value="Erstellen" />
+					<label for="entity-create-cookie">Cookie:</label>
+					<input id="entity-create-cookie" type="checkbox" checked="checked" />
+				</p>
 			</form>
 		</div>
 	</div>
 </div>
 
 <div id="entity-edit" class="dialog">
-	<form method="get" target="_blank">
-		<table>
-			<tr class="property"><th>Eigenschaft</th><th>Wert</th></tr>
+	<form>
+		<table class="properties">
+			<thead>
+				<tr><th>Eigenschaft</th><th>Wert</th></tr>
+			</thead>
+			<tbody></tbody>
+		</table>
+	</form>
+</div>
+
+<div id="entity-info" class="dialog">
+	<form>
+		<table class="properties">
+			<thead>
+				<tr><th>Eigenschaft</th><th>Wert</th></tr>
+			</thead>
+			<tbody></tbody>
 		</table>
 	</form>
 </div>
@@ -217,5 +278,7 @@
 <div id="chart-export" class="dialog">
 	<div class="export"></div>
 </div>
+
+<div id="tooltip"></div>
 </body>
 </html>

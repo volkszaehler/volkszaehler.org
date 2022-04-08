@@ -2,13 +2,14 @@
 /**
  * Entity tests
  *
- * @package Test
  * @author Andreas Götz <cpuidle@gmx.de>
+ * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 
 namespace Tests;
 
-use Volkszaehler\Util;
+use Webpatser\Uuid\Uuid as UUID;
 
 class EntityTest extends Middleware
 {
@@ -16,7 +17,7 @@ class EntityTest extends Middleware
 
 	function testExistence() {
 		$this->assertNotNull($this->getJson('/entity.json')->entities);
-		$this->assertInternalType('array', $this->getJson('/entity.json')->entities);
+		$this->assertIsArray($this->getJson('/entity.json')->entities);
 	}
 
 	function testCannotCreateEntity() {
@@ -107,7 +108,7 @@ class EntityTest extends Middleware
 		$this->assertStringStartsWith('Invalid UUID', $this->json->exception->message);
 
 		// non-existing uuid
-		$uuid = Util\UUID::mint();
+		$uuid = UUID::generate();
 		$this->getJson('/entity/' . $uuid . '.json', array(), 'GET', true);
 		$this->assertStringStartsWith('No entity with UUID', $this->json->exception->message);
 	}
@@ -126,7 +127,7 @@ class EntityTest extends Middleware
 		$this->assertStringStartsWith('Invalid UUID', $this->json->exception->message);
 
 		// non-existing uuid
-		$uuid = Util\UUID::mint();
+		$uuid = UUID::generate();
 		$this->getJson('/entity/' . $uuid . '.json', array(
 			'operation' => 'edit'
 		), 'GET', true);

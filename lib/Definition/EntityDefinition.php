@@ -1,8 +1,8 @@
 <?php
+
 /**
- * @package default
- * @copyright Copyright (c) 2011, The volkszaehler.org project
- * @license http://www.gnu.org/licenses/gpl.txt GNU Public License
+ * @copyright Copyright (c) 2011-2020, The volkszaehler.org project
+ * @license https://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License version 3
  */
 /*
  * This file is part of volkzaehler.org
@@ -23,58 +23,52 @@
 
 namespace Volkszaehler\Definition;
 
-use Volkszaehler\Util;
+use Volkszaehler\Model\Aggregator;
 
 /**
  * @author Steffen Vogel <info@steffenvogel.de>
- * @package default
+ * @author Andreas Goetz <cpuidle@gmx.de>
  */
-class EntityDefinition extends Definition {
+class EntityDefinition extends Definition
+{
 	/**
 	 * File containing the JSON definitons
-	 *
 	 * @var string
 	 */
 	const FILE = 'EntityDefinition.json';
 
 	/**
 	 * List of required properties
-	 *
 	 * @var array
 	 */
 	public $required = array();
 
 	/**
 	 * List of optional properties
-	 *
 	 * @var array
 	 */
 	public $optional = array();
 
 	/**
 	 * Classname of intepreter (see Volkszaehler\Interpreter)
-	 *
 	 * @var string
 	 */
 	public $interpreter;
 
 	/**
 	 * Style for plotting
-	 *
 	 * @var string (lines|points|steps)
 	 */
-	 public $style;
+	public $style;
 
 	/**
 	 * Classname of model (see Volkszaehler\Model)
-	 *
 	 * @var string
 	 */
 	public $model;
 
 	/**
 	 * Optional for Aggregator class entities
-	 *
 	 * @var string
 	 */
 	public $unit;
@@ -87,20 +81,17 @@ class EntityDefinition extends Definition {
 
 	/**
 	 * Indicates if a consumption value can be calculated
- 	 * @var boolean
+	 * @var boolean
 	 */
 	public $hasConsumption = FALSE;
 
 	/**
 	 * Scaler for unit values
 	 * E.g. $scale = 1000 means entity definition is in impulses per 1000 units (same for initialconsumption and cost)
- 	 * @var boolean
+	 * @var float
 	 */
 	public $scale = 1;
 
-	/**
-	 * @var array holds definitions
-	 */
 	protected static $definitions = NULL;
 
 	/**
@@ -108,28 +99,54 @@ class EntityDefinition extends Definition {
 	 * @var array
 	 */
 	static protected $defaultRequired = array('title');
-	static protected $defaultOptional = array('public', 'color', 'style', 'fillstyle', 'yaxis', 'active', 'description', 'owner', 'address:', 'link');
+	static protected $channelOptional = array('public', 'active', 'color', 'style', 'fillstyle', 'linestyle', 'linewidth', 'yaxis', 'description', 'owner', 'address:', 'link', 'gap');
+	static protected $groupOptional = array('public', 'active', 'color', 'description', 'owner', 'address:', 'link');
+	static protected $consumptionOptional = array('initialconsumption', 'cost');
 
 	/**
 	 * Constructor
 	 *
 	 * Adding default properties
 	 */
-	 protected function __construct($object) {
-	 	parent::__construct($object);
+	protected function __construct($object)
+	{
+		parent::__construct($object);
 
-	 	$this->required = array_merge(self::$defaultRequired, $this->required);
-	 	$this->optional = array_merge(self::$defaultOptional, $this->optional);
-	 }
+		$this->required = array_merge(self::$defaultRequired, $this->required);
+
+		if ($this->getModel() == Aggregator::class) {
+			$optional = self::$groupOptional;
+		} else {
+			$optional = self::$channelOptional;
+			if ($this->hasConsumption) {
+				$optional = array_merge($optional, self::$consumptionOptional);
+			}
+		}
+		$this->optional = array_merge($optional, $this->optional);
+	}
+
 
 	/*
 	 * Setter & Getter
 	 */
-	public function getInterpreter() { return $this->interpreter; }
-	public function getModel() { return $this->model; }
-	public function getUnit() { return $this->unit; }
-	public function getRequiredProperties() { return $this->required; }
-	public function getValidProperties() { return array_merge($this->required, $this->optional); }
+	public function getInterpreter()
+	{
+		return $this->interpreter;
+	}
+	public function getModel()
+	{
+		return $this->model;
+	}
+	public function getUnit()
+	{
+		return $this->unit;
+	}
+	public function getRequiredProperties()
+	{
+		return $this->required;
+	}
+	public function getValidProperties()
+	{
+		return array_merge($this->required, $this->optional);
+	}
 }
-
-?>

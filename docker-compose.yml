@@ -1,0 +1,52 @@
+version: '3'
+services:
+
+  database:
+    image: mariadb
+    environment:
+      MYSQL_DATABASE: volkszaehler
+      MYSQL_USER: vz
+      MYSQL_PASSWORD: demo
+      MYSQL_ROOT_PASSWORD: admin_demo
+    networks:
+    - volkszaehler
+
+  volkszaehler:
+    image: volkszaehler/volkszaehler
+    ports:
+    - 8080:8080
+    # NOTE: The init command will only work once the database is fully up and running.
+    #       By putting restart: always docker-compose will retry starting this container
+    #       and finally complete the database setup sequence.
+    command: sh -c "
+      sed -i s/localhost/database/ /vz/etc/config.yaml &&
+      sed -i s/vz_admin/root/ /vz/etc/config.yaml &&
+      sleep 1 &&
+      (/vz/bin/doctrine orm:schema-tool:update --force || /vz/bin/doctrine orm:schema-tool:create) &&
+      /vz/vendor/bin/ppm start -c /vz/etc/middleware.json --static-directory /vz/htdocs --cgi-path=/usr/local/bin/php"
+    links:
+    - database
+    depends_on:
+    - database
+    networks:
+    - volkszaehler
+    restart: always
+
+  push-server:
+    image: volkszaehler/volkszaehler
+    ports:
+    - 5582:5582
+    - 8082:8082
+    command: sh -c "
+      sed -i s/localhost/database/ /vz/etc/config.yaml &&
+      /vz/bin/push-server"
+    links:
+    - database
+    depends_on:
+    - database
+    networks:
+    - volkszaehler
+    restart: always
+
+networks:
+  volkszaehler:
