@@ -148,6 +148,7 @@ abstract class Interpreter implements \IteratorAggregate {
 	 *
 	 * @return \Generator
 	 */
+	#[\ReturnTypeWillChange]
 	public function getIterator() {
 		if ($this->output == self::RAW_VALUES) {
 			$this->rows = $this->getData();
