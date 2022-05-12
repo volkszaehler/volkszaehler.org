@@ -132,7 +132,7 @@ abstract class Entity
 	{
 		$properties = array();
 		foreach ($this->properties as $property) {
-			if (substr($property->getKey(), 0, strlen($prefix)) == $prefix) {
+			if (is_null($prefix) || (substr($property->getKey(), 0, strlen($prefix)) == $prefix)) {
 				$properties[$property->getKey()] = $property->getValue();
 			}
 		}
