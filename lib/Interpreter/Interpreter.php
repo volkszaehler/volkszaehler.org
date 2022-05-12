@@ -148,7 +148,7 @@ abstract class Interpreter implements \IteratorAggregate {
 	 *
 	 * @return \Generator
 	 */
-	public function getIterator() {
+	public function getIterator() : \Traversable {
 		if ($this->output == self::RAW_VALUES) {
 			$this->rows = $this->getData();
 

@@ -38,7 +38,7 @@ class TimestampGenerator implements \IteratorAggregate {
 	/**
 	 * Yield sequential timestamps from all iterators
 	 */
-	public function getIterator() {
+	public function getIterator() : \Traversable {
 		foreach ($this->iterators as $iterator) {
 			$iterator->rewind();
 		}

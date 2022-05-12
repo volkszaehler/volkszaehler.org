@@ -79,7 +79,7 @@ class DataIterator implements \IteratorAggregate, \Countable {
 	/**
 	 * @return \Generator
 	 */
-	public function getIterator() {
+	public function getIterator() : \Traversable {
 		$this->lastTimestamp = $this->from;
 
 		$tuple = false;
@@ -119,7 +119,7 @@ class DataIterator implements \IteratorAggregate, \Countable {
 	public function getFrom() { return $this->from; }
 	public function getTo() { return $this->to; }
 
-	public function count() { return $this->tupleCount; }
+	public function count() : int { return $this->tupleCount; }
 }
 
 ?>

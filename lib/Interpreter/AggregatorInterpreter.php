@@ -53,7 +53,7 @@ class AggregatorInterpreter extends Interpreter {
 	/**
 	 * @inheritDoc
 	 */
-	public function getIterator() {
+	public function getIterator() : Traversable {
 	}
 
 	/**
