@@ -54,7 +54,7 @@ class InterpreterProxy implements \IteratorAggregate {
 	/**
 	 * Wrap underlying iterator to give access to previous tuple
 	 */
-	public function getIterator() {
+	public function getIterator() : \Traversable {
 		if ($this->iterator == null) {
 			$this->iterator = new LookbackIterator($this->interpreter->getIterator());
 		}
