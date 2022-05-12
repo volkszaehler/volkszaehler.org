@@ -537,5 +537,16 @@
       "en" : "CO2 concentration",
       "fr" : "Concentration CO2"
     }
-  }
+  },
+	{
+		"name"                  : "particulate matter",
+		"icon"			: "",
+		"unit"                  : "µg/m³",
+		"interpreter"           : "Volkszaehler\\Interpreter\\SensorInterpreter",
+		"model"                 : "Volkszaehler\\Model\\Channel",
+		"translation"           : {
+			"de" : "Feinstaub",
+			"en" : "particulate matter"
+		}
+	}
 ]
