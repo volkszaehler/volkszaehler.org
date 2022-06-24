@@ -257,7 +257,7 @@ class VZcompress2 {
 
 				// Step 2.1: Get new Value for timeframe
 				$newset = $this->sql_query(
-					"SELECT " . $interpreter::groupExprSQL("value") . " AS newval, COUNT(value) AS datapoints, MAX(id) AS updateid ".
+					"SELECT " . $interpreter::groupExprSQL("value") . " AS newval, COUNT(value) AS datapoints ".
 					"FROM data WHERE channel_id = ? AND timestamp > ? AND timestamp <= ?",
 					array($channel['id'], $lastcurtime, $curtime)
 				);
@@ -269,16 +269,15 @@ class VZcompress2 {
 				$this->conn->transactional(function() use ($channel, $newset, $curtime, $lastcurtime) {
 					// Step 2.3: Delete old data points
 					$this->sql_exec(
-						'DELETE FROM data WHERE channel_id = ? AND timestamp > ? AND timestamp <= ? AND id != ?',
-						array($channel['id'], $lastcurtime, $curtime, $newset[0]['updateid'])
+						'DELETE FROM data WHERE channel_id = ? AND timestamp > ? AND timestamp <= ?',
+						array($channel['id'], $lastcurtime, $curtime)
 					);
 					$this->purgecounter += $newset[0]['datapoints']-1;
 
-					// Step 2.4: Update oldest Datapoint
-					//           Note: Use UPDATE instead of INSERT to avoid filling up our id-pool
+					// Step 2.4: Insert new Datapoint
 					$this->sql_exec(
-						'UPDATE data SET timestamp = ?, value = ? WHERE channel_id = ? AND id = ?',
-						array($curtime-1, $newset[0]['newval'], $channel['id'], $newset[0]['updateid'])
+						'INSERT into data (timestamp,value,channel_id) values (?,?,?)',
+						array($curtime-1, $newset[0]['newval'], $channel['id'])
 					);
 				});
 			}
