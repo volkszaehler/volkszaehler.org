@@ -1,7 +1,6 @@
 .settings
 .ppm/
 .vscode/
-composer.lock
 etc/volkszaehler.conf.php
 etc/config.yaml
 htdocs/build
