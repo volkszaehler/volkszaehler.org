@@ -1,9 +1,12 @@
 # Copyright (c) 2019 Andreas Goetz <cpuidle@gmx.de>
 
-FROM composer:2 AS builder
+ARG PHP_IMAGE_TAG=8.1-alpine
+
+FROM php:$PHP_IMAGE_TAG AS builder
 
 WORKDIR /vz
 
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 COPY composer.json /vz
 
 RUN composer install --ignore-platform-reqs --no-ansi --no-scripts --no-dev --no-interaction --no-progress --optimize-autoloader
@@ -11,7 +14,7 @@ RUN composer install --ignore-platform-reqs --no-ansi --no-scripts --no-dev --no
 COPY . /vz
 
 
-FROM php:8.0-alpine
+FROM php:$PHP_IMAGE_TAG
 
 EXPOSE 8080
 EXPOSE 8082
