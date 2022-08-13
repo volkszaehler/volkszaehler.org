@@ -26,7 +26,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v3
         with:
-          images: ${{ secrets.DOCKERHUB_USERNAME }}/volkszaehler
+          images: volkszaehler/volkszaehler
           tags: |
             type=sha
 #            after we testet the image on the docker hub with the sha tag, we 
