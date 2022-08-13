@@ -22,18 +22,11 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v3
         with:
-          images: ${{ secrets.DOCKERHUB_USERNAME }}/volkszaehler,ghcr.io/${{ github.repository_owner }}/volkszaehler
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/volkszaehler
           tags: |
             type=sha
             type=raw,value=latest,enable=${{ endsWith(github.ref, github.event.repository.default_branch) }}
