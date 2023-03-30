@@ -26,7 +26,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ secrets.DOCKERHUB_IMAGE }}
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE }}
           tags: |
             type=sha
             type=raw,value=latest,enable=${{ endsWith(github.ref, github.event.repository.default_branch) }}
@@ -35,7 +35,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           load: true
-          tags: ${{ secrets.DOCKERHUB_IMAGE }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE }}
           cache-from: type=gha
 
       - name: Test image
