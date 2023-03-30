@@ -26,7 +26,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: volkszaehler/volkszaehler
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/volkszaehler
           tags: |
             type=sha
             type=raw,value=latest,enable=${{ endsWith(github.ref, github.event.repository.default_branch) }}
@@ -35,7 +35,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           load: true
-          tags: volkszaehler/volkszaehler
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/volkszaehler
           cache-from: type=gha
 
       - name: Test image
