@@ -32,21 +32,22 @@ jobs:
             type=raw,value=latest,enable=${{ endsWith(github.ref, github.event.repository.default_branch) }}
 
       - name: Build for test
-        uses: docker/build-push-action@v4
+        uses: ilteoood/docker_buildx@master
         with:
-          context: .
-          load: true
-          platforms: linux/amd64,linux/arm64
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/volkszaehler:latest
+          publish: false
+          imageName: ${{ secrets.DOCKERHUB_USERNAME }}/volkszaehler
+          tag: latest
+          dockerUser: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerPassword: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Test image
         run: ./misc/dockertest/test-docker.sh
 
       - name: Push image
-        uses: docker/build-push-action@v4
+        uses: ilteoood/docker_buildx@master
         with:
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          publish: true
+          imageName: ${{ secrets.DOCKERHUB_USERNAME }}/volkszaehler
+          tag: latest
+          dockerUser: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerPassword: ${{ secrets.DOCKERHUB_TOKEN }}
