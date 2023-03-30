@@ -35,6 +35,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           load: true
+          platforms: linux/amd64,linux/arm ,linux/arm64
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/volkszaehler
           cache-from: type=gha
 
