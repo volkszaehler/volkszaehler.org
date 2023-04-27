@@ -255,9 +255,7 @@ class Aggregation
 				// since last aggregation only
 				array_push($sqlParameters, $type, $channel_id);
 				$intialTimestamp =
-					'UNIX_TIMESTAMP(DATE_ADD(' .
-					'FROM_UNIXTIME(MAX(timestamp) / 1000, "%Y-%m-%d %H:%i:%s"), ' .
-					'INTERVAL 0 ' . $level . ')) * 1000 ' .
+					'MAX(timestamp) ' .
 					'FROM aggregate ' .
 					'WHERE type = ? AND aggregate.channel_id = ?';
 			} elseif ($period) {
