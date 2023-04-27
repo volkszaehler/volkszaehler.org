@@ -254,7 +254,7 @@ class Aggregation
 			if ($mode == self::MODE_DELTA) {
 				// since last aggregation only
 				array_push($sqlParameters, $type, $channel_id);
-				$intialTimestamp =
+				$intialTimestamp = 
 					'MAX(timestamp) ' .
 					'FROM aggregate ' .
 					'WHERE type = ? AND aggregate.channel_id = ?';
