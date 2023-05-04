@@ -254,10 +254,8 @@ class Aggregation
 			if ($mode == self::MODE_DELTA) {
 				// since last aggregation only
 				array_push($sqlParameters, $type, $channel_id);
-				$intialTimestamp =
-					'UNIX_TIMESTAMP(DATE_ADD(' .
-					'FROM_UNIXTIME(MAX(timestamp) / 1000, ' . $format . '), ' .
-					'INTERVAL 1 ' . $level . ')) * 1000 ' .
+				$intialTimestamp = 
+					'MAX(timestamp) ' .
 					'FROM aggregate ' .
 					'WHERE type = ? AND aggregate.channel_id = ?';
 			} elseif ($period) {
