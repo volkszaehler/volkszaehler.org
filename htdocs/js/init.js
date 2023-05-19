@@ -88,12 +88,15 @@ $(document).ready(function() {
 		$.setCookie('vz_entities', null);
 	}
 
-	// start loading cookies/url params
 	if (!(params.hasOwnProperty('uuid') || params.uuid)) {
-		// only load cookies when no uuid present in url params	
-		vz.entities.loadCookie(); // load uuids from cookie
-		vz.options.loadCookies(); // load options from cookie	
+			// only load cookies when no uuid present in url params	
+			vz.entities.loadCookie(); // load uuids from cookie
 	}
+
+	if (!(params.hasOwnProperty('options') || params.options)) {
+			// only load cookies when no options present in url params	
+			vz.options.loadCookies(); // load options from cookie
+	} 
 
 	// set x axis limits _after_ loading options cookie
 	vz.options.plot.xaxis.max = new Date().getTime();
