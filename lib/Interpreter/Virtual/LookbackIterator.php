@@ -35,12 +35,12 @@ class LookbackIterator extends \IteratorIterator {
 	 * IteratorIterator
 	 */
 
-	function rewind() {
+	function rewind() : void {
 		$this->previous = array(0, 0, 0);
 		parent::rewind();
 	}
 
-	function next() {
+	function next() : void {
 		$this->previous = $this->current();
 		parent::next();
 	}

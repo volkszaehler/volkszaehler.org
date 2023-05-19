@@ -64,7 +64,7 @@ class GroupedTimestampIterator extends \IteratorIterator {
 	 * Iterator
 	 */
 
-	public function rewind() {
+	public function rewind() : void {
 		parent::rewind();
 
 		if ($this->valid()) {
@@ -79,7 +79,7 @@ class GroupedTimestampIterator extends \IteratorIterator {
 		}
 	}
 
-	public function next() {
+	public function next() : void {
 		/** @var DelayedIterator */
 		$inner = $this->getInnerIterator();
 
