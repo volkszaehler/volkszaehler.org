@@ -179,6 +179,7 @@ vz.parseUrlParams = function() {
 	var vars = $.getUrlParams();
 	var entities = [];
 	var save = false;
+	var active = null;
 
 	for (var key in vars) {
 		if (vars.hasOwnProperty(key)) {
@@ -189,6 +190,10 @@ vz.parseUrlParams = function() {
 
 				case 'save': // save new uuids in cookie
 					save = vars[key];
+					break;
+
+				case 'active': // define active/deactive state for uuid from url. Set to deactive when set to FALSE, F, NO or 0 (case insensitive)
+					active = !/^(?:f(?:alse)?|no?|0+)$/i.test(vars[key]);
 					break;
 
 				case 'from':
@@ -241,7 +246,8 @@ vz.parseUrlParams = function() {
 		var entity = new Entity({
 			uuid: uuid,
 			middleware: middleware,
-			cookie: save
+			cookie: save,
+			active: active
 		});
 
 		// avoid double entries
