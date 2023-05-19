@@ -40,12 +40,12 @@ class DelayedIterator extends \IteratorIterator
 	 * Iterator
 	 */
 
-	public function rewind() {
+	public function rewind() : void {
 		parent::rewind();
 		$this->next();
 	}
 
-	public function next() {
+	public function next() : void {
 		$this->valid = parent::valid();
 		if ($this->valid) {
 			$this->key = parent::key();
@@ -54,15 +54,15 @@ class DelayedIterator extends \IteratorIterator
 		}
 	}
 
-	public function valid() {
+	public function valid() : bool {
 		return $this->valid;
 	}
 
-	public function key() {
+	public function key() : mixed {
 		return $this->key;
 	}
 
-	public function current() {
+	public function current() : mixed {
 		return $this->current;
 	}
 }
