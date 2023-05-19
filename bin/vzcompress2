@@ -67,7 +67,7 @@ class VZcompress2 {
 	private $channels;
 
 	private $purgecounter = 0;
-	private $timestr = '%x %X';
+	private $timestr = 'Y-m-d H:i:s';
 
 	public function __construct($config = array()) {
 		$this->config = array_replace(
@@ -155,7 +155,7 @@ class VZcompress2 {
 	 * Output functions
 	 */
 	private function strftime($time = null) {
-		return strftime($this->timestr, $time ?: time());
+		return date($this->timestr, $time);
 	}
 
 	private function out($str, $delim = "\n") {
