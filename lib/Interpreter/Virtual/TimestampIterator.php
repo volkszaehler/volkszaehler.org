@@ -27,7 +27,8 @@ namespace Volkszaehler\Interpreter\Virtual;
  * Helper iterator that extracts timestamp from tuple
  */
 class TimestampIterator extends \IteratorIterator {
-	function current() : mixed {
+	#[\ReturnTypeWillChange]
+	function current() {
 		return parent::current()[0];
 	}
 }
