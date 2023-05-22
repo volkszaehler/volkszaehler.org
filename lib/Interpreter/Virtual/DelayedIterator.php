@@ -58,11 +58,13 @@ class DelayedIterator extends \IteratorIterator
 		return $this->valid;
 	}
 
-	public function key() : mixed {
+	#[\ReturnTypeWillChange]
+	public function key() {
 		return $this->key;
 	}
 
-	public function current() : mixed {
+	#[\ReturnTypeWillChange]
+	public function current() {
 		return $this->current;
 	}
 }
