@@ -155,7 +155,7 @@ class VZcompress2 {
 	 * Output functions
 	 */
 	private function strftime($time = null) {
-		return date($this->timestr, $time);
+		return date($this->timestr, intval($time));
 	}
 
 	private function out($str, $delim = "\n") {
