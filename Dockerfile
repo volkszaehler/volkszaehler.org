@@ -1,6 +1,6 @@
 # Copyright (c) 2019 Andreas Goetz <cpuidle@gmx.de>
 
-ARG PHP_IMAGE_TAG=8.1-alpine
+ARG PHP_IMAGE_TAG=8.2-alpine
 
 FROM php:$PHP_IMAGE_TAG AS builder
 
