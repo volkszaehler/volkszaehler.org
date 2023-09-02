@@ -49,7 +49,7 @@ class LookbackIterator extends \IteratorIterator {
 	 * Lookback access
 	 */
 
-	function previous() {
+	function previous() : mixed {
 		return $this->previous;
 	}
 }

@@ -28,7 +28,7 @@ namespace Volkszaehler\Interpreter\Virtual;
  */
 class TimestampIterator extends \IteratorIterator {
 	#[\ReturnTypeWillChange]
-	function current() {
+	function current() : mixed {
 		return parent::current()[0];
 	}
 }
