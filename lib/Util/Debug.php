@@ -121,7 +121,7 @@ class Debug {
 	/**
 	 * Set SQL logger on entity manager
 	 */
-	protected function attachSqlLogger(Logging\SQLLogger $sqlLogger = null) {
+	protected function attachSqlLogger(?Logging\SQLLogger $sqlLogger = null) {
 		$this->sqlLogger = $sqlLogger;
 		$this->em->getConnection()->getConfiguration()->setSQLLogger($sqlLogger);
 	}
