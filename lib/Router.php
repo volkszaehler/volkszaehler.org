@@ -239,7 +239,7 @@ class Router implements HttpKernelInterface {
 		$config->setMetadataCache($cache);
 		$config->setQueryCacheImpl(DoctrineProvider::wrap($cache));
 
-		$driverImpl = $config->newDefaultAnnotationDriver(VZ_DIR . '/lib/Model');
+		$driverImpl = $config->newDefaultAnnotationDriver(VZ_DIR . '/lib/Model', false);
 		$config->setMetadataDriverImpl($driverImpl);
 
 		$config->setProxyDir(VZ_DIR . '/lib/Model/Proxy');

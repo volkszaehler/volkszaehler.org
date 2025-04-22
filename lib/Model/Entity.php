@@ -25,6 +25,7 @@ namespace Volkszaehler\Model;
 
 use Doctrine\Common\Collections;
 use Webpatser\Uuid\Uuid as UUID;
+use Doctrine\ORM\Mapping as ORM;
 
 use Volkszaehler\Definition;
 
@@ -33,43 +34,45 @@ use Volkszaehler\Definition;
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  *
- * @Entity
- * @Table(name="entities")
- * @InheritanceType("SINGLE_TABLE")
- * @DiscriminatorColumn(name="class", type="string")
- * @DiscriminatorMap({
+ * @Annotation
+ *
+ * @ORM\Entity
+ * @ORM\Table(name="entities")
+ * @ORM\InheritanceType("SINGLE_TABLE")
+ * @ORM\DiscriminatorColumn(name="class", type="string")
+ * @ORM\DiscriminatorMap({
  * 		"channel" = "Channel",
  * 		"aggregator" = "Aggregator"
  * })
- * @HasLifecycleCallbacks
+ * @ORM\HasLifecycleCallbacks
  */
 abstract class Entity
 {
 	/**
-	 * @Id
-	 * @Column(type="integer")
-	 * @GeneratedValue(strategy="AUTO")
+	 * @ORM\Id
+	 * @ORM\Column(type="integer")
+	 * @ORM\GeneratedValue(strategy="AUTO")
 	 */
 	protected $id;
 
 	/**
-	 * @Column(type="string", length=36, nullable=false, unique=true)
+	 * @ORM\Column(type="string", length=36, nullable=false, unique=true)
 	 */
 	protected $uuid;
 
 	/**
-	 * @Column(type="string", nullable=false)
+	 * @ORM\Column(type="string", nullable=false)
 	 */
 	protected $type;
 
 	/**
-	 * @OneToMany(targetEntity="Property", mappedBy="entity", cascade={"remove", "persist"}, orphanRemoval=true)
-	 * @OrderBy({"key" = "ASC"})
+	 * @ORM\OneToMany(targetEntity="Property", mappedBy="entity", cascade={"remove", "persist"}, orphanRemoval=true)
+	 * @ORM\OrderBy({"key" = "ASC"})
 	 */
 	protected $properties = NULL;
 
 	/**
-	 * @ManyToMany(targetEntity="Aggregator", mappedBy="children")
+	 * @ORM\ManyToMany(targetEntity="Aggregator", mappedBy="children")
 	 */
 	protected $parents = NULL;
 
@@ -95,7 +98,7 @@ abstract class Entity
 	/**
 	 * Checks for required and invalid properties
 	 *
-	 * @PrePersist
+	 * @ORM\PrePersist
 	 */
 	public function checkProperties()
 	{
