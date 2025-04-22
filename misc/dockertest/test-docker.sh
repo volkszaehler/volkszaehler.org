@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-docker-compose up -d
+docker compose up -d
 CHANNEL_JSON=$(curl --retry 10 --retry-all-errors --no-progress-meter -X POST \
     -d "type=electric+meter&title=Test&resolution=1&public=1" \
     "http://localhost:8080/channel.json")
