@@ -23,6 +23,8 @@
 
 namespace Volkszaehler\Model;
 
+use Doctrine\ORM\Mapping as ORM;
+
 use Volkszaehler\Definition;
 
 /**
@@ -30,28 +32,28 @@ use Volkszaehler\Definition;
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  *
- * @Entity
- * @Table(name="properties")
- * @HasLifecycleCallbacks
+ * @ORM\Entity
+ * @ORM\Table(name="properties")
+ * @ORM\HasLifecycleCallbacks
  */
 class Property
 {
 	/**
-	 * @Id
-	 * @ManyToOne(targetEntity="Entity", inversedBy="properties")
-	 * @JoinColumn(name="entity_id")
+	 * @ORM\Id
+	 * @ORM\ManyToOne(targetEntity="Entity", inversedBy="properties")
+	 * @ORM\JoinColumn(name="entity_id")
 	 */
 	protected $entity;
 
 	/**
-	 * @Id
-	 * @Column(name="pkey", type="string")
+	 * @ORM\Id
+	 * @ORM\Column(name="pkey", type="string")
 	 * HINT: column name "key" is reserved by mysql
 	 */
 	protected $key;
 
 	/**
-	 * @Column(type="text", nullable=false)
+	 * @ORM\Column(type="text", nullable=false)
 	 */
 	protected $value;
 
@@ -71,7 +73,7 @@ class Property
 	/**
 	 * Cast property value according to $this->type
 	 *
-	 * @PostLoad
+	 * @ORM\PostLoad
 	 */
 	public function cast()
 	{
@@ -88,7 +90,7 @@ class Property
 	/**
 	 * Undo type cast to prevent Doctrine storing unmodified properties
 	 *
-	 * @PreFlush
+	 * @ORM\PreFlush
 	 */
 	public function uncast()
 	{
@@ -104,8 +106,8 @@ class Property
 	 *
 	 * Throws an exception if something is incorrect
 	 *
-	 * @PrePersist
-	 * @PreUpdate
+	 * @ORM\PrePersist
+	 * @ORM\PreUpdate
 	 */
 	public function validate()
 	{

@@ -23,20 +23,22 @@
 
 namespace Volkszaehler\Model;
 
+use Doctrine\ORM\Mapping as ORM;
+
 /**
  * Aggregate materialized view entity
  *
  * @author Andreas Goetz <cpuidle@gmx.de>
  *
- * @Entity
- * @Table(name="aggregate")
+ * @ORM\Entity
+ * @ORM\Table(name="aggregate")
  */
 class Aggregate
 {
 	/**
-	 * @Id
-	 * @ManyToOne(targetEntity="Channel", inversedBy="aggregate")
-	 * @JoinColumn(name="channel_id", referencedColumnName="id")
+	 * @ORM\Id
+	 * @ORM\ManyToOne(targetEntity="Channel", inversedBy="aggregate")
+	 * @ORM\JoinColumn(name="channel_id", referencedColumnName="id")
 	 *
 	 * @todo implement inverse side (Channel->aggregate)
 	 */
@@ -45,28 +47,28 @@ class Aggregate
 	/**
 	 * Aggregation type
 	 *
-	 * @Id
-	 * @Column(type="smallint")
+	 * @ORM\Id
+	 * @ORM\Column(type="smallint")
 	 */
 	protected $type;
 
 	/**
 	 * Ending timestamp of period in ms since 1970
 	 *
-	 * @Id
-	 * @Column(type="bigint")
+	 * @ORM\Id
+	 * @ORM\Column(type="bigint")
 	 */
 	protected $timestamp;
 
 	/**
-	 * @Column(type="float", nullable=false)
+	 * @ORM\Column(type="float", nullable=false)
 	 */
 	protected $value;
 
 	/**
 	 * Aggregated row count
 	 *
-	 * @Column(type="integer", nullable=false)
+	 * @ORM\Column(type="integer", nullable=false)
 	 */
 	protected $count;
 

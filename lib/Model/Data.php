@@ -23,32 +23,34 @@
 
 namespace Volkszaehler\Model;
 
+use Doctrine\ORM\Mapping as ORM;
+
 /**
  * Data entity
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @author Andreas Goetz <cpuidle@gmx.de>
  *
- * @Entity
- * @Table(name="data")
+ * @ORM\Entity
+ * @ORM\Table(name="data")
  */
 class Data
 {
 	/**
-	 * @Id
-	 * @ManyToOne(targetEntity="Channel", inversedBy="data")
-	 * @JoinColumn(name="channel_id", referencedColumnName="id")
+	 * @ORM\Id
+	 * @ORM\ManyToOne(targetEntity="Channel", inversedBy="data")
+	 * @ORM\JoinColumn(name="channel_id", referencedColumnName="id")
 	 */
 	protected $channel;
 
 	/**
-	 * @Id
-	 * @Column(type="bigint")
+	 * @ORM\Id
+	 * @ORM\Column(type="bigint")
 	 */
 	protected $timestamp;
 
 	/**
-	 * @Column(type="float", nullable=false)
+	 * @ORM\Column(type="float", nullable=false)
 	 */
 	protected $value;
 
