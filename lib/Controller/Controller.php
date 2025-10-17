@@ -111,6 +111,16 @@ abstract class Controller {
 		// call the operation
 		return $this->{$op}($uuid);
 	}
+
+	/**
+	 * Return header for an OPTIONS request
+	 */
+	public function options(): array {
+		return [
+			'Access-Control-Allow-Origin' => '*',
+			'Access-Control-Allow-Methods' => 'DELETE, GET, HEAD, OPTIONS, PATCH, POST, PULL',
+		];
+	}
 }
 
 ?>

@@ -63,6 +63,8 @@ class Router implements HttpKernelInterface {
 		'POST'			=> 'add',
 		'DELETE'		=> 'delete',
 		'GET'			=> 'get',
+		'HEAD'			=> 'get',
+		'OPTIONS'		=> 'options',
 		'PATCH'			=> 'edit',
 		'PULL'			=> 'edit'		// not REST-conform
 	);
@@ -199,6 +201,9 @@ class Router implements HttpKernelInterface {
 		// get controller operation
 		if (null === ($operation = $request->query->get('operation'))) {
 			$operation = self::$operationMapping[$request->getMethod()];
+		}
+		if ($operation === 'options') {
+			$this->view = new View\Options($request);
 		}
 
 		$class = self::$controllerMapping[$context];
