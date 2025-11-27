@@ -41,9 +41,6 @@ function fail($msg) {
 	throw new \Exception($msg);
 }
 
-// enable strict error reporting
-error_reporting(E_ALL | E_STRICT);
-
 // api version
 define('VZ_VERSION', '0.3');
 
