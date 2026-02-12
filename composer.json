@@ -14,7 +14,7 @@
         "doctrine/dbal": "^2.12",
         "doctrine/annotations": "^2.0.2",
         "andig/dbcopy": "^1.4",
-        "andig/php-shunting-yard": "^1.0",
+        "protonlabs/php-shunting-yard": "^1.0",
         "symfony/cache": "^5.0",
         "symfony/console": "^4.4|^5.0",
         "symfony/http-kernel": "^4.4|^5.0",
