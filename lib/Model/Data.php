@@ -23,7 +23,7 @@
 
 namespace Volkszaehler\Model;
 
-use Doctrine\ORM\Mapping as ORM;
+#use Doctrine\ORM\Mapping as ORM;
 
 /**
  * Data entity
@@ -31,26 +31,26 @@ use Doctrine\ORM\Mapping as ORM;
  * @author Steffen Vogel <info@steffenvogel.de>
  * @author Andreas Goetz <cpuidle@gmx.de>
  *
- * @ORM\Entity
- * @ORM\Table(name="data")
+ * @Doctrine\ORM\Mapping\Entity
+ * @Doctrine\ORM\Mapping\Table(name="data")
  */
 class Data
 {
 	/**
-	 * @ORM\Id
-	 * @ORM\ManyToOne(targetEntity="Channel", inversedBy="data")
-	 * @ORM\JoinColumn(name="channel_id", referencedColumnName="id")
+	 * @Doctrine\ORM\Mapping\Id
+	 * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="Channel", inversedBy="data")
+	 * @Doctrine\ORM\Mapping\JoinColumn(name="channel_id", referencedColumnName="id")
 	 */
 	protected $channel;
 
 	/**
-	 * @ORM\Id
-	 * @ORM\Column(type="bigint")
+	 * @Doctrine\ORM\Mapping\Id
+	 * @Doctrine\ORM\Mapping\Column(type="bigint")
 	 */
 	protected $timestamp;
 
 	/**
-	 * @ORM\Column(type="float", nullable=false)
+	 * @Doctrine\ORM\Mapping\Column(type="float", nullable=false)
 	 */
 	protected $value;
 

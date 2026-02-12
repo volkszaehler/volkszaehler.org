@@ -25,7 +25,8 @@ namespace Volkszaehler\Model;
 
 use Doctrine\Common\Collections;
 use Webpatser\Uuid\Uuid as UUID;
-use Doctrine\ORM\Mapping as ORM;
+//use Doctrine\ORM\Mapping as ORM;
+#use Doctrine\ORM\Mapping;
 
 use Volkszaehler\Definition;
 
@@ -36,43 +37,46 @@ use Volkszaehler\Definition;
  *
  * @Annotation
  *
- * @ORM\Entity
- * @ORM\Table(name="entities")
- * @ORM\InheritanceType("SINGLE_TABLE")
- * @ORM\DiscriminatorColumn(name="class", type="string")
- * @ORM\DiscriminatorMap({
+ * @Doctrine\ORM\Mapping\Entity
+ * @Doctrine\ORM\Mapping\Table(name="entities")
+ * @Doctrine\ORM\Mapping\InheritanceType("SINGLE_TABLE")
+ * @Doctrine\ORM\Mapping\DiscriminatorColumn(name="class", type="string")
+ * @Doctrine\ORM\Mapping\DiscriminatorMap({
  * 		"channel" = "Channel",
  * 		"aggregator" = "Aggregator"
  * })
- * @ORM\HasLifecycleCallbacks
+ * @Doctrine\ORM\Mapping\HasLifecycleCallbacks
  */
 abstract class Entity
 {
+	const UUID_LENGTH = 36;
+
 	/**
-	 * @ORM\Id
-	 * @ORM\Column(type="integer")
-	 * @ORM\GeneratedValue(strategy="AUTO")
+	 * @Doctrine\ORM\Mapping\Id
+	 * @Doctrine\ORM\Mapping\Column(type="integer")
+	 * @Doctrine\ORM\Mapping\GeneratedValue(strategy="AUTO")
 	 */
 	protected $id;
 
 	/**
-	 * @ORM\Column(type="string", length=36, nullable=false, unique=true)
+	 * Doctrine\ORM\Mapping\Column(type="string", length=36, nullable=false, unique=true)
+	 * @Doctrine\ORM\Mapping\Column(type="string", length=self::UUID_LENGTH, nullable=false, unique=true)
 	 */
 	protected $uuid;
 
 	/**
-	 * @ORM\Column(type="string", nullable=false)
+	 * @Doctrine\ORM\Mapping\Column(type="string", nullable=false)
 	 */
 	protected $type;
 
 	/**
-	 * @ORM\OneToMany(targetEntity="Property", mappedBy="entity", cascade={"remove", "persist"}, orphanRemoval=true)
-	 * @ORM\OrderBy({"key" = "ASC"})
+	 * @Doctrine\ORM\Mapping\OneToMany(targetEntity="Property", mappedBy="entity", cascade={"remove", "persist"}, orphanRemoval=true)
+	 * @Doctrine\ORM\Mapping\OrderBy({"key" = "ASC"})
 	 */
 	protected $properties = NULL;
 
 	/**
-	 * @ORM\ManyToMany(targetEntity="Aggregator", mappedBy="children")
+	 * @Doctrine\ORM\Mapping\ManyToMany(targetEntity="Aggregator", mappedBy="children")
 	 */
 	protected $parents = NULL;
 
@@ -98,7 +102,7 @@ abstract class Entity
 	/**
 	 * Checks for required and invalid properties
 	 *
-	 * @ORM\PrePersist
+	 * @Doctrine\ORM\Mapping\PrePersist
 	 */
 	public function checkProperties()
 	{

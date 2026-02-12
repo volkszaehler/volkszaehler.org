@@ -23,7 +23,7 @@
 
 namespace Volkszaehler\Model;
 
-use Doctrine\ORM\Mapping as ORM;
+#use Doctrine\ORM\Mapping as ORM;
 
 use Volkszaehler\Definition;
 
@@ -32,28 +32,28 @@ use Volkszaehler\Definition;
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  *
- * @ORM\Entity
- * @ORM\Table(name="properties")
- * @ORM\HasLifecycleCallbacks
+ * @Doctrine\ORM\Mapping\Entity
+ * @Doctrine\ORM\Mapping\Table(name="properties")
+ * @Doctrine\ORM\Mapping\HasLifecycleCallbacks
  */
 class Property
 {
 	/**
-	 * @ORM\Id
-	 * @ORM\ManyToOne(targetEntity="Entity", inversedBy="properties")
-	 * @ORM\JoinColumn(name="entity_id")
+	 * @Doctrine\ORM\Mapping\Id
+	 * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="Entity", inversedBy="properties")
+	 * @Doctrine\ORM\Mapping\JoinColumn(name="entity_id")
 	 */
 	protected $entity;
 
 	/**
-	 * @ORM\Id
-	 * @ORM\Column(name="pkey", type="string")
+	 * @Doctrine\ORM\Mapping\Id
+	 * @Doctrine\ORM\Mapping\Column(name="pkey", type="string")
 	 * HINT: column name "key" is reserved by mysql
 	 */
 	protected $key;
 
 	/**
-	 * @ORM\Column(type="text", nullable=false)
+	 * @Doctrine\ORM\Mapping\Column(type="text", nullable=false)
 	 */
 	protected $value;
 
@@ -73,7 +73,7 @@ class Property
 	/**
 	 * Cast property value according to $this->type
 	 *
-	 * @ORM\PostLoad
+	 * @Doctrine\ORM\Mapping\PostLoad
 	 */
 	public function cast()
 	{
@@ -90,7 +90,7 @@ class Property
 	/**
 	 * Undo type cast to prevent Doctrine storing unmodified properties
 	 *
-	 * @ORM\PreFlush
+	 * @Doctrine\ORM\Mapping\PreFlush
 	 */
 	public function uncast()
 	{
@@ -106,8 +106,8 @@ class Property
 	 *
 	 * Throws an exception if something is incorrect
 	 *
-	 * @ORM\PrePersist
-	 * @ORM\PreUpdate
+	 * @Doctrine\ORM\Mapping\PrePersist
+	 * @Doctrine\ORM\Mapping\PreUpdate
 	 */
 	public function validate()
 	{
