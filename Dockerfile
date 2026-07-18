@@ -1,6 +1,6 @@
 # Copyright (c) 2019 Andreas Goetz <cpuidle@gmx.de>
 
-ARG PHP_IMAGE_TAG=8.2-alpine
+ARG PHP_IMAGE_TAG=8.3-alpine3.22
 
 FROM php:$PHP_IMAGE_TAG AS builder
 
@@ -9,7 +9,7 @@ WORKDIR /vz
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 COPY composer.json /vz
 
-RUN composer install --ignore-platform-reqs --no-ansi --no-scripts --no-dev --no-interaction --no-progress --optimize-autoloader
+RUN composer install --ignore-platform-req=ext-pcntl --no-ansi --no-scripts --no-dev --no-interaction --no-progress --optimize-autoloader
 
 COPY . /vz
 
