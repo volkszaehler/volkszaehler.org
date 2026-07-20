@@ -9,7 +9,7 @@ WORKDIR /vz
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 COPY composer.json /vz
 
-RUN docker-php-ext-install pcntl
+RUN docker-php-ext-install pcntl \
     && composer install --no-ansi --no-scripts --no-dev --no-interaction --no-progress --optimize-autoloader
 
 COPY . /vz
