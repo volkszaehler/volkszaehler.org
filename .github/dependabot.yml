@@ -13,3 +13,8 @@ updates:
   - dependency-name: symfony/console
     versions:
     - 5.2.0
+- package-ecosystem: docker
+  directory: "/"
+  schedule:
+    interval: weekly
+    time: "04:00"
