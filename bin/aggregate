@@ -75,7 +75,7 @@ abstract class BasicCommand extends Command
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
 		if ($input->getOption('verbose')) {
-			$this->em->getConnection()->getConfiguration()->setSQLLogger(new Util\ConsoleSQLLogger($output));
+			Util\SQLLoggerMiddleware::$logger = new Util\ConsoleSQLLogger($output);
 		}
 		$this->output = $output;
 

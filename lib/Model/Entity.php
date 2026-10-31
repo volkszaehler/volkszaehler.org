@@ -23,8 +23,9 @@
 
 namespace Volkszaehler\Model;
 
+use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections;
-use Webpatser\Uuid\Uuid as UUID;
+use Symfony\Component\Uid\Uuid;
 //use Doctrine\ORM\Mapping as ORM;
 #use Doctrine\ORM\Mapping;
 
@@ -36,48 +37,36 @@ use Volkszaehler\Definition;
  * @author Steffen Vogel <info@steffenvogel.de>
  *
  * @Annotation
- *
- * @Doctrine\ORM\Mapping\Entity
- * @Doctrine\ORM\Mapping\Table(name="entities")
- * @Doctrine\ORM\Mapping\InheritanceType("SINGLE_TABLE")
- * @Doctrine\ORM\Mapping\DiscriminatorColumn(name="class", type="string")
- * @Doctrine\ORM\Mapping\DiscriminatorMap({
- * 		"channel" = "Channel",
- * 		"aggregator" = "Aggregator"
- * })
- * @Doctrine\ORM\Mapping\HasLifecycleCallbacks
  */
+#[ORM\Entity]
+#[ORM\Table(name: 'entities')]
+#[ORM\InheritanceType('SINGLE_TABLE')]
+#[ORM\DiscriminatorColumn(name: 'class', type: 'string')]
+#[ORM\DiscriminatorMap(['channel' => Channel::class, 'aggregator' => Aggregator::class])]
+#[ORM\HasLifecycleCallbacks]
 abstract class Entity
 {
 	const UUID_LENGTH = 36;
 
-	/**
-	 * @Doctrine\ORM\Mapping\Id
-	 * @Doctrine\ORM\Mapping\Column(type="integer")
-	 * @Doctrine\ORM\Mapping\GeneratedValue(strategy="AUTO")
-	 */
+	#[ORM\Id]
+	#[ORM\Column(type: 'integer')]
+	#[ORM\GeneratedValue(strategy: 'AUTO')]
 	protected $id;
 
 	/**
 	 * Doctrine\ORM\Mapping\Column(type="string", length=36, nullable=false, unique=true)
-	 * @Doctrine\ORM\Mapping\Column(type="string", length=self::UUID_LENGTH, nullable=false, unique=true)
 	 */
+	#[ORM\Column(type: 'string', length: self::UUID_LENGTH, nullable: false, unique: true)]
 	protected $uuid;
 
-	/**
-	 * @Doctrine\ORM\Mapping\Column(type="string", nullable=false)
-	 */
+	#[ORM\Column(type: 'string', nullable: false)]
 	protected $type;
 
-	/**
-	 * @Doctrine\ORM\Mapping\OneToMany(targetEntity="Property", mappedBy="entity", cascade={"remove", "persist"}, orphanRemoval=true)
-	 * @Doctrine\ORM\Mapping\OrderBy({"key" = "ASC"})
-	 */
+	#[ORM\OneToMany(targetEntity: Property::class, mappedBy: 'entity', cascade: ['remove', 'persist'], orphanRemoval: true)]
+	#[ORM\OrderBy(['key' => 'ASC'])]
 	protected $properties = NULL;
 
-	/**
-	 * @Doctrine\ORM\Mapping\ManyToMany(targetEntity="Aggregator", mappedBy="children")
-	 */
+	#[ORM\ManyToMany(targetEntity: Aggregator::class, mappedBy: 'children')]
 	protected $parents = NULL;
 
 	/**
@@ -92,7 +81,7 @@ abstract class Entity
 		}
 
 		$this->type = $type;
-		$this->uuid = (string) UUID::generate(); // generate random UUID
+		$this->uuid = Uuid::v4()->toRfc4122(); // generate random UUID
 
 		$this->properties = new Collections\ArrayCollection();
 		$this->parents = new Collections\ArrayCollection();
@@ -101,9 +90,8 @@ abstract class Entity
 
 	/**
 	 * Checks for required and invalid properties
-	 *
-	 * @Doctrine\ORM\Mapping\PrePersist
 	 */
+	#[ORM\PrePersist]
 	public function checkProperties()
 	{
 		$missingProperties = array_diff($this->getDefinition()->getRequiredProperties(), array_keys($this->getProperties()));

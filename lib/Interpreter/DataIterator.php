@@ -44,16 +44,15 @@ class DataIterator implements \IteratorAggregate, \Countable {
 	/**
 	 * Constructor
 	 *
-	 * @param \PDOStatement $stmt
+	 * @param DBAL\Result $stmt
 	 * @param integer $rowCount total num of rows in $stmt
 	 * @param integer $tupleCount set to NULL to get all rows
 	 */
-	public function __construct(\Traversable $stmt, $rowCount, $tupleCount) {
+	public function __construct(DBAL\Result $stmt, $rowCount, $tupleCount) {
 		$this->rowCount = $rowCount;
 		$this->tupleCount = $tupleCount;
 
 		$this->stmt = $stmt;
-		$this->stmt->setFetchMode(\PDO::FETCH_NUM);
 
 		if (empty($this->tupleCount) || $this->rowCount <= $this->tupleCount + 1) {
 			// get all rows
@@ -70,7 +69,7 @@ class DataIterator implements \IteratorAggregate, \Countable {
 		}
 
 		// skipping first reading, just for getting first timestamp, value is remembered
-		list($this->from, $this->firstValue, $foo) = $this->stmt->fetch();
+		list($this->from, $this->firstValue, $foo) = $this->stmt->fetchNumeric();
 
 		// ensure valid data range if we have 1 row only (not using iterator then)
 		if ($this->from) $this->to = $this->from;
@@ -87,7 +86,7 @@ class DataIterator implements \IteratorAggregate, \Countable {
 			$firstTimestamp = $this->lastTimestamp; // SensorInterpreter
 
 			$package = array(0, 0, 0, 0, 0);
-			for ($i = 0; $i < $this->packageSize && $tuple = $this->stmt->fetch(); $i++) {
+			for ($i = 0; $i < $this->packageSize && $tuple = $this->stmt->fetchNumeric(); $i++) {
 				$package[0] = $tuple[0]; 	// use timestamp of last package tuple as package timestamp
 				$package[1] += $tuple[1];										// ImpulseInterpreter
 				$package[2] += $tuple[2];										// number of rows in package
@@ -105,7 +104,7 @@ class DataIterator implements \IteratorAggregate, \Countable {
 			}
 		} while ($tuple !== false);
 
-		$this->stmt->closeCursor();
+		$this->stmt->free();
 	}
 
 	/**

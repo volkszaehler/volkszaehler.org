@@ -23,6 +23,7 @@
 
 namespace Volkszaehler\Model;
 
+use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 #use Doctrine\ORM\Mapping as ORM;
 
@@ -31,18 +32,14 @@ use Doctrine\Common\Collections\ArrayCollection;
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @todo use nested sets: http://github.com/blt04/doctrine2-nestedset
- *
- * @Doctrine\ORM\Mapping\Entity
  */
+#[ORM\Entity]
 class Aggregator extends Entity
 {
-	/**
-	 * @Doctrine\ORM\Mapping\ManyToMany(targetEntity="Entity", inversedBy="parents")
-	 * @Doctrine\ORM\Mapping\JoinTable(name="entities_in_aggregator",
-	 * 		joinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="parent_id", referencedColumnName="id", nullable=false)},
-	 * 		inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="child_id", referencedColumnName="id", nullable=false)}
-	 * )
-	 */
+	#[ORM\ManyToMany(targetEntity: Entity::class, inversedBy: 'parents')]
+	#[ORM\JoinTable(name: 'entities_in_aggregator')]
+	#[ORM\JoinColumn(name: 'parent_id', referencedColumnName: 'id', nullable: false)]
+	#[ORM\InverseJoinColumn(name: 'child_id', referencedColumnName: 'id', nullable: false)]
 	protected $children = NULL;
 
 	/**

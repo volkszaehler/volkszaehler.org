@@ -62,7 +62,7 @@ class MiddlewareAdapter {
 	}
 
 	protected function openController($force = false) {
-		if ($force || $this->em == null || !$this->em->isOpen() || $this->em->getConnection()->ping() === false) {
+		if ($force || $this->em == null || !$this->em->isOpen() || !Router::isConnected($this->em)) {
 			$this->em = Router::createEntityManager(false);
 		}
 	}

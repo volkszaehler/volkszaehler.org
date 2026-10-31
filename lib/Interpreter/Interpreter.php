@@ -250,7 +250,7 @@ abstract class Interpreter implements \IteratorAggregate {
 			// for the frontend to be able to draw graphs to the left and right borders
 			if (isset($this->from)) {
                 $sql = 'SELECT MAX(timestamp) FROM data WHERE channel_id=? AND timestamp < ?';
-                $from = $this->conn->fetchColumn($sql, [$this->channel->getId(), $this->from], 0);
+                $from = $this->conn->fetchOne($sql, [$this->channel->getId(), $this->from]);
 
 				if ($from)
 					$this->from = (float)$from; // bigint conversion
@@ -262,7 +262,7 @@ abstract class Interpreter implements \IteratorAggregate {
 				$sql = $this->hasOption('consumption') || $this->hasOption('consumptionto')
 					? 'SELECT MAX(timestamp) FROM data WHERE channel_id=? AND timestamp<?'
 					: 'SELECT MIN(timestamp) FROM data WHERE channel_id=? AND timestamp>?';
-				$to = $this->conn->fetchColumn($sql, array($this->channel->getId(), $this->to), 0);
+				$to = $this->conn->fetchOne($sql, array($this->channel->getId(), $this->to));
 				if ($to)
 					$this->to = (float)$to; // bigint conversion
 			}
@@ -270,7 +270,7 @@ abstract class Interpreter implements \IteratorAggregate {
 				// special case: when asking for from=now the _last_ tuple should be returned,
 				// even if it is before now
 				$sql = 'SELECT MAX(timestamp) FROM data WHERE channel_id=? AND timestamp<?';
-                $to = $this->conn->fetchColumn($sql, [$this->channel->getId(), $this->from], 0);
+                $to = $this->conn->fetchOne($sql, [$this->channel->getId(), $this->from]);
                 if ($to) {
                     $this->to = $this->from; // bigint conversion
                     $this->from = (float)$to; // bigint conversion
@@ -314,7 +314,7 @@ abstract class Interpreter implements \IteratorAggregate {
 			$this->optimizer->optimizeRowCountSQL($sqlRowCount, $sqlParametersRowCount);
 		}
 
-		$this->rowCount = (int) $this->conn->fetchColumn($sqlRowCount, $sqlParametersRowCount, 0);
+		$this->rowCount = (int) $this->conn->fetchOne($sqlRowCount, $sqlParametersRowCount);
 
 		if ($this->rowCount <= 0)
 			return new \EmptyIterator();

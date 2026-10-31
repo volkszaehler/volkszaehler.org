@@ -44,16 +44,16 @@ class CapabilitiesController extends Controller {
 	 * @return int Number of database rows
 	 */
 	private function sqlCount(Connection $conn, $table) {
-		$explain = $conn->fetchAssoc('EXPLAIN SELECT COUNT(*) FROM ' . $table . ' USE INDEX (PRIMARY)');
+		$explain = $conn->fetchAssociative('EXPLAIN SELECT COUNT(*) FROM ' . $table . ' USE INDEX (PRIMARY)');
 		if (isset($explain['rows']))
 			// estimated for InnoDB
-			$rows = $conn->fetchColumn(
+			$rows = $conn->fetchOne(
 				'SELECT table_rows FROM information_schema.tables WHERE LOWER(table_schema) = LOWER(?) AND LOWER(table_name) = LOWER(?)',
 				array(Util\Configuration::read('db.dbname'), $table)
 			);
 		else
 			// get correct values for MyISAM
-			$rows = $conn->fetchColumn('SELECT COUNT(1) FROM ' . $table);
+			$rows = $conn->fetchOne('SELECT COUNT(1) FROM ' . $table);
 
 		return $rows;
 	}
@@ -73,7 +73,7 @@ class CapabilitiesController extends Controller {
 			 $params[] = $table;
 		}
 
-		return $conn->fetchColumn($sql, $params);
+		return $conn->fetchOne($sql, $params);
 	}
 
 	/**
