@@ -23,6 +23,7 @@
 
 namespace Volkszaehler\Model;
 
+use Doctrine\ORM\Mapping as ORM;
 #use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -30,28 +31,21 @@ namespace Volkszaehler\Model;
  *
  * @author Steffen Vogel <info@steffenvogel.de>
  * @author Andreas Goetz <cpuidle@gmx.de>
- *
- * @Doctrine\ORM\Mapping\Entity
- * @Doctrine\ORM\Mapping\Table(name="data")
  */
+#[ORM\Entity]
+#[ORM\Table(name: 'data')]
 class Data
 {
-	/**
-	 * @Doctrine\ORM\Mapping\Id
-	 * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="Channel", inversedBy="data")
-	 * @Doctrine\ORM\Mapping\JoinColumn(name="channel_id", referencedColumnName="id")
-	 */
+	#[ORM\Id]
+	#[ORM\ManyToOne(targetEntity: Channel::class, inversedBy: 'data')]
+	#[ORM\JoinColumn(name: 'channel_id', referencedColumnName: 'id')]
 	protected $channel;
 
-	/**
-	 * @Doctrine\ORM\Mapping\Id
-	 * @Doctrine\ORM\Mapping\Column(type="bigint")
-	 */
+	#[ORM\Id]
+	#[ORM\Column(type: 'bigint')]
 	protected $timestamp;
 
-	/**
-	 * @Doctrine\ORM\Mapping\Column(type="float", nullable=false)
-	 */
+	#[ORM\Column(type: 'float', nullable: false)]
 	protected $value;
 
 	public function __construct(Channel $channel, $timestamp, $value)

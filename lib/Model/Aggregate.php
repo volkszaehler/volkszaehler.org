@@ -23,53 +23,47 @@
 
 namespace Volkszaehler\Model;
 
+use Doctrine\ORM\Mapping as ORM;
 #use Doctrine\ORM\Mapping as ORM;
 
 /**
  * Aggregate materialized view entity
  *
  * @author Andreas Goetz <cpuidle@gmx.de>
- *
- * @Doctrine\ORM\Mapping\Entity
- * @Doctrine\ORM\Mapping\Table(name="aggregate")
  */
+#[ORM\Entity]
+#[ORM\Table(name: 'aggregate')]
 class Aggregate
 {
 	/**
-	 * @Doctrine\ORM\Mapping\Id
-	 * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="Channel", inversedBy="aggregate")
-	 * @Doctrine\ORM\Mapping\JoinColumn(name="channel_id", referencedColumnName="id")
-	 *
 	 * @todo implement inverse side (Channel->aggregate)
 	 */
+	#[ORM\Id]
+	#[ORM\ManyToOne(targetEntity: Channel::class, inversedBy: 'aggregate')]
+	#[ORM\JoinColumn(name: 'channel_id', referencedColumnName: 'id')]
 	protected $channel;
 
 	/**
 	 * Aggregation type
-	 *
-	 * @Doctrine\ORM\Mapping\Id
-	 * @Doctrine\ORM\Mapping\Column(type="smallint")
 	 */
+	#[ORM\Id]
+	#[ORM\Column(type: 'smallint')]
 	protected $type;
 
 	/**
 	 * Ending timestamp of period in ms since 1970
-	 *
-	 * @Doctrine\ORM\Mapping\Id
-	 * @Doctrine\ORM\Mapping\Column(type="bigint")
 	 */
+	#[ORM\Id]
+	#[ORM\Column(type: 'bigint')]
 	protected $timestamp;
 
-	/**
-	 * @Doctrine\ORM\Mapping\Column(type="float", nullable=false)
-	 */
+	#[ORM\Column(type: 'float', nullable: false)]
 	protected $value;
 
 	/**
 	 * Aggregated row count
-	 *
-	 * @Doctrine\ORM\Mapping\Column(type="integer", nullable=false)
 	 */
+	#[ORM\Column(type: 'integer', nullable: false)]
 	protected $count;
 
 	public function __construct(Channel $channel, $type, $timestamp, $value, $count)

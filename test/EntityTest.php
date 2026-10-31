@@ -10,7 +10,7 @@
 namespace Tests;
 
 use PHPUnit\Framework\Attributes\Depends;
-use Webpatser\Uuid\Uuid as UUID;
+use Symfony\Component\Uid\Uuid;
 
 class EntityTest extends Middleware
 {
@@ -103,7 +103,7 @@ class EntityTest extends Middleware
 		$this->assertStringStartsWith('Invalid UUID', $this->json->exception->message);
 
 		// non-existing uuid
-		$uuid = UUID::generate();
+		$uuid = Uuid::v4()->toRfc4122();
 		$this->getJson('/entity/' . $uuid . '.json', array(), 'GET', true);
 		$this->assertStringStartsWith('No entity with UUID', $this->json->exception->message);
 	}
@@ -122,7 +122,7 @@ class EntityTest extends Middleware
 		$this->assertStringStartsWith('Invalid UUID', $this->json->exception->message);
 
 		// non-existing uuid
-		$uuid = UUID::generate();
+		$uuid = Uuid::v4()->toRfc4122();
 		$this->getJson('/entity/' . $uuid . '.json', array(
 			'operation' => 'edit'
 		), 'GET', true);

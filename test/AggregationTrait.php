@@ -21,7 +21,7 @@ trait AggregationTrait {
 	}
 
 	static function aggSupported(Connection $conn): bool {
-		return $conn->getDatabasePlatform()->getName() == 'mysql';
+		return $conn->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 	}
 
 	/**

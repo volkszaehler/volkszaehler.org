@@ -9,14 +9,14 @@
 
 namespace Tests;
 
-use Webpatser\Uuid\Uuid as UUID;
+use Symfony\Component\Uid\Uuid;
 
 class IotTest extends Middleware
 {
 	protected $uuid;
 
 	function testRetrievel() {
-		$secret = str_replace('-', '', UUID::generate());
+		$secret = str_replace('-', '', Uuid::v4()->toRfc4122());
 		$this->getJson('/channel.json', array(
 			'operation' => 'add',
 			'title' => 'Power',

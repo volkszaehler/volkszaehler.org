@@ -23,7 +23,6 @@
 namespace Volkszaehler\Util;
 
 use Doctrine\ORM;
-use Webpatser\Uuid\Uuid as UUID;
 
 use Volkszaehler\Util;
 use Volkszaehler\Definition\PropertyDefinition;
@@ -78,7 +77,7 @@ class EntityFactory {
 	 */
 	protected function __construct(ORM\EntityManager $em) {
 		$this->em = $em;
-		$this->cache = $em->getConfiguration()->getQueryCacheImpl();
+		$this->cache = $em->getConfiguration()->getQueryCache();
 	}
 
 	/**
@@ -92,7 +91,7 @@ class EntityFactory {
 		if (empty($uuid)) {
 			throw new \Exception('Missing UUID');
 		}
-		if (UUID::validate($uuid)) {
+		if (self::isUuid($uuid)) {
 			return $this->getByUuidUnvalidated($uuid, $cache);
 		}
 		return $this->getByName($uuid, $cache);
@@ -107,7 +106,7 @@ class EntityFactory {
 	 * @return Model\Entity
 	 */
 	public function getByUuid($uuid, $cache = false) {
-		if (!UUID::validate($uuid)) {
+		if (!self::isUuid($uuid)) {
 			throw new \Exception('Invalid UUID: \'' . $uuid . '\'');
 		}
 		return $this->getByUuidUnvalidated($uuid, $cache);
@@ -201,13 +200,20 @@ class EntityFactory {
 	}
 
 	/**
+	 * Check the textual UUID format, any version and variant like the UUIDs stored by older releases
+	 */
+	private static function isUuid($uuid) {
+		return is_string($uuid) && preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $uuid);
+	}
+
+	/**
 	 * Remove an entity by key from cache
 	 *
 	 * @param string|null $key
 	 */
 	public function remove($key) {
 		if (isset($key)) {
-			$this->cache->delete($key);
+			$this->cache->deleteItem(rawurlencode($key));
 		}
 	}
 
@@ -217,8 +223,11 @@ class EntityFactory {
 	 * @throws \Exception
 	 */
 	private function cached($key, $cache, $callable) {
-		if ($cache && $this->cache->contains($key) && !Util\Configuration::read('devmode')) {
-			$entity = $this->cache->fetch($key);
+		// psr-6 keys must not contain {}()/\@:
+		$item = $this->cache->getItem(rawurlencode($key));
+
+		if ($cache && $item->isHit() && !Util\Configuration::read('devmode')) {
+			$entity = $item->get();
 
 			if (!$entity instanceof Model\Aggregator) {
 				return $entity;
@@ -231,7 +240,7 @@ class EntityFactory {
 			if (!isset($this->ttl)) {
 				$this->ttl = Util\Configuration::read('cache.ttl', 3600);
 			}
-			$this->cache->save($key, $entity, $this->ttl);
+			$this->cache->save($item->set($entity)->expiresAfter($this->ttl));
 		}
 
 		return $entity;
