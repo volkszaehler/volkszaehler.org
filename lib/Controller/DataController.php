@@ -117,7 +117,7 @@ class DataController extends Controller {
 			$value = $this->getParameters()->get('value');
 
 			if (is_null($timestamp)) {
-				$timestamp = (double) round(microtime(TRUE) * 1000);
+				$timestamp = (float) round(microtime(TRUE) * 1000);
 			}
 			else {
 				$timestamp = Interpreter::parseDateTimeString($timestamp);

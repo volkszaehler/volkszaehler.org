@@ -46,7 +46,7 @@ class ConsoleSQLLogger implements SQLLogger
 	/**
 	 * {@inheritdoc}
 	 */
-	public function startQuery($sql, array $params = null, array $types = null)
+	public function startQuery($sql, ?array $params = null, ?array $types = null)
 	{
 		$sql = Debug::getParametrizedQuery($sql, $params);
 		if (class_exists(SqlFormatter::class)) {
