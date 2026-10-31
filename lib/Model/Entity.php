@@ -25,7 +25,7 @@ namespace Volkszaehler\Model;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections;
-use Webpatser\Uuid\Uuid as UUID;
+use Symfony\Component\Uid\Uuid;
 //use Doctrine\ORM\Mapping as ORM;
 #use Doctrine\ORM\Mapping;
 
@@ -81,7 +81,7 @@ abstract class Entity
 		}
 
 		$this->type = $type;
-		$this->uuid = (string) UUID::generate(); // generate random UUID
+		$this->uuid = Uuid::v4()->toRfc4122(); // generate random UUID
 
 		$this->properties = new Collections\ArrayCollection();
 		$this->parents = new Collections\ArrayCollection();

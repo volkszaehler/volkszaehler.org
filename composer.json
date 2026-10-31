@@ -23,7 +23,7 @@
         "ringcentral/psr7": "^1.2",
         "php-pm/php-pm": "^2.0",
         "php-pm/httpkernel-adapter": "^2.0",
-        "webpatser/laravel-uuid": "^4.0"
+        "symfony/uid": "^6.4"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5",
