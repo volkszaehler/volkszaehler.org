@@ -9,7 +9,7 @@
         "email": "volkszaehler@lists.volkszaehler.org"
     },
     "require": {
-        "php": "^8.1",
+        "php": "^8.2",
         "doctrine/orm": "^3.5",
         "doctrine/dbal": "^4.2",
         "protonlabs/php-shunting-yard": "^1.0",
