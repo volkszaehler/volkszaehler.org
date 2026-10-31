@@ -78,7 +78,7 @@ class EntityFactory {
 	 */
 	protected function __construct(ORM\EntityManager $em) {
 		$this->em = $em;
-		$this->cache = $em->getConfiguration()->getQueryCacheImpl();
+		$this->cache = $em->getConfiguration()->getQueryCache();
 	}
 
 	/**
@@ -207,7 +207,7 @@ class EntityFactory {
 	 */
 	public function remove($key) {
 		if (isset($key)) {
-			$this->cache->delete($key);
+			$this->cache->deleteItem(rawurlencode($key));
 		}
 	}
 
@@ -217,8 +217,11 @@ class EntityFactory {
 	 * @throws \Exception
 	 */
 	private function cached($key, $cache, $callable) {
-		if ($cache && $this->cache->contains($key) && !Util\Configuration::read('devmode')) {
-			$entity = $this->cache->fetch($key);
+		// psr-6 keys must not contain {}()/\@:
+		$item = $this->cache->getItem(rawurlencode($key));
+
+		if ($cache && $item->isHit() && !Util\Configuration::read('devmode')) {
+			$entity = $item->get();
 
 			if (!$entity instanceof Model\Aggregator) {
 				return $entity;
@@ -231,7 +234,7 @@ class EntityFactory {
 			if (!isset($this->ttl)) {
 				$this->ttl = Util\Configuration::read('cache.ttl', 3600);
 			}
-			$this->cache->save($key, $entity, $this->ttl);
+			$this->cache->save($item->set($entity)->expiresAfter($this->ttl));
 		}
 
 		return $entity;

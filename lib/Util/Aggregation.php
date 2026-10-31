@@ -152,7 +152,7 @@ class Aggregation
 		}
 		$sql .= 'LIMIT 1';
 
-		$rows = $this->conn->fetchAll($sql, $sqlParameters);
+		$rows = $this->conn->fetchAllAssociative($sql, $sqlParameters);
 
 		return count($rows) ? $rows[0]['type'] : FALSE;
 	}
@@ -333,7 +333,7 @@ class Aggregation
 		if (Util\Debug::isActivated())
 			echo (Util\Debug::getParametrizedQuery($sql, $sqlParameters) . "\n");
 
-		$rows = $this->conn->executeUpdate($sql, $sqlParameters);
+		$rows = $this->conn->executeStatement($sql, $sqlParameters);
 
 		return ($rows);
 	}
@@ -351,7 +351,7 @@ class Aggregation
 			$sql .= ' AND uuid = ?';
 		}
 
-		return $this->conn->fetchAll($sql, $sqlParameters);
+		return $this->conn->fetchAllAssociative($sql, $sqlParameters);
 	}
 
 	/**

@@ -20,7 +20,6 @@
 namespace Volkszaehler\Util;
 
 use Symfony\Component\Console\Output\OutputInterface;
-use Doctrine\DBAL\Logging\SQLLogger;
 use SqlFormatter;
 
 /**

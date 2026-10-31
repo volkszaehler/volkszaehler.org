@@ -135,7 +135,7 @@ class DataController extends Controller {
 			   'INTO data (channel_id, timestamp, value) ' .
 			   'VALUES ' . implode(', ', array_fill(0, count($data)>>1, '(' . $channel->getId() . ',?,?)'));
 
-		$rows = $this->em->getConnection()->executeUpdate($sql, $data);
+		$rows = $this->em->getConnection()->executeStatement($sql, $data);
 		return array('rows' => $rows);
 	}
 

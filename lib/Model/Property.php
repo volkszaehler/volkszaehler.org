@@ -23,6 +23,7 @@
 
 namespace Volkszaehler\Model;
 
+use Doctrine\ORM\Mapping as ORM;
 #use Doctrine\ORM\Mapping as ORM;
 
 use Volkszaehler\Definition;
@@ -31,30 +32,25 @@ use Volkszaehler\Definition;
  * Property entity
  *
  * @author Steffen Vogel <info@steffenvogel.de>
- *
- * @Doctrine\ORM\Mapping\Entity
- * @Doctrine\ORM\Mapping\Table(name="properties")
- * @Doctrine\ORM\Mapping\HasLifecycleCallbacks
  */
+#[ORM\Entity]
+#[ORM\Table(name: 'properties')]
+#[ORM\HasLifecycleCallbacks]
 class Property
 {
-	/**
-	 * @Doctrine\ORM\Mapping\Id
-	 * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="Entity", inversedBy="properties")
-	 * @Doctrine\ORM\Mapping\JoinColumn(name="entity_id")
-	 */
+	#[ORM\Id]
+	#[ORM\ManyToOne(targetEntity: Entity::class, inversedBy: 'properties')]
+	#[ORM\JoinColumn(name: 'entity_id')]
 	protected $entity;
 
 	/**
-	 * @Doctrine\ORM\Mapping\Id
-	 * @Doctrine\ORM\Mapping\Column(name="pkey", type="string")
 	 * HINT: column name "key" is reserved by mysql
 	 */
+	#[ORM\Id]
+	#[ORM\Column(name: 'pkey', type: 'string')]
 	protected $key;
 
-	/**
-	 * @Doctrine\ORM\Mapping\Column(type="text", nullable=false)
-	 */
+	#[ORM\Column(type: 'text', nullable: false)]
 	protected $value;
 
 	/**
@@ -72,9 +68,8 @@ class Property
 
 	/**
 	 * Cast property value according to $this->type
-	 *
-	 * @Doctrine\ORM\Mapping\PostLoad
 	 */
+	#[ORM\PostLoad]
 	public function cast()
 	{
 		$type = $this->getDefinition()->getType();
@@ -89,9 +84,8 @@ class Property
 
 	/**
 	 * Undo type cast to prevent Doctrine storing unmodified properties
-	 *
-	 * @Doctrine\ORM\Mapping\PreFlush
 	 */
+	#[ORM\PreFlush]
 	public function uncast()
 	{
 		if ($this->value === false) { // force boolean false to 0 instead of ''
@@ -105,10 +99,9 @@ class Property
 	 * Validate property key & value
 	 *
 	 * Throws an exception if something is incorrect
-	 *
-	 * @Doctrine\ORM\Mapping\PrePersist
-	 * @Doctrine\ORM\Mapping\PreUpdate
 	 */
+	#[ORM\PrePersist]
+	#[ORM\PreUpdate]
 	public function validate()
 	{
 		if (!Definition\PropertyDefinition::exists($this->key)) {
