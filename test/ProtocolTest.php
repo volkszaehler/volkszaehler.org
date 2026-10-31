@@ -110,9 +110,9 @@ class ProtocolTest extends Data
 			'debug' => 1
 		));
 
-		$this->assertObjectHasAttribute('debug', $this->json, 'Missing debug output');
+		$this->assertObjectHasProperty('debug', $this->json, 'Missing debug output');
 		// currently not working on HHVM
-		// $this->assertObjectHasAttribute('sql', $this->json->debug, 'Missing debug sql trace');
+		// $this->assertObjectHasProperty('sql', $this->json->debug, 'Missing debug sql trace');
 	}
 
 	function testExceptionDebug() {

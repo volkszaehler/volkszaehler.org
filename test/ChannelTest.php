@@ -28,7 +28,7 @@ class ChannelTest extends Middleware
 		return($this->uuid = (isset($this->json->entity->uuid)) ? $this->json->entity->uuid : null);
 	}
 
-	function channelProvider() {
+	public static function channelProvider() {
 		return array(
 			array('Power', 'power', 1000),					// Meter
 			array('Electric Meter', 'electric meter', 10),	// Counter

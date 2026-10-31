@@ -39,7 +39,7 @@ class FormatTest extends Data
 
 		$this->assertEquals(200, $response->getStatusCode());
 		$this->assertEquals('text/csv', $response->headers->get('Content-Type'));
-		$this->assertContains(static::$uuid, $response->getContent());
+		$this->assertStringContainsString(static::$uuid, $response->getContent());
 	}
 
 	function testCSVInvalidUuidException() {
@@ -56,8 +56,8 @@ class FormatTest extends Data
 		));
 
 		$this->assertEquals(200, $response->getStatusCode());
-		$this->assertContains('text/plain', $response->headers->get('Content-Type'));
-		$this->assertContains('W', $response->getContent());
+		$this->assertStringContainsString('text/plain', $response->headers->get('Content-Type'));
+		$this->assertStringContainsString('W', $response->getContent());
 	}
 }
 

@@ -56,7 +56,7 @@ class GroupTest extends Middleware
 		))->entity->children[0]->uuid);
 
 		// remove child from group
-		$this->assertObjectNotHasAttribute('children', $this->getJson('/group/' . self::$uuid . '.json', array(
+		$this->assertObjectNotHasProperty('children', $this->getJson('/group/' . self::$uuid . '.json', array(
 			'operation' => 'delete',
 			'uuid' => $child
 		))->entity);
@@ -72,7 +72,7 @@ class GroupTest extends Middleware
 			'operation' => 'delete'
 		));
 
-		$this->assertObjectNotHasAttribute('children', $this->getJson('/group/' . self::$uuid . '.json')->entity);
+		$this->assertObjectNotHasProperty('children', $this->getJson('/group/' . self::$uuid . '.json')->entity);
 	}
 
 	/**

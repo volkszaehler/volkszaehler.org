@@ -152,7 +152,7 @@ class VirtualTest extends Middleware
 	/**
 	 * VirtualChannel test data
 	 */
-	function virtualInputProvider() {
+	public static function virtualInputProvider() {
 		return array(
 			// testVirtualChannelIdentity
 			array(['lines', 'lines'], ['in1', 'in1']),

@@ -11,7 +11,7 @@ namespace Tests;
 
 class RawTest extends Data
 {
-    public function channelDataProvider()  {
+    public static function channelDataProvider()  {
         return array(
             array('power', round(rand(2, 1000))),
             array('electric meter', round(rand(2, 1000))),

@@ -15,21 +15,21 @@ trait AggregationTrait {
     /** @var Util\Aggregation */
     public $agg;
 
-	function getConnection(): Connection {
+	static function getConnection(): Connection {
 		$em = \Volkszaehler\Router::createEntityManager();
 		return $em->getConnection();
 	}
 
-	function aggSupported(Connection $conn): bool {
+	static function aggSupported(Connection $conn): bool {
 		return $conn->getDatabasePlatform()->getName() == 'mysql';
 	}
 
 	/**
 	 * Aggregation data provider
 	 */
-	function aggProvider(): array {
-		$conn = $this->getConnection();
-		$modes = array_unique([false, $this->aggSupported($conn)]);
+	public static function aggProvider(): array {
+		$conn = self::getConnection();
+		$modes = array_unique([false, self::aggSupported($conn)]);
 		return array_map(function ($mode) {
 			return [$mode];
 		}, $modes);
