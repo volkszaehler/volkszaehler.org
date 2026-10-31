@@ -47,7 +47,7 @@ class DataPerformance extends Data
 	}
 
 	protected static function countRows($uuid, $table = 'data') {
-		return self::$conn->fetchColumn(
+		return self::$conn->fetchOne(
 			'SELECT COUNT(1) FROM ' . $table . ' ' .
 			'INNER JOIN entities ON ' . $table . '.channel_id = entities.id ' .
 			'WHERE entities.uuid = ?', array(($uuid) ?: static::$uuid)
@@ -66,7 +66,7 @@ class DataPerformance extends Data
 			$sqlParameters[] = $type;
 		}
 
-		return self::$conn->fetchColumn($sql, $sqlParameters);
+		return self::$conn->fetchOne($sql, $sqlParameters);
 	}
 
 	protected static function clearCache() {
