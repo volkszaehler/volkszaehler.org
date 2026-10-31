@@ -23,7 +23,6 @@
 namespace Volkszaehler\Util;
 
 use Doctrine\ORM;
-use Webpatser\Uuid\Uuid as UUID;
 
 use Volkszaehler\Util;
 use Volkszaehler\Definition\PropertyDefinition;
@@ -92,7 +91,7 @@ class EntityFactory {
 		if (empty($uuid)) {
 			throw new \Exception('Missing UUID');
 		}
-		if (UUID::validate($uuid)) {
+		if (self::isUuid($uuid)) {
 			return $this->getByUuidUnvalidated($uuid, $cache);
 		}
 		return $this->getByName($uuid, $cache);
@@ -107,7 +106,7 @@ class EntityFactory {
 	 * @return Model\Entity
 	 */
 	public function getByUuid($uuid, $cache = false) {
-		if (!UUID::validate($uuid)) {
+		if (!self::isUuid($uuid)) {
 			throw new \Exception('Invalid UUID: \'' . $uuid . '\'');
 		}
 		return $this->getByUuidUnvalidated($uuid, $cache);
@@ -198,6 +197,13 @@ class EntityFactory {
 
 		$q = $this->em->createQuery($dql);
 		return $q->execute($params);
+	}
+
+	/**
+	 * Check the textual UUID format, any version and variant like the UUIDs stored by older releases
+	 */
+	private static function isUuid($uuid) {
+		return is_string($uuid) && preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $uuid);
 	}
 
 	/**
