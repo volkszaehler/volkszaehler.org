@@ -9,7 +9,7 @@
         "email": "volkszaehler@lists.volkszaehler.org"
     },
     "require": {
-        "php": "^7.3|^8.0",
+        "php": "^8.1",
         "doctrine/orm": "^2.9",
         "doctrine/dbal": "^2.12",
         "doctrine/annotations": "^2.0.2",
