@@ -104,7 +104,7 @@ class DataIterator implements \IteratorAggregate, \Countable {
 			}
 		} while ($tuple !== false);
 
-		$this->stmt->closeCursor();
+		$this->stmt->free();
 	}
 
 	/**

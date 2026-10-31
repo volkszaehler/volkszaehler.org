@@ -118,7 +118,7 @@ class Router implements HttpKernelInterface {
 			$this->view = null;
 
 			// initialize entity manager
-			if (null == $this->em || !$this->em->isOpen() || $this->em->getConnection()->ping() === false) {
+			if (null == $this->em || !$this->em->isOpen() || !self::isConnected($this->em)) {
 				$this->em = self::createEntityManager();
 			}
 			else {
@@ -229,6 +229,23 @@ class Router implements HttpKernelInterface {
 		}
 
 		return $this->view->getExceptionResponse($e);
+	}
+
+	/**
+	 * Check that the database connection still answers, DBAL 3 has no ping()
+	 *
+	 * @param ORM\EntityManager $em
+	 * @return bool
+	 */
+	public static function isConnected($em) {
+		try {
+			$conn = $em->getConnection();
+			$conn->executeQuery($conn->getDatabasePlatform()->getDummySelectSQL());
+			return true;
+		}
+		catch (\Doctrine\DBAL\Exception $e) {
+			return false;
+		}
 	}
 
 	/**
