@@ -23,6 +23,7 @@
 
 namespace Volkszaehler\Model;
 
+use Doctrine\ORM\Mapping as ORM;
 use Volkszaehler\Interpreter\SQL;
 use Doctrine\DBAL;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -32,16 +33,15 @@ use Doctrine\Common\Collections\ArrayCollection;
  * Channel entity
  *
  * @author Steffen Vogel <info@steffenvogel.de>
- *
- * @Doctrine\ORM\Mapping\Entity
  */
+#[ORM\Entity]
 class Channel extends Entity
 {
 	/**
-	 * @Doctrine\ORM\Mapping\OneToMany(targetEntity="Data", mappedBy="channel", cascade={"persist"}, orphanRemoval=true)
-	 * @Doctrine\ORM\Mapping\OrderBy({"timestamp" = "ASC"})
 	 * @var ArrayCollection|null
 	 */
+	#[ORM\OneToMany(targetEntity: Data::class, mappedBy: 'channel', cascade: ['persist'], orphanRemoval: true)]
+	#[ORM\OrderBy(['timestamp' => 'ASC'])]
 	protected $data = NULL;
 
 	/**

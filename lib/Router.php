@@ -29,8 +29,8 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 use Symfony\Component\ErrorHandler\Debug;
 
+use Doctrine\DBAL;
 use Doctrine\ORM;
-use Doctrine\Common\Cache\Psr6\DoctrineProvider;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 
 use Volkszaehler\View;
@@ -259,14 +259,17 @@ class Router implements HttpKernelInterface {
 
 		$cache = new ArrayAdapter(0, false);
 		$config->setMetadataCache($cache);
-		$config->setQueryCacheImpl(DoctrineProvider::wrap($cache));
+		$config->setQueryCache($cache);
 
-		$driverImpl = $config->newDefaultAnnotationDriver(VZ_DIR . '/lib/Model', false);
-		$config->setMetadataDriverImpl($driverImpl);
+		$config->setMetadataDriverImpl(new ORM\Mapping\Driver\AttributeDriver([VZ_DIR . '/lib/Model']));
 
-		$config->setProxyDir(VZ_DIR . '/lib/Model/Proxy');
-		$config->setProxyNamespace('Volkszaehler\Model\Proxy');
-		$config->setAutoGenerateProxyClasses(Util\Configuration::read('devmode'));
+		if (PHP_VERSION_ID >= 80400) {
+			$config->enableNativeLazyObjects(true);
+		} else {
+			$config->setProxyDir(VZ_DIR . '/lib/Model/Proxy');
+			$config->setProxyNamespace('Volkszaehler\Model\Proxy');
+			$config->setAutoGenerateProxyClasses((bool) Util\Configuration::read('devmode'));
+		}
 
 		$dbConfig = Util\Configuration::read('db');
 
@@ -277,7 +280,8 @@ class Router implements HttpKernelInterface {
 		// reset singleton to use new entity manager
 		Util\EntityFactory::reset();
 
-		return ORM\EntityManager::create($dbConfig, $config);
+		$dbalConfig = (new DBAL\Configuration)->setMiddlewares([new Util\SQLLoggerMiddleware]);
+		return new ORM\EntityManager(DBAL\DriverManager::getConnection($dbConfig, $dbalConfig), $config);
 	}
 }
 

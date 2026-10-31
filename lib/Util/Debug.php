@@ -23,7 +23,6 @@
 namespace Volkszaehler\Util;
 
 use Doctrine\ORM;
-use Doctrine\DBAL\Logging;
 
 /**
  * Static debugging class
@@ -48,7 +47,7 @@ class Debug {
 	protected $messages;
 
 	/**
-	 * @var Logging\SQLLogger
+	 * @var DebugStack|null
 	 */
 	protected $sqlLogger;
 
@@ -68,7 +67,7 @@ class Debug {
 
 		// starting logging of sql queries
 		$this->em = $em;
-		$this->attachSqlLogger(new Logging\DebugStack());
+		$this->attachSqlLogger(new DebugStack());
 	}
 
 	/**
@@ -121,9 +120,9 @@ class Debug {
 	/**
 	 * Set SQL logger on entity manager
 	 */
-	protected function attachSqlLogger(?Logging\SQLLogger $sqlLogger = null) {
+	protected function attachSqlLogger(?DebugStack $sqlLogger = null) {
 		$this->sqlLogger = $sqlLogger;
-		$this->em->getConnection()->getConfiguration()->setSQLLogger($sqlLogger);
+		SQLLoggerMiddleware::$logger = $sqlLogger;
 	}
 
 	/**
