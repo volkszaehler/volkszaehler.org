@@ -27,6 +27,7 @@ use Volkszaehler\Util;
 
 /**
  * @author Steffen Vogel <info@steffenvogel.de>
+ * @phpstan-consistent-constructor
  */
 abstract class Definition
 {

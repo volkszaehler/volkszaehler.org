@@ -54,29 +54,34 @@ class AggregatorInterpreter extends Interpreter {
 	 * @inheritDoc
 	 */
 	public function getIterator() : \Traversable {
+		throw new \Exception('Getting data is not supported for groups');
 	}
 
 	/**
 	 * @inheritDoc
 	 */
 	public function generateData() {
+		throw new \Exception('Getting data is not supported for groups');
 	}
 
 	/**
 	 * @inheritDoc
 	 */
 	public function convertRawTuple($row) {
+		throw new \Exception('Getting data is not supported for groups');
 	}
 
 	/**
 	 * @inheritDoc
 	 */
 	public function getConsumption() {
+		throw new \Exception('Getting data is not supported for groups');
 	}
 
 	/**
 	 * @inheritDoc
 	 */
 	public function getAverage() {
+		throw new \Exception('Getting data is not supported for groups');
 	}
 }
