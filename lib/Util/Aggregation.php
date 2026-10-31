@@ -200,7 +200,7 @@ class Aggregation
 		if (Util\Debug::isActivated())
 			echo (Util\Debug::getParametrizedQuery($sql, $sqlParameters) . "\n");
 
-		$rows = $this->conn->executeQuery($sql, $sqlParameters);
+		return $this->conn->executeStatement($sql, $sqlParameters);
 	}
 
 	/**

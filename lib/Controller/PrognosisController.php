@@ -93,10 +93,9 @@ class PrognosisController extends DataController {
 		}
 
 		// calculate reference period
-		foreach (array('from', 'partial', 'to') as $var) {
-			$reference_var = 'reference_' . $var;
-			$$reference_var = $$var . ' -1 ' . $period;
-		}
+		$reference_from = $from . ' -1 ' . $period;
+		$reference_partial = $partial . ' -1 ' . $period;
+		$reference_to = $to . ' -1 ' . $period;
 
 		// iterate through interpreters
 		$current = $this->populate($uuid, $from, $partial, $groupBy);
