@@ -30,12 +30,13 @@
 
 ## dbcopy
 
-Database backup.
-Configuration see `etc/dbcopy.json`.
+Database backup tool. It is no longer installed with volkszaehler; install [dbcopy](https://github.com/andig/dbcopy) separately:
 
-To execute use
+        composer global require andig/dbcopy
 
-        vendor/bin/dbcopy -c etc/dbcopy.json
+Copy `etc/dbcopy.dist.yaml` to `etc/dbcopy.yaml` and adjust the connections, then run
+
+        ~/.composer/vendor/bin/dbcopy copy -c etc/dbcopy.yaml
 
 
 ## aggregate
