@@ -112,7 +112,7 @@ class Router implements HttpKernelInterface {
 	 * @return Response A Response instance
 	 * @throws \Exception
 	 */
-	public function handle(Request $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true) {
+	public function handle(Request $request, int $type = HttpKernelInterface::MAIN_REQUEST, bool $catch = true): Response {
 		try {
 			// initialize view to ensure StreamedResponse->streamed is false
 			$this->view = null;
@@ -145,7 +145,7 @@ class Router implements HttpKernelInterface {
 	 * @return Response A Response instance
 	 * @throws \Exception
 	 */
-	public function handleRaw(Request $request, $type = HttpKernelInterface::MASTER_REQUEST) {
+	public function handleRaw(Request $request, $type = HttpKernelInterface::MAIN_REQUEST) {
 		// workaround for https://github.com/symfony/symfony/issues/13617
 		$pathInfo = ($request->server->has('PATH_INFO')) ? $request->server->get('PATH_INFO') : '';
 		if (0 === strlen($pathInfo)) {

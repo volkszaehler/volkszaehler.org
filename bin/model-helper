@@ -44,14 +44,14 @@ require VZ_DIR . '/lib/bootstrap.php';
 class ValidateCommand extends Command
 {
 
-	protected function configure()
+	protected function configure(): void
 	{
 		$this->setName('propertyusage')
 			->setDescription('Validate property usage')
 			->addArgument('property', InputArgument::REQUIRED, 'Property name');
 	}
 
-	protected function execute(InputInterface $input, OutputInterface $output)
+	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
 		$property = $input->getArgument('property');
 		$model = null; // "Volkszaehler\\Model\\Channel"

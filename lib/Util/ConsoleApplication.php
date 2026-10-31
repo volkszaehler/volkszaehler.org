@@ -59,7 +59,7 @@ class ConsoleApplication extends Application {
 	 *
 	 * @return string The long application version
 	 */
-	public function getLongVersion()
+	public function getLongVersion(): string
 	{
 		if ('UNKNOWN' !== $this->getName()) {
 			return sprintf('<info>%s</info>', $this->getName());
@@ -72,7 +72,7 @@ class ConsoleApplication extends Application {
 	 *
 	 * @return InputDefinition An InputDefinition instance
 	 */
-	protected function getDefaultInputDefinition()
+	protected function getDefaultInputDefinition(): InputDefinition
 	{
 		return new InputDefinition(array(
 			new InputArgument('command', InputArgument::REQUIRED, 'The command to execute'),
