@@ -9,6 +9,7 @@
 
 namespace Tests;
 
+use PHPUnit\Framework\Attributes\Depends;
 use Symfony\Component\HttpFoundation\Request;
 
 class ProtocolTest extends Data
@@ -63,9 +64,7 @@ class ProtocolTest extends Data
 		$this->assertEquals(2, $this->getJson($request)->rows);
 	}
 
-	/**
-	 * @depends testAddTupleGet
-	 */
+	#[Depends('testAddTupleGet')]
 	function testDuplicate() {
 		// INSERT IGNORE syntax not portable
 		$this->executeForDB(array('pdo_mysql'));

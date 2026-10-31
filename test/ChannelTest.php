@@ -9,6 +9,8 @@
 
 namespace Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+
 class ChannelTest extends Middleware
 {
 	protected $uuid;
@@ -41,9 +43,7 @@ class ChannelTest extends Middleware
 		$this->assertIsArray($this->getJson('/channel.json')->channels);
 	}
 
-	/**
-     * @dataProvider channelProvider
-     */
+	#[DataProvider('channelProvider')]
 	function testChannelLifecycle($title, $type, $resolution) {
 		// create
 		$uuid = $this->createChannel($title, $type, $resolution);

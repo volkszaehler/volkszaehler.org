@@ -9,6 +9,8 @@
 
 namespace Tests;
 
+use PHPUnit\Framework\Attributes\Depends;
+
 class SensorTest extends Data
 {
 	// channel properties
@@ -62,9 +64,7 @@ class SensorTest extends Data
 		$this->assertFalse(isset($this->json->data));
 	}
 
-	/**
-	 * @depends testAddTuple
-	 */
+	#[Depends('testAddTuple')]
 	function testGetTuple() {
 		$this->getTuples($this->ts1-1, $this->ts2);
 
@@ -76,10 +76,8 @@ class SensorTest extends Data
 		$this->assertFalse(isset($this->json->data->tuples) && count($this->json->data->tuples));
 	}
 
-	/**
-	 * @depends testAddTuple
-	 * @depends testGetTuple
-	 */
+	#[Depends('testAddTuple')]
+	#[Depends('testGetTuple')]
 	function testGetMultiple() {
 		$this->addTuple($this->ts2, $this->value2);
 		$this->getTuples($this->ts1, $this->ts2);
@@ -98,9 +96,8 @@ class SensorTest extends Data
 
 	/**
 	 * test if from=0 gets all tuples
-	 *
-	 * @depends testGetMultiple
 	 */
+	#[Depends('testGetMultiple')]
 	function testGetAllTuples() {
 		$this->getTuples(0);
 
@@ -111,9 +108,8 @@ class SensorTest extends Data
 
 	/**
 	 * test if from=now gets exactly the last tuple
-	 *
-	 * @depends testGetMultiple
 	 */
+	#[Depends('testGetMultiple')]
 	function testGetLastTuple() {
 		$tuples = $this->getTuplesRaw($this->ts1, $this->ts2);
 		$tuplesNow = $this->getTuples("now");
@@ -123,9 +119,8 @@ class SensorTest extends Data
 
 	/**
 	 * get data points outside request range
-	 *
-	 * @depends testGetMultiple
 	 */
+	#[Depends('testGetMultiple')]
 	function testGetEdgeDatapoints() {
 		$this->getTuples($this->ts2, $this->ts2 + 1000);
 
@@ -138,9 +133,8 @@ class SensorTest extends Data
 
 	/**
 	 * only get data points inside request range
-	 *
-	 * @depends testGetEdgeDatapoints
 	 */
+	#[Depends('testGetEdgeDatapoints')]
 	function testGetEdgeDatapointsRaw() {
 		$this->getTuplesRaw($this->ts2 + 1, $this->ts2 + 1000);
 
@@ -152,9 +146,7 @@ class SensorTest extends Data
 		$this->assertFalse(isset($this->json->data->tuples) && count($this->json->data->tuples));
 	}
 
-	/**
-	 * @depends testGetMultiple
-	 */
+	#[Depends('testGetMultiple')]
 	function testMultipleAverageAndConsumption() {
 		// add 3rd datapoint
 		$this->addTuple($this->ts3, $this->value3);
@@ -181,9 +173,7 @@ class SensorTest extends Data
 		$this->assertTuple(1, $this->makeTuple($this->ts2, $this->ts3, $this->value3));
 	}
 
-	/**
-	 * @depends testMultipleAverageAndConsumption
-	 */
+	#[Depends('testMultipleAverageAndConsumption')]
 	function testMultipleGroupByHour() {
 		// get data
 		$this->getTuples($this->ts1, $this->ts3, "hour");
@@ -207,9 +197,7 @@ class SensorTest extends Data
 		$this->assertTuple(1, $this->makeTuple($this->ts2, $this->ts3, $this->value3));
 	}
 
-	/**
-	 * @depends testMultipleAverageAndConsumption
-	 */
+	#[Depends('testMultipleAverageAndConsumption')]
 	function testMultiplePackaging() {
 		// get data - 1 tuple
 		$this->getTuples($this->ts1, $this->ts3, "", 1);
@@ -239,9 +227,7 @@ class SensorTest extends Data
 		$this->assertTuple(0, $this->makeTuple($this->ts1, $this->ts3, $average * self::$resolution, 2));
 	}
 
-	/**
-	 * @depends testMultipleGroupByHour
-	 */
+	#[Depends('testMultipleGroupByHour')]
 	function testMultipleGroupByHour2() {
 		// requires weighed average calculation - currently not portable across DBMSes
 		$this->skipForDB(array('pdo_sqlite'));
@@ -276,10 +262,8 @@ class SensorTest extends Data
 		$this->assertTuple(1, $this->makeTuple($this->ts2, $this->ts5, $periodValue * self::$resolution));	// hour 3
 	}
 
-	/**
-	 * @depends testMultiplePackaging
-	 * @depends testMultipleGroupByHour2
-	 */
+	#[Depends('testMultiplePackaging')]
+	#[Depends('testMultipleGroupByHour2')]
 	function testMultiplePackagingAlgorithms() {
 		// get data - 5 rows make 4 tuples, 2 or 3 packages
 		// depending on PHP or SQL packaging

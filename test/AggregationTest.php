@@ -9,6 +9,8 @@
 
 namespace Tests;
 
+use PHPUnit\Framework\Attributes\Depends;
+use PHPUnit\Framework\Attributes\Group;
 use Volkszaehler\Util;
 use Doctrine\DBAL;
 
@@ -36,9 +38,7 @@ class AggregationTest extends DataPerformance
 		parent::tearDownAfterClass();
 	}
 
-	/**
-	 * @group aggregation
-	 */
+	#[Group('aggregation')]
 	function testClearAggregation() {
 		$agg = new Util\Aggregation(self::$conn);
 		$agg->clear(self::$uuid);
@@ -47,10 +47,8 @@ class AggregationTest extends DataPerformance
 		$this->assertEquals(0, $rows, 'aggregate table cannot be cleared');
 	}
 
-	/**
-	 * @depends testClearAggregation
-	 * @group aggregation
-	 */
+	#[Depends('testClearAggregation')]
+	#[Group('aggregation')]
 	function testDeltaAggregation() {
 		$agg = new Util\Aggregation(self::$conn);
 
@@ -79,10 +77,8 @@ class AggregationTest extends DataPerformance
 		$this->assertEquals(2, $rows, 'period before last wrongly appears in aggreate table');
 	}
 
-	/**
-	 * @depends testDeltaAggregation
-	 * @group aggregation
-	 */
+	#[Depends('testDeltaAggregation')]
+	#[Group('aggregation')]
 	function testDeltaAggregationSecondChannel() {
 		$agg = new Util\Aggregation(self::$conn);
 
@@ -102,11 +98,9 @@ class AggregationTest extends DataPerformance
 		));
 	}
 
-	/**
-	 * @depends testClearAggregation
-	 * @depends testDeltaAggregation
-	 * @group aggregation
-	 */
+	#[Depends('testClearAggregation')]
+	#[Depends('testDeltaAggregation')]
+	#[Group('aggregation')]
 	function testGetBaseline() {
 		$agg = new Util\Aggregation(self::$conn);
 		$agg->clear(self::$uuid);
@@ -133,10 +127,8 @@ class AggregationTest extends DataPerformance
 		}
 	}
 
-	/**
-	 * @depends testGetBaseline
-	 * @group aggregation
-	 */
+	#[Depends('testGetBaseline')]
+	#[Group('aggregation')]
 	function testAggregateRetrievalFrom() {
 		// 1 data
 		$this->getTuplesRaw(strtotime('today 0:00') * 1000, null, 'day');
@@ -155,10 +147,8 @@ class AggregationTest extends DataPerformance
 		$this->assertEquals(4, $this->json->data->rows);
 	}
 
-	/**
-	 * @depends testGetBaseline
-	 * @group aggregation
-	 */
+	#[Depends('testGetBaseline')]
+	#[Group('aggregation')]
 	function testAggregateRetrievalTo() {
 		// 1 data + 1 agg + 1 agg + 1 data
 		$this->getTuplesRaw(strtotime('3 days ago 0:00') * 1000, strtotime('today 18:00') * 1000, 'day');
@@ -179,10 +169,9 @@ class AggregationTest extends DataPerformance
 
 	/**
 	 * Test aggregate queries of type group=<group> & tuples=NULL
-	 *
-	 * @depends testGetBaseline
-	 * @group aggregation
 	 */
+	#[Depends('testGetBaseline')]
+	#[Group('aggregation')]
 	function testAggregateOptimizer() {
 		$agg = new Util\Aggregation(self::$conn);
 		// at this point we have aggregates for 'hour' and 'day'
@@ -211,10 +200,9 @@ class AggregationTest extends DataPerformance
 
 	/**
 	 * Test aggregate queries of type group=NULL & tuples=1
-	 *
-	 * @depends testAggregateOptimizer
-	 * @group aggregation
 	 */
+	#[Depends('testAggregateOptimizer')]
+	#[Group('aggregation')]
 	function testAggregateOptimizerUngroupedSingleTuple() {
 		$from = strtotime('3 days ago 00:00') * 1000;
 		$to = strtotime('today 0:00') * 1000;

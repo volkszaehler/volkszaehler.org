@@ -9,6 +9,8 @@
 
 namespace Tests;
 
+use PHPUnit\Framework\Attributes\Depends;
+
 class GroupTest extends Middleware
 {
 	static $uuid;
@@ -27,9 +29,7 @@ class GroupTest extends Middleware
 		))->entity->uuid;
 	}
 
-	/**
-	 * @depends testCreateGroup
-	 */
+	#[Depends('testCreateGroup')]
 	function testEditGroup() {
 		// edit group
 		$val = 'NewValue';
@@ -39,9 +39,7 @@ class GroupTest extends Middleware
 		))->entity->title);
 	}
 
-	/**
-	 * @depends testCreateGroup
-	 */
+	#[Depends('testCreateGroup')]
 	function testAddChildren() {
 		// create child
 		$child = $this->getJson('/group.json', array(
@@ -75,9 +73,7 @@ class GroupTest extends Middleware
 		$this->assertObjectNotHasProperty('children', $this->getJson('/group/' . self::$uuid . '.json')->entity);
 	}
 
-	/**
-	 * @depends testCreateGroup
-	 */
+	#[Depends('testCreateGroup')]
 	function testAddDataToGroup() {
 		// $this->addTuple($this->ts1, $this->value1);
 		$this->json = $this->getJson('/data/' . self::$uuid . '.json', array(
@@ -88,9 +84,7 @@ class GroupTest extends Middleware
 		$this->assertTrue(isset($this->json->exception));
 	}
 
-	/**
-	 * @depends testCreateGroup
-	 */
+	#[Depends('testCreateGroup')]
 	function testGetDataFromGroup() {
 		// $this->getTuples($this->ts1-1, $this->ts2);
 		$this->json = $this->getJson('/data/' . self::$uuid . '.json', array(), 'GET', true);
@@ -98,9 +92,7 @@ class GroupTest extends Middleware
 		$this->assertTrue(isset($this->json->exception));
 	}
 
-	/**
-	 * @depends testCreateGroup
-	 */
+	#[Depends('testCreateGroup')]
 	function testGetGroupAsChannel() {
 		// $this->getTuples($this->ts1-1, $this->ts2);
 		$this->json = $this->getJson('/channel/' . self::$uuid . '.json', array(), 'GET', true);
@@ -108,9 +100,7 @@ class GroupTest extends Middleware
 		$this->assertStringStartsWith('Entity is not a channel', $this->json->exception->message);
 	}
 
-	/**
-	 * @depends testCreateGroup
-	 */
+	#[Depends('testCreateGroup')]
 	function testDeleteGroup() {
 		// delete group
 		$this->getJson('/group/' . self::$uuid . '.json', array(

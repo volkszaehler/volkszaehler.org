@@ -9,6 +9,8 @@
 
 namespace Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+
 class RawTest extends Data
 {
     public static function channelDataProvider()  {
@@ -19,9 +21,7 @@ class RawTest extends Data
         );
     }
 
-    /**
-     * @dataProvider channelDataProvider
-     */
+	#[DataProvider('channelDataProvider')]
 	function testAddAndGetRawTuples($type, $resolution) {
 		self::$uuid = self::createChannel('Test', $type, $resolution);
 

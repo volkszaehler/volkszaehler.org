@@ -9,6 +9,7 @@
 
 namespace Tests;
 
+use PHPUnit\Framework\Attributes\Depends;
 use Webpatser\Uuid\Uuid as UUID;
 
 class EntityTest extends Middleware
@@ -42,9 +43,7 @@ class EntityTest extends Middleware
 		))->entity->title);
 	}
 
-	/**
-	 * @depends testCreateAndEditEntity
-	 */
+	#[Depends('testCreateAndEditEntity')]
 	function testPublicEntity() {
 		// make sure the channel is NOT returned in the list of public entities
 		$this->assertEquals(0, count(array_filter($this->getJson('/entity.json')->entities, function($entity) {
@@ -63,9 +62,7 @@ class EntityTest extends Middleware
 		})));
 	}
 
-	/**
-	 * @depends testCreateAndEditEntity
-	 */
+	#[Depends('testCreateAndEditEntity')]
 	function testDeleteEntity() {
 		// expect no exception
 		$this->getJson('/entity/' . self::$uuid . '.json', array(
@@ -92,9 +89,7 @@ class EntityTest extends Middleware
 		$this->assertStringStartsWith('Invalid property value', $this->json->exception->message);
 	}
 
-	/**
-	 * @depends testEditEntityWithInvalidProperties
-	 */
+	#[Depends('testEditEntityWithInvalidProperties')]
 	function testDeleteEntityAfterEditErrors() {
 		// expect no exception
 		$this->getJson('/entity/' . self::$uuid . '.json', array(
