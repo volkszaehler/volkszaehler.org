@@ -9,6 +9,7 @@
 
 namespace Tests;
 
+use PHPUnit\Framework\Attributes\Depends;
 use Symfony\Component\HttpFoundation\Request;
 
 class ProtocolTest extends Data
@@ -63,9 +64,7 @@ class ProtocolTest extends Data
 		$this->assertEquals(2, $this->getJson($request)->rows);
 	}
 
-	/**
-	 * @depends testAddTupleGet
-	 */
+	#[Depends('testAddTupleGet')]
 	function testDuplicate() {
 		// INSERT IGNORE syntax not portable
 		$this->executeForDB(array('pdo_mysql'));
@@ -110,9 +109,9 @@ class ProtocolTest extends Data
 			'debug' => 1
 		));
 
-		$this->assertObjectHasAttribute('debug', $this->json, 'Missing debug output');
+		$this->assertObjectHasProperty('debug', $this->json, 'Missing debug output');
 		// currently not working on HHVM
-		// $this->assertObjectHasAttribute('sql', $this->json->debug, 'Missing debug sql trace');
+		// $this->assertObjectHasProperty('sql', $this->json->debug, 'Missing debug sql trace');
 	}
 
 	function testExceptionDebug() {

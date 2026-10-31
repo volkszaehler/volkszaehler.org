@@ -9,6 +9,8 @@
 
 namespace Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Depends;
 use Volkszaehler\Util;
 
 class ConsumptionTest extends Data
@@ -42,10 +44,8 @@ class ConsumptionTest extends Data
 		$this->assertEquals($this->value, $this->json->data->average, 'Average mismatch');
 	}
 
-	/**
-	 * @depends testAddTuples
-	 * @dataProvider aggProvider
-	 */
+	#[Depends('testAddTuples')]
+	#[DataProvider('aggProvider')]
 	function testConsumption(bool $aggregate) {
 		if ($aggregate) $this->aggregate(self::$uuid, 'hour');
 

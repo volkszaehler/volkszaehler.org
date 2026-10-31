@@ -9,6 +9,8 @@
 
 namespace Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Depends;
 use Volkszaehler\Interpreter\Virtual;
 
 class VirtualTest extends Middleware
@@ -152,7 +154,7 @@ class VirtualTest extends Middleware
 	/**
 	 * VirtualChannel test data
 	 */
-	function virtualInputProvider() {
+	public static function virtualInputProvider() {
 		return array(
 			// testVirtualChannelIdentity
 			array(['lines', 'lines'], ['in1', 'in1']),
@@ -176,9 +178,7 @@ class VirtualTest extends Middleware
 		}
 	}
 
-	/**
-	 * @dataProvider virtualInputProvider
-	 */
+	#[DataProvider('virtualInputProvider')]
 	function testVirtualChannel($styles, $inputs) {
 		// create channel, style=lines forces STRATEGY_TS_AFTER
 		$in1 = $this->createChannel('Sensor', 'powersensor', ['style' => $styles[0]]);
@@ -238,10 +238,9 @@ class VirtualTest extends Middleware
 
 	/**
 	 * Identical test as before but checks for consumption and average values
-	 *
-	 * @dataProvider virtualInputProvider
-	 * @depends testVirtualChannel
 	 */
+	#[DataProvider('virtualInputProvider')]
+	#[Depends('testVirtualChannel')]
 	function testVirtualChannelConsumption($styles, $inputs) {
 		// create channel, style=lines forces STRATEGY_TS_AFTER
 		$in1 = $this->createChannel('Sensor', 'powersensor', ['style' => $styles[0]]);

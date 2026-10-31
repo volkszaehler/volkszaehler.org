@@ -9,6 +9,7 @@
 
 namespace Tests;
 
+use PHPUnit\Framework\Attributes\Group;
 use Volkszaehler\Util;
 
 class PushServerTest extends Data
@@ -51,9 +52,7 @@ class PushServerTest extends Data
 		return $exitCode;
 	}
 
-	/**
-	 * @group pushserver
-	 */
+	#[Group('pushserver')]
 	function testPushMessage() {
 		// first message - no result tuples
 		$exitCode = $this->safeCurl([

@@ -9,6 +9,8 @@
 
 namespace Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+
 class ChannelTest extends Middleware
 {
 	protected $uuid;
@@ -28,7 +30,7 @@ class ChannelTest extends Middleware
 		return($this->uuid = (isset($this->json->entity->uuid)) ? $this->json->entity->uuid : null);
 	}
 
-	function channelProvider() {
+	public static function channelProvider() {
 		return array(
 			array('Power', 'power', 1000),					// Meter
 			array('Electric Meter', 'electric meter', 10),	// Counter
@@ -41,9 +43,7 @@ class ChannelTest extends Middleware
 		$this->assertIsArray($this->getJson('/channel.json')->channels);
 	}
 
-	/**
-     * @dataProvider channelProvider
-     */
+	#[DataProvider('channelProvider')]
 	function testChannelLifecycle($title, $type, $resolution) {
 		// create
 		$uuid = $this->createChannel($title, $type, $resolution);
