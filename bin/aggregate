@@ -72,7 +72,7 @@ abstract class BasicCommand extends Command
 		$this->aggregator = new Util\Aggregation($this->em->getConnection());
 	}
 
-	protected function execute(InputInterface $input, OutputInterface $output)
+	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
 		if ($input->getOption('verbose')) {
 			Util\SQLLoggerMiddleware::$logger = new Util\ConsoleSQLLogger($output);
@@ -89,14 +89,14 @@ abstract class BasicCommand extends Command
 class OptimizeCommand extends BasicCommand
 {
 
-	protected function configure()
+	protected function configure(): void
 	{
 		$this->setName('optimize')
 			->setDescription('Optimize data and aggregate tables')
 			->addOption('verbose', 'v', InputOption::VALUE_NONE, 'Verbose mode');
 	}
 
-	protected function execute(InputInterface $input, OutputInterface $output)
+	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
 		parent::execute($input, $output);
 
@@ -118,7 +118,7 @@ class OptimizeCommand extends BasicCommand
 class ClearCommand extends BasicCommand
 {
 
-	protected function configure()
+	protected function configure(): void
 	{
 		$this->setName('clear')
 			->setDescription('Clear aggregation table')
@@ -128,7 +128,7 @@ class ClearCommand extends BasicCommand
 			->addOption('verbose', 'v', InputOption::VALUE_NONE, 'Verbose mode');
 	}
 
-	protected function execute(InputInterface $input, OutputInterface $output)
+	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
 		parent::execute($input, $output);
 
@@ -164,7 +164,7 @@ class ClearCommand extends BasicCommand
 class RunCommand extends BasicCommand
 {
 
-	protected function configure()
+	protected function configure(): void
 	{
 		$this->setName('run')
 			->setDescription('Run aggregation')
@@ -214,7 +214,7 @@ class RunCommand extends BasicCommand
 		}
 	}
 
-	protected function execute(InputInterface $input, OutputInterface $output)
+	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
 		parent::execute($input, $output);
 
@@ -249,7 +249,7 @@ class RunCommand extends BasicCommand
 class RebuildCommand extends RunCommand
 {
 
-	protected function configure()
+	protected function configure(): void
 	{
 		$this->setName('rebuild')
 			->setDescription('Rebuild aggregation table (using temporary table)')
@@ -257,7 +257,7 @@ class RebuildCommand extends RunCommand
 			->addOption('verbose', 'v', InputOption::VALUE_NONE, 'Verbose mode');
 	}
 
-	protected function execute(InputInterface $input, OutputInterface $output)
+	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
 		BasicCommand::execute($input, $output);
 

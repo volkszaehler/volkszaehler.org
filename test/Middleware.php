@@ -141,7 +141,7 @@ abstract class Middleware extends \PHPUnit\Framework\TestCase
 			$content = ob_get_contents();
 			ob_end_clean();
 
-			$response = Response::create($content, $response->getStatusCode(), $response->headers->all());
+			$response = new Response($content, $response->getStatusCode(), $response->headers->all());
 		}
 
 		if (self::$debug) {
