@@ -1,6 +1,6 @@
 # Copyright (c) 2019 Andreas Goetz <cpuidle@gmx.de>
 
-FROM composer:1 AS builder
+FROM composer:2 AS builder
 
 WORKDIR /vz
 
