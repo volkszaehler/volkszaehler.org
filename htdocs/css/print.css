@@ -6,7 +6,7 @@
 	display: none;
 }
 
-#controls, #display, #export {
+#controls, #display, #export, #splitter {
 	display: none!important;
 }
 

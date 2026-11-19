@@ -75,6 +75,34 @@ td input:not([type=image]):not([type=checkbox]) {
 	color: #545454;
 }
 
+#content #splitter {
+	height: 10px;
+	padding: 0;
+	margin: 2px 0;
+	cursor: ns-resize;
+	touch-action: none; /* let touch drag resize instead of scrolling */
+	user-select: none;
+	position: relative;
+	outline: none;
+}
+
+#splitter::before { /* grip */
+	content: "";
+	position: absolute;
+	left: 50%;
+	top: 3px;
+	width: 48px;
+	height: 5px;
+	margin-left: -24px;
+	border-top: 1px solid rgba(128, 128, 128, 0.8); /* readable on light and dark backgrounds */
+	border-bottom: 1px solid rgba(128, 128, 128, 0.8);
+	box-sizing: border-box;
+}
+
+#splitter:hover::before, #splitter:focus-visible::before, #splitter.active::before {
+	border-color: #0292C0;
+}
+
 #flot {
 	height: 300px;
 	z-index: 1;
