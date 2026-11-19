@@ -28,7 +28,9 @@
  * Initialize the WUI (Web User Interface)
  */
 vz.wui.init = function() {
+	vz.wui.plotHeight = Number($.getCookie('vz_plotheight')) || null; // set by splitter, null = fit window
 	vz.wui.initEvents();
+	vz.wui.initSplitter();
 	vz.wui.resizePlot();
 
 	// resize handling
@@ -100,9 +102,24 @@ vz.wui.init = function() {
  * Adjust plot when screen size changes
  */
 vz.wui.resizePlot = function(evt, windowHeight) {
-	// resize container depending on window vs. content height
-	var delta = (windowHeight || $(window).height()) - $('html').height();
-	$('#flot').height(Math.max($('#flot').height() + delta, vz.options.plot.minHeight || 300));
+	var minHeight = vz.options.plot.minHeight || 300;
+
+	if (vz.wui.plotHeight) {
+		// height chosen with the splitter
+		$('#flot').height(Math.max(vz.wui.plotHeight, minHeight));
+	}
+	else {
+		// resize container depending on window vs. content height
+		var delta = (windowHeight || $(window).height()) - $('html').height();
+		$('#flot').height(Math.max($('#flot').height() + delta, minHeight));
+	}
+	vz.wui.redrawPlotSize();
+};
+
+/**
+ * Update tuple count and redraw after the plot container size changed
+ */
+vz.wui.redrawPlotSize = function() {
 	vz.options.tuples = Math.round($('#flot').width() / 3);
 
 	if (vz.plot && vz.plot.resize) {
@@ -114,6 +131,80 @@ vz.wui.resizePlot = function(evt, windowHeight) {
 		// draw empty plot startup
 		vz.wui.drawPlot();
 	}
+};
+
+/**
+ * Splitter between chart and channel list: drag (mouse, touch, pen) or use
+ * arrow keys to set the chart height; double click returns to fit-to-window.
+ * The height is kept in the cookie vz_plotheight.
+ */
+vz.wui.initSplitter = function() {
+	var splitter = $('#splitter'),
+			flot = $('#flot'),
+			expires = new Date(2038, 0, 1),
+			startY, startHeight, frame = null;
+
+	function minHeight() {
+		return vz.options.plot.minHeight || 300;
+	}
+
+	function setHeight(height) {
+		height = Math.round(Math.min(Math.max(height, minHeight()), 4 * $(window).height()));
+		vz.wui.plotHeight = height;
+		flot.height(height);
+		if (!frame) { // at most one redraw per frame while dragging
+			frame = window.requestAnimationFrame(function() {
+				frame = null;
+				vz.wui.redrawPlotSize();
+			});
+		}
+	}
+
+	function save() {
+		if (vz.wui.plotHeight) {
+			$.setCookie('vz_plotheight', vz.wui.plotHeight, {expires: expires});
+		}
+		else {
+			$.setCookie('vz_plotheight', null);
+		}
+	}
+
+	splitter.on('pointerdown', function(event) {
+		if (event.button !== undefined && event.button !== 0) {
+			return;
+		}
+		startY = event.clientY;
+		startHeight = flot.height();
+		splitter.addClass('active');
+		this.setPointerCapture(event.pointerId);
+		event.preventDefault();
+	}).on('pointermove', function(event) {
+		if (!splitter.hasClass('active')) {
+			return;
+		}
+		setHeight(startHeight + event.clientY - startY);
+	}).on('pointerup pointercancel', function(event) {
+		if (!splitter.hasClass('active')) {
+			return;
+		}
+		splitter.removeClass('active');
+		save();
+	}).on('dblclick', function() {
+		vz.wui.plotHeight = null;
+		save();
+		vz.wui.resizePlot();
+	}).on('keydown', function(event) {
+		var step = event.shiftKey ? 100 : 20;
+		if (event.which == 38 || event.which == 40) { // up, down
+			setHeight(flot.height() + (event.which == 40 ? step : -step));
+			save();
+			event.preventDefault();
+		}
+		else if (event.which == 36 || event.which == 46) { // home, delete
+			splitter.trigger('dblclick');
+			event.preventDefault();
+		}
+	});
 };
 
 /**
