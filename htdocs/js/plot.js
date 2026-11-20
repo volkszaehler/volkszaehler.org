@@ -196,12 +196,20 @@ vz.wui.tickGenerator = function (axis) {
  * Source: jquery.flot.js
  */
 vz.wui.tickFormatter = function (value, axis, tickIndex, ticks) {
-	var si;
+	var si, last;
 
 	// last tick: return label instead
-	if (ticks && tickIndex === ticks.length-1 && axis.options.axisLabel) {
-		si = axis.options.si || {};
-		return '[' + si.prefix + si.unit + ']';
+	if (ticks && axis.options.axisLabel) {
+		last = ticks.length-1;
+		// With a fixed maximum the axis is not snapped to the last tick, which
+		// can then lie outside the visible range: use the last visible one.
+		while (axis.options.max != null && last > 0 && ticks[last] > axis.max) {
+			last--;
+		}
+		if (tickIndex === last && last > 0) {
+			si = axis.options.si || {};
+			return '[' + si.prefix + si.unit + ']';
+		}
 	}
 
 	// first tick: calculate label formatting
@@ -382,8 +390,15 @@ vz.wui.drawPlot = function () {
 		$('#overlay').empty();
 	}
 
+	// manual y axis ranges override the automatic extrema
+	vz.wui.applyAxisRanges(plotOptions);
+
 	// call flot
 	vz.plot = $.plot($('#flot'), series, plotOptions);
+
+	// mark manually scaled axes, also after later redraws
+	vz.plot.hooks.draw.push(vz.wui.updateAxisBadges);
+	vz.wui.updateAxisBadges(vz.plot);
 
 	// disable automatic refresh if we are in past
 	if (vz.options.refresh) {
@@ -396,3 +411,202 @@ vz.wui.drawPlot = function () {
 		vz.wui.clearTimeout();
 	}
 };
+
+/**
+ * Manual y axis ranges
+ *
+ * The mouse wheel over a y axis zooms that axis around the pointer, dragging
+ * the axis shifts it. Double click on the axis or a click on its marker
+ * returns to the automatic scale. Time zoom and the other axes are not
+ * affected.
+ *
+ * The ranges live in vz.wui.axisRanges, keyed by axis number and unit, and are
+ * applied on top of the automatic extrema in every drawPlot(). A range is
+ * dropped as soon as its axis gets another unit.
+ */
+vz.wui.axisRanges = {};
+
+vz.wui.axisKey = function(index, axis) {
+	return index + '|' + (axis.axisLabel || '');
+};
+
+/**
+ * Apply manual ranges to the (copied) yaxes options
+ */
+vz.wui.applyAxisRanges = function(plotOptions) {
+	var keep = {};
+
+	plotOptions.yaxes.forEach(function(axis, index) {
+		var key = vz.wui.axisKey(index, axis),
+			range = vz.wui.axisRanges[key];
+
+		if (range) {
+			axis.min = range.min;
+			axis.max = range.max;
+			keep[key] = range;
+		}
+	});
+
+	vz.wui.axisRanges = keep;
+};
+
+/**
+ * Y axis below the mouse pointer: {index, axis} or null
+ */
+vz.wui.axisAt = function(event) {
+	if (!vz.plot) {
+		return null;
+	}
+
+	var rect = $('#flot')[0].getBoundingClientRect(),
+		x = event.clientX - rect.left,
+		y = event.clientY - rect.top,
+		axes = vz.plot.getYAxes();
+
+	for (var i = 0; i < axes.length; i++) {
+		var box = axes[i].box;
+		if (axes[i].show && box && x >= box.left && x <= box.left + box.width &&
+				y >= box.top && y <= box.top + box.height) {
+			return {index: i, axis: axes[i], y: y};
+		}
+	}
+	return null;
+};
+
+/**
+ * Current range of an axis: manual range if set, else the drawn one
+ */
+vz.wui.axisRange = function(index, axis) {
+	var range = vz.wui.axisRanges[vz.wui.axisKey(index, vz.options.plot.yaxes[index] || {})];
+	return range ? {min: range.min, max: range.max} : {min: axis.min, max: axis.max};
+};
+
+/**
+ * Set range of an axis and redraw (at most once per frame)
+ */
+vz.wui.setAxisRange = function(index, min, max) {
+	if (!isFinite(min) || !isFinite(max) || max - min <= 1e-9 * Math.max(Math.abs(min), Math.abs(max), 1)) {
+		return; // degenerate
+	}
+
+	vz.wui.axisRanges[vz.wui.axisKey(index, vz.options.plot.yaxes[index] || {})] = {min: min, max: max};
+	vz.wui.redrawAxes();
+};
+
+vz.wui.resetAxis = function(index) {
+	delete vz.wui.axisRanges[vz.wui.axisKey(index, vz.options.plot.yaxes[index] || {})];
+	vz.wui.redrawAxes();
+};
+
+vz.wui.resetAllAxes = function() {
+	vz.wui.axisRanges = {};
+	vz.wui.redrawAxes();
+};
+
+vz.wui.redrawAxes = function() {
+	if (!vz.wui.axisFrame) {
+		vz.wui.axisFrame = window.requestAnimationFrame(function() {
+			vz.wui.axisFrame = null;
+			vz.wui.drawPlot();
+		});
+	}
+};
+
+/**
+ * Marker on every manually scaled axis, click resets that axis, shift-click all axes
+ */
+vz.wui.updateAxisBadges = function(plot) {
+	var flot = $('#flot');
+	flot.find('.axis-badge').remove();
+
+	plot.getYAxes().forEach(function(axis, index) {
+		if (axis.show && axis.box && vz.wui.axisRanges[vz.wui.axisKey(index, vz.options.plot.yaxes[index] || {})]) {
+			$('<div class="axis-badge" title="Skala manuell geändert, Klick: automatisch, Umschalt+Klick: alle Skalen automatisch">&#8661;</div>')
+				.data('axis', index)
+				// below the axis, where the time axis labels leave the corner free
+				.css({left: axis.box.left + axis.box.width / 2 - 8, top: axis.box.top + axis.box.height + 3})
+				.appendTo(flot);
+		}
+	});
+};
+
+/**
+ * Mouse handling for the y axes
+ */
+vz.wui.initAxisNavigation = function() {
+	var flot = $('#flot')[0],
+		drag = null;
+
+	// Capture phase: runs before flot's handlers on the overlay canvas, so the
+	// x selection does not start when the mouse is pressed on an axis.
+	flot.addEventListener('mousedown', function(event) {
+		var hit = event.button === 0 && !$(event.target).closest('.axis-badge').length && vz.wui.axisAt(event);
+		if (!hit) {
+			return;
+		}
+
+		var range = vz.wui.axisRange(hit.index, hit.axis);
+		drag = {index: hit.index, y: event.clientY, min: range.min, max: range.max, height: vz.plot.height()};
+		$('body').addClass('axis-dragging');
+		event.stopPropagation();
+		event.preventDefault();
+	}, true);
+
+	flot.addEventListener('mousemove', function(event) {
+		flot.style.cursor = vz.wui.axisAt(event) ? 'ns-resize' : '';
+	}, true);
+
+	flot.addEventListener('wheel', function(event) {
+		var hit = vz.wui.axisAt(event);
+		if (!hit) {
+			return;
+		}
+		event.preventDefault(); // do not scroll the page
+		event.stopPropagation();
+
+		var range = vz.wui.axisRange(hit.index, hit.axis),
+			dy = event.deltaY * (event.deltaMode === 1 ? 33 : 1), // lines to pixels
+			factor = Math.exp(Math.max(-300, Math.min(300, dy)) * 0.002),
+			// value under the pointer, from the same range that is going to be changed
+			pos = Math.max(0, Math.min(1, (hit.y - vz.plot.getPlotOffset().top) / vz.plot.height())),
+			value = range.max - pos * (range.max - range.min);
+
+		vz.wui.setAxisRange(hit.index, value - (value - range.min) * factor, value + (range.max - value) * factor);
+	}, {capture: true, passive: false});
+
+	flot.addEventListener('dblclick', function(event) {
+		var hit = vz.wui.axisAt(event);
+		if (hit) {
+			event.stopPropagation();
+			vz.wui.resetAxis(hit.index);
+		}
+	}, true);
+
+	$(document)
+		.on('mousemove', function(event) {
+			if (drag) {
+				// content follows the pointer: moving down shows higher values
+				var delta = (event.clientY - drag.y) * (drag.max - drag.min) / drag.height;
+				vz.wui.setAxisRange(drag.index, drag.min + delta, drag.max + delta);
+			}
+		})
+		.on('mouseup', function() {
+			if (drag) {
+				drag = null;
+				$('body').removeClass('axis-dragging');
+			}
+		});
+
+	$(flot).on('click', '.axis-badge', function(event) {
+		if (event.shiftKey) {
+			vz.wui.resetAllAxes();
+		}
+		else {
+			vz.wui.resetAxis($(this).data('axis'));
+		}
+	});
+};
+
+$(function() {
+	vz.wui.initAxisNavigation();
+});
