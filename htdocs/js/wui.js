@@ -222,7 +222,7 @@ vz.wui.exportData = function(value) {
 				$.cachedScript('js/canvas/FileSaver.js'))
 			.done(function() {
 				// will prompt the user to save the image as PNG
-				vz.plot.getCanvas().toBlob(function(blob) {
+				vzTheme.exportCanvas(vz.plot.getCanvas()).toBlob(function(blob) {
 					saveAs(blob, 'Screenshot.png');
 				});
 			});

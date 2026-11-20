@@ -248,7 +248,7 @@ vz.wui.drawPlot = function () {
 	}
 
 	// consumption mode does some Xaxis manupulation- preserve original options
-	var plotOptions = $.extend(true, {}, vz.options.plot);
+	var plotOptions = vzTheme.plotOptions($.extend(true, {}, vz.options.plot));
 	var series = [], index = 0;
 
 	vz.entities.eachActiveChannel(function(entity) {
@@ -284,7 +284,7 @@ vz.wui.drawPlot = function () {
 
 		var serie = {
 			data: tuples,
-			color: entity.color,
+			color: vzTheme.seriesColor(entity.color),
 			label: entity.title,
 			title: entity.title,
 			unit:  entity.getUnitForMode(),
