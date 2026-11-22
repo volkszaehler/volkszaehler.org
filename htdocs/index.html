@@ -33,7 +33,11 @@
 	<link rel="stylesheet" type="text/css" href="vendor/jquery-ui/jquery-ui.min.css" />
 	<link rel="stylesheet" type="text/css" href="css/style.css" />
 	<link rel="stylesheet" type="text/css" href="css/sprites.css" />
+	<link rel="stylesheet" type="text/css" href="css/dark.css" media="screen" />
 	<link rel="stylesheet" type="text/css" href="css/print.css" media="print" />
+
+	<!-- colour scheme: runs early to avoid a light flash -->
+	<script type="text/javascript" src="js/theme.js"></script>
 
 	<!-- jQuery -->
 	<script type="text/javascript" src="vendor/jquery/jquery-3.3.1.min.js"></script>
@@ -165,6 +169,16 @@
 					<tr>
 						<td><label for="refresh"><img src="img/blank.png" class="icon-arrow_refresh" alt="" /> Automatisch aktualisieren</label></td>
 						<td><input type="checkbox" id="refresh" /> <span id="refresh-time"></span></td>
+					</tr>
+					<tr>
+						<td><label for="theme"><img src="img/blank.png" class="icon-shading" alt="" /> Darstellung</label></td>
+						<td>
+							<select id="theme">
+								<option value="auto">System</option>
+								<option value="light">Hell</option>
+								<option value="dark">Dunkel</option>
+							</select>
+						</td>
 					</tr>
 				</tbody>
 			</table>

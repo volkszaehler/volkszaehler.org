@@ -1,0 +1,298 @@
+/**
+ * Dark mode for the volkszaehler.org web frontend
+ *
+ * Active when <html data-theme="dark"> is set (see js/theme.js).
+ * Light mode is untouched: every rule below is scoped to that attribute.
+ */
+
+html[data-theme="dark"] {
+	color-scheme: dark; /* native controls, scrollbars, select popups */
+
+	--vz-bg: #14171a;
+	--vz-surface: #1d2125;
+	--vz-surface-2: #272c31;
+	--vz-border: #3a4148;
+	--vz-border-soft: #2e353b;
+	--vz-text: #d6dadd;
+	--vz-text-dim: #8d959c;
+	--vz-accent: #3d8fc4;
+	--vz-accent-text: #ffffff;
+	--vz-header: #3a4148;
+}
+
+html[data-theme="dark"] body {
+	background-color: var(--vz-bg);
+	color: var(--vz-text);
+}
+
+html[data-theme="dark"] a,
+html[data-theme="dark"] a:visited {
+	color: #6fb3e0;
+}
+
+/* tables */
+html[data-theme="dark"] thead tr {
+	border-bottom-color: var(--vz-border);
+}
+
+html[data-theme="dark"] tr.optional,
+html[data-theme="dark"] tr.stale td.min,
+html[data-theme="dark"] tr.stale td.max,
+html[data-theme="dark"] tr.stale td.average,
+html[data-theme="dark"] tr.stale td.last,
+html[data-theme="dark"] tr.stale td.consumption,
+html[data-theme="dark"] tr.stale td.cost,
+html[data-theme="dark"] tr.stale td.total {
+	color: var(--vz-text-dim);
+}
+
+html[data-theme="dark"] table.properties tr:not(:first-child) {
+	border-top-color: var(--vz-border-soft);
+}
+
+/* accordion headers, control bar */
+html[data-theme="dark"] #content h3 {
+	background-color: var(--vz-header);
+	color: var(--vz-text);
+}
+
+html[data-theme="dark"] #controls {
+	background-color: var(--vz-header);
+}
+
+/* plot area */
+html[data-theme="dark"] #plot {
+	background-color: var(--vz-surface);
+}
+
+html[data-theme="dark"] #flot {
+	color: #b9c0c6; /* axis tick labels inherit this */
+}
+
+html[data-theme="dark"] .axisLabels {
+	color: var(--vz-text-dim);
+}
+
+html[data-theme="dark"] .legend table {
+	color: var(--vz-text);
+}
+
+html[data-theme="dark"] #tooltip {
+	background-color: var(--vz-surface-2);
+	color: var(--vz-text);
+	border: 1px solid var(--vz-border);
+	padding: 1px 4px;
+}
+
+html[data-theme="dark"] #overlay {
+	text-shadow: 0 0 4px #000;
+	color: var(--vz-text-dim);
+}
+
+html[data-theme="dark"] #time {
+	background-color: rgba(190, 40, 40, 0.90);
+}
+
+/* footer */
+html[data-theme="dark"] #footer {
+	background-color: #0d4d66;
+	color: var(--vz-text);
+}
+
+html[data-theme="dark"] #footer a,
+html[data-theme="dark"] #footer a:visited {
+	color: var(--vz-text);
+}
+
+/* buttons and form controls */
+html[data-theme="dark"] button {
+	background-color: var(--vz-surface-2);
+	border-color: var(--vz-border);
+	color: var(--vz-text);
+}
+
+html[data-theme="dark"] input[type=text],
+html[data-theme="dark"] input[type=password],
+html[data-theme="dark"] input[type=number],
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] select {
+	background-color: var(--vz-surface-2);
+	color: var(--vz-text);
+	border: 1px solid var(--vz-border);
+}
+
+html[data-theme="dark"] select.icons option {
+	background-color: var(--vz-surface-2);
+	color: var(--vz-text);
+}
+
+/* tree table of channels */
+html[data-theme="dark"] .treeTable tr td .expander {
+	filter: invert(1) brightness(0.85); /* arrow sprites are dark on transparent */
+}
+
+html[data-theme="dark"] .treeTable tr.selected,
+html[data-theme="dark"] .treeTable tr.accept {
+	background-color: #2a5f8f;
+	color: #fff;
+}
+
+html[data-theme="dark"] .treeTable tr.collapsed.selected td .expander,
+html[data-theme="dark"] .treeTable tr.collapsed.accept td .expander,
+html[data-theme="dark"] .treeTable tr.expanded.selected td .expander,
+html[data-theme="dark"] .treeTable tr.expanded.accept td .expander {
+	filter: none; /* light variants already */
+}
+
+html[data-theme="dark"] .treeTable .ui-draggable-dragging {
+	color: var(--vz-text);
+	background-color: var(--vz-surface-2);
+}
+
+/* channel type icons in the table include black outlines */
+html[data-theme="dark"] #entity-list tbody img {
+	filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.55));
+}
+
+/* jQuery UI (accordion panels, dialogs, tabs, buttons) */
+html[data-theme="dark"] .ui-widget,
+html[data-theme="dark"] .ui-widget input,
+html[data-theme="dark"] .ui-widget select,
+html[data-theme="dark"] .ui-widget textarea,
+html[data-theme="dark"] .ui-widget button {
+	color: var(--vz-text);
+}
+
+html[data-theme="dark"] .ui-widget-content {
+	background: var(--vz-surface);
+	border-color: var(--vz-border);
+	color: var(--vz-text);
+}
+
+html[data-theme="dark"] .ui-widget-content a {
+	color: #6fb3e0;
+}
+
+html[data-theme="dark"] .ui-widget-header {
+	background: var(--vz-header);
+	border-color: var(--vz-border);
+	color: var(--vz-text);
+}
+
+html[data-theme="dark"] .ui-widget-header a {
+	color: var(--vz-text);
+}
+
+html[data-theme="dark"] .ui-state-default,
+html[data-theme="dark"] .ui-widget-content .ui-state-default,
+html[data-theme="dark"] .ui-widget-header .ui-state-default,
+html[data-theme="dark"] .ui-button {
+	background: var(--vz-surface-2);
+	border-color: var(--vz-border);
+	color: var(--vz-text);
+}
+
+html[data-theme="dark"] .ui-state-default a,
+html[data-theme="dark"] .ui-state-default a:link,
+html[data-theme="dark"] .ui-state-default a:visited,
+html[data-theme="dark"] a.ui-button,
+html[data-theme="dark"] a:link.ui-button,
+html[data-theme="dark"] a:visited.ui-button {
+	color: var(--vz-text);
+}
+
+html[data-theme="dark"] .ui-state-hover,
+html[data-theme="dark"] .ui-widget-content .ui-state-hover,
+html[data-theme="dark"] .ui-widget-header .ui-state-hover,
+html[data-theme="dark"] .ui-state-focus,
+html[data-theme="dark"] .ui-widget-content .ui-state-focus,
+html[data-theme="dark"] .ui-widget-header .ui-state-focus,
+html[data-theme="dark"] .ui-button:hover,
+html[data-theme="dark"] .ui-button:focus {
+	background: #323940;
+	border-color: #55606a;
+	color: #fff;
+}
+
+html[data-theme="dark"] .ui-state-hover a,
+html[data-theme="dark"] .ui-state-hover a:hover,
+html[data-theme="dark"] .ui-state-hover a:link,
+html[data-theme="dark"] .ui-state-hover a:visited,
+html[data-theme="dark"] .ui-state-focus a,
+html[data-theme="dark"] .ui-state-focus a:hover,
+html[data-theme="dark"] .ui-state-focus a:link,
+html[data-theme="dark"] .ui-state-focus a:visited {
+	color: #fff;
+}
+
+html[data-theme="dark"] .ui-state-active,
+html[data-theme="dark"] .ui-widget-content .ui-state-active,
+html[data-theme="dark"] .ui-widget-header .ui-state-active,
+html[data-theme="dark"] a.ui-button:active,
+html[data-theme="dark"] .ui-button:active,
+html[data-theme="dark"] .ui-button.ui-state-active:hover {
+	background: var(--vz-accent);
+	border-color: var(--vz-accent);
+	color: var(--vz-accent-text);
+}
+
+html[data-theme="dark"] .ui-state-active a,
+html[data-theme="dark"] .ui-state-active a:link,
+html[data-theme="dark"] .ui-state-active a:visited {
+	color: var(--vz-accent-text);
+}
+
+html[data-theme="dark"] .ui-state-highlight,
+html[data-theme="dark"] .ui-widget-content .ui-state-highlight,
+html[data-theme="dark"] .ui-widget-header .ui-state-highlight {
+	background: #3d3a14;
+	border-color: #6b6620;
+	color: #e8e3a0;
+}
+
+html[data-theme="dark"] .ui-state-error,
+html[data-theme="dark"] .ui-widget-content .ui-state-error,
+html[data-theme="dark"] .ui-widget-header .ui-state-error {
+	background: #3d1c1c;
+	border-color: #7a3030;
+	color: #f0b4b4;
+}
+
+html[data-theme="dark"] .ui-state-error a,
+html[data-theme="dark"] .ui-state-error-text {
+	color: #f0b4b4;
+}
+
+html[data-theme="dark"] .ui-widget-overlay {
+	background: #000;
+	opacity: 0.6;
+}
+
+html[data-theme="dark"] .ui-widget-shadow {
+	box-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+}
+
+/* jQuery UI icons are grey/white PNGs made for light themes */
+html[data-theme="dark"] .ui-icon,
+html[data-theme="dark"] .ui-widget-content .ui-icon,
+html[data-theme="dark"] .ui-widget-header .ui-icon,
+html[data-theme="dark"] .ui-state-default .ui-icon {
+	filter: invert(1) brightness(0.9);
+}
+
+html[data-theme="dark"] .ui-state-active .ui-icon,
+html[data-theme="dark"] .ui-state-error .ui-icon,
+html[data-theme="dark"] .ui-state-highlight .ui-icon {
+	filter: none;
+}
+
+/* simple colour picker in the channel edit dialog */
+html[data-theme="dark"] .simpleColorContainer,
+html[data-theme="dark"] .simpleColorChooser {
+	background-color: var(--vz-surface-2);
+}
+
+/* progress bar on top (nprogress) keeps its blue; just make it visible */
+html[data-theme="dark"] #nprogress .bar {
+	background: #4aa8e0;
+}
