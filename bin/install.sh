@@ -34,7 +34,7 @@ shopt -s nocasematch
 # some configuration
 
 # minimum php version required
-php_ver_min=7.1
+php_ver_min=8.2
 
 # git url
 vz_git=https://github.com/volkszaehler/volkszaehler.org
@@ -47,6 +47,9 @@ vz_dir=${1:-~/volkszaehler.org}
 
 # default webserver dir (overriden by command line)
 web_dir=${1:-/var/www/volkszaehler.org}
+
+#default owner (Debian) of webserver dir
+web_owner=www-data
 
 
 ###############################
@@ -173,45 +176,37 @@ else
 		git clone "$vz_git" "$vz_dir"
 	fi
 
-	ask "link from webserver to volkszaehler directory?" "$web_dir"
+	ask "prepare webserver directory?" "$web_dir"
 	web_dir="$REPLY"
 
-	#check if symbolic link from "web_dir" already exists
+	#check if symbolic link from "web_dir" still exists
 	if [ -h "$web_dir" ]; then
-		ask "$web_dir symlink already exists. Remove it? (you have to type 'Yes' to do this!)" n
+		ask "$web_dir symlink still exists. Remove it? (you have to type 'Yes' to do this!)" n
 		if [ "$REPLY" == 'Yes' ]; then
 			sudo rm -fr "$web_dir"
 			REPLY=y
 		else
+            echo "with the symlink still in place creating $web_dir will fail"
 			REPLY=n
 		fi
 	#check if "web_dir" is already a directory
 	elif [ -d "$web_dir" ]; then
-		ask "$web_dir directory already exists. Remove it? (this will remove a previous installation and all changes you made - type 'Yes' to do this!)" n
+		ask "$web_dir directory already exists. Remove it? (this will remove a previous deployment and all changes you made there - type 'Yes' to do this!)" n
 		if [ "$REPLY" == 'Yes' ]; then
 			sudo rm -fr "$web_dir"
 			REPLY=y
 		else
 			REPLY=n
-		fi
-	#check if parent directory of "web_dir" exists
-	elif [ ! -d "${web_dir%/*}" ]; then
-		ask "parent directory ${web_dir%/*} doesn't exist, create it?" y
-		if [ "$REPLY" == 'y' ]; then
-			sudo mkdir ${web_dir%/*}
-			REPLY=y
-		else
-			#parent directory doesn't exist, so create symbolic link will fail.
-			echo "parent directory ${web_dir%/*} doesn't exist, so creating symbolic link from $web_dir will fail."
-			cleanup && exit 1            
 		fi
 	else
 		REPLY=y
 	fi
 
 	if [ "$REPLY" == 'y' ]; then
-		echo "linking $web_dir to $vz_dir"
-		sudo ln -sf "$vz_dir" "$web_dir"
+        echo "create $web_dir"
+        sudo mkdir -p "$web_dir"
+		echo "change ownership of $web_dir"
+        sudo chown "$web_owner" "$web_dir"
 	fi
 
 fi
@@ -327,6 +322,17 @@ if [ "$REPLY" == "y" ]; then
 
 	cat "$vz_dir/misc/sql/demo.sql" |
 		mysql -h"$db_host" -u"$db_admin_user" -p"$db_admin_pass" "$db_name"
+fi
+
+###############################
+echo
+ask "rsync volkszaehler.org to webserver directory?" y
+if [ "$REPLY" == "y" ]; then
+    sudo rsync -r --info=progress2 --delete --chown="$web_owner" "$vz_dir" "$web_dir"
+    echo
+    echo "you might consider set up lsyncd to keep the webserver up to date with the local git repository."
+else
+    echo "the changes have not been deployed to a webserver, volkszaehler.org will likely not work properly"
 fi
 
 cleanup
